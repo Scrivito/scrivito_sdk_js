@@ -1,0 +1,32 @@
+{
+  "name": "scrivito",
+  "license": "LGPL-3.0",
+  "browser": "dist/index.browser.js",
+  "description": "Scrivito is a professional, yet easy to use SaaS Enterprise Content Management Service, built for digital agencies and medium to large businesses. It is completely maintenance-free, cost-effective, and has unprecedented performance and security.",
+  "keywords": [
+    "scrivito",
+    "saas",
+    "cms",
+    "react"
+  ],
+  "main": "dist/index.js",
+  "repository": "github:Scrivito/scrivito_sdk_js",
+  "types": "types/scrivito.d.ts",
+  "version": "1.26.0",
+  "dependencies": {
+    "history": "^4.10.1 || ^5.0.0",
+    "html-to-text": "^7.1.1",
+    "promise-polyfill": "^8.2.0",
+    "speakingurl": "^14.0.1",
+    "tcomb": ">=3.2.29",
+    "tcomb-react": "^0.9.3",
+    "tcomb-validation": "^3.4.1",
+    "underscore": "^1.12.1",
+    "urijs": "^1.19.7",
+    "w3c-xmlhttprequest": "^3.0.3"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.1",
+    "react-dom": "^16.8.0 || ^17.0.1"
+  }
+}
