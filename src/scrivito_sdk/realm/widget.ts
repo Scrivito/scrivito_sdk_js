@@ -1,35 +1,47 @@
-import { ArgumentError, InternalError } from 'scrivito_sdk/common';
-import { AttributeType, BasicWidget } from 'scrivito_sdk/models';
+import {
+  ArgumentError,
+  InternalError,
+  ScrivitoError,
+} from 'scrivito_sdk/common';
+import { BasicWidget } from 'scrivito_sdk/models';
 import { assertValidAttributeName } from 'scrivito_sdk/realm/assert_valid_attribute_name';
 
 import { AttrDict } from 'scrivito_sdk/realm/attribute_types';
 import { initialAttributesFor } from 'scrivito_sdk/realm/initial_attributes_for';
 import { Obj } from 'scrivito_sdk/realm/obj';
 import { objClassNameFor } from 'scrivito_sdk/realm/registry';
-import { Schema } from 'scrivito_sdk/realm/schema';
 import {
-  AttributeValue,
+  AttributeDefinitions,
+  NormalizedAttributeDefinitions,
+  Schema,
+} from 'scrivito_sdk/realm/schema';
+import {
+  AttributeValueOf,
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
 import { readAppAttribute, updateAppAttributes } from './app_model_accessor';
 
-export interface WidgetClass {
+export interface WidgetClass<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
   /** @internal */
   readonly _scrivitoPrivateSchema?: Schema;
 
-  new (attributes?: AttrDict): Widget;
+  new (attributes?: AttrDict<AttrDefs>): Widget<AttrDefs>;
 }
 
 /** @public */
-export class Widget {
+export class Widget<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
   /** @internal */
   readonly _scrivitoPrivateContent: BasicWidget;
 
   /** @internal */
   static readonly _scrivitoPrivateSchema?: Schema;
 
-  constructor(attributes: AttrDict = {}) {
+  constructor(attributes: AttrDict<AttrDefs> = {}) {
     const appClassName = objClassNameFor(this.constructor as WidgetClass);
 
     if (!appClassName) {
@@ -74,13 +86,15 @@ export class Widget {
     return this._scrivitoPrivateContent.objClass();
   }
 
-  get<T extends AttributeType>(attributeName: string): AttributeValue<T> {
+  get<AttributeName extends keyof AttrDefs & string>(
+    attributeName: AttributeName
+  ): AttributeValueOf<AttrDefs, AttributeName> {
     assertValidAttributeName(attributeName);
 
     return readAppAttribute(this, attributeName)!;
   }
 
-  update(attributes: Partial<AttrDict>): void {
+  update(attributes: AttrDict<AttrDefs>): void {
     updateAppAttributes(this, attributes);
   }
 
@@ -90,10 +104,10 @@ export class Widget {
     return wrapInAppClass(basicObj);
   }
 
-  copy(): Widget {
+  copy(): Widget<AttrDefs> {
     const basicWidget = this._scrivitoPrivateContent.copy();
 
-    return wrapInAppClass(basicWidget);
+    return wrapInAppClass<AttrDefs>(basicWidget);
   }
 
   destroy(): void {
@@ -104,6 +118,13 @@ export class Widget {
     const container = this._scrivitoPrivateContent.container();
 
     return wrapInAppClass(container);
+  }
+
+  attributeDefinitions(): NormalizedAttributeDefinitions {
+    const schema = Schema.forInstance(this);
+    if (!schema) throw new ScrivitoError('No schema found');
+
+    return schema.normalizedAttributes();
   }
 }
 

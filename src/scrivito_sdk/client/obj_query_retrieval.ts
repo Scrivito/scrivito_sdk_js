@@ -42,7 +42,8 @@ export type BackendSearchOperator =
   | 'is_greater_than'
   | 'is_less_than'
   | 'links_to'
-  | 'refers_to';
+  | 'refers_to'
+  | 'matches';
 
 export interface BackendQueryRetrievalParams {
   query: Query[];

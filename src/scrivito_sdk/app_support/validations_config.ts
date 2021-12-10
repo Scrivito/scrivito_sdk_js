@@ -9,7 +9,7 @@ export const VALIDATION_SEVERITY_LEVELS: ValidationSeverityLevel[] = [
   'info',
 ];
 
-export type ValidationsConfig<T extends Obj | Widget> = Array<
+export type ValidationsConfig<T extends Obj | Widget> = ReadonlyArray<
   ContentValidationCallback<T> | AttributeValidations<T>
 >;
 
@@ -45,7 +45,7 @@ type AttributeValidationConstraintsWithOptions = [
   object
 ];
 
-export type AttributeValidations<T extends Obj | Widget> = [
+export type AttributeValidations<T extends Obj | Widget> = readonly [
   AttributeValidationName,
   ...Array<AttributeValidationConstraints | AttributeValidationCallback<T>>
 ];

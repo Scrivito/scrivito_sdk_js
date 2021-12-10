@@ -1,18 +1,30 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import { AttributeType } from 'scrivito_sdk/models';
-import { AppClass, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 import {
-  AttributeValue,
+  AppClass,
+  AttributeDefinitions,
+  Obj,
+  Schema,
+  Widget,
+} from 'scrivito_sdk/realm';
+import { AttributeTypeOf } from 'scrivito_sdk/realm/schema';
+import {
+  AttributeValueOf,
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
 import { objClassNameFor } from './registry';
 
-export function readAppAttribute<T extends AttributeType>(
+export function readAppAttribute<
+  AttrDefs extends AttributeDefinitions,
+  AttrName extends keyof AttrDefs & string
+>(
   model: Obj | Widget,
-  attributeName: string
-): AttributeValue<T> | null {
-  const basicField = Schema.basicFieldFor<T>(model, attributeName);
+  attributeName: AttrName
+): AttributeValueOf<AttrDefs, AttrName> | null {
+  const basicField = Schema.basicFieldFor<AttributeTypeOf<AttrDefs[AttrName]>>(
+    model,
+    attributeName
+  );
 
   return basicField && wrapInAppClass(basicField.get());
 }

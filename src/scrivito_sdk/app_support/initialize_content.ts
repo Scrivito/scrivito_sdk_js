@@ -90,8 +90,8 @@ function initializeContentFor(basicContent: BasicObj | BasicWidget): void {
   if (!schema) return;
 
   const initialAttributes: { [index: string]: AttributeValue } = {};
-  Object.keys(schema.attributes).forEach((attributeName) => {
-    const typeInfo = schema.attributes[attributeName];
+  Object.keys(schema.attributes()).forEach((attributeName) => {
+    const typeInfo = schema.attributes()[attributeName];
 
     const currentValue = basicContent.get(attributeName, typeInfo);
 

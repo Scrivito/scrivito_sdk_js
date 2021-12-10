@@ -7,9 +7,16 @@ import {
 } from 'scrivito_sdk/realm/app_class_api_check';
 import { Obj, ObjClass } from 'scrivito_sdk/realm/obj';
 import {
-  ConvenienceObjClassDefinition,
-  ConvenienceWidgetClassDefinition,
+  AttributeDefinitions,
+  ExtendObjClassDefinition,
+  ExtendWidgetClassDefinition,
+  MixedObjClassDefinition,
+  MixedWidgetClassDefinition,
+  ObjClassDefinition,
   Schema,
+  SimpleObjClassDefinition,
+  SimpleWidgetClassDefinition,
+  WidgetClassDefinition,
   isAppClass,
 } from 'scrivito_sdk/realm/schema';
 import { Widget, WidgetClass } from 'scrivito_sdk/realm/widget';
@@ -19,18 +26,38 @@ import {
 } from './assert_valid_extract_text_attributes';
 import { registerClass } from './registry';
 
-export type AppClass = ObjClass | WidgetClass;
+export type AppClass<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> = ObjClass<AttrDefs> | WidgetClass<AttrDefs>;
 
 /** @public */
-export function provideObjClass(
+export function provideObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(name: string, definition: SimpleObjClassDefinition<Attrs>): ObjClass<Attrs>;
+
+/** @public */
+export function provideObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(name: string, definition: ObjClass<Attrs>): ObjClass<Attrs>;
+
+/** @public */
+export function provideObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(name: string, definition: ExtendObjClassDefinition<Attrs>): ObjClass<Attrs>;
+
+/** @public */
+export function provideObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+>(
   name: string,
-  definition: ConvenienceObjClassDefinition | ObjClass
-): ObjClass;
+  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>
+): ObjClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function provideObjClass(
   name: string,
-  definition: ConvenienceObjClassDefinition | ObjClass,
+  definition: ObjClassDefinition | ObjClass,
   ...excessArgs: never[]
 ): ObjClass {
   checkProvideObjClass(name, definition, ...excessArgs);
@@ -43,15 +70,39 @@ export function provideObjClass(
 }
 
 /** @public */
-export function provideWidgetClass(
+export function provideWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(
   name: string,
-  definition: ConvenienceWidgetClassDefinition | WidgetClass
-): WidgetClass;
+  definition: SimpleWidgetClassDefinition<Attrs>
+): WidgetClass<Attrs>;
+
+/** @public */
+export function provideWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(name: string, definition: WidgetClass<Attrs>): WidgetClass<Attrs>;
+
+/** @public */
+export function provideWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(
+  name: string,
+  definition: ExtendWidgetClassDefinition<Attrs>
+): WidgetClass<Attrs>;
+
+/** @public */
+export function provideWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+>(
+  name: string,
+  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>
+): WidgetClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function provideWidgetClass(
   name: string,
-  definition: ConvenienceWidgetClassDefinition | WidgetClass,
+  definition: WidgetClassDefinition | WidgetClass,
   ...excessArgs: never[]
 ): WidgetClass {
   checkProvideWidgetClass(name, definition, ...excessArgs);
@@ -65,13 +116,26 @@ export function provideWidgetClass(
 }
 
 /** @public */
-export function createObjClass(
-  definition: ConvenienceObjClassDefinition
-): ObjClass;
+export function createObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(definition: SimpleObjClassDefinition<Attrs>): ObjClass<Attrs>;
+
+/** @public */
+export function createObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(definition: ExtendObjClassDefinition<Attrs>): ObjClass<Attrs>;
+
+/** @public */
+export function createObjClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+>(
+  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>
+): ObjClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function createObjClass(
-  definition: ConvenienceObjClassDefinition,
+  definition: ObjClassDefinition,
   ...excessArgs: never[]
 ): ObjClass {
   checkCreateObjClass(definition, ...excessArgs);
@@ -80,13 +144,26 @@ export function createObjClass(
 }
 
 /** @public */
-export function createWidgetClass(
-  definition: ConvenienceWidgetClassDefinition
-): WidgetClass;
+export function createWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(definition: SimpleWidgetClassDefinition<Attrs>): WidgetClass<Attrs>;
+
+/** @public */
+export function createWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions
+>(definition: ExtendWidgetClassDefinition<Attrs>): WidgetClass<Attrs>;
+
+/** @public */
+export function createWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+>(
+  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>
+): WidgetClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function createWidgetClass(
-  definition: ConvenienceWidgetClassDefinition,
+  definition: WidgetClassDefinition,
   ...excessArgs: never[]
 ): WidgetClass {
   checkCreateWidgetClass(definition, ...excessArgs);
@@ -94,9 +171,7 @@ export function createWidgetClass(
   return createAppWidgetClass(definition);
 }
 
-function createAppObjClass(
-  definition: ConvenienceObjClassDefinition
-): ObjClass {
+function createAppObjClass(definition: ObjClassDefinition): ObjClass {
   if (definition.extend && !isOrExtends(definition.extend, Obj)) {
     throw new ArgumentError(
       'Invalid value for "extend": not a Scrivito Obj class'
@@ -148,9 +223,7 @@ function createAppObjClass(
   };
 }
 
-function createAppWidgetClass(
-  definition: ConvenienceWidgetClassDefinition
-): WidgetClass {
+function createAppWidgetClass(definition: WidgetClassDefinition): WidgetClass {
   if (definition.extend && !isOrExtends(definition.extend, Widget)) {
     throw new ArgumentError(
       'Invalid value for "extend": not a Scrivito Widget class'
@@ -178,6 +251,6 @@ function isOrExtends(maybeClass: unknown, klass: UnknownClass): boolean {
   return (maybeClass as UnknownClass).prototype instanceof klass;
 }
 
-function isBinary(definition: ConvenienceObjClassDefinition) {
+function isBinary(definition: ObjClassDefinition) {
   return definition.attributes?.blob === 'binary';
 }

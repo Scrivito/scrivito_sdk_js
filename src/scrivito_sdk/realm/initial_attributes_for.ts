@@ -1,6 +1,6 @@
-import { AttributeValue } from './attribute_types';
 import { initialContentFor } from './initial_content_registry';
 import { Schema } from './schema';
+import { AttributeValue } from './wrap_in_app_class';
 
 interface Attributes {
   [key: string]: AttributeValue | undefined;
@@ -13,7 +13,7 @@ export function initialAttributesFor(
 ): Attributes {
   const initialAttributes: Attributes = {};
 
-  Object.keys(schema.attributes).forEach((attributeName) => {
+  Object.keys(schema.attributes()).forEach((attributeName) => {
     if (
       !Object.prototype.hasOwnProperty.call(providedAttributes, attributeName)
     ) {

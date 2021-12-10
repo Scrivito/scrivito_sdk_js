@@ -1,7 +1,10 @@
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
+import {
+  ScrivitoError,
+  checkArgumentsFor,
+  tcomb as t,
+} from 'scrivito_sdk/common';
 import { Modification } from 'scrivito_sdk/data';
 import {
-  AttributeType,
   BasicObj,
   FieldBoost,
   FullTextSearchOperator,
@@ -18,7 +21,7 @@ import {
   versionOnSite,
   versionsOnAllSites,
 } from 'scrivito_sdk/models';
-import { ObjSearch, Widget } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, ObjSearch, Widget } from 'scrivito_sdk/realm';
 import {
   readAppAttribute,
   updateAppAttributes,
@@ -35,58 +38,87 @@ import {
   checkFullTextSearchOperator,
   checkNonFullTextSearchOperator,
 } from 'scrivito_sdk/realm/obj_search';
-import { Schema } from 'scrivito_sdk/realm/schema';
+import {
+  NormalizedAttributeDefinitions,
+  Schema,
+} from 'scrivito_sdk/realm/schema';
 import { areStrictSearchOperatorsEnabled } from 'scrivito_sdk/realm/strict_search_operators';
 import {
-  AttributeValue,
+  AttributeValueOf,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
 
-export type ObjAttributes = AttrDict;
+type ObjSystemAttributes = {
+  _contentId?: string;
+  _id?: string;
+  _language?: string | null;
+  _path?: string | null;
+  _permalink?: string | null;
+  _siteId?: string | null;
+
+  /** @internal */
+  _restriction?: [string] | null;
+
+  /** @internal */
+  _modification?: string | null;
+};
+
+export type ObjAttributes<
+  AttrDefs extends AttributeDefinitions
+> = ObjSystemAttributes & AttrDict<AttrDefs>;
+type ObjUpdateAttributes<AttrDefs extends AttributeDefinitions> = Omit<
+  ObjAttributes<AttrDefs>,
+  '_id'
+>;
 
 type ReferenceMapping = (refId: string) => string | undefined;
 
-export interface ObjClass {
+export interface ObjClass<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
   /** @internal */
   readonly _scrivitoPrivateSchema?: Schema;
 
   /** bogus constructor, to let TypeScript understand that this is a class. */
-  new (dontUseThis: never): Obj;
+  new (dontUseThis: never): Obj<AttrDefs>;
 
-  get(id: string): Obj | null;
+  get(id: string): Obj<AttrDefs> | null;
 
   /** @internal */
-  getIncludingDeleted(id: string): Obj | null;
+  getIncludingDeleted(id: string): Obj<AttrDefs> | null;
 
-  getByPath(path: string): Obj | null;
+  getByPath(path: string): Obj<AttrDefs> | null;
 
-  getByPermalink(permalink: string): Obj | null;
+  getByPermalink(permalink: string): Obj<AttrDefs> | null;
 
-  all(): ObjSearch;
+  all(): ObjSearch<AttrDefs>;
 
-  root(): Obj | null;
+  root(): Obj<AttrDefs> | null;
 
   where(
     attribute: SearchField,
     operator: SearchOperator,
     value: SearchValue,
     boost?: FieldBoost
-  ): ObjSearch;
+  ): ObjSearch<AttrDefs>;
 
   whereFullTextOf(
     attribute: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
     boost?: FieldBoost
-  ): ObjSearch;
+  ): ObjSearch<AttrDefs>;
 
-  create(attributes?: ObjAttributes): Obj;
+  create(attributes?: ObjAttributes<AttrDefs>): Obj<AttrDefs>;
 
-  createFromFile(file: File, attributes?: ObjAttributes): Promise<Obj>;
+  createFromFile(
+    file: File,
+    attributes?: ObjAttributes<AttrDefs>
+  ): Promise<Obj<AttrDefs>>;
 
-  onAllSites(): SiteContext;
+  onAllSites(): SiteContext<AttrDefs>;
 
-  onSite(siteId: string): SiteContext;
+  onSite(siteId: string): SiteContext<AttrDefs>;
 }
 
 function currentSiteContext(objClass: ObjClass) {
@@ -113,7 +145,7 @@ function getBasicSiteContext(
 }
 
 /** @public */
-export class Obj {
+export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   /** @internal */
   readonly _scrivitoPrivateContent!: BasicObj;
 
@@ -178,11 +210,16 @@ export class Obj {
     );
   }
 
-  static create(attributes?: ObjAttributes): Obj {
+  static create(
+    attributes?: Partial<ObjAttributes<AttributeDefinitions>>
+  ): Obj {
     return currentSiteContext(this).create(attributes);
   }
 
-  static createFromFile(file: File, attributes?: ObjAttributes): Promise<Obj> {
+  static createFromFile(
+    file: File,
+    attributes?: Partial<ObjAttributes<AttributeDefinitions>>
+  ): Promise<Obj> {
     return currentSiteContext(this).createFromFile(file, attributes);
   }
 
@@ -203,13 +240,15 @@ export class Obj {
     return this._scrivitoPrivateContent.objClass();
   }
 
-  get<T extends AttributeType>(attributeName: string): AttributeValue<T> {
+  get<AttributeName extends keyof AttrDefs & string>(
+    attributeName: AttributeName
+  ): AttributeValueOf<AttrDefs, AttributeName> {
     assertValidAttributeName(attributeName);
 
     return readAppAttribute(this, attributeName)!;
   }
 
-  update(attributes: Partial<AttrDict>): void {
+  update(attributes: ObjUpdateAttributes<AttrDefs>): void {
     updateAppAttributes(this, attributes);
   }
 
@@ -358,14 +397,21 @@ export class Obj {
     return wrapInAppClass(this._scrivitoPrivateContent.widgets());
   }
 
-  copy(): Promise<Obj> {
+  copy(): Promise<Obj<AttrDefs>> {
     return this._scrivitoPrivateContent
       .copyAsync({ _path: null })
-      .then((obj) => wrapInAppClass(obj));
+      .then((obj) => wrapInAppClass<AttrDefs>(obj));
   }
 
   destroy(): void {
     this._scrivitoPrivateContent.destroy();
+  }
+
+  attributeDefinitions(): NormalizedAttributeDefinitions {
+    const schema = Schema.forInstance(this);
+    if (!schema) throw new ScrivitoError('No schema found');
+
+    return schema.normalizedAttributes();
   }
 }
 

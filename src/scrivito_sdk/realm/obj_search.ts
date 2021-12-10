@@ -14,7 +14,7 @@ import {
   SearchOperator,
 } from 'scrivito_sdk/models';
 import { OrderAttributes } from 'scrivito_sdk/models/basic_obj_search';
-import { Obj } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj } from 'scrivito_sdk/realm';
 import { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';
 import { areStrictSearchOperatorsEnabled } from 'scrivito_sdk/realm/strict_search_operators';
 import {
@@ -27,7 +27,9 @@ type SingleSearchValue = BackendSingleSearchValue | Date | Obj;
 type BackendSingleSearchValue = string | number | boolean | null;
 
 /** @public */
-export class ObjSearch {
+export class ObjSearch<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
   /** @internal */
   readonly _scrivitoPrivateContent: BasicObjSearch;
 
@@ -134,30 +136,30 @@ export class ObjSearch {
     return this._scrivitoPrivateContent.suggest(prefix, options);
   }
 
-  first(): Obj | null {
+  first(): Obj<AttrDefs> | null {
     const basicObj = this._scrivitoPrivateContent.first();
 
     if (!basicObj) return null;
 
-    return wrapInAppClass(basicObj);
+    return wrapInAppClass<AttrDefs>(basicObj);
   }
 
-  take(count?: number): Obj[];
+  take(count?: number): Obj<AttrDefs>[];
 
   /** @internal */
-  take(count?: number, ...excessArgs: never[]): Obj[] {
+  take(count?: number, ...excessArgs: never[]): Obj<AttrDefs>[] {
     checkTakeArguments(count, ...excessArgs);
 
     const basicObjs =
       count === undefined
         ? this._scrivitoPrivateContent.dangerouslyUnboundedTake()
         : this._scrivitoPrivateContent.take(count);
-    return basicObjs.map((obj) => wrapInAppClass(obj));
+    return basicObjs.map((obj) => wrapInAppClass<AttrDefs>(obj));
   }
 
-  toArray(): Obj[] {
+  toArray(): Obj<AttrDefs>[] {
     const basicObjs = this._scrivitoPrivateContent.dangerouslyUnboundedTake();
-    return basicObjs.map((obj) => wrapInAppClass(obj));
+    return basicObjs.map((obj) => wrapInAppClass<AttrDefs>(obj));
   }
 
   offset(offset: number): this {
@@ -232,7 +234,8 @@ function unwrapAppClassValue(value: SearchValue) {
 const OperatorAllowedInNonFullTextSearch = t.refinement(
   t.String,
   (searchOperator) =>
-    searchOperator !== 'contains' && searchOperator !== 'containsPrefix',
+    FULL_TEXT_OPERATORS.indexOf(searchOperator as FullTextSearchOperator) ===
+    -1,
   'Search operators except "contains" and "containsPrefix"'
 );
 

@@ -1,4 +1,4 @@
-export type { NormalizedTypeInfo } from 'scrivito_sdk/models/type_info';
+export type { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 export type {
   AttributeType,
   BasicAttributeDict,

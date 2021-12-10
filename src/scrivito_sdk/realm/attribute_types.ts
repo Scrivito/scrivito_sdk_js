@@ -1,25 +1,6 @@
-import { Binary } from 'scrivito_sdk/models';
-import { Link, Obj, Widget } from 'scrivito_sdk/realm';
+import { AttributeDefinitions } from 'scrivito_sdk/realm/schema';
+import { AttributeValueOf } from 'scrivito_sdk/realm/wrap_in_app_class';
 
-export interface AttrDict {
-  [key: string]: AttributeValue | SystemAttributeValue;
-}
-
-export type AttributeValue =
-  | Link
-  | Link[]
-  | Obj
-  | Obj[]
-  // A single `Widget` is a currently used and internally supported value for a
-  // widgetlist. But nothing we support publicly.
-  | Widget
-  | Widget[]
-  | Binary
-  | boolean
-  | Date
-  | number
-  | string
-  | string[]
-  | null;
-
-type SystemAttributeValue = string | null;
+export type AttrDict<AttrDefs extends AttributeDefinitions> = {
+  [AttrName in keyof AttrDefs]?: AttributeValueOf<AttrDefs, AttrName>;
+};

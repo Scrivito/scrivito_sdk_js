@@ -60,6 +60,7 @@ export type ObjSearchParams = QueryParams & {
 export const FULL_TEXT_OPERATORS: FullTextSearchOperator[] = [
   'contains',
   'containsPrefix',
+  'matches',
 ];
 
 export const OPERATORS: SearchOperator[] = [
@@ -79,7 +80,11 @@ const NEGATABLE_OPERATORS: SearchOperator[] = [
   'isGreaterThan',
   'isLessThan',
 ];
-const BOOSTABLE_OPERATORS: SearchOperator[] = ['contains', 'containsPrefix'];
+const BOOSTABLE_OPERATORS: SearchOperator[] = [
+  'contains',
+  'containsPrefix',
+  'matches',
+];
 
 export type OrderAttributes = Array<
   string | [string] | [string, 'asc' | 'desc' | undefined]
@@ -363,9 +368,10 @@ function buildSubQuery(
 function assertBoostableOperator(operator: string) {
   if (!contains(BOOSTABLE_OPERATORS, operator)) {
     throw new ArgumentError(
-      `Boosting operator "${operator}" is invalid. ${explainValidOperators(
-        BOOSTABLE_OPERATORS
-      )}`
+      `Boosting operator "${operator}" is invalid. ${explainValidOperators([
+        'contains',
+        'containsPrefix',
+      ])}`
     );
   }
 }

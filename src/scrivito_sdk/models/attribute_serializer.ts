@@ -31,7 +31,7 @@ import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
 import { ObjUnavailable } from 'scrivito_sdk/models/obj_unavailable';
-import { NormalizedTypeInfo } from 'scrivito_sdk/models/type_info';
+import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
 type ValidLinkInputValue = BasicLink | PlainLinkObject;
 
@@ -73,7 +73,7 @@ export function serialize(
 function serializeAttributeEntry<Type extends AttributeType>(
   value: unknown,
   name: string,
-  typeInfo: NormalizedTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>
 ): ObjJsonPatch[keyof ObjJsonPatch] {
   if (value === null) return null;
 
@@ -87,7 +87,7 @@ function serializeAttributeEntry<Type extends AttributeType>(
 function serializeEntry<Type extends AttributeType>(
   value: unknown,
   name: string,
-  typeInfo: NormalizedTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>
 ): AttributeJson {
   switch (typeInfo[0]) {
     case 'binary':
@@ -173,7 +173,7 @@ function serializeDateAttributeValue(value: unknown, name: string) {
 function serializeEnumAttributeValue(
   value: unknown,
   name: string,
-  { values }: { values: string[] }
+  { values }: { values: readonly string[] }
 ) {
   if (contains(values, value)) return value as string;
 
@@ -239,7 +239,7 @@ function serializeLinklistAttributeValue(value: unknown, name: string) {
 function serializeMultienumAttributeValue(
   value: unknown,
   name: string,
-  { values }: { values: string[] }
+  { values }: { values: readonly string[] }
 ) {
   if (!isStringArray(value)) {
     throwInvalidAttributeValue(

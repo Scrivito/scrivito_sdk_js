@@ -32,7 +32,7 @@ function printObject(object: {}): string {
 }
 
 interface FnWithSchema {
-  _scrivitoPrivateSchema: { name: string };
+  _scrivitoPrivateSchema: { name: () => string };
 }
 
 interface ReactComponent {
@@ -44,7 +44,7 @@ interface ReactComponent {
 function printFunction(fn: {}): string {
   if (isFnWithSchema(fn)) {
     const schema = fn._scrivitoPrivateSchema;
-    return `[class ${schema.name}]`;
+    return `[class ${schema.name()}]`;
   }
 
   if (isReactComponent(fn)) {

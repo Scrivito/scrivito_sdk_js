@@ -7,7 +7,7 @@ export { Link } from 'scrivito_sdk/realm/link';
 export type { LinkAttributes } from 'scrivito_sdk/realm/link';
 export { setCurrentSiteIdHandler } from 'scrivito_sdk/realm/current_site_id';
 export { enableStrictSearchOperators } from 'scrivito_sdk/realm/strict_search_operators';
-export type { AttributeValue } from 'scrivito_sdk/realm/attribute_types';
+export type { AttrDict } from 'scrivito_sdk/realm/attribute_types';
 export type { AttributeType } from 'scrivito_sdk/models';
 
 export {
@@ -23,13 +23,15 @@ export {
   unwrapAppClass,
   unwrapAppAttributes,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
+export type { AttributeValue } from 'scrivito_sdk/realm/wrap_in_app_class';
 
 export { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';
 export { Schema } from 'scrivito_sdk/realm/schema';
 export type {
-  AttributesDefinition,
-  ConvenienceObjClassDefinition,
-  ConvenienceWidgetClassDefinition,
+  AttributeDefinitions,
+  BasicAttributeDefinitions,
+  ObjClassDefinition,
+  WidgetClassDefinition,
 } from 'scrivito_sdk/realm/schema';
 export {
   allObjClasses,

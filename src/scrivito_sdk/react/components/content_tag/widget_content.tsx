@@ -3,6 +3,7 @@ import * as React from 'react';
 import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
 import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 import { BasicWidget, PlacementModification } from 'scrivito_sdk/models';
+import { propsAreEqual } from 'scrivito_sdk/react';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
 import { connect } from 'scrivito_sdk/react/connect';
@@ -42,8 +43,14 @@ export const WidgetContent: React.ComponentType<WidgetContentProps> = connect(
       this.setState({ hasError: true });
     }
 
-    shouldComponentUpdate(nextProps: WidgetContentProps): boolean {
-      return this.props.widget.equals(nextProps.widget);
+    shouldComponentUpdate(
+      nextProps: WidgetContentProps,
+      nextState: WidgetContentState
+    ) {
+      return (
+        !propsAreEqual(this.props, nextProps) ||
+        nextState.hasError !== this.state.hasError
+      );
     }
 
     render() {

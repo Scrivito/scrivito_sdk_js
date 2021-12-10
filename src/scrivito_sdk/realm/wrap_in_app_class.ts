@@ -13,6 +13,7 @@ import {
 } from 'scrivito_sdk/models';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';
 import {
+  AttributeDefinitions,
   Link,
   Obj,
   ObjClass,
@@ -22,6 +23,7 @@ import {
   WidgetClass,
 } from 'scrivito_sdk/realm';
 import { objClassFor, widgetClassFor } from './registry';
+import { AttributeTypeOf } from './schema';
 
 type BasicValue<T> = T extends Obj
   ? BasicObj
@@ -74,7 +76,12 @@ interface AttributeMapping {
   widgetlist: Widget[];
 }
 
-export type AttributeValue<Type extends AttributeType> = AttributeMapping[Type];
+export type AttributeValueOf<
+  AttrDefs extends AttributeDefinitions,
+  AttrName extends keyof AttrDefs
+> = AttributeMapping[AttributeTypeOf<AttrDefs[AttrName]>];
+
+export type AttributeValue = AttributeMapping[keyof AttributeMapping];
 
 export function wrapInAppClass<
   T extends BasicObj | ObjUnavailable | BasicWidget | BasicLink | string | null
@@ -88,9 +95,24 @@ export function wrapInAppClass<T extends BasicWidget | BasicLink | string>(
   internalValue: T[]
 ): BasicValueToAttributeValue<T>[];
 
-export function wrapInAppClass<T extends AttributeType>(
-  internalValue: BasicAttributeValue<T>
-): AttributeValue<T>;
+export function wrapInAppClass<
+  AttrDefs extends AttributeDefinitions,
+  AttrName extends keyof AttrDefs & string
+>(
+  internalValue: BasicAttributeValue<AttributeTypeOf<AttrDefs[AttrName]>>
+): AttributeValueOf<AttrDefs, AttrName>;
+
+export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
+  internalValue: BasicObj
+): Obj<AttrDefs>;
+
+export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
+  internalValue: BasicObj | null
+): Obj<AttrDefs> | null;
+
+export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
+  internalValue: BasicWidget
+): Widget<AttrDefs>;
 
 export function wrapInAppClass<
   A extends AttributeType,

@@ -1,6 +1,7 @@
 import { BasicField } from 'scrivito_sdk/models';
 import {
-  AttributeTypeWithMandatoryOptions,
+  AttributeTypeWithMandatoryConfig,
+  BasicTypeInfo,
   NormalizedTypeInfo,
 } from 'scrivito_sdk/models/type_info';
 import {
@@ -12,86 +13,152 @@ import {
   WidgetClass,
 } from 'scrivito_sdk/realm';
 
-export interface ConvenienceObjClassDefinition {
-  attributes?: CustomAttributesDefinition;
+export interface ObjClassDefinition {
+  attributes?: AttributeDefinitions;
   extend?: ObjClass;
-  extractTextAttributes?: string[];
+  extractTextAttributes?: readonly string[];
   name?: string;
   onlyAsRoot?: boolean;
-  onlyChildren?: string[] | string;
-  onlyInside?: string[] | string;
+  onlyChildren?: readonly string[] | string;
+  onlyInside?: readonly string[] | string;
   validAsRoot?: boolean;
 }
 
-export interface ConvenienceWidgetClassDefinition {
-  attributes?: CustomAttributesDefinition;
+interface BaseObjClassDefinition {
+  extractTextAttributes?: readonly string[];
+  name?: string;
+  onlyAsRoot?: boolean;
+  onlyChildren?: readonly string[] | string;
+  onlyInside?: readonly string[] | string;
+  validAsRoot?: boolean;
+}
+
+export interface SimpleObjClassDefinition<Attrs extends AttributeDefinitions>
+  extends BaseObjClassDefinition {
+  attributes?: Attrs;
+}
+
+export interface ExtendObjClassDefinition<
+  ExtendAttrs extends AttributeDefinitions
+> extends BaseObjClassDefinition {
+  extend?: ObjClass<ExtendAttrs>;
+}
+
+export interface MixedObjClassDefinition<
+  Attrs extends AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions
+> extends BaseObjClassDefinition {
+  attributes?: Attrs;
+  extend?: ObjClass<ExtendAttrs>;
+}
+
+export interface WidgetClassDefinition {
+  attributes?: AttributeDefinitions;
   extend?: WidgetClass;
-  extractTextAttributes?: string[];
+  extractTextAttributes?: readonly string[];
   name?: string;
   onlyChildren?: undefined;
-  onlyInside?: string[] | string;
+  onlyInside?: readonly string[] | string;
 }
 
-interface CustomAttributesDefinition {
-  [attributeName: string]: CustomAttributeDefinition;
+interface BaseWidgetClassDefinition {
+  extractTextAttributes?: readonly string[];
+  name?: string;
+  onlyChildren?: undefined;
+  onlyInside?: readonly string[] | string;
 }
 
-// All attributes which only their type can be defined (no options).
-type AttributeTypesWithoutOptions = Exclude<
+export interface SimpleWidgetClassDefinition<Attrs extends AttributeDefinitions>
+  extends BaseWidgetClassDefinition {
+  attributes?: Attrs;
+}
+
+export interface ExtendWidgetClassDefinition<
+  ExtendAttrs extends AttributeDefinitions
+> extends BaseWidgetClassDefinition {
+  extend?: WidgetClass<ExtendAttrs>;
+}
+
+export interface MixedWidgetClassDefinition<
+  Attrs extends AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions
+> extends BaseWidgetClassDefinition {
+  attributes?: Attrs;
+  extend?: WidgetClass<ExtendAttrs>;
+}
+
+export interface AttributeDefinitions {
+  [attributeName: string]: AttributeDefinition;
+}
+
+type AttributeDefinition =
+  | AttributeDefinitionWithoutConfig
+  | AttributeDefinitionWithConfig;
+
+type AttributeDefinitionWithoutConfig =
+  | AttributeTypeWithoutConfig
+  | AttributeTypeWithOmittedConfig;
+
+type AttributeDefinitionWithConfig = {
+  [Type in keyof AttributeTypeToConfigMapping]: readonly [
+    Type,
+    AttributeTypeToConfigMapping[Type]
+  ];
+}[keyof AttributeTypeToConfigMapping];
+
+type AttributeTypeWithoutConfig = Exclude<
   AttributeType,
-  keyof AttributeDefinitionOptionsMapping
+  keyof AttributeTypeToConfigMapping
 >;
 
-// All attributes which can be defined with or without options.
-// See AttributeDefinitionOptionsMapping for the available options.
-type AttributeTypesWithOptionalOptions = Exclude<
+type AttributeTypeWithOmittedConfig = Exclude<
   AttributeType,
-  AttributeTypeWithMandatoryOptions | AttributeTypesWithoutOptions
+  AttributeTypeWithMandatoryConfig | AttributeTypeWithoutConfig
 >;
 
-type CustomAttributeDefinition =
-  | AttributeTypesWithoutOptions
-  | AttributeTypesWithOptionalOptions
-  | {
-      [Type in keyof AttributeDefinitionOptionsMapping]: [
-        Type,
-        AttributeDefinitionOptionsMapping[Type]
-      ];
-    }[keyof AttributeDefinitionOptionsMapping];
-
-type AttributeDefinitionOptionsMapping = {
-  enum: { values: string[] };
-  multienum: { values: string[] };
-  reference: { only: string | string[] };
-  referencelist: { only: string | string[] };
-  widgetlist: { only: string | string[] };
+type AttributeTypeToConfigMapping = {
+  enum: { values: readonly string[] };
+  multienum: { values: readonly string[] };
+  reference: { only: string | readonly string[] };
+  referencelist: { only: string | readonly string[] };
+  widgetlist: { only: string | readonly string[] };
 };
 
-export interface AttributesDefinition {
-  [key: string]: NormalizedTypeInfo<AttributeType>;
+export interface NormalizedAttributeDefinitions {
+  [attributeName: string]: NormalizedTypeInfo<AttributeType>;
 }
 
-interface ObjClassDefinition {
-  attributes: AttributesDefinition;
+export interface BasicAttributeDefinitions {
+  [attributeName: string]: BasicTypeInfo<AttributeType>;
+}
+
+interface BasicObjClassDefinition {
+  attributes: BasicAttributeDefinitions;
   extend?: ObjClass;
-  extractTextAttributes?: string[];
+  extractTextAttributes?: readonly string[];
   name?: string;
   onlyAsRoot?: boolean;
-  onlyChildren?: string[];
-  onlyInside?: string[];
+  onlyChildren?: readonly string[];
+  onlyInside?: readonly string[];
   validAsRoot?: boolean;
 }
 
-interface WidgetClassDefinition {
-  attributes: AttributesDefinition;
+interface BasicWidgetClassDefinition {
+  attributes: BasicAttributeDefinitions;
   extend?: WidgetClass;
-  extractTextAttributes?: string[];
+  extractTextAttributes?: readonly string[];
   name?: string;
   onlyAsRoot?: boolean;
   onlyChildren?: undefined;
-  onlyInside?: string[];
+  onlyInside?: readonly string[];
   validAsRoot?: boolean;
 }
+
+export type AttributeTypeOf<K extends AttributeDefinition> = K extends
+  | AttributeTypeWithoutConfig
+  | AttributeTypeWithOmittedConfig
+  ? K
+  : K[0];
 
 export class Schema {
   static forInstance(model: Obj | Widget): Schema | undefined {
@@ -117,91 +184,104 @@ export class Schema {
     return new BasicField<T>(
       model._scrivitoPrivateContent,
       attributeName,
-      typeInfo as NormalizedTypeInfo<T>
+      typeInfo as BasicTypeInfo<T>
     );
   }
 
-  private readonly definition: ObjClassDefinition | WidgetClassDefinition;
+  private readonly basicClassDefinition:
+    | BasicObjClassDefinition
+    | BasicWidgetClassDefinition;
 
-  constructor(definition: ConvenienceObjClassDefinition, parent: ObjClass);
+  constructor(classDefinition: ObjClassDefinition, parent: ObjClass);
+
+  constructor(classDefinition: WidgetClassDefinition, parent: WidgetClass);
 
   constructor(
-    definition: ConvenienceWidgetClassDefinition,
-    parent: WidgetClass
-  );
-
-  constructor(
-    definition:
-      | ConvenienceObjClassDefinition
-      | ConvenienceWidgetClassDefinition,
+    classDefinition: ObjClassDefinition | WidgetClassDefinition,
     parent: ObjClass | WidgetClass
   ) {
-    const privateSchema = parent._scrivitoPrivateSchema;
-    const attributes: AttributesDefinition = privateSchema
-      ? { ...privateSchema.attributes }
+    const parentSchema = parent._scrivitoPrivateSchema;
+    const basicAttributeDefinitions: BasicAttributeDefinitions = parentSchema
+      ? { ...parentSchema.attributes() }
       : {};
 
-    const definitionAttributes = definition.attributes;
+    const {
+      attributes: rawAttributeDefinitions,
+      onlyInside: rawOnlyInside,
+      onlyChildren: rawOnlyChildren,
+      ...restOfRawDefinition
+    } = classDefinition;
 
-    if (definitionAttributes) {
-      Object.keys(definitionAttributes).forEach((name) => {
-        const attrDefinition = definitionAttributes[name];
-
-        attributes[name] = normalizeAttributeDefinition(attrDefinition);
+    if (rawAttributeDefinitions) {
+      Object.keys(rawAttributeDefinitions).forEach((name) => {
+        basicAttributeDefinitions[name] = toBasicAttributeDefinition(
+          rawAttributeDefinitions[name]
+        );
       });
     }
 
-    const {
-      onlyInside: rawOnlyInside,
-      onlyChildren: rawOnlyChildren,
-      ...otherDefinitions
-    } = definition;
-
-    const onlyChildren = normalizeToStringArray(rawOnlyChildren);
-    const onlyInside = normalizeToStringArray(rawOnlyInside);
+    const onlyChildren = toArrayOfStrings(rawOnlyChildren);
+    const onlyInside = toArrayOfStrings(rawOnlyInside);
 
     if (onlyChildren) {
-      this.definition = {
-        ...(otherDefinitions as ConvenienceObjClassDefinition),
-        attributes,
+      this.basicClassDefinition = {
+        ...(restOfRawDefinition as ObjClassDefinition),
+        attributes: basicAttributeDefinitions,
         onlyChildren,
         onlyInside,
       };
     } else {
-      this.definition = { ...otherDefinitions, attributes, onlyInside };
+      this.basicClassDefinition = {
+        ...restOfRawDefinition,
+        attributes: basicAttributeDefinitions,
+        onlyInside,
+      };
     }
   }
 
-  get attributes(): AttributesDefinition {
-    return this.definition.attributes;
+  attributes(): BasicAttributeDefinitions {
+    return this.basicClassDefinition.attributes;
   }
 
-  get extractTextAttributes(): string[] {
-    return this.definition.extractTextAttributes || [];
+  normalizedAttributes(): NormalizedAttributeDefinitions {
+    const attributes = this.attributes();
+    const normalizedAttributes: NormalizedAttributeDefinitions = {};
+
+    Object.keys(attributes).forEach((name) => {
+      normalizedAttributes[name] = toNormalizedAttributeDefinition(
+        attributes[name]
+      );
+    });
+
+    return normalizedAttributes;
   }
 
-  get name(): string | undefined {
-    return this.definition.name;
+  extractTextAttributes(): readonly string[] {
+    return this.basicClassDefinition.extractTextAttributes || [];
   }
 
-  get onlyInside(): string[] | undefined {
-    return this.definition.onlyInside;
+  name(): string | undefined {
+    return this.basicClassDefinition.name;
   }
 
-  get onlyChildren(): string[] | undefined {
-    return this.definition.onlyChildren;
+  onlyInside(): readonly string[] | undefined {
+    return this.basicClassDefinition.onlyInside;
   }
 
-  get validAsRoot(): boolean | undefined {
-    return this.definition.validAsRoot;
+  onlyChildren(): readonly string[] | undefined {
+    return this.basicClassDefinition.onlyChildren;
   }
 
-  get onlyAsRoot(): boolean | undefined {
-    return this.definition.onlyAsRoot;
+  validAsRoot(): boolean | undefined {
+    return this.basicClassDefinition.validAsRoot;
   }
 
-  attribute(name: string): NormalizedTypeInfo<AttributeType> | undefined {
-    return this.attributes[name];
+  onlyAsRoot(): boolean | undefined {
+    return this.basicClassDefinition.onlyAsRoot;
+  }
+
+  attribute(name: string): BasicTypeInfo<AttributeType> | undefined {
+    return this.attributes()[name];
   }
 
   isBinary() {
@@ -216,9 +296,9 @@ export function isAppClass(object: object): object is AppClass {
   return !!(object && (object as AppClass)._scrivitoPrivateSchema);
 }
 
-function normalizeAttributeDefinition(
-  attrDefinition: CustomAttributeDefinition
-): NormalizedTypeInfo<AttributeType> {
+function toBasicAttributeDefinition(
+  attrDefinition: AttributeDefinition
+): BasicTypeInfo<AttributeType> {
   if (typeof attrDefinition === 'string') {
     return [attrDefinition];
   }
@@ -232,7 +312,23 @@ function normalizeAttributeDefinition(
   return [attrDefinition[0], { ...otherOptions, validClasses }];
 }
 
-function normalizeToStringArray(value: string | string[] | undefined) {
+function toNormalizedAttributeDefinition(
+  definition: BasicTypeInfo<AttributeType>
+): NormalizedTypeInfo<AttributeType> {
+  if (definition.length === 1) return [definition[0], {}];
+
+  if (
+    definition[0] === 'widgetlist' ||
+    definition[0] === 'reference' ||
+    definition[0] === 'referencelist'
+  ) {
+    return [definition[0], { only: definition[1].validClasses }];
+  }
+
+  return definition;
+}
+
+function toArrayOfStrings(value: string | readonly string[] | undefined) {
   if (typeof value === 'string') return [value];
 
   if (value?.length) return value;

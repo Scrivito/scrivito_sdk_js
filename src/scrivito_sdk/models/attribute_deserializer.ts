@@ -20,7 +20,7 @@ import {
 import { ContentValueProvider } from 'scrivito_sdk/models/basic_attribute_content';
 import { BasicAttributeValue } from 'scrivito_sdk/models/basic_attribute_types';
 import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_scope_excluding_deleted';
-import { NormalizedTypeInfo } from 'scrivito_sdk/models/type_info';
+import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
 type BackendValue = AttributeJson | null | unknown;
 type BackendType = keyof CustomAttributeJsonMapping;
@@ -28,12 +28,12 @@ type BackendType = keyof CustomAttributeJsonMapping;
 export function deserialize<Type extends AttributeType>(
   model: ContentValueProvider,
   value: BackendValue,
-  typeInfo: NormalizedTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>
 ): BasicAttributeValue<Type>;
 export function deserialize(
   model: ContentValueProvider,
   value: BackendValue,
-  typeInfo: NormalizedTypeInfo<AttributeType>
+  typeInfo: BasicTypeInfo<AttributeType>
 ): BasicAttributeValue<typeof typeInfo[0]> {
   switch (typeInfo[0]) {
     case 'binary':
@@ -113,7 +113,7 @@ function deserializeHtmlOrStringValue(value: BackendValue) {
 
 function deserializeEnumValue(
   value: BackendValue,
-  typeInfo: NormalizedTypeInfo<'enum'>
+  typeInfo: BasicTypeInfo<'enum'>
 ) {
   if (isBackendValueOfType('string', value)) {
     const [, valueFromBackend] = value;
@@ -126,7 +126,7 @@ function deserializeEnumValue(
 
 function deserializeMultienumValue(
   value: BackendValue,
-  typeInfo: NormalizedTypeInfo<'multienum'>
+  typeInfo: BasicTypeInfo<'multienum'>
 ) {
   if (isBackendValueOfType('stringlist', value)) {
     const [, { values }] = typeInfo;

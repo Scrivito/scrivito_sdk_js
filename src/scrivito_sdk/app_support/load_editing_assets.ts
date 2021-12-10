@@ -1,18 +1,15 @@
 import { getAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
+import { isProbablyCloudUi } from 'scrivito_sdk/app_support/is_probably_cloud_ui';
 import { getDocument } from 'scrivito_sdk/common';
 import { loadCss } from 'scrivito_sdk/common';
 
-export function loadEditingAssetsForCloudUi() {
+export function loadEditingAssets() {
   loadEditingCss();
-  importEditors().then(({ initializeEditorsForCloudUi }) =>
-    initializeEditorsForCloudUi()
-  );
-}
-
-export function loadEditingAssetsForPackagedUi() {
-  loadEditingCss();
-  importEditors().then(({ initializeEditorsForPackagedUi }) =>
-    initializeEditorsForPackagedUi()
+  importEditors().then(
+    ({ initializeEditorsForCloudUi, initializeEditorsForPackagedUi }) => {
+      if (isProbablyCloudUi()) initializeEditorsForCloudUi();
+      else initializeEditorsForPackagedUi();
+    }
   );
 }
 

@@ -10,7 +10,7 @@ export function extractTextFromBasicObjOrWidget(
   const schema = schemaFromBasicObjOrWidget(objOrWidget);
   if (!schema) return;
 
-  for (const attribute of schema.extractTextAttributes) {
+  for (const attribute of schema.extractTextAttributes()) {
     extractAttribute(objOrWidget, schema, attribute, collector);
     if (collector.isMaxLengthReached()) break;
   }

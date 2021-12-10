@@ -5,10 +5,7 @@ import { cdnAssetUrlBase } from 'scrivito_sdk/app_support/cdn_asset_url_base';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
-import {
-  loadEditingAssetsForCloudUi,
-  loadEditingAssetsForPackagedUi,
-} from 'scrivito_sdk/app_support/load_editing_assets';
+import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
 
 import { initRouting } from 'scrivito_sdk/app_support/routing';
 import { SiteMappingConfiguration } from 'scrivito_sdk/app_support/site_mapping';
@@ -147,8 +144,7 @@ export function configure(
 
     if (uiAdapter) {
       configureForUi(endpoint, tenant, uiAdapter, inofficialConfiguration);
-      if (configuration.adoptUi) loadEditingAssetsForCloudUi();
-      else loadEditingAssetsForPackagedUi();
+      loadEditingAssets();
     } else {
       if (configuration.optimizedWidgetLoading) configureForLazyWidgets(true);
 

@@ -16,7 +16,7 @@ import { getObjFrom } from 'scrivito_sdk/models/basic_scope_get_methods';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { ObjScope } from 'scrivito_sdk/models/obj_scope';
 import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_scope_excluding_deleted';
-import { NormalizedTypeInfo } from 'scrivito_sdk/models/type_info';
+import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
 export class BasicField<Type extends AttributeType> {
   private readonly widgetId?: string;
@@ -24,7 +24,7 @@ export class BasicField<Type extends AttributeType> {
   constructor(
     private readonly container: BasicObj | BasicWidget,
     private readonly attributeName: string,
-    private readonly typeInfo: NormalizedTypeInfo<Type>
+    private readonly typeInfo: BasicTypeInfo<Type>
   ) {
     if (container instanceof BasicWidget) this.widgetId = container.id();
   }
@@ -68,9 +68,12 @@ export class BasicField<Type extends AttributeType> {
     );
   }
 
-  validClasses(): string[] | undefined {
+  validClasses(): readonly string[] | undefined {
     const options:
-      | { validClasses?: string[]; values?: string[] }
+      | {
+          validClasses?: readonly string[];
+          values?: readonly string[];
+        }
       | undefined = this.typeInfo[1];
     return options?.validClasses;
   }

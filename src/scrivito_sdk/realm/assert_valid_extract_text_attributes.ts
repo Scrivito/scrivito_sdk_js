@@ -1,13 +1,13 @@
 import { contains } from 'underscore';
 
 import { ArgumentError } from 'scrivito_sdk/common';
-import { AttributeType, NormalizedTypeInfo } from 'scrivito_sdk/models';
+import { AttributeType, BasicTypeInfo } from 'scrivito_sdk/models';
 import { Schema } from './schema';
 
 const ATTRIBUTE_TYPES_WHITELIST = ['string', 'html', 'widgetlist'];
 
 export function assertValidObjExtractTextAttributes(schema: Schema): void {
-  schema.extractTextAttributes.forEach((attribute) => {
+  schema.extractTextAttributes().forEach((attribute) => {
     if (attribute.substring(0, 5) === 'blob:') {
       return assertValidBinaryAttribute(schema, attribute);
     }
@@ -16,7 +16,7 @@ export function assertValidObjExtractTextAttributes(schema: Schema): void {
 }
 
 export function assertValidWidgetExtractTextAttributes(schema: Schema): void {
-  schema.extractTextAttributes.forEach((attribute) => {
+  schema.extractTextAttributes().forEach((attribute) => {
     if (attribute.substring(0, 5) === 'blob:') {
       throw new ArgumentError(
         `Invalid value for "extractTextAttributes": ${attribute} is not supported.`
@@ -45,7 +45,7 @@ function assertValidBinaryAttribute(
 
 function assertValidExtractTextAttribute(
   attribute: string,
-  definition: NormalizedTypeInfo<AttributeType> | undefined
+  definition: BasicTypeInfo<AttributeType> | undefined
 ): void {
   if (!definition) {
     throw new ArgumentError(

@@ -25,13 +25,13 @@ export interface AttributesEditingConfig {
 export interface AttributeEditingConfig {
   title?: string;
   description?: string;
-  values?: LocalizedValue[];
+  values?: readonly LocalizedValue[];
   options?: AttributeEditingOptions;
 }
 
 export interface AttributeEditingOptions {
   showHtmlSource?: boolean;
-  toolbar?: ToolbarButton[];
+  toolbar?: readonly ToolbarButton[];
 }
 
 type ToolbarButton =
@@ -58,22 +58,62 @@ type ToolbarButton =
   | 'superscript'
   | 'underline';
 
-export interface ComponentGroupDescription {
+type ReactComponent = (
+  props:
+    | {
+        obj: Obj;
+      }
+    | {
+        page: Obj;
+      }
+    | {
+        widget: Widget;
+      }
+) => unknown;
+
+export type GroupPropertyWithConfig = readonly [string, { enabled: boolean }];
+export type GroupProperty = GroupPropertyWithConfig | string;
+
+export interface RegisteredComponentGroupDescription {
   title: string;
   component: string;
-  properties?: string[];
+  properties?: readonly string[];
+  enabled?: boolean;
+  // the "key" is optional because of backward compatibility reasons
   key?: string;
 }
+
+export interface FunctionComponentGroupDescription {
+  title: string;
+  component: ReactComponent;
+  key: string;
+  enabled?: boolean;
+}
+
+interface FunctionComponentGroupDescriptionForUi {
+  title: string;
+  component: null;
+  key: string;
+  enabled?: boolean;
+}
+
+export type ComponentGroupDescription =
+  | FunctionComponentGroupDescriptionForUi
+  | RegisteredComponentGroupDescription;
 
 export interface PropertiesGroupDescription {
   title: string;
-  properties: string[];
+  properties: readonly GroupProperty[];
   key?: string;
+  enabled?: boolean;
 }
 
-export interface DynamicComponentGroupDescription
-  extends ComponentGroupDescription {
+export interface DynamicComponentGroupDescription {
+  title: string;
+  component: string | ReactComponent | null;
   key: string;
+  properties?: readonly GroupProperty[];
+  enabled?: boolean;
 }
 
 export interface DynamicPropertiesGroupDescription
@@ -81,13 +121,22 @@ export interface DynamicPropertiesGroupDescription
   key: string;
 }
 
+export type DynamicPropertyGroup =
+  | DynamicPropertiesGroupDescription
+  | DynamicComponentGroupDescription;
+
 export type PropertyGroup =
   | ComponentGroupDescription
-  | PropertiesGroupDescription;
+  | PropertiesGroupDescription
+  | DynamicPropertyGroup;
 
-type PropertiesGroupsCallback<T extends Obj | Widget> = (content: T) => unknown;
+type PropertiesGroupsCallback<T extends Obj | Widget> = (
+  content: T
+) => readonly PropertyGroup[];
 
-type PropertiesCallback<T extends Obj | Widget> = (content: T) => unknown;
+type PropertiesCallback<T extends Obj | Widget> = (
+  content: T
+) => readonly GroupProperty[];
 
 type ForContentCallback<T extends Obj | Widget> = (content: T) => string;
 
@@ -96,8 +145,8 @@ interface SharedEditingConfig<T extends Obj | Widget> {
   description?: string;
   hideInSelectionDialogs?: boolean;
   initialContent?: InitialContent;
-  properties?: string[] | PropertiesCallback<T>;
-  propertiesGroups?: PropertyGroup[] | PropertiesGroupsCallback<T>;
+  properties?: readonly string[] | PropertiesCallback<T>;
+  propertiesGroups?: readonly PropertyGroup[] | PropertiesGroupsCallback<T>;
   thumbnail?: string;
   title?: string;
   initialize?: InitializeCallback<T>;
@@ -105,19 +154,20 @@ interface SharedEditingConfig<T extends Obj | Widget> {
   validations?: ValidationsConfig<T>;
 }
 
-/** @public */
-export interface ObjEditingConfig extends SharedEditingConfig<Obj> {
+interface ObjOnlyEditingConfig {
   descriptionForContent?: ForContentCallback<Obj>;
   initializeCopy?: InitializeCallback<Obj>;
   thumbnailForContent?: (content: Obj) => Obj | Binary | undefined | null;
 }
 
 /** @public */
-export interface WidgetEditingConfig extends SharedEditingConfig<Widget> {}
+export type ObjEditingConfig = SharedEditingConfig<Obj> & ObjOnlyEditingConfig;
+
+/** @public */
+export type WidgetEditingConfig = SharedEditingConfig<Widget>;
 
 export type EditingConfig = SharedEditingConfig<Obj | Widget> &
-  ObjEditingConfig &
-  WidgetEditingConfig;
+  ObjOnlyEditingConfig;
 
 interface EditingConfigMap {
   [className: string]: EditingConfig;
@@ -192,24 +242,6 @@ export function getAttributeEditingOptionsFor(
   nextTick(() => throwInvalidOptions(options));
 }
 
-const PropertiesGroupDescriptionType = t.interface({
-  title: t.String,
-  properties: t.list(t.String),
-  key: t.maybe(t.String),
-});
-
-const ComponentGroupDescriptionType = t.interface({
-  title: t.String,
-  component: t.String,
-  properties: t.maybe(t.list(t.String)),
-  key: t.maybe(t.String),
-});
-
-export const PropertiesGroupType = t.union([
-  PropertiesGroupDescriptionType,
-  ComponentGroupDescriptionType,
-]);
-
 const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
   if (process.env.NODE_ENV !== 'development') {
     return {
@@ -246,6 +278,36 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     'subscript',
     'superscript',
     'underline',
+  ]);
+
+  const PropertiesGroupDescriptionType = t.interface({
+    title: t.String,
+    properties: t.list(t.String),
+    key: t.maybe(t.String),
+  });
+
+  const RegisteredComponentGroupDescriptionType = t.interface({
+    title: t.String,
+    component: t.String,
+    properties: t.maybe(t.list(t.String)),
+    key: t.maybe(t.String),
+  });
+
+  const FunctionComponentGroupDescriptionType = t.interface({
+    title: t.String,
+    component: t.Function,
+    properties: t.maybe(t.list(t.String)),
+    key: t.String,
+  });
+
+  const ComponentGroupDescriptionType = t.union([
+    RegisteredComponentGroupDescriptionType,
+    FunctionComponentGroupDescriptionType,
+  ]);
+
+  const PropertiesGroupType = t.union([
+    PropertiesGroupDescriptionType,
+    ComponentGroupDescriptionType,
   ]);
 
   const HtmlToolbarButtonsType = t.refinement(

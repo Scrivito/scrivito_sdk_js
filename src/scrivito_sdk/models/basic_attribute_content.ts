@@ -26,10 +26,10 @@ import {
   BasicWidgetAttributes,
   SerializedWidgetAttributes,
 } from 'scrivito_sdk/models/basic_widget';
-import { NormalizedTypeInfo, TypeInfo } from 'scrivito_sdk/models/type_info';
+import { BasicTypeInfo, TypeInfo } from 'scrivito_sdk/models/type_info';
 
 type CustomAttributeValueWithTypeInfo = {
-  [Type in AttributeType]: [unknown, NormalizedTypeInfo<Type>];
+  [Type in AttributeType]: [unknown, BasicTypeInfo<Type>];
 }[AttributeType];
 
 export interface NormalizedBasicAttributeDict {
@@ -55,7 +55,7 @@ export interface NormalizedBasicAttributesWithUnknownValues {
 
 export type NormalizedUnknownAttributeValue =
   | [unknown]
-  | [unknown, NormalizedTypeInfo<AttributeType>];
+  | [unknown, BasicTypeInfo<AttributeType>];
 
 export function getContentValue<Type extends AttributeType>(
   content: ContentValueProvider,
@@ -77,7 +77,7 @@ export function getContentValue<Type extends AttributeType>(
 function getContentValueUsingInternalName<Type extends AttributeType>(
   content: ContentValueProvider,
   internalAttributeName: string,
-  typeInfo: NormalizedTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>
 ): BasicAttributeValue<Type> {
   const rawValue = content.getAttributeData(internalAttributeName, typeInfo[0]);
   return AttributeDeserializer.deserialize(content, rawValue, typeInfo);
@@ -119,10 +119,7 @@ export function persistWidgets(
 
 export function isWidgetlistAttributeValueAndType(
   valueAndType: NormalizedUnknownAttributeValue
-): valueAndType is [
-  BasicWidget | BasicWidget[],
-  NormalizedTypeInfo<'widgetlist'>
-] {
+): valueAndType is [BasicWidget | BasicWidget[], BasicTypeInfo<'widgetlist'>] {
   if (valueAndType.length < 2) return false;
 
   const [value, typeInfo] = valueAndType;

@@ -1,27 +1,41 @@
 import { AttributeType } from 'scrivito_sdk/models/basic_attribute_types';
 
-export type AttributeTypeWithMandatoryOptions = 'enum' | 'multienum';
+export type AttributeTypeWithMandatoryConfig = 'enum' | 'multienum';
 
-interface NormalizedTypeOptionsMapping {
-  enum: { values: string[] };
-  multienum: { values: string[] };
-  reference: { validClasses: string[] };
-  referencelist: { validClasses: string[] };
-  widgetlist: { validClasses: string[] };
+interface TypeConfigMapping {
+  enum: { values: readonly string[] };
+  multienum: { values: readonly string[] };
+  reference: { validClasses: readonly string[] };
+  referencelist: { validClasses: readonly string[] };
+  widgetlist: { validClasses: readonly string[] };
 }
+
+interface NormalizedTypeConfigMapping {
+  enum: { values: readonly string[] };
+  multienum: { values: readonly string[] };
+  reference: { only?: readonly string[] };
+  referencelist: { only?: readonly string[] };
+  widgetlist: { only?: readonly string[] };
+}
+
+export type BasicTypeInfo<
+  Type extends AttributeType
+> = Type extends keyof TypeConfigMapping
+  ? BasicTypeInfoWithConfig<Type>
+  : [Type];
 
 export type NormalizedTypeInfo<
   Type extends AttributeType
-> = Type extends keyof NormalizedTypeOptionsMapping
-  ? TypeInfoWithOptions<Type>
-  : [Type];
+> = Type extends keyof NormalizedTypeConfigMapping
+  ? [Type, NormalizedTypeConfigMapping[Type]]
+  : [Type, {}];
 
-type TypeInfoWithOptions<
-  Type extends keyof NormalizedTypeOptionsMapping
-> = Type extends AttributeTypeWithMandatoryOptions
-  ? [Type, NormalizedTypeOptionsMapping[Type]]
-  : [Type, NormalizedTypeOptionsMapping[Type]] | [Type];
+type BasicTypeInfoWithConfig<
+  Type extends keyof TypeConfigMapping
+> = Type extends AttributeTypeWithMandatoryConfig
+  ? [Type, TypeConfigMapping[Type]]
+  : [Type, TypeConfigMapping[Type]] | [Type];
 
 export type TypeInfo<Type extends AttributeType> =
-  | NormalizedTypeInfo<Type>
-  | Exclude<Type, AttributeTypeWithMandatoryOptions>;
+  | BasicTypeInfo<Type>
+  | Exclude<Type, AttributeTypeWithMandatoryConfig>;

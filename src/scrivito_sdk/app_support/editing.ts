@@ -35,7 +35,7 @@ export interface EditController<Type extends AttributeType> {
   getContent(): BasicAttributeValue<Type>;
   setContent(val: BasicAttributeValueForUpdate<Type>): void;
   setDomMode(domMode: DomMode): void;
-  validObjClasses(): string[] | undefined;
+  validObjClasses(): readonly string[] | undefined;
   options(): Readonly<AttributeEditingOptions> | undefined;
 }
 

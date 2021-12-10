@@ -15,7 +15,7 @@ import {
   restrictToObjClass,
 } from 'scrivito_sdk/models';
 
-import { Obj, ObjClass } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj, ObjClass } from 'scrivito_sdk/realm';
 import { initialAttributesFor } from 'scrivito_sdk/realm/initial_attributes_for';
 import { ObjAttributes } from 'scrivito_sdk/realm/obj';
 import { ObjSearch, SearchValue } from 'scrivito_sdk/realm/obj_search';
@@ -26,58 +26,64 @@ import {
 } from 'scrivito_sdk/realm/wrap_in_app_class';
 import { objClassNameFor } from './registry';
 
-export interface SiteContext {
-  create(params?: ObjAttributes): Obj;
-  createFromFile(file: File, attributes?: ObjAttributes): Promise<Obj>;
-  get(objId: string): Obj | null;
-  getIncludingDeleted(objId: string): Obj | null;
-  getByPath(path: string): Obj | null;
-  getByPermalink(permalink: string): Obj | null;
+export interface SiteContext<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
+  create(params?: ObjAttributes<AttrDefs>): Obj<AttrDefs>;
+  createFromFile(
+    file: File,
+    attributes?: ObjAttributes<AttrDefs>
+  ): Promise<Obj<AttrDefs>>;
+  get(objId: string): Obj<AttrDefs> | null;
+  getIncludingDeleted(objId: string): Obj<AttrDefs> | null;
+  getByPath(path: string): Obj<AttrDefs> | null;
+  getByPermalink(permalink: string): Obj<AttrDefs> | null;
   root(): Obj | null;
-  all(): ObjSearch;
+  all(): ObjSearch<AttrDefs>;
   where(
     fields: SearchField,
     operator: SearchOperator,
     value: SearchValue,
     boost?: FieldBoost
-  ): ObjSearch;
+  ): ObjSearch<AttrDefs>;
   whereFullTextOf(
     fields: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
     boost?: FieldBoost
-  ): ObjSearch;
+  ): ObjSearch<AttrDefs>;
 }
 
-export class BasicSiteContext implements SiteContext {
+export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
+  implements SiteContext<AttrDefs> {
   constructor(
     private readonly objClass: ObjClass,
     private readonly scopeIncludingDeletedObjs: ObjScope
   ) {}
 
-  get(id: string): Obj | null {
+  get(id: string): Obj<AttrDefs> | null {
     return this.getObj(id, this.scope());
   }
 
-  getIncludingDeleted(id: string): Obj | null {
+  getIncludingDeleted(id: string): Obj<AttrDefs> | null {
     return this.getObj(id, this.scopeIncludingDeletedObjs);
   }
 
-  getByPath(path: string): Obj | null {
+  getByPath(path: string): Obj<AttrDefs> | null {
     const obj = getObjBy(this.scope().and(excludeGlobal), '_path', path);
-    return wrapInAppClass(obj);
+    return wrapInAppClass<AttrDefs>(obj);
   }
 
-  getByPermalink(permalink: string): Obj | null {
+  getByPermalink(permalink: string): Obj<AttrDefs> | null {
     const obj = getObjBy(this.scope(), '_permalink', permalink);
-    return wrapInAppClass(obj);
+    return wrapInAppClass<AttrDefs>(obj);
   }
 
   root(): Obj | null {
     return wrapInAppClass(getRootObjFrom(this.scope()));
   }
 
-  all(): ObjSearch {
+  all(): ObjSearch<AttrDefs> {
     return this.getSearch(1000);
   }
 
@@ -86,7 +92,7 @@ export class BasicSiteContext implements SiteContext {
     operator: SearchOperator,
     value: SearchValue,
     boost?: FieldBoost
-  ): ObjSearch {
+  ): ObjSearch<AttrDefs> {
     return this.getSearch().and(attribute, operator, value, boost);
   }
 
@@ -95,11 +101,11 @@ export class BasicSiteContext implements SiteContext {
     operator: FullTextSearchOperator,
     value: SearchValue,
     boost?: FieldBoost
-  ): ObjSearch {
+  ): ObjSearch<AttrDefs> {
     return this.getSearch().andFullTextOf(attribute, operator, value, boost);
   }
 
-  create(attributes: ObjAttributes = {}): Obj {
+  create(attributes: ObjAttributes<AttrDefs> = {}): Obj<AttrDefs> {
     const objClassName = this.objClassNameForCreate();
 
     assertValidCreateAttributes(attributes);
@@ -115,10 +121,13 @@ export class BasicSiteContext implements SiteContext {
       attributesForCreate
     );
 
-    return wrapInAppClass(basicObj);
+    return wrapInAppClass<AttrDefs>(basicObj);
   }
 
-  createFromFile(file: File, attributes: ObjAttributes = {}): Promise<Obj> {
+  createFromFile(
+    file: File,
+    attributes: ObjAttributes<AttrDefs> = {}
+  ): Promise<Obj<AttrDefs>> {
     const objClassName = this.objClassNameForCreate();
 
     assertValidFile(file);
@@ -149,10 +158,10 @@ export class BasicSiteContext implements SiteContext {
       this.scope().and(restrictToObjClass(objClassName)),
       file,
       attributesForCreate
-    ).then((basicObj) => wrapInAppClass(basicObj));
+    ).then((basicObj) => wrapInAppClass<AttrDefs>(basicObj));
   }
 
-  toSiteContext(): SiteContext {
+  toSiteContext(): SiteContext<AttrDefs> {
     return {
       get: this.get.bind(this),
       getIncludingDeleted: this.getIncludingDeleted.bind(this),
@@ -168,7 +177,7 @@ export class BasicSiteContext implements SiteContext {
   }
 
   private getObj(id: string, scope: ObjScope) {
-    return wrapInAppClass(
+    return wrapInAppClass<AttrDefs>(
       getObjFrom(this.getScopeRestrictedToSameClass(scope), id)
     );
   }
@@ -178,7 +187,7 @@ export class BasicSiteContext implements SiteContext {
 
     if (batchSize !== undefined) search.batchSize(batchSize);
 
-    return new ObjSearch(search);
+    return new ObjSearch<AttrDefs>(search);
   }
 
   private getScopeRestrictedToSameClass(scope: ObjScope) {

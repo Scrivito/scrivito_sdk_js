@@ -1,7 +1,8 @@
 import { isNumber } from 'underscore';
 
 import { RequestFailedError } from 'scrivito_sdk/client/cms_rest_api';
-import { ScrivitoPromise, getScrivitoVersion } from 'scrivito_sdk/common';
+import { getClientVersion } from 'scrivito_sdk/client/get_client_version';
+import { ScrivitoPromise } from 'scrivito_sdk/common';
 
 export interface FetchOptions {
   params?: unknown;
@@ -58,10 +59,9 @@ export function fetch(
       if (authorization) {
         request.setRequestHeader('Authorization', authorization);
       }
-      request.setRequestHeader(
-        'Scrivito-Client',
-        `jssdk/${getScrivitoVersion()}`
-      );
+
+      request.setRequestHeader('Scrivito-Client', getClientVersion());
+
       if (forceVerification) {
         request.setRequestHeader('Scrivito-Force-Verification', 'true');
       }

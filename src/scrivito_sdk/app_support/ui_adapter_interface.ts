@@ -133,5 +133,5 @@ export interface TenantConfiguration {
 export interface UiAdapterOpenContentBrowserOptions {
   selectionMode?: 'single' | 'multi';
   selection?: string[];
-  validObjClasses?: string[];
+  validObjClasses?: readonly string[];
 }
