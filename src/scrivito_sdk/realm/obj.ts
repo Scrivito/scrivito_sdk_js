@@ -13,6 +13,7 @@ import {
   SearchField,
   SearchOperator,
   allSitesAndGlobal,
+  copyObjViaHandler,
   currentObjSpaceId,
   emptyScope,
   objSpaceScope,
@@ -398,9 +399,9 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   }
 
   copy(): Promise<Obj<AttrDefs>> {
-    return this._scrivitoPrivateContent
-      .copyAsync({ _path: null })
-      .then((obj) => wrapInAppClass<AttrDefs>(obj));
+    return copyObjViaHandler(this._scrivitoPrivateContent).then((newObj) =>
+      wrapInAppClass<AttrDefs>(newObj)
+    );
   }
 
   destroy(): void {

@@ -30,7 +30,7 @@ import {
   setUrlResolutionHandler,
   setupWriteMonitorNotification,
 } from 'scrivito_sdk/link_resolution';
-import { setBinaryHandler } from 'scrivito_sdk/models';
+import { setBinaryHandler, setCopyObjHandler } from 'scrivito_sdk/models';
 import { setCurrentSiteIdHandler } from 'scrivito_sdk/realm';
 import { setInitialContentFor } from 'scrivito_sdk/realm/initial_content_registry';
 
@@ -60,6 +60,7 @@ export function initializeSdk() {
     setUiAdapter(uiAdapterClient);
     replaceCmsRetrieval(uiAdapterClient);
     setBinaryHandler(uiAdapterClient);
+    setCopyObjHandler(uiAdapterClient);
     setUrlResolutionHandler(
       (url) => uiAdapterClient.getResolvedUrl(url) || null
     );

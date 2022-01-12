@@ -102,4 +102,3 @@ export type {
 } from 'scrivito_sdk/client/workspace_json';
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
 export * from 'scrivito_sdk/client/session_data';
-export { copyObj } from 'scrivito_sdk/client/copy_obj';

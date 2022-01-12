@@ -10,6 +10,7 @@ import { ContentBrowserResult } from 'scrivito_sdk/editing_support';
 import { ResolvedUrl } from 'scrivito_sdk/link_resolution';
 import {
   BinaryHandler,
+  CopyObjHandler,
   EditorData,
   ObjSearchParams,
   TeamData,
@@ -49,6 +50,7 @@ export const uiAdapterDescription = {
   objReplicationMessageStream: STREAM,
   finishSavingObj: SEND,
 
+  copyObj: SEND,
   finishReplicatingObj: SEND,
   insertWidget: SEND,
   navigateToExternalUrl: SEND,
@@ -75,6 +77,7 @@ export type UiAdapterConnection = AdapterConnection<
 
 export interface UiAdapterInterface
   extends CmsRetrieval,
+    CopyObjHandler,
     BinaryHandler,
     ContentUpdateHandler,
     ObjStreamReplicationEndpoint {

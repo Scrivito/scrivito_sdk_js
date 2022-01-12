@@ -69,6 +69,11 @@ export {
   setBinaryHandler,
 } from 'scrivito_sdk/models/future_binary';
 export type { BinaryHandler } from 'scrivito_sdk/models/future_binary';
+export {
+  copyObjViaHandler,
+  setCopyObjHandler,
+} from 'scrivito_sdk/models/copy_obj_handler';
+export type { CopyObjHandler } from 'scrivito_sdk/models/copy_obj_handler';
 export { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 export type { BinaryMetadataValue } from 'scrivito_sdk/models/metadata_collection';
 export {

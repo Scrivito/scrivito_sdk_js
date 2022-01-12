@@ -7,7 +7,6 @@ import {
   ObjSpaceId,
   WidgetJson,
   WidgetPoolJson,
-  copyObj,
   isWidgetlistAttributeJson,
 } from 'scrivito_sdk/client';
 import {
@@ -442,43 +441,6 @@ export class BasicObj implements ContentValueProvider {
     }
   }
 
-  async copyAsync({
-    _id,
-    _path,
-    ...attributes
-  }: BasicObjAttributes = {}): Promise<BasicObj> {
-    const newObjSpaceId = currentObjSpaceId();
-    const newObjId = _id
-      ? normalizeStringSystemValue(_id)
-      : BasicObj.generateId();
-
-    const newObj = createObjIn(objSpaceScope(newObjSpaceId), {
-      _id: newObjId,
-      _objClass: this.objClass(),
-    });
-
-    await newObj.finishSaving();
-
-    await copyObj({
-      fromObjSpaceId: this.objSpaceId(),
-      fromObjId: this.id(),
-      toObjSpaceId: newObjSpaceId,
-      toObjId: newObjId,
-    });
-
-    newObj.update({
-      ...attributes,
-      _path:
-        _path === undefined && this.path()
-          ? `${this.parentPath()}/${newObjId}`
-          : _path || null,
-    });
-
-    await newObj.objData.finishSaving();
-
-    return newObj;
-  }
-
   markResolvedAsync(): Promise<void> {
     this.update({ _conflicts: [null] });
 
@@ -730,8 +692,4 @@ function getObjByPath(objSpaceId: ObjSpaceId, siteId: string, path: string) {
 
 function hierarchyObjSpace(objSpaceId: ObjSpaceId, siteId: string) {
   return objSpaceScopeExcludingDeleted(objSpaceId).and(restrictToSite(siteId));
-}
-
-function normalizeStringSystemValue(value: string | [string]): string {
-  return typeof value === 'string' ? value : value[0];
 }
