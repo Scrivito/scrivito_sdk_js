@@ -1,25 +1,44 @@
 import * as React from 'react';
 
-import { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
+import { shouldContentTagsForEmptyAttributesBeSkipped } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
+import {
+  isComparisonActive,
+  isInPlaceEditingActive,
+} from 'scrivito_sdk/app_support/editing_context';
 import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_range';
-import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  isEmptyValue,
+  throwNextTick,
+} from 'scrivito_sdk/common';
 import { importFrom } from 'scrivito_sdk/import_from';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { connect } from 'scrivito_sdk/react/connect';
-import { Obj, Schema, Widget } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
-export interface ContentTagProps {
+export interface ContentTagProps<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
   tag?: string;
-  content: Obj | Widget | null;
-  attribute: string;
+  content: Obj<AttrDefs> | Widget<AttrDefs> | null;
+  attribute: keyof AttrDefs & string;
   widgetProps?: WidgetProps;
 
   [key: string]: unknown;
 }
 
+type ContentTagType = {
+  <AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
+    props: ContentTagProps<AttrDefs>
+  ): React.ReactElement | null;
+
+  /** @internal */
+  displayName?: string;
+};
+
 /** @public */
-export const ContentTag: React.ComponentType<ContentTagProps> = connect(render);
+export const ContentTag = connect(render) as ContentTagType;
 ContentTag.displayName = 'Scrivito.ContentTag';
 
 export const ContentTagWithCallback: React.ComponentType<
@@ -49,8 +68,32 @@ function render(
 
   if (isComparisonActive()) {
     const [from, to] = getComparisonRange();
-    field = field.inObjSpace(to) || field.inObjSpace(from);
+
+    const toField = field.inObjSpace(to);
+    const fromField = field.inObjSpace(from);
+
+    field = toField || fromField;
     if (!field) return null;
+
+    const toValue = toField?.get();
+    const fromValue = fromField?.get();
+
+    if (
+      isEmptyValue(toValue) &&
+      isEmptyValue(fromValue) &&
+      shouldContentTagsForEmptyAttributesBeSkipped()
+    ) {
+      return null;
+    }
+  }
+
+  if (
+    !isInPlaceEditingActive() &&
+    !isComparisonActive() &&
+    isEmptyValue(field.get()) &&
+    shouldContentTagsForEmptyAttributesBeSkipped()
+  ) {
+    return null;
   }
 
   if (widgetProps && field.type() !== 'widgetlist') {

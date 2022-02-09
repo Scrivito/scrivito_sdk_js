@@ -14,9 +14,25 @@ import {
 } from 'scrivito_sdk/react/components/content_tag';
 import { connect } from 'scrivito_sdk/react/connect';
 import { imagePlaceholder } from 'scrivito_sdk/react/image_placeholder';
-import { Obj, Schema } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj, Schema } from 'scrivito_sdk/realm';
 
 type Width = React.ImgHTMLAttributes<HTMLImageElement>['width'];
+
+interface ImageTagProps<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
+  attribute?: keyof AttrDefs & string;
+  content?: Binary | Obj<AttrDefs> | null;
+  width?: Width;
+  onLoad?: React.ImgHTMLAttributes<HTMLImageElement>['onLoad'];
+  [key: string]: unknown;
+}
+
+type ImageTagType = {
+  <AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
+    props: ImageTagProps<AttrDefs>
+  ): React.ReactElement | null;
+};
 
 /** @public */
 export const ImageTag = connect(function ImageTag({
@@ -25,13 +41,7 @@ export const ImageTag = connect(function ImageTag({
   width,
   onLoad,
   ...htmlOptions
-}: {
-  attribute?: string;
-  content?: Binary | Obj | null;
-  width?: Width;
-  onLoad?: React.ImgHTMLAttributes<HTMLImageElement>['onLoad'];
-  [key: string]: unknown;
-}) {
+}: ImageTagProps) {
   const [isLazy, setIsLazy] = React.useState(htmlOptions.loading === 'lazy');
 
   const load = React.useCallback(
@@ -106,7 +116,7 @@ export const ImageTag = connect(function ImageTag({
       elementCallback={setEagerIfComplete}
     />
   );
-});
+}) as ImageTagType;
 
 function scaledSrc(decoder: ImageDecoder | undefined, binary: Binary): string {
   const { initialUrl, highResUrlToDecode } = scaleDownBinary(binary);

@@ -11,7 +11,17 @@ import {
   LinkType,
   WidgetType,
 } from 'scrivito_sdk/models';
-import { AttributeValue, Obj, Widget } from 'scrivito_sdk/realm';
+import {
+  AttributeDefinitions,
+  AttributeValue,
+  Obj,
+  ObjClass,
+  ObjClassType,
+  Widget,
+  WidgetClass,
+  WidgetClassType,
+  getClassName,
+} from 'scrivito_sdk/realm';
 
 export interface LocalizedValue {
   value: string;
@@ -58,19 +68,6 @@ type ToolbarButton =
   | 'superscript'
   | 'underline';
 
-type ReactComponent = (
-  props:
-    | {
-        obj: Obj;
-      }
-    | {
-        page: Obj;
-      }
-    | {
-        widget: Widget;
-      }
-) => unknown;
-
 export type GroupPropertyWithConfig = readonly [string, { enabled: boolean }];
 export type GroupProperty = GroupPropertyWithConfig | string;
 
@@ -83,14 +80,24 @@ export interface RegisteredComponentGroupDescription {
   key?: string;
 }
 
-export interface FunctionComponentGroupDescription {
+// This covers loadable components as well, see
+// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/loadable__component/index.d.ts
+type PropertiesGroupComponent = React.ComponentType<
+  | {
+      obj: Obj;
+    }
+  | { page: Obj }
+  | { widget: Widget }
+>;
+
+export interface LivingComponentGroupDescription {
   title: string;
-  component: ReactComponent;
+  component: PropertiesGroupComponent;
   key: string;
   enabled?: boolean;
 }
 
-interface FunctionComponentGroupDescriptionForUi {
+interface LivingComponentGroupDescriptionForUi {
   title: string;
   component: null;
   key: string;
@@ -98,7 +105,7 @@ interface FunctionComponentGroupDescriptionForUi {
 }
 
 export type ComponentGroupDescription =
-  | FunctionComponentGroupDescriptionForUi
+  | LivingComponentGroupDescriptionForUi
   | RegisteredComponentGroupDescription;
 
 export interface PropertiesGroupDescription {
@@ -110,7 +117,7 @@ export interface PropertiesGroupDescription {
 
 export interface DynamicComponentGroupDescription {
   title: string;
-  component: string | ReactComponent | null;
+  component: string | PropertiesGroupComponent | null;
   key: string;
   properties?: readonly GroupProperty[];
   enabled?: boolean;
@@ -154,17 +161,25 @@ interface SharedEditingConfig<T extends Obj | Widget> {
   validations?: ValidationsConfig<T>;
 }
 
-interface ObjOnlyEditingConfig {
-  descriptionForContent?: ForContentCallback<Obj>;
-  initializeCopy?: InitializeCallback<Obj>;
-  thumbnailForContent?: (content: Obj) => Obj | Binary | undefined | null;
+interface ObjOnlyEditingConfig<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
+  descriptionForContent?: ForContentCallback<Obj<AttrDefs>>;
+  initializeCopy?: InitializeCallback<Obj<AttrDefs>>;
+  thumbnailForContent?: (
+    content: Obj<AttrDefs>
+  ) => Obj | Binary | undefined | null;
 }
 
 /** @public */
-export type ObjEditingConfig = SharedEditingConfig<Obj> & ObjOnlyEditingConfig;
+export type ObjEditingConfig<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> = SharedEditingConfig<Obj<AttrDefs>> & ObjOnlyEditingConfig<AttrDefs>;
 
 /** @public */
-export type WidgetEditingConfig = SharedEditingConfig<Widget>;
+export type WidgetEditingConfig<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> = SharedEditingConfig<Widget<AttrDefs>>;
 
 export type EditingConfig = SharedEditingConfig<Obj | Widget> &
   ObjOnlyEditingConfig;
@@ -184,24 +199,42 @@ type InitializeCallback<T extends Obj | Widget> = (instance: T) => void;
 let editingConfigForClass: EditingConfigMap = {};
 
 /** @public */
-export function provideEditingConfig(
-  className: string,
-  editingConfig: ObjEditingConfig
+export function provideEditingConfig<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+>(
+  objClass: ObjClass<AttrDefs>,
+  editingConfig: ObjEditingConfig<AttrDefs>
 ): void;
 
 /** @public */
 export function provideEditingConfig(
-  className: string,
+  objClassName: string,
+  editingConfig: ObjEditingConfig
+): void;
+
+/** @public */
+export function provideEditingConfig<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+>(
+  widgetClass: WidgetClass<AttrDefs>,
+  editingConfig: WidgetEditingConfig<AttrDefs>
+): void;
+
+/** @public */
+export function provideEditingConfig(
+  widgetClassName: string,
   editingConfig: WidgetEditingConfig
 ): void;
 
 /** @internal */
 export function provideEditingConfig(
-  className: string,
+  classNameOrClass: string | ObjClass | WidgetClass,
   editingConfig: EditingConfig,
   ...excessArgs: never[]
 ): void {
-  checkProvideEditingConfig(className, editingConfig, ...excessArgs);
+  checkProvideEditingConfig(classNameOrClass, editingConfig, ...excessArgs);
+
+  const className = getClassName(classNameOrClass);
   editingConfigForClass[className] = editingConfig;
 }
 
@@ -283,6 +316,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
   const PropertiesGroupDescriptionType = t.interface({
     title: t.String,
     properties: t.list(t.String),
+    enabled: t.maybe(t.Boolean),
     key: t.maybe(t.String),
   });
 
@@ -290,19 +324,21 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     title: t.String,
     component: t.String,
     properties: t.maybe(t.list(t.String)),
+    enabled: t.maybe(t.Boolean),
     key: t.maybe(t.String),
   });
 
-  const FunctionComponentGroupDescriptionType = t.interface({
+  const LivingComponentGroupDescriptionType = t.interface({
     title: t.String,
-    component: t.Function,
+    component: t.union([t.Function, t.Object]),
     properties: t.maybe(t.list(t.String)),
+    enabled: t.maybe(t.Boolean),
     key: t.String,
   });
 
   const ComponentGroupDescriptionType = t.union([
     RegisteredComponentGroupDescriptionType,
-    FunctionComponentGroupDescriptionType,
+    LivingComponentGroupDescriptionType,
   ]);
 
   const PropertiesGroupType = t.union([
@@ -376,7 +412,10 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     checkProvideEditingConfig: checkArgumentsFor(
       'provideEditingConfig',
       [
-        ['className', t.String],
+        [
+          'classNameOrClass',
+          t.union([t.String, ObjClassType, WidgetClassType]),
+        ],
         ['editingConfig', EditingConfigType],
       ],
       { docPermalink }

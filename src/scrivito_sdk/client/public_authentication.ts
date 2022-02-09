@@ -11,10 +11,6 @@ import { ScrivitoPromise, promiseAndFinally } from 'scrivito_sdk/common';
 export const ERROR_CODE_CLIENT_VERIFICATION_REQUIRED =
   'client_verification_required';
 
-type SendRequest = (
-  authorization: string | undefined
-) => Promise<BackendResponse>;
-
 interface Challenge {
   verificator: Verificator;
   data: unknown;
@@ -32,16 +28,15 @@ interface CurrentComputation {
 let computation: CurrentComputation | undefined;
 let verification: Verification | undefined;
 
-export function perform(sendRequest: SendRequest): Promise<BackendResponse> {
+export function authorize(
+  request: (authorization: string | undefined) => Promise<BackendResponse>
+): Promise<BackendResponse> {
   function handleError(error: Error): Promise<BackendResponse> {
-    if (!isVerificationRequiredError(error)) {
-      throw error;
-    }
-    return computeVerification(error.details)
-      .then(sendRequest)
-      .catch(handleError);
+    if (!isVerificationRequiredError(error)) throw error;
+    return computeVerification(error.details).then(request).catch(handleError);
   }
-  return sendRequest(currentAuthorization()).catch(handleError);
+
+  return request(currentAuthorization()).catch(handleError);
 }
 
 function computeVerification(challenge: Challenge) {

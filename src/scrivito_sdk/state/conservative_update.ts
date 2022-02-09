@@ -39,11 +39,20 @@ function updateValue<T extends PrimitiveValue>(
     return updateObject(isPrimitiveObject(current) ? current : undefined, next);
   }
 
-  if (Array.isArray(next)) {
-    return updateArray(Array.isArray(current) ? current : undefined, next);
+  if (isPrimitiveValueArray(next)) {
+    return updateArray(
+      isPrimitiveValueArray(current) ? current : undefined,
+      next
+    );
   }
 
   return next;
+}
+
+function isPrimitiveValueArray(
+  value: PrimitiveValue
+): value is PrimitiveValue[] {
+  return Array.isArray(value);
 }
 
 function updateObject<T extends PrimitiveObject>(

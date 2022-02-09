@@ -112,3 +112,5 @@ export {
   scrollTo,
   windowLocationOrigin,
 } from 'scrivito_sdk/common/window_proxy';
+export { isStringArray } from 'scrivito_sdk/common/is_string_array';
+export { isEmptyValue } from 'scrivito_sdk/common/is_empty_value';

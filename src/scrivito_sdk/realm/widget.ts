@@ -15,6 +15,7 @@ import {
   NormalizedAttributeDefinitions,
   Schema,
 } from 'scrivito_sdk/realm/schema';
+import { subWidgets } from 'scrivito_sdk/realm/sub_widgets';
 import {
   AttributeValueOf,
   unwrapAppAttributes,
@@ -102,6 +103,10 @@ export class Widget<
     const basicObj = this._scrivitoPrivateContent.obj();
 
     return wrapInAppClass(basicObj);
+  }
+
+  widgets(): Widget[] {
+    return wrapInAppClass(subWidgets(this._scrivitoPrivateContent));
   }
 
   copy(): Widget<AttrDefs> {

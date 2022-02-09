@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { ArgumentError, prettyPrint } from 'scrivito_sdk/common';
 import { registerComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { WidgetComponentProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
@@ -9,12 +8,46 @@ import { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_c
 import { PageComponentProps } from 'scrivito_sdk/react/get_component_for_page_class';
 import { getElementType } from 'scrivito_sdk/react/get_element_type';
 import { memo } from 'scrivito_sdk/react/memo';
+import {
+  AttributeDefinitions,
+  ObjClass,
+  WidgetClass,
+  checkProvideComponent,
+  getClassName,
+} from 'scrivito_sdk/realm';
 
 /** @public */
-export function provideComponent<
-  P extends Partial<PageComponentProps> | Partial<WidgetComponentProps>
->(className: string, component: React.ComponentType<P>): void {
-  assertValidComponent(component);
+export function provideComponent<AttrDefs extends AttributeDefinitions>(
+  objClass: ObjClass<AttrDefs>,
+  component: React.ComponentType<PageComponentProps<AttrDefs>>
+): void;
+
+/** @public */
+export function provideComponent(
+  classNameOrObjClass: string | ObjClass,
+  component: React.ComponentType<Partial<PageComponentProps>>
+): void;
+
+/** @public */
+export function provideComponent<AttrDefs extends AttributeDefinitions>(
+  widgetClass: WidgetClass<AttrDefs>,
+  component: React.ComponentType<WidgetComponentProps<AttrDefs>>
+): void;
+
+/** @public */
+export function provideComponent(
+  classNameOrWidgetClass: string | WidgetClass,
+  component: React.ComponentType<Partial<WidgetComponentProps>>
+): void;
+
+/** @internal */
+export function provideComponent(
+  classNameOrClass: string | ObjClass | WidgetClass,
+  component: React.ComponentType,
+  ...excessArgs: never[]
+): void {
+  checkProvideComponent(classNameOrClass, component, ...excessArgs);
+  const className = getClassName(classNameOrClass);
 
   if (isComponentMissingName(component)) {
     component.displayName = className;
@@ -24,15 +57,6 @@ export function provideComponent<
   const wrappedComponent = wrapComponent(connectedComponent);
 
   registerComponentForAppClass(className, wrappedComponent);
-}
-
-function assertValidComponent(component: unknown) {
-  if (typeof component !== 'function') {
-    throw new ArgumentError(
-      'Scrivito.provideComponent expected a valid React component' +
-        `, but received ${prettyPrint(component)}`
-    );
-  }
 }
 
 function wrapComponent(component: React.ComponentType) {

@@ -16,6 +16,8 @@ import {
   ArgumentError,
   formatDateToString,
   isCamelCase,
+  isEmptyValue,
+  isStringArray,
   isSystemAttribute,
   isValidDateString,
   isValidFloat,
@@ -133,10 +135,6 @@ function serializeEntry<Type extends AttributeType>(
         `Attribute "${name}" is of unsupported type "${typeInfo[0]}".`
       );
   }
-}
-
-function isEmptyValue(value: unknown) {
-  return (isString(value) || Array.isArray(value)) && isEmpty(value);
 }
 
 function throwInvalidAttributeValue(
@@ -325,15 +323,13 @@ function serializeWidgetlistAttributeValue(
     return serializeWidgetlistAttributeValue([value], name);
   }
 
-  if (Array.isArray(value) && value.every((v) => v instanceof BasicWidget)) {
-    return value.map((v) => v.id());
-  }
+  if (isBasicWidgetArray(value)) return value.map((v) => v.id());
 
   throwInvalidAttributeValue(value, name, 'An array of BasicWidget instances.');
 }
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every(isString);
+function isBasicWidgetArray(value: unknown): value is BasicWidget[] {
+  return Array.isArray(value) && value.every((v) => v instanceof BasicWidget);
 }
 
 function isStringOrNumberArray(

@@ -127,23 +127,10 @@ export interface ValidationResultObject {
 
 export type AttributeValidationCallback<T extends Obj | Widget> = (
   attributeValue: AttributeValue,
-  options: T extends Obj
-    ? ObjAttributeValidationCallbackParams
-    : WidgetAttributeValidationCallbackParams
+  options: {
+    name: string;
+    obj: T extends Obj ? T : never;
+    widget: T extends Widget ? T : never;
+    content: T;
+  }
 ) => ValidationResult;
-
-export type AttributeValidationCallbackParams =
-  | ObjAttributeValidationCallbackParams
-  | WidgetAttributeValidationCallbackParams;
-
-interface ObjAttributeValidationCallbackParams {
-  name: string;
-  obj: Obj;
-  content: Obj;
-}
-
-interface WidgetAttributeValidationCallbackParams {
-  name: string;
-  widget: Widget;
-  content: Widget;
-}

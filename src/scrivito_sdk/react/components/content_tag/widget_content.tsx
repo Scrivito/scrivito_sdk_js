@@ -7,7 +7,11 @@ import { propsAreEqual } from 'scrivito_sdk/react';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
 import { connect } from 'scrivito_sdk/react/connect';
-import { Widget, wrapInAppClass } from 'scrivito_sdk/realm';
+import {
+  AttributeDefinitions,
+  Widget,
+  wrapInAppClass,
+} from 'scrivito_sdk/realm';
 
 export interface WidgetProps {
   [key: string]: unknown;
@@ -88,8 +92,10 @@ interface AppWidgetWrapperProps {
 }
 
 /** @public */
-export interface WidgetComponentProps {
-  widget: Widget;
+export interface WidgetComponentProps<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
+  widget: Widget<AttrDefs>;
 }
 
 class AppWidgetWrapper extends React.Component<AppWidgetWrapperProps> {

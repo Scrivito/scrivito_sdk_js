@@ -12,10 +12,6 @@ import {
   throwNextTick,
 } from 'scrivito_sdk/common';
 
-type SendRequest = (
-  authorization: string | undefined
-) => Promise<BackendResponse>;
-
 /**
  * The VisitorAuthenticationProvider is responsible to provide the visitor
  * session to authenticate backend requests for a Scrivito configured with
@@ -52,17 +48,19 @@ export class VisitorAuthenticationProvider {
     return this.state;
   }
 
-  perform(sendRequest: SendRequest): Promise<BackendResponse> {
+  authorize(
+    request: (authorization: string | undefined) => Promise<BackendResponse>
+  ): Promise<BackendResponse> {
     const sessionRequest = this.sessionRequest;
     return sessionRequest.then(
       (session) =>
-        sendRequest(`Session ${session.token}`).catch((error) => {
+        request(`Session ${session.token}`).catch((error) => {
           const sessionHasExpired = error instanceof UnauthorizedError;
           if (!sessionHasExpired) throw error;
           if (this.sessionRequest === sessionRequest) this.renewSession();
-          return this.perform(sendRequest);
+          return this.authorize(request);
         }),
-      (_error) => PublicAuthentication.perform(sendRequest)
+      (_error) => PublicAuthentication.authorize(request)
     );
   }
 

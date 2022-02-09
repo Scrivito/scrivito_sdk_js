@@ -14,6 +14,7 @@ import { getCurrentNavigationState } from 'scrivito_sdk/app_support/navigation_s
 import { setUiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { initializeUiRedirect } from 'scrivito_sdk/app_support/ui_redirect';
 import {
+  cmsRestApi,
   replaceCmsRetrieval,
   setupRegisterVerificator,
   useXmlHttpRequest,
@@ -59,6 +60,7 @@ export function initializeSdk() {
 
     setUiAdapter(uiAdapterClient);
     replaceCmsRetrieval(uiAdapterClient);
+    cmsRestApi.rejectRequestsWith('Unexpected CMS backend access.');
     setBinaryHandler(uiAdapterClient);
     setCopyObjHandler(uiAdapterClient);
     setUrlResolutionHandler(

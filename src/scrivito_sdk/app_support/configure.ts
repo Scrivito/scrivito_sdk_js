@@ -2,6 +2,7 @@ import * as URI from 'urijs';
 
 import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import { cdnAssetUrlBase } from 'scrivito_sdk/app_support/cdn_asset_url_base';
+import { skipContentTagsForEmptyAttributes } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
@@ -66,6 +67,7 @@ export interface Configuration {
   editorLanguage?: ForcedEditorLanguage;
   strictSearchOperators?: boolean;
   optimizedWidgetLoading?: boolean;
+  contentTagsForEmptyAttributes?: boolean;
 
   /** @internal */
   unstable?: {
@@ -98,6 +100,7 @@ const AllowedConfiguration = t.interface({
   editorLanguage: t.maybe(t.enums.of(['en', 'de'])),
   strictSearchOperators: t.maybe(t.Boolean),
   optimizedWidgetLoading: t.maybe(t.Boolean),
+  contentTagsForEmptyAttributes: t.maybe(t.Boolean),
 });
 
 const PUBLIC_FUNCTION_NAME = 'configure';
@@ -160,6 +163,10 @@ export function configure(
   initRouting(routingConfiguration);
   configureConstraintsValidationCallback(configuration);
 
+  if (configuration.contentTagsForEmptyAttributes === false) {
+    skipContentTagsForEmptyAttributes();
+  }
+
   if (configuration.strictSearchOperators) enableStrictSearchOperators();
   setForcedEditorLanguage(configuration.editorLanguage || null);
 }
@@ -209,7 +216,7 @@ function configureCmsRestApi(
   if (provider) cmsRestApi.setAuthProvider(provider);
   if (priority) cmsRestApi.setPriority(priority);
 
-  cmsRestApi.init(endpoint, tenant);
+  cmsRestApi.init(`https://${endpoint}/tenants/${tenant}`);
 }
 
 function getCheckedRoutingConfiguration({

@@ -1,11 +1,17 @@
+import { isFunction } from 'underscore';
 import { checkArgumentsFor, classify, tcomb as t } from 'scrivito_sdk/common';
 import { isAppClass } from 'scrivito_sdk/realm/schema';
+import {
+  ObjClassType,
+  WidgetClassType,
+} from 'scrivito_sdk/realm/tcomb_api_types';
 
 const noop = () => {};
 
 export const {
   checkCreateWidgetClass,
   checkCreateObjClass,
+  checkProvideComponent,
   checkProvideObjClass,
   checkProvideWidgetClass,
 } = (() => {
@@ -13,12 +19,12 @@ export const {
     return {
       checkCreateWidgetClass: noop,
       checkCreateObjClass: noop,
+      checkProvideComponent: noop,
       checkProvideObjClass: noop,
       checkProvideWidgetClass: noop,
     };
   }
 
-  const ObjClassType = t.refinement(t.Function, isAppClass, 'ObjClass');
   const ObjClassDefinitionType = t.interface({
     attributes: t.maybe(
       t.dict(
@@ -74,7 +80,6 @@ export const {
     validAsRoot: t.maybe(t.Boolean),
   });
 
-  const WidgetClassType = t.refinement(t.Function, isAppClass, 'WidgetClass');
   const WidgetClassDefinitionType = t.interface({
     attributes: ObjClassDefinitionType.meta.props.attributes,
     extractTextAttributes: t.maybe(t.list(t.String)),
@@ -96,6 +101,20 @@ export const {
       [['definition', WidgetClassDefinitionType]],
       {
         docPermalink: 'js-sdk/createWidgetClass',
+      }
+    ),
+
+    checkProvideComponent: checkArgumentsFor(
+      'provideComponent',
+      [
+        [
+          'classNameOrClass',
+          t.union([t.String, ObjClassType, WidgetClassType]),
+        ],
+        ['component', t.irreducible('React component', isFunction)],
+      ],
+      {
+        docPermalink: 'js-sdk/provideComponent',
       }
     ),
 

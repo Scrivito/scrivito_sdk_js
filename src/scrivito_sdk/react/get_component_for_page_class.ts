@@ -1,11 +1,13 @@
 import { ArgumentError, QueryParameters } from 'scrivito_sdk/common';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 
-import { Obj } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj } from 'scrivito_sdk/realm';
 
 /** @public */
-export interface PageComponentProps {
-  page: Obj;
+export interface PageComponentProps<
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+> {
+  page: Obj<AttrDefs>;
   params?: QueryParameters;
 }
 

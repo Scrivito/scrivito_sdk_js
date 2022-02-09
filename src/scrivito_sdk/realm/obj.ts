@@ -44,6 +44,7 @@ import {
   Schema,
 } from 'scrivito_sdk/realm/schema';
 import { areStrictSearchOperatorsEnabled } from 'scrivito_sdk/realm/strict_search_operators';
+import { subWidgets } from 'scrivito_sdk/realm/sub_widgets';
 import {
   AttributeValueOf,
   wrapInAppClass,
@@ -395,7 +396,7 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   }
 
   widgets(): Widget[] {
-    return wrapInAppClass(this._scrivitoPrivateContent.widgets());
+    return wrapInAppClass(subWidgets(this._scrivitoPrivateContent));
   }
 
   copy(): Promise<Obj<AttrDefs>> {

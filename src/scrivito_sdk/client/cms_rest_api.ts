@@ -6,6 +6,7 @@ import { SessionData } from 'scrivito_sdk/client/session_data';
 import { UnauthorizedError } from 'scrivito_sdk/client/unauthorized_error';
 import {
   Deferred,
+  InternalError,
   ScrivitoError,
   ScrivitoPromise,
   never,
@@ -27,7 +28,7 @@ export class MissingWorkspaceError extends ScrivitoError {}
 
 export interface AuthorizationProvider {
   currentState?: () => string | null;
-  perform: (
+  authorize: (
     request: (auth: string | undefined) => Promise<BackendResponse>
   ) => Promise<BackendResponse>;
 }
@@ -88,80 +89,101 @@ export interface VisitorSession {
   maxage: number;
 }
 
+let disabledMessage: string | undefined;
+
 let limitedRetries: true | undefined;
 let retriesAreDisabled: true | undefined;
 
 class CmsRestApi {
   // only public for test purposes
-  tenant?: string;
-  // only public for test purposes
-  endpoint?: string;
+  url!: string;
   // only public for test purposes
   priority?: Priority;
 
   private authHeaderValueProvider: AuthorizationProvider;
   private forceVerification?: true;
   private initDeferred: Deferred;
-  private url!: string;
 
   constructor() {
     this.initDeferred = new Deferred();
     this.authHeaderValueProvider = PublicAuthentication;
   }
 
-  init(endpoint: string, tenant: string): void {
-    this.tenant = tenant;
-    this.endpoint = endpoint;
-    this.url = `https://${endpoint}/tenants/${tenant}/perform`;
+  init(apiBaseUrl: string): void {
+    this.url = `${apiBaseUrl}/perform`;
     this.initDeferred.resolve();
   }
 
-  setPriority(priority: Priority) {
+  rejectRequestsWith(message: string): void {
+    disabledMessage = message;
+  }
+
+  setPriority(priority: Priority): void {
     this.priority = priority;
   }
 
-  setAuthProvider(authorizationProvider: AuthorizationProvider) {
+  setAuthProvider(authorizationProvider: AuthorizationProvider): void {
     this.authHeaderValueProvider = authorizationProvider;
   }
 
-  get(path: string, requestParams?: ParamsType): Promise<BackendResponse> {
-    return this.perform('GET', path, requestParams);
+  async get(
+    path: string,
+    requestParams?: ParamsType
+  ): Promise<BackendResponse> {
+    return this.securedRequest('GET', path, requestParams);
   }
 
-  put(path: string, requestParams?: ParamsType): Promise<BackendResponse> {
-    return this.perform('PUT', path, requestParams);
+  async put(
+    path: string,
+    requestParams?: ParamsType
+  ): Promise<BackendResponse> {
+    return this.securedRequest('PUT', path, requestParams);
   }
 
-  post(path: string, requestParams?: ParamsType): Promise<BackendResponse> {
-    return this.perform('POST', path, requestParams);
+  async post(
+    path: string,
+    requestParams?: ParamsType
+  ): Promise<BackendResponse> {
+    return this.securedRequest('POST', path, requestParams);
   }
 
-  delete(path: string, requestParams?: ParamsType): Promise<BackendResponse> {
-    return this.perform('DELETE', path, requestParams);
+  async delete(
+    path: string,
+    requestParams?: ParamsType
+  ): Promise<BackendResponse> {
+    return this.securedRequest('DELETE', path, requestParams);
   }
 
-  requestBuiltInUserSession(sessionId: string, idp?: string) {
+  async requestBuiltInUserSession(
+    sessionId: string,
+    idp?: string
+  ): Promise<SessionData> {
+    await this.ensureEnabledAndInitialized();
+
     const params = idp ? { idp } : undefined;
-    return this.ensureInitialized()
-      .then(() => this.ajax('PUT', `sessions/${sessionId}`, params))
-      .then((response) => {
-        AuthFailureCounter.reset();
-        return response as SessionData;
-      });
+    const response = await this.unsecuredRequest(
+      'PUT',
+      `sessions/${sessionId}`,
+      params
+    );
+
+    AuthFailureCounter.reset();
+
+    return response as SessionData;
   }
 
-  requestVisitorSession(
+  async requestVisitorSession(
     sessionId: string,
     token: string
   ): Promise<VisitorSession> {
-    return this.ensureInitialized().then(() => {
-      return (this.ajax(
-        'PUT',
-        `sessions/${sessionId}`,
-        undefined,
-        `id_token ${token}`
-      ) as unknown) as VisitorSession;
-    });
+    await this.ensureEnabledAndInitialized();
+
+    return this.unsecuredRequest(
+      'PUT',
+      `sessions/${sessionId}`,
+      undefined,
+      `id_token ${token}`
+    ) as Promise<VisitorSession>;
   }
 
   // For test purpose only.
@@ -180,33 +202,29 @@ class CmsRestApi {
     return '[API]: no authorization provider';
   }
 
-  private ensureInitialized(): Promise<void> {
+  private async ensureEnabledAndInitialized(): Promise<void> {
+    if (disabledMessage !== undefined) {
+      throw new InternalError(disabledMessage);
+    }
     return this.initDeferred.promise;
   }
 
-  private perform(
+  private async securedRequest(
     method: string,
     path: string,
     requestParams?: ParamsType
   ): Promise<BackendResponse> {
-    return this.ensureInitialized().then(() =>
-      this.send(method, path, requestParams).then((result) =>
-        isTaskResponse(result) ? this.handleTask(result.task) : result
-      )
+    await this.ensureEnabledAndInitialized();
+
+    const result = await this.authHeaderValueProvider.authorize(
+      (authorization) =>
+        this.unsecuredRequest(method, path, requestParams, authorization)
     );
+
+    return isTaskResponse(result) ? this.handleTask(result.task) : result;
   }
 
-  private send(
-    method: string,
-    path: string,
-    requestParams?: ParamsType
-  ): Promise<BackendResponse> {
-    return this.authHeaderValueProvider.perform((authorization) =>
-      this.ajax(method, path, requestParams, authorization)
-    );
-  }
-
-  private ajax(
+  private async unsecuredRequest(
     method: string,
     path: string,
     requestParams?: ParamsType,
@@ -221,22 +239,17 @@ class CmsRestApi {
         params: requestParams || {},
       },
     };
+
     if (this.priority) {
       options.priority = this.priority;
     }
 
-    const performRequest = (): Promise<BackendResponse> => {
-      return retryOnRateLimit(() => fetch(method, this.url, options)).then(
-        handleAjaxResponse
-      );
-    };
-
-    return method === 'POST' ? performRequest() : retryOnError(performRequest);
+    return method === 'POST'
+      ? requestAndHandleErrors(method, this.url, options)
+      : retryOnError(() => requestAndHandleErrors(method, this.url, options));
   }
 
-  private handleTask(
-    task: TaskData
-  ): BackendResponse | Promise<BackendResponse> {
+  private async handleTask(task: TaskData): Promise<BackendResponse> {
     switch (task.status) {
       case 'success':
         return task.result;
@@ -244,88 +257,39 @@ class CmsRestApi {
         throw new ClientError(task.message, task.code, {});
       case 'exception':
         throw new RequestFailedError(task.message);
-      case 'open':
-        return wait(2).then(() =>
-          this.get(`tasks/${task.id}`).then((result: TaskData) =>
-            this.handleTask(result)
-          )
-        );
+      case 'open': {
+        await wait(2);
+
+        const result = await this.get(`tasks/${task.id}`);
+        return this.handleTask(result as TaskData);
+      }
       default:
         throw new RequestFailedError('Invalid task response (unknown status)');
     }
   }
 }
 
-function retryOnError(
-  requestCallback: () => Promise<BackendResponse>,
-  retryCount: number = 0
+async function requestAndHandleErrors(
+  method: string,
+  url: string,
+  options: FetchOptions
 ): Promise<BackendResponse> {
-  if (retriesAreDisabled) {
-    return new ScrivitoPromise((resolve) => resolve(requestCallback()));
-  }
-
-  return requestCallback().catch((error) => {
-    if (error instanceof RequestFailedError) {
-      if (limitedRetries && retryCount > 5) throw error;
-
-      return waitMs(calculateDelay(retryCount)).then(() =>
-        retryOnError(requestCallback, retryCount + 1)
-      );
-    }
-
-    throw error;
-  });
-}
-
-function retryOnRateLimit(
-  requestCallback: () => Promise<XMLHttpRequest>,
-  retryCount: number = 0
-): Promise<XMLHttpRequest> {
-  if (retriesAreDisabled) {
-    return new ScrivitoPromise((resolve) => resolve(requestCallback()));
-  }
-
-  return requestCallback().then((response) => {
-    if (response.status !== 429) return response;
-
-    // The value for the retry count limit should be high enough to show that the integer overflow
-    // protection of the calculated timeout (currently: exponent limited to 16) is working.
-    if (limitedRetries && retryCount > 19) {
-      throw new Error('Maximum number of rate limit retries reached');
-    }
-
-    const retryAfter = Number(response.getResponseHeader('Retry-After')) || 0;
-    const retryDelay = Math.max(retryAfter * 1000, calculateDelay(retryCount));
-
-    return waitMs(retryDelay).then(() =>
-      retryOnRateLimit(requestCallback, retryCount + 1)
-    );
-  });
-}
-
-function calculateDelay(retryCount: number): number {
-  return Math.pow(2, Math.min(retryCount, 16)) * 500;
-}
-
-function handleAjaxResponse(request: XMLHttpRequest) {
-  const httpStatus: number = request.status;
+  const { status: httpStatus, responseText } = await retryOnRateLimit(() =>
+    fetch(method, url, options)
+  );
 
   let responseData: JSONObject;
   try {
-    responseData = JSON.parse(request.responseText);
+    responseData = JSON.parse(responseText);
   } catch (error) {
-    throw new RequestFailedError(request.responseText);
+    throw new RequestFailedError(responseText);
   }
 
   if (httpStatus >= 200 && httpStatus < 300) {
     return responseData as BackendResponse;
   }
 
-  const error = errorForResponse(
-    httpStatus,
-    responseData,
-    request.responseText
-  );
+  const error = errorForResponse(httpStatus, responseData, responseText);
 
   if (error instanceof MissingAuthError) {
     redirectTo(error.target);
@@ -333,6 +297,54 @@ function handleAjaxResponse(request: XMLHttpRequest) {
   }
 
   throw error;
+}
+
+async function retryOnError(
+  requestCallback: () => Promise<BackendResponse>,
+  retryCount: number = 0
+): Promise<BackendResponse> {
+  if (retriesAreDisabled) {
+    return new ScrivitoPromise((resolve) => resolve(requestCallback()));
+  }
+
+  return requestCallback().catch(async (error) => {
+    if (error instanceof RequestFailedError) {
+      if (limitedRetries && retryCount > 5) throw error;
+
+      await waitMs(calculateDelay(retryCount));
+      return retryOnError(requestCallback, retryCount + 1);
+    }
+
+    throw error;
+  });
+}
+
+async function retryOnRateLimit(
+  requestCallback: () => Promise<XMLHttpRequest>,
+  retryCount: number = 0
+): Promise<XMLHttpRequest> {
+  if (retriesAreDisabled) {
+    return new ScrivitoPromise((resolve) => resolve(requestCallback()));
+  }
+
+  const response = await requestCallback();
+  if (response.status !== 429) return response;
+
+  // The value for the retry count limit should be high enough to show that the integer overflow
+  // protection of the calculated timeout (currently: exponent limited to 16) is working.
+  if (limitedRetries && retryCount > 19) {
+    throw new Error('Maximum number of rate limit retries reached');
+  }
+
+  const retryAfter = Number(response.getResponseHeader('Retry-After')) || 0;
+  const retryDelay = Math.max(retryAfter * 1000, calculateDelay(retryCount));
+
+  await waitMs(retryDelay);
+  return retryOnRateLimit(requestCallback, retryCount + 1);
+}
+
+function calculateDelay(retryCount: number): number {
+  return Math.pow(2, Math.min(retryCount, 16)) * 500;
 }
 
 interface AuthMissingDetails {
@@ -421,23 +433,24 @@ function parseBackendError({ error, code, details }: JSONObject): BackendError {
 export let cmsRestApi = new CmsRestApi();
 
 // For test purpose only.
-export function resetAndLimitRetries() {
+export function resetAndLimitRetries(): void {
   reset();
   limitedRetries = true;
 }
 
 // For test purpose only.
-export function resetAndDisableRetries() {
+export function resetAndDisableRetries(): void {
   reset();
   retriesAreDisabled = true;
 }
 
-function reset() {
+function reset(): void {
   cmsRestApi = new CmsRestApi();
   retriesAreDisabled = undefined;
+  disabledMessage = undefined;
 }
 
-export function requestBuiltInUserSession(
+export async function requestBuiltInUserSession(
   sessionId: string,
   idp?: string
 ): Promise<SessionData> {
