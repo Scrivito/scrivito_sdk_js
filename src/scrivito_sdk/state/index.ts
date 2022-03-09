@@ -12,6 +12,7 @@ export type {
 } from 'scrivito_sdk/state/state_tree';
 export {
   withFrozenState,
+  withUnfrozenState,
   failIfFrozen,
   StateChangePreventedError,
 } from 'scrivito_sdk/state/frozen';

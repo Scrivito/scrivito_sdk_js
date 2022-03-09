@@ -121,7 +121,9 @@ type AttributeTypeToConfigMapping = {
   multienum: { values: readonly string[] };
   reference: { only: string | readonly string[] };
   referencelist: { only: string | readonly string[] };
-  widgetlist: { only: string | readonly string[] };
+  widgetlist:
+    | { only: string | readonly string[]; maximum?: number }
+    | { only?: string | readonly string[]; maximum: number };
 };
 
 export interface NormalizedAttributeDefinitions {
@@ -299,17 +301,20 @@ export function isAppClass(object: object): object is AppClass {
 function toBasicAttributeDefinition(
   attrDefinition: AttributeDefinition
 ): BasicTypeInfo<AttributeType> {
-  if (typeof attrDefinition === 'string') {
-    return [attrDefinition];
-  }
+  if (typeof attrDefinition === 'string') return [attrDefinition];
 
-  if (attrDefinition[0] === 'enum' || attrDefinition[0] === 'multienum') {
-    return [attrDefinition[0], attrDefinition[1]];
-  }
+  const type = attrDefinition[0];
+
+  if (type === 'enum' || type === 'multienum') return [type, attrDefinition[1]];
 
   const { only, ...otherOptions } = attrDefinition[1];
   const validClasses = typeof only === 'string' ? [only] : only;
-  return [attrDefinition[0], { ...otherOptions, validClasses }];
+
+  if (type === 'widgetlist' && !validClasses && attrDefinition[1].maximum) {
+    return ['widgetlist', { maximum: attrDefinition[1].maximum }];
+  }
+
+  return validClasses ? [type, { ...otherOptions, validClasses }] : [type];
 }
 
 function toNormalizedAttributeDefinition(
@@ -317,12 +322,13 @@ function toNormalizedAttributeDefinition(
 ): NormalizedTypeInfo<AttributeType> {
   if (definition.length === 1) return [definition[0], {}];
 
-  if (
-    definition[0] === 'widgetlist' ||
-    definition[0] === 'reference' ||
-    definition[0] === 'referencelist'
-  ) {
-    return [definition[0], { only: definition[1].validClasses }];
+  switch (definition[0]) {
+    case 'reference':
+    case 'referencelist':
+    case 'widgetlist': {
+      const { validClasses: only, ...otherConfig } = definition[1];
+      return [definition[0], only ? { only, ...otherConfig } : otherConfig];
+    }
   }
 
   return definition;

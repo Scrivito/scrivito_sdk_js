@@ -17,6 +17,7 @@ import {
   createSyncSubscriber,
   trackStateAccess,
   withFrozenState,
+  withUnfrozenState,
 } from 'scrivito_sdk/state';
 
 /** @public */
@@ -180,7 +181,7 @@ class ComponentConnector {
     }
 
     this.stateSubscriber = createSyncSubscriber(
-      () => this.component.forceUpdate(),
+      () => withUnfrozenState(() => this.component.forceUpdate()),
       this.hierachyLevel
     );
 

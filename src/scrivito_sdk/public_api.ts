@@ -81,7 +81,7 @@ export { validationResultsFor } from 'scrivito_sdk/app_support/validation_result
 export { uiContext } from 'scrivito_sdk/app_support/ui_context';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
 
-export { provideEditingConfig } from 'scrivito_sdk/app_support/editing_config';
+export { provideEditingConfig } from 'scrivito_sdk/app_support/provide_editing_config';
 export type {
   ObjEditingConfig,
   WidgetEditingConfig,

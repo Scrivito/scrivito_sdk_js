@@ -1,5 +1,10 @@
 import { isFunction } from 'underscore';
-import { checkArgumentsFor, classify, tcomb as t } from 'scrivito_sdk/common';
+import {
+  PositiveInteger,
+  checkArgumentsFor,
+  classify,
+  tcomb as t,
+} from 'scrivito_sdk/common';
 import { isAppClass } from 'scrivito_sdk/realm/schema';
 import {
   ObjClassType,
@@ -64,9 +69,15 @@ export const {
           ]),
           t.tuple([
             t.enums.of(['widgetlist']),
-            t.interface({
-              only: t.union([t.String, t.list(t.String)]),
-            }),
+            t.union([
+              t.interface({
+                only: t.union([t.String, t.list(t.String)]),
+                maximum: t.maybe(PositiveInteger),
+              }),
+              t.interface({
+                maximum: PositiveInteger,
+              }),
+            ]),
           ]),
         ]),
         'Attributes Specification'

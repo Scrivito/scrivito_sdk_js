@@ -89,9 +89,8 @@ export interface VisitorSession {
   maxage: number;
 }
 
-let disabledMessage: string | undefined;
-
 let limitedRetries: true | undefined;
+let requestsAreDisabled: true | undefined;
 let retriesAreDisabled: true | undefined;
 
 class CmsRestApi {
@@ -114,8 +113,8 @@ class CmsRestApi {
     this.initDeferred.resolve();
   }
 
-  rejectRequestsWith(message: string): void {
-    disabledMessage = message;
+  rejectRequests(): void {
+    requestsAreDisabled = true;
   }
 
   setPriority(priority: Priority): void {
@@ -203,8 +202,10 @@ class CmsRestApi {
   }
 
   private async ensureEnabledAndInitialized(): Promise<void> {
-    if (disabledMessage !== undefined) {
-      throw new InternalError(disabledMessage);
+    if (requestsAreDisabled) {
+      // When connected to a UI, all communications of an SDK app with the backend
+      // must go through the UI adapter.
+      throw new InternalError('Unexpected CMS backend access.');
     }
     return this.initDeferred.promise;
   }
@@ -446,8 +447,8 @@ export function resetAndDisableRetries(): void {
 
 function reset(): void {
   cmsRestApi = new CmsRestApi();
+  requestsAreDisabled = undefined;
   retriesAreDisabled = undefined;
-  disabledMessage = undefined;
 }
 
 export async function requestBuiltInUserSession(

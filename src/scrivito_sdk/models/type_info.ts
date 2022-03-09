@@ -7,7 +7,9 @@ interface TypeConfigMapping {
   multienum: { values: readonly string[] };
   reference: { validClasses: readonly string[] };
   referencelist: { validClasses: readonly string[] };
-  widgetlist: { validClasses: readonly string[] };
+  widgetlist:
+    | { validClasses: readonly string[]; maximum?: number }
+    | { validClasses?: readonly string[]; maximum: number };
 }
 
 interface NormalizedTypeConfigMapping {
@@ -15,7 +17,7 @@ interface NormalizedTypeConfigMapping {
   multienum: { values: readonly string[] };
   reference: { only?: readonly string[] };
   referencelist: { only?: readonly string[] };
-  widgetlist: { only?: readonly string[] };
+  widgetlist: { only?: readonly string[]; maximum?: number };
 }
 
 export type BasicTypeInfo<

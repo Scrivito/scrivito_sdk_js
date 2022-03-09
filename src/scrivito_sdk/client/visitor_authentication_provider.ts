@@ -48,36 +48,47 @@ export class VisitorAuthenticationProvider {
     return this.state;
   }
 
-  authorize(
+  async authorize(
     request: (authorization: string | undefined) => Promise<BackendResponse>
   ): Promise<BackendResponse> {
     const sessionRequest = this.sessionRequest;
-    return sessionRequest.then(
-      (session) =>
-        request(`Session ${session.token}`).catch((error) => {
-          const sessionHasExpired = error instanceof UnauthorizedError;
-          if (!sessionHasExpired) throw error;
-          if (this.sessionRequest === sessionRequest) this.renewSession();
-          return this.authorize(request);
-        }),
-      (_error) => PublicAuthentication.authorize(request)
-    );
+
+    let session: VisitorSession;
+
+    try {
+      session = await sessionRequest;
+    } catch (_error) {
+      return PublicAuthentication.authorize(request);
+    }
+
+    try {
+      return await request(`Session ${session.token}`);
+    } catch (error: unknown) {
+      const sessionHasExpired = error instanceof UnauthorizedError;
+
+      if (!sessionHasExpired) throw error;
+      if (this.sessionRequest === sessionRequest) this.renewSession();
+
+      return this.authorize(request);
+    }
   }
 
   private renewSession() {
     this.sessionRequest = this.fetchSession();
   }
 
-  private fetchSession() {
-    return this.idToken.promise
-      .then((token) => cmsRestApi.requestVisitorSession(this.sessionId, token))
-      .catch((error) => {
-        throwNextTick(
-          new ScrivitoError(
-            `Failed to establish visitor session: ${error.message}`
-          )
-        );
-        throw error;
-      });
+  private async fetchSession() {
+    try {
+      const token = await this.idToken.promise;
+      return await cmsRestApi.requestVisitorSession(this.sessionId, token);
+    } catch (error: unknown) {
+      throwNextTick(
+        new ScrivitoError(
+          `Failed to establish visitor session: ${(error as Error).message}`
+        )
+      );
+
+      throw error;
+    }
   }
 }

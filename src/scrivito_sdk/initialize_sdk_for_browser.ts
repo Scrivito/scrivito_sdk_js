@@ -60,7 +60,7 @@ export function initializeSdk() {
 
     setUiAdapter(uiAdapterClient);
     replaceCmsRetrieval(uiAdapterClient);
-    cmsRestApi.rejectRequestsWith('Unexpected CMS backend access.');
+    cmsRestApi.rejectRequests();
     setBinaryHandler(uiAdapterClient);
     setCopyObjHandler(uiAdapterClient);
     setUrlResolutionHandler(

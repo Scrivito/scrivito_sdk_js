@@ -1,5 +1,5 @@
 import { isEmpty, isFunction } from 'underscore';
-import { getEditingConfigFor } from 'scrivito_sdk/app_support/editing_config';
+import { getEditingConfigFor } from 'scrivito_sdk/app_support/editing_config_store';
 import { presentUiAdapter } from 'scrivito_sdk/app_support/present_ui_adapter';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj, BasicWidget, currentObjSpaceId } from 'scrivito_sdk/models';
@@ -15,7 +15,7 @@ export function initialContentFor(
   className: string,
   attributeName: string
 ): AttributeValue | undefined {
-  const initialContent = getEditingConfigFor(className, 'initialContent');
+  const initialContent = getEditingConfigFor(className)?.initialContent;
 
   if (initialContent) {
     const attributeContent = initialContent[attributeName];
@@ -113,7 +113,6 @@ function initializeContentFor(basicContent: BasicObj | BasicWidget): void {
 }
 
 function initializeContentFromHook(content: BasicObj | BasicWidget): void {
-  const callback = getEditingConfigFor(content.objClass(), 'initialize');
-
+  const callback = getEditingConfigFor(content.objClass())?.initialize;
   if (callback) callback(wrapInAppClass(content));
 }

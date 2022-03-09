@@ -53,6 +53,18 @@ export class BasicField<Type extends AttributeType> {
     return this.attributeName;
   }
 
+  maximum(): number | undefined {
+    const options:
+      | {
+          validClasses?: readonly string[];
+          values?: readonly string[];
+          maximum?: number;
+        }
+      | undefined = this.typeInfo[1];
+
+    return options?.maximum;
+  }
+
   type(): Type {
     return this.typeInfo[0] as Type;
   }
