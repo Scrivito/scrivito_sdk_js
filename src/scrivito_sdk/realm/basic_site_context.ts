@@ -55,7 +55,8 @@ export interface SiteContext<
 }
 
 export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
-  implements SiteContext<AttrDefs> {
+  implements SiteContext<AttrDefs>
+{
   constructor(
     private readonly objClass: ObjClass,
     private readonly scopeIncludingDeletedObjs: ObjScope

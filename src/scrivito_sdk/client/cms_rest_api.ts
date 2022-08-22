@@ -8,7 +8,6 @@ import {
   Deferred,
   InternalError,
   ScrivitoError,
-  ScrivitoPromise,
   never,
   redirectTo,
   uniqueErrorMessage,
@@ -25,6 +24,12 @@ export class MissingAuthError extends ScrivitoError {
 export class AccessDeniedError extends ClientError {}
 export class RequestFailedError extends ScrivitoError {}
 export class MissingWorkspaceError extends ScrivitoError {}
+
+export class RateLimitExceededError extends ScrivitoError {
+  constructor(readonly message: string, readonly retryAfter: number) {
+    super(message);
+  }
+}
 
 export interface AuthorizationProvider {
   currentState?: () => string | null;
@@ -93,9 +98,13 @@ let limitedRetries: true | undefined;
 let requestsAreDisabled: true | undefined;
 let retriesAreDisabled: true | undefined;
 
+const JR_API_LOCATION_PLACEHOLDER = '$JR_API_LOCATION';
+
 class CmsRestApi {
   // only public for test purposes
   url!: string;
+  // only public for test purposes
+  jrApiLocation: string | null = null;
   // only public for test purposes
   priority?: Priority;
 
@@ -108,8 +117,15 @@ class CmsRestApi {
     this.authHeaderValueProvider = PublicAuthentication;
   }
 
-  init(apiBaseUrl: string): void {
+  init({
+    apiBaseUrl,
+    jrApiLocation,
+  }: {
+    apiBaseUrl: string;
+    jrApiLocation?: string;
+  }): void {
     this.url = `${apiBaseUrl}/perform`;
+    this.jrApiLocation = jrApiLocation ?? null;
     this.initDeferred.resolve();
   }
 
@@ -155,15 +171,15 @@ class CmsRestApi {
 
   async requestBuiltInUserSession(
     sessionId: string,
-    idp?: string
+    params?: { idp: string }
   ): Promise<SessionData> {
     await this.ensureEnabledAndInitialized();
 
-    const params = idp ? { idp } : undefined;
     const response = await this.unsecuredRequest(
       'PUT',
       `sessions/${sessionId}`,
-      params
+      params,
+      null
     );
 
     AuthFailureCounter.reset();
@@ -217,10 +233,7 @@ class CmsRestApi {
   ): Promise<BackendResponse> {
     await this.ensureEnabledAndInitialized();
 
-    const result = await this.authHeaderValueProvider.authorize(
-      (authorization) =>
-        this.unsecuredRequest(method, path, requestParams, authorization)
-    );
+    const result = await this.unsecuredRequest(method, path, requestParams);
 
     return isTaskResponse(result) ? this.handleTask(result.task) : result;
   }
@@ -229,25 +242,18 @@ class CmsRestApi {
     method: string,
     path: string,
     requestParams?: ParamsType,
-    authorization?: string
+    authorization?: string | null
   ): Promise<BackendResponse> {
-    const options: FetchOptions = {
-      authorization,
-      forceVerification: this.forceVerification,
-      params: {
-        path,
-        verb: method,
-        params: requestParams || {},
-      },
-    };
-
-    if (this.priority) {
-      options.priority = this.priority;
-    }
-
     return method === 'POST'
-      ? requestAndHandleErrors(method, this.url, options)
-      : retryOnError(() => requestAndHandleErrors(method, this.url, options));
+      ? this.requestAndHandleErrors(method, path, requestParams, authorization)
+      : this.retryOnError(() =>
+          this.requestAndHandleErrors(
+            method,
+            path,
+            requestParams,
+            authorization
+          )
+        );
   }
 
   private async handleTask(task: TaskData): Promise<BackendResponse> {
@@ -268,80 +274,252 @@ class CmsRestApi {
         throw new RequestFailedError('Invalid task response (unknown status)');
     }
   }
-}
 
-async function requestAndHandleErrors(
-  method: string,
-  url: string,
-  options: FetchOptions
-): Promise<BackendResponse> {
-  const { status: httpStatus, responseText } = await retryOnRateLimit(() =>
-    fetch(method, url, options)
-  );
+  private async requestAndHandleErrors(
+    method: string,
+    path: string,
+    params?: ParamsType,
+    authorization?: string | null
+  ): Promise<BackendResponse> {
+    try {
+      return await this.retryOnRateLimit({
+        method,
+        path,
+        params,
+        authorization,
+      });
+    } catch (error: unknown) {
+      if (error instanceof MissingAuthError) {
+        redirectTo(error.target);
+        return never();
+      }
 
-  let responseData: JSONObject;
-  try {
-    responseData = JSON.parse(responseText);
-  } catch (error) {
-    throw new RequestFailedError(responseText);
+      throw error;
+    }
   }
 
-  if (httpStatus >= 200 && httpStatus < 300) {
-    return responseData as BackendResponse;
+  private async retryOnError(
+    requestCallback: () => Promise<BackendResponse>,
+    retryCount: number = 0
+  ): Promise<BackendResponse> {
+    if (retriesAreDisabled) return requestCallback();
+
+    try {
+      return await requestCallback();
+    } catch (error: unknown) {
+      if (
+        error instanceof RequestFailedError &&
+        !(limitedRetries && retryCount > 5)
+      ) {
+        await waitMs(calculateDelay(retryCount));
+        return this.retryOnError(requestCallback, retryCount + 1);
+      }
+
+      throw error;
+    }
   }
 
-  const error = errorForResponse(httpStatus, responseData, responseText);
+  private async retryOnRateLimit(
+    {
+      method,
+      path,
+      params,
+      authorization: providedAuthorization,
+    }: {
+      method: string;
+      path: string;
+      params?: ParamsType;
+      authorization?: string | null;
+    },
+    retryCount: number = 0
+  ): Promise<BackendResponse> {
+    try {
+      return providedAuthorization === undefined
+        ? await this.authHeaderValueProvider.authorize((authorization) =>
+            this.requestAndParseError({
+              method,
+              path,
+              params,
+              authorization,
+            })
+          )
+        : await this.requestAndParseError({
+            method,
+            path,
+            params,
+            authorization: providedAuthorization,
+          });
+    } catch (e: unknown) {
+      if (e instanceof RateLimitExceededError && !retriesAreDisabled) {
+        // The value for the retry count limit should be high enough to show that the integer overflow
+        // protection of the calculated timeout (currently: exponent limited to 16) is working.
+        if (limitedRetries && retryCount > 19) {
+          throw new Error('Maximum number of rate limit retries reached');
+        }
 
-  if (error instanceof MissingAuthError) {
-    redirectTo(error.target);
-    return never();
+        await waitMs(Math.max(e.retryAfter * 1000, calculateDelay(retryCount)));
+
+        return this.retryOnRateLimit(
+          {
+            method,
+            path,
+            params,
+            authorization: providedAuthorization,
+          },
+          retryCount + 1
+        );
+      }
+
+      throw e;
+    }
   }
 
-  throw error;
-}
+  private async requestAndParseError({
+    method,
+    path,
+    params,
+    authorization,
+  }: {
+    method: string;
+    path: string;
+    params?: ParamsType;
+    authorization?: string | null;
+  }): Promise<BackendResponse> {
+    const response = await fetch(
+      method,
+      this.url,
+      this.getFetchOptions({
+        method,
+        path,
+        params,
+        authorization,
+      })
+    );
 
-async function retryOnError(
-  requestCallback: () => Promise<BackendResponse>,
-  retryCount: number = 0
-): Promise<BackendResponse> {
-  if (retriesAreDisabled) {
-    return new ScrivitoPromise((resolve) => resolve(requestCallback()));
-  }
+    let responseData: JSONObject;
 
-  return requestCallback().catch(async (error) => {
-    if (error instanceof RequestFailedError) {
-      if (limitedRetries && retryCount > 5) throw error;
+    const { responseText, status: httpStatus } = response;
 
-      await waitMs(calculateDelay(retryCount));
-      return retryOnError(requestCallback, retryCount + 1);
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (error) {
+      throw new RequestFailedError(responseText);
     }
 
-    throw error;
-  });
-}
+    if (httpStatus >= 200 && httpStatus < 300) {
+      return responseData as BackendResponse;
+    }
 
-async function retryOnRateLimit(
-  requestCallback: () => Promise<XMLHttpRequest>,
-  retryCount: number = 0
-): Promise<XMLHttpRequest> {
-  if (retriesAreDisabled) {
-    return new ScrivitoPromise((resolve) => resolve(requestCallback()));
+    throw this.errorForResponse(response, responseData);
   }
 
-  const response = await requestCallback();
-  if (response.status !== 429) return response;
+  private getFetchOptions({
+    method,
+    path,
+    params,
+    authorization,
+  }: {
+    method: string;
+    path: string;
+    params?: ParamsType;
+    authorization?: string | null;
+  }): FetchOptions {
+    const options: FetchOptions = {
+      authorization: authorization || undefined,
+      forceVerification: this.forceVerification,
+      params: {
+        path,
+        verb: method,
+        params: params || {},
+      },
+    };
 
-  // The value for the retry count limit should be high enough to show that the integer overflow
-  // protection of the calculated timeout (currently: exponent limited to 16) is working.
-  if (limitedRetries && retryCount > 19) {
-    throw new Error('Maximum number of rate limit retries reached');
+    if (this.priority) options.priority = this.priority;
+
+    return options;
   }
 
-  const retryAfter = Number(response.getResponseHeader('Retry-After')) || 0;
-  const retryDelay = Math.max(retryAfter * 1000, calculateDelay(retryCount));
+  private errorForResponse(
+    response: XMLHttpRequest,
+    responseData: JSONObject
+  ): Error {
+    const { status: httpStatus, responseText } = response;
 
-  await waitMs(retryDelay);
-  return retryOnRateLimit(requestCallback, retryCount + 1);
+    if (httpStatus.toString()[0] !== '4') {
+      // The backend server responds with a proper error text on a server error.
+      // If however not the backend server, but the surrounding infrastructure fails, then there is
+      // no proper error text. In that case include the response text as a hint for debugging.
+      const { error } = responseData;
+      const message =
+        httpStatus === 500 && typeof error === 'string' ? error : responseText;
+
+      return new RequestFailedError(uniqueErrorMessage(message));
+    }
+
+    const {
+      message: originalMessage,
+      code,
+      details,
+    } = parseBackendError(responseData);
+
+    const message = uniqueErrorMessage(originalMessage);
+
+    if (code === 'auth_missing') {
+      return isAuthMissingDetails(details)
+        ? new MissingAuthError(this.authenticationUrlFor(details.visit))
+        : new RequestFailedError(
+            'Malformed error response: key visit is not a string'
+          );
+    }
+
+    if (code === 'precondition_not_met.workspace_not_found') {
+      return new MissingWorkspaceError();
+    }
+
+    if (httpStatus === 401) {
+      return new UnauthorizedError(message, code, details);
+    }
+    if (httpStatus === 403) {
+      return new AccessDeniedError(message, code, details);
+    }
+
+    if (httpStatus === 429) {
+      return new RateLimitExceededError(
+        message,
+        Number(response.getResponseHeader('Retry-After')) || 0
+      );
+    }
+
+    return new ClientError(message, code, details);
+  }
+
+  private authenticationUrlFor(visit: string): string {
+    const retry = AuthFailureCounter.currentFailureCount();
+    const returnTo = AuthFailureCounter.augmentedRedirectUrl();
+
+    const authUrl = visit
+      .replace('retry=RETRY', `retry=${retry}`)
+      .replace('$RETURN_TO', encodeURIComponent(returnTo));
+
+    if (authUrl.includes(JR_API_LOCATION_PLACEHOLDER)) {
+      return authUrl.replace(
+        JR_API_LOCATION_PLACEHOLDER,
+        this.getJrApiLocation()
+      );
+    }
+
+    return authUrl;
+  }
+
+  private getJrApiLocation() {
+    if (this.jrApiLocation) {
+      return this.jrApiLocation;
+    }
+
+    throw new ScrivitoError(
+      'CmsRestApi needs a JR API location, but none has been configured.'
+    );
+  }
 }
 
 function calculateDelay(retryCount: number): number {
@@ -354,53 +532,6 @@ interface AuthMissingDetails {
 
 function isAuthMissingDetails(details: unknown): details is AuthMissingDetails {
   return typeof (details as AuthMissingDetails).visit === 'string';
-}
-
-function errorForResponse(
-  httpStatus: number,
-  responseData: JSONObject,
-  responseText: string
-): Error {
-  if (httpStatus.toString()[0] !== '4') {
-    // The backend server responds with a proper error text on a server error.
-    // If however not the backend server, but the surrounding infrastructure fails, then there is
-    // no proper error text. In that case include the response text as a hint for debugging.
-    const { error } = responseData;
-    const message =
-      httpStatus === 500 && typeof error === 'string' ? error : responseText;
-
-    return new RequestFailedError(uniqueErrorMessage(message));
-  }
-
-  const { message: originalMessage, code, details } = parseBackendError(
-    responseData
-  );
-
-  const message = uniqueErrorMessage(originalMessage);
-
-  if (code === 'auth_missing') {
-    return isAuthMissingDetails(details)
-      ? new MissingAuthError(authenticationUrlFor(details.visit))
-      : new RequestFailedError(
-          'Malformed error response: key visit is not a string'
-        );
-  }
-
-  if (code === 'precondition_not_met.workspace_not_found') {
-    return new MissingWorkspaceError();
-  }
-
-  if (httpStatus === 401) return new UnauthorizedError(message, code, details);
-  if (httpStatus === 403) return new AccessDeniedError(message, code, details);
-
-  return new ClientError(message, code, details);
-}
-
-function authenticationUrlFor(visit: string): string {
-  const returnTo = AuthFailureCounter.augmentedRedirectUrl();
-  return visit
-    .replace('retry=RETRY', `retry=${AuthFailureCounter.currentFailureCount()}`)
-    .replace(/\$RETURN_TO/, encodeURIComponent(returnTo));
 }
 
 function isTaskResponse(result: unknown): result is TaskResponse {
@@ -453,7 +584,7 @@ function reset(): void {
 
 export async function requestBuiltInUserSession(
   sessionId: string,
-  idp?: string
+  params?: { idp: string }
 ): Promise<SessionData> {
-  return cmsRestApi.requestBuiltInUserSession(sessionId, idp);
+  return cmsRestApi.requestBuiltInUserSession(sessionId, params);
 }

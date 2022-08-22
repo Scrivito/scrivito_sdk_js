@@ -12,7 +12,8 @@ import {
 export type ObjQueryContinuation = [number, number];
 
 export class ObjIdQuery
-  implements ContinueIterable<string, ObjQueryContinuation> {
+  implements ContinueIterable<string, ObjQueryContinuation>
+{
   constructor(
     private readonly objSpaceId: ObjSpaceId,
     private readonly params: QueryParams,
@@ -42,7 +43,8 @@ interface ObjIdIndex {
 }
 
 class ObjIdQueryIterator
-  implements ContinueIterator<string, ObjQueryContinuation> {
+  implements ContinueIterator<string, ObjQueryContinuation>
+{
   private batchNumber = 0;
   private currentIndex = 0;
   private priorObjIndex?: ObjIdIndex;

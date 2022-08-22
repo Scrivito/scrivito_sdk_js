@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-type ElementType = string | React.ComponentClass | React.SFC;
+type ElementType = string | React.ComponentType;
 
 export interface ForwardElementTypeProps {
   __scrivitoForwardElementType?: ElementType;

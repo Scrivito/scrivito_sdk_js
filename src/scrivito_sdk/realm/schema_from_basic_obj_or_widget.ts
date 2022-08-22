@@ -7,8 +7,8 @@ export function schemaFromBasicObjOrWidget(
   const className = objOrWidget.objClass();
   if (!className) return;
 
-  const widgetClass = getClass(className);
-  if (!widgetClass) return;
+  const objClass = getClass(className);
+  if (!objClass) return;
 
-  return Schema.forClass(widgetClass);
+  return Schema.forClass(objClass);
 }

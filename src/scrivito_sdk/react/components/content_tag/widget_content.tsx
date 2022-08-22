@@ -21,7 +21,10 @@ interface WidgetContentProps {
   widget: BasicWidget;
   widgetProps?: WidgetProps;
   placementModification?: PlacementModification;
+  fieldType?: WidgetContentFieldType;
 }
+
+type WidgetContentFieldType = 'widget' | 'widgetlist';
 
 interface WidgetContentState {
   hasError: boolean;
@@ -79,6 +82,7 @@ export const WidgetContent: React.ComponentType<WidgetContentProps> = connect(
           widget={this.props.widget}
           widgetProps={this.props.widgetProps}
           placementModification={this.props.placementModification}
+          fieldType={this.props.fieldType}
         />
       );
     }
@@ -89,6 +93,7 @@ interface AppWidgetWrapperProps {
   widget: BasicWidget;
   widgetProps?: WidgetProps;
   placementModification?: PlacementModification;
+  fieldType?: WidgetContentFieldType;
 }
 
 /** @public */
@@ -110,7 +115,8 @@ class AppWidgetWrapper extends React.Component<AppWidgetWrapperProps> {
         this.getAppWidgetComponent(),
         this.getWidgetComponentProps()
       ),
-      this.props.placementModification
+      this.props.placementModification,
+      this.props.fieldType
     );
   }
 
@@ -158,6 +164,7 @@ class AppWidgetWrapper extends React.Component<AppWidgetWrapperProps> {
 interface WidgetTagContextValue {
   widget?: BasicWidget;
   placementModification?: PlacementModification;
+  fieldType?: WidgetContentFieldType;
 }
 
 export const WidgetTagContext = React.createContext<WidgetTagContextValue>({});
@@ -165,11 +172,12 @@ export const WidgetTagContext = React.createContext<WidgetTagContextValue>({});
 function withWidgetContext(
   widget: BasicWidget,
   reactElement: React.ReactElement<{}>,
-  placementModification?: PlacementModification
+  placementModification?: PlacementModification,
+  fieldType?: WidgetContentFieldType
 ): React.ReactElement<{}> {
   return (
     <WidgetTagContext.Provider
-      value={{ widget, placementModification }}
+      value={{ widget, placementModification, fieldType }}
       children={reactElement}
     />
   );

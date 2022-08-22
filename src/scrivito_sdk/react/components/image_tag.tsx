@@ -10,11 +10,11 @@ import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 import { BasicField, BasicObj, Binary } from 'scrivito_sdk/models';
 import {
   ContentTag,
-  ContentTagWithCallback,
+  ContentTagWithElementCallback,
 } from 'scrivito_sdk/react/components/content_tag';
 import { connect } from 'scrivito_sdk/react/connect';
 import { imagePlaceholder } from 'scrivito_sdk/react/image_placeholder';
-import { AttributeDefinitions, Obj, Schema } from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
 type Width = React.ImgHTMLAttributes<HTMLImageElement>['width'];
 
@@ -22,7 +22,7 @@ interface ImageTagProps<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > {
   attribute?: keyof AttrDefs & string;
-  content?: Binary | Obj<AttrDefs> | null;
+  content?: Binary | Obj<AttrDefs> | Widget<AttrDefs> | null;
   width?: Width;
   onLoad?: React.ImgHTMLAttributes<HTMLImageElement>['onLoad'];
   [key: string]: unknown;
@@ -45,14 +45,14 @@ export const ImageTag = connect(function ImageTag({
   const [isLazy, setIsLazy] = React.useState(htmlOptions.loading === 'lazy');
 
   const load = React.useCallback(
-    (event) => {
+    (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
       setIsLazy(false);
       return onLoad?.call(null, event);
     },
     [onLoad]
   );
 
-  const setEagerIfComplete = React.useCallback((node) => {
+  const setEagerIfComplete = React.useCallback((node: HTMLImageElement) => {
     if (isComplete(node)) setIsLazy(false);
   }, []);
 
@@ -68,7 +68,10 @@ export const ImageTag = connect(function ImageTag({
     [isLazy]
   );
 
-  React.useEffect(() => () => decoder?.cancelUpdateCallback(), [decoder]);
+  React.useEffect(() => {
+    decoder?.resumeUpdateCallback();
+    return () => decoder?.cancelUpdateCallback();
+  }, [decoder]);
 
   if (!content) return null;
 
@@ -105,7 +108,7 @@ export const ImageTag = connect(function ImageTag({
 
   const fullWidth = getFullWidth(binary, width, isLazy);
   return fullWidth === null ? null : (
-    <ContentTagWithCallback
+    <ContentTagWithElementCallback
       attribute={attribute}
       content={content}
       width={fullWidth}
@@ -149,7 +152,7 @@ function getFullWidth(
   return isNumber(metadataWidth) ? metadataWidth : null;
 }
 
-function getBinary(content: Obj, attribute: string) {
+function getBinary(content: Obj | Widget, attribute: string) {
   const field = Schema.basicFieldFor(content, attribute);
   if (!field) {
     if (Schema.forInstance(content)) {

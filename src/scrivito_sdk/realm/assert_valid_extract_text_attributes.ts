@@ -4,7 +4,7 @@ import { ArgumentError } from 'scrivito_sdk/common';
 import { AttributeType, BasicTypeInfo } from 'scrivito_sdk/models';
 import { Schema } from './schema';
 
-const ATTRIBUTE_TYPES_WHITELIST = ['string', 'html', 'widgetlist'];
+const ATTRIBUTE_TYPES_WHITELIST = ['string', 'html', 'widget', 'widgetlist'];
 
 export function assertValidObjExtractTextAttributes(schema: Schema): void {
   schema.extractTextAttributes().forEach((attribute) => {

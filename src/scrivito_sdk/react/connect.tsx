@@ -112,9 +112,8 @@ function connectFunctionComponent<Props>(
     useConnectedRender(() => functionalComponent(props));
 
   connectedComponent._isScrivitoConnectedComponent = true;
-  connectedComponent.displayName = displayNameFromComponent(
-    functionalComponent
-  );
+  connectedComponent.displayName =
+    displayNameFromComponent(functionalComponent);
 
   return connectedComponent;
 }
@@ -186,11 +185,7 @@ class ComponentConnector {
     );
 
     this.isMounted = true;
-    if (this.onMount) {
-      const onMount = this.onMount.bind(this);
-      delete this.onMount;
-      onMount();
-    }
+    this.onMount?.call(null);
   }
 
   componentWillUnmount() {
@@ -271,10 +266,9 @@ class ComponentConnector {
 
   private whenMounted(fn: () => void) {
     if (this.isMounted) {
+      delete this.onMount;
       fn();
-    } else {
-      this.onMount = fn;
-    }
+    } else this.onMount = fn.bind(this);
   }
 
   private handleLoading(preliminaryResult: React.ReactNode) {

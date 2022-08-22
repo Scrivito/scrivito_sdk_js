@@ -27,6 +27,16 @@ export interface LocalizedValue {
   title: string;
 }
 
+interface AttributeDataContextConfig {
+  [cmsAttributeName: string]: ContextDescription;
+}
+
+export interface ContextDescription {
+  [contextAttributeName: string]: ContextAttributeDescription;
+}
+
+type ContextAttributeDescription = string;
+
 export interface AttributesEditingConfig {
   [attributeName: string]: AttributeEditingConfig;
 }
@@ -165,6 +175,7 @@ interface SharedEditingConfig<T extends Obj | Widget> {
   initialize?: InitializeCallback<T>;
   titleForContent?: ForContentCallback<T>;
   validations?: ValidationsConfig<T>;
+  attributeDataContext?: AttributeDataContextConfig;
 }
 
 interface ObjOnlyEditingConfig<

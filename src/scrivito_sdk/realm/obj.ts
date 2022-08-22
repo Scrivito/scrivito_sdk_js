@@ -65,9 +65,8 @@ type ObjSystemAttributes = {
   _modification?: string | null;
 };
 
-export type ObjAttributes<
-  AttrDefs extends AttributeDefinitions
-> = ObjSystemAttributes & AttrDict<AttrDefs>;
+export type ObjAttributes<AttrDefs extends AttributeDefinitions> =
+  ObjSystemAttributes & AttrDict<AttrDefs>;
 type ObjUpdateAttributes<AttrDefs extends AttributeDefinitions> = Omit<
   ObjAttributes<AttrDefs>,
   '_id'

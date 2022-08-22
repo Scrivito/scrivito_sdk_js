@@ -78,7 +78,8 @@ interface WidgetSystemAttributeJson {
   _obj_class: string;
 }
 
-export type AttributeJson = CustomAttributeJsonMapping[keyof CustomAttributeJsonMapping];
+export type AttributeJson =
+  CustomAttributeJsonMapping[keyof CustomAttributeJsonMapping];
 
 export type CustomAttributeJsonMapping = {
   binary: ['binary', BinaryJson];
@@ -92,12 +93,14 @@ export type CustomAttributeJsonMapping = {
   referencelist: ['referencelist', string[]];
   string: ['string', string];
   stringlist: ['stringlist', string[]];
+  widget: ['widget', string];
   widgetlist: ['widgetlist', string[]];
 };
 
 export type HtmlAttributeJson = CustomAttributeJsonMapping['html'];
 export type LinkAttributeJson = CustomAttributeJsonMapping['link'];
 export type LinklistAttributeJson = CustomAttributeJsonMapping['linklist'];
+type WidgetAttributeJson = CustomAttributeJsonMapping['widget'];
 type WidgetlistAttributeJson = CustomAttributeJsonMapping['widgetlist'];
 
 export interface LinkJson {
@@ -128,6 +131,12 @@ export function isUnavailableObjJson(
   data: ObjJson | UnavailableObjJson
 ): data is UnavailableObjJson {
   return !!data._deleted;
+}
+
+export function isWidgetAttributeJson(
+  attributeJson: AttributeJson
+): attributeJson is WidgetAttributeJson {
+  return attributeJson[0] === 'widget';
 }
 
 export function isWidgetlistAttributeJson(

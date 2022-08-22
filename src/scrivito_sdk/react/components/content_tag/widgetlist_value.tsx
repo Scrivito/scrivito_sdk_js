@@ -54,6 +54,7 @@ export const WidgetlistValue = connect(
                 key={widget.id()}
                 widget={widget}
                 widgetProps={this.props.widgetProps}
+                fieldType="widgetlist"
               />
             ))}
           </>
@@ -82,6 +83,7 @@ export const WidgetlistValue = connect(
           widget={info.widget}
           widgetProps={this.props.widgetProps}
           placementModification={info.modification}
+          fieldType="widgetlist"
         />
       ));
     }

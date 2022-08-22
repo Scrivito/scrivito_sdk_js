@@ -31,7 +31,12 @@ export {
 } from 'scrivito_sdk/realm/tcomb_api_types';
 export { getClassName } from 'scrivito_sdk/realm/get_class_name';
 
-export { checkProvideComponent } from 'scrivito_sdk/realm/app_class_api_check';
+export {
+  checkProvideComponent,
+  checkProvideLayoutComponent,
+  checkProvideDataErrorComponent,
+  checkProvideDataClass,
+} from 'scrivito_sdk/realm/app_class_api_check';
 export { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';
 export { Schema } from 'scrivito_sdk/realm/schema';
 export type {
@@ -47,3 +52,4 @@ export {
 } from 'scrivito_sdk/realm/registry';
 export { schemaFromBasicObjOrWidget } from 'scrivito_sdk/realm/schema_from_basic_obj_or_widget';
 export { isBinaryBasicObj } from 'scrivito_sdk/realm/is_binary_basic_obj';
+export { isObjClass } from 'scrivito_sdk/realm/is_obj_class';

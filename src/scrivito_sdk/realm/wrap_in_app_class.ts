@@ -73,6 +73,7 @@ interface AttributeMapping {
   referencelist: Obj[];
   string: string;
   stringlist: string[];
+  widget: Widget | null;
   widgetlist: Widget[];
 }
 
@@ -119,23 +120,25 @@ export function wrapInAppClass<
   T extends BasicAttributeValue<A> | BasicObj[] | BasicObj | BasicWidget
 >(internalValue: T) {
   if (Array.isArray(internalValue)) {
-    return (internalValue as Array<
-      BasicObj | ObjUnavailable | BasicWidget | BasicLink | string
-    >)
+    return (
+      internalValue as Array<
+        BasicObj | ObjUnavailable | BasicWidget | BasicLink | string
+      >
+    )
       .map((value) => wrapInAppClass(value))
       .filter((value) => value !== null);
   }
 
   if (internalValue instanceof BasicObj) {
     return buildAppClassInstance(
-      (internalValue as unknown) as BasicObj,
+      internalValue as unknown as BasicObj,
       objClassFor(internalValue.objClass()) as ObjClass
     );
   }
 
   if (internalValue instanceof BasicWidget) {
     return buildAppClassInstance(
-      (internalValue as unknown) as BasicWidget,
+      internalValue as unknown as BasicWidget,
       widgetClassFor(internalValue.objClass()) as WidgetClass
     );
   }

@@ -10,7 +10,8 @@ export class ImageDecoder {
     [imageUrl: string]: Promise<void> | undefined;
   } = {};
 
-  private onUpdateCallback?: () => void;
+  private onUpdateCallback: () => void;
+  private isOnUpdateCallbackActive: boolean = true;
 
   constructor(onUpdateCallback: () => void) {
     this.onUpdateCallback = onUpdateCallback;
@@ -25,7 +26,11 @@ export class ImageDecoder {
   }
 
   cancelUpdateCallback(): void {
-    this.onUpdateCallback = undefined;
+    this.isOnUpdateCallbackActive = false;
+  }
+
+  resumeUpdateCallback(): void {
+    this.isOnUpdateCallbackActive = true;
   }
 
   private ensureLoading(imageUrl: string) {
@@ -33,7 +38,7 @@ export class ImageDecoder {
 
     const promise = decodeImage(imageUrl).then((url) => {
       this.decodedUrls[imageUrl] = url;
-      this.onUpdateCallback && this.onUpdateCallback();
+      this.isOnUpdateCallbackActive && this.onUpdateCallback();
     });
 
     this.loadingRegistry[imageUrl] = promiseAndFinally(

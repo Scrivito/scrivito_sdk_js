@@ -105,8 +105,9 @@ function isAttributeValidationOptions(
   if (!maybeAttributeValidationOptions) return false;
   if (typeof maybeAttributeValidationOptions !== 'object') return false;
 
-  const maybeSeverity = (maybeAttributeValidationOptions as AttributeValidationOptions)
-    .severity;
+  const maybeSeverity = (
+    maybeAttributeValidationOptions as AttributeValidationOptions
+  ).severity;
   if (!maybeSeverity) return true;
 
   return VALIDATION_SEVERITY_LEVELS.indexOf(maybeSeverity) !== -1;

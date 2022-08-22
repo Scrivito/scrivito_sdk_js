@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { basicUrlFor } from 'scrivito_sdk/app_support/basic_url_for';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
+import { getDataContextParameters } from 'scrivito_sdk/app_support/data_context';
 import { isModifierClick } from 'scrivito_sdk/app_support/is_modifier_click';
 import { navigateTo } from 'scrivito_sdk/app_support/navigate_to';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
@@ -13,6 +14,7 @@ import {
 } from 'scrivito_sdk/common';
 import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react/connect';
+import { useDataContextContainer } from 'scrivito_sdk/react/data_context_container';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 /** @public */
@@ -25,6 +27,8 @@ export const LinkTag = connect(function LinkTag(props: {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   children?: React.ReactNode;
 }) {
+  const dataContextContainer = useDataContextContainer();
+
   checkLinkTagProps(props);
 
   const customProps = { ...props };
@@ -109,7 +113,14 @@ export const LinkTag = connect(function LinkTag(props: {
         basicObjOrLink instanceof BasicLink ||
         basicObjOrLink instanceof BasicObj
       ) {
-        const queryParameters = props.params || undefined;
+        let queryParameters = props.params || undefined;
+
+        if (dataContextContainer) {
+          queryParameters = {
+            ...getDataContextParameters(basicObjOrLink, dataContextContainer),
+            ...queryParameters,
+          };
+        }
 
         return {
           to: props.to,

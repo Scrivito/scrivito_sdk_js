@@ -216,7 +216,9 @@ function configureCmsRestApi(
   if (provider) cmsRestApi.setAuthProvider(provider);
   if (priority) cmsRestApi.setPriority(priority);
 
-  cmsRestApi.init(`https://${endpoint}/tenants/${tenant}`);
+  cmsRestApi.init({
+    apiBaseUrl: `https://${endpoint}/tenants/${tenant}`,
+  });
 }
 
 function getCheckedRoutingConfiguration({

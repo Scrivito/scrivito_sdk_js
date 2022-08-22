@@ -14,6 +14,7 @@ import {
   NormalizedBasicAttributesWithUnknownValues,
   NormalizedUnknownAttributeValue,
   getContentValue,
+  isWidgetAttributeValueAndType,
   isWidgetlistAttributeValueAndType,
   normalizeAttributes,
   persistWidgets,
@@ -58,9 +59,20 @@ export class BasicWidget implements ContentValueProvider {
       }
 
       if (Array.isArray(value)) {
-        const [type, v] = value;
+        const [type, maybeWidgetData] = value;
+
+        if (type === 'widget') {
+          const widgetData = maybeWidgetData as SerializedWidgetAttributes;
+          const newWidget = BasicWidget.newWithSerializedAttributes(widgetData);
+          const attrName = camelCase(name);
+
+          unserializedAttributes[attrName] = [newWidget, ['widget']];
+
+          return;
+        }
+
         if (type === 'widgetlist') {
-          const widgetData = v as SerializedWidgetAttributes[];
+          const widgetData = maybeWidgetData as SerializedWidgetAttributes[];
           const newWidgets = widgetData.map((serializedWidget) => {
             return BasicWidget.newWithSerializedAttributes(serializedWidget);
           });
@@ -263,7 +275,7 @@ export class BasicWidget implements ContentValueProvider {
     );
   }
 
-  containingField(): BasicField<'widgetlist'> {
+  containingField(): BasicField<'widget'> | BasicField<'widgetlist'> {
     return this.obj().fieldContainingWidget(this)!;
   }
 
@@ -279,6 +291,11 @@ export class BasicWidget implements ContentValueProvider {
 
   getData(): WidgetJson {
     return this.obj().getWidgetData(this.id())!;
+  }
+
+  // For test purpose only.
+  getAttributesToBeSaved(): AttributesToBeSaved | undefined {
+    return this.attributesToBeSaved;
   }
 
   private failIfNotPersisted() {
@@ -324,6 +341,11 @@ export class BasicWidget implements ContentValueProvider {
 function copyNormalizedValue(
   valueAndType: NormalizedUnknownAttributeValue
 ): NormalizedUnknownAttributeValue {
+  if (isWidgetAttributeValueAndType(valueAndType)) {
+    const [widget, typeInfo] = valueAndType;
+    return [widget.copy(), typeInfo];
+  }
+
   if (isWidgetlistAttributeValueAndType(valueAndType)) {
     const [value, typeInfo] = valueAndType;
     const widgets = Array.isArray(value) ? value : [value];

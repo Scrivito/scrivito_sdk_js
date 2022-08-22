@@ -69,14 +69,14 @@ function wrapComponent(component: React.ComponentType) {
   return wrappedComponent;
 }
 
-function wrapFunctionComponent<Props>(
+function wrapFunctionComponent<Props extends object>(
   functionComponent: React.FunctionComponent<Props>
 ): React.FunctionComponent<Props> {
-  return memo((props: Props) =>
-    hasWidgetProp(props)
+  return memo((props: Props) => {
+    return hasWidgetProp(props)
       ? wrapInWidgetTag(functionComponent(props))
-      : functionComponent(props)
-  );
+      : functionComponent(props);
+  });
 }
 
 function wrapClassComponent(component: React.ComponentClass) {
@@ -101,7 +101,7 @@ function wrapInWidgetTag<Rendered extends React.ReactNode>(
     : React.createElement(WidgetTag, { children: rendered });
 }
 
-function isComponentMissingName(component: React.ComponentType) {
+export function isComponentMissingName(component: React.ComponentType) {
   // In some browsers functional components are missing the `name` property.
   // In some other browsers they have that property, but the value is meaningless: `_class`.
   return (

@@ -47,7 +47,8 @@ export interface StateContainer<StateType> extends StateReader<StateType> {
 
 // abstract interface for managing state
 abstract class AbstractStateStore<StateType>
-  implements StateContainer<StateType> {
+  implements StateContainer<StateType>
+{
   // return current state
   get() {
     const valueWhenAccessed = this.untrackedGet();
@@ -106,7 +107,7 @@ abstract class AbstractStateStore<StateType>
       const newState = Object.freeze({ [key]: newSubState });
       // Since StateType is fully partial, newState is a valid StateType.
       // No way to tell TypeScript this, though.
-      this.uncheckedSet((newState as unknown) as StateType);
+      this.uncheckedSet(newState as unknown as StateType);
 
       return;
     }

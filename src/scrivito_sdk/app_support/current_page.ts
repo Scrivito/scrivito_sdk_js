@@ -7,8 +7,10 @@ import {
   ContextContainer,
   QueryParameters,
   ScrivitoError,
+  checkArgumentsFor,
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
+import { ObjType } from 'scrivito_sdk/models';
 import { Obj, wrapInAppClass } from 'scrivito_sdk/realm';
 
 /** @public */
@@ -17,6 +19,17 @@ export function currentPage(): Obj | null {
 
   const page = getCurrentPageData()?.currentPage;
   return page ? wrapInAppClass(page) : null;
+}
+
+/** @public */
+export function isCurrentPage(page: Obj): boolean {
+  assertNotUsingInMemoryTenant('Scrivito.isCurrentPage');
+
+  checkArgumentsFor('isCurrentPage', [['page', ObjType]], {
+    docPermalink: 'js-sdk/isCurrentPage',
+  })(page);
+
+  return currentPage()?.id() === page.id();
 }
 
 /** @public */

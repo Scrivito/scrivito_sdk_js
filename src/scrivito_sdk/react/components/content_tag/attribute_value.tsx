@@ -3,6 +3,13 @@ import { isObject } from 'underscore';
 
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
+import {
+  DataContext,
+  DataContextCallback,
+  getValueFromDataContext,
+  isValidDataClassName,
+  isValidDataId,
+} from 'scrivito_sdk/app_support/data_context';
 import { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
 import {
   OpenInCurrentWindow,
@@ -14,10 +21,20 @@ import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_rang
 import { replaceInternalLinks } from 'scrivito_sdk/app_support/replace_internal_links';
 import { registerScrollTarget } from 'scrivito_sdk/app_support/scroll_into_view';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
+import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
+import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
 import { WidgetlistValue } from 'scrivito_sdk/react/components/content_tag/widgetlist_value';
 import { connect } from 'scrivito_sdk/react/connect';
+import {
+  DataContextContainer,
+  useDataContextContainer,
+} from 'scrivito_sdk/react/data_context_container';
+import {
+  replaceHtmlPlaceholdersWithData,
+  replaceStringPlaceholdersWithData,
+} from 'scrivito_sdk/react/replace_placeholders_with_data';
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
 
 export interface AttributeValueProps<Type extends AttributeType> {
@@ -38,6 +55,7 @@ export const AttributeValue = connect(
   withDisplayName(
     'Scrivito.ContentTag.AttributeValue',
     <Type extends AttributeType>(props: AttributeValueProps<Type>) => {
+      const dataContextContainer = useDataContextContainer();
       const element = React.useRef<HTMLElement>();
 
       React.useEffect(() => {
@@ -62,7 +80,8 @@ export const AttributeValue = connect(
           ? maybeCustomInnerHtml
           : undefined,
         props.customProps.onClick,
-        props.widgetProps
+        props.widgetProps,
+        dataContextContainer
       );
 
       const editingProps = props.onClick
@@ -103,14 +122,22 @@ function renderPropsForField(
   customChildrenFromProps: React.ReactNode | undefined,
   customInnerHtml: { __html: string } | undefined,
   customOnClick: (<T>(e: React.MouseEvent<T>) => void) | undefined,
-  widgetProps: WidgetProps | undefined
+  widgetProps: WidgetProps | undefined,
+  dataContextContainer: DataContextContainer | undefined
 ): React.DOMAttributes<HTMLElement> {
+  const dataContext = dataContextContainer?.dataContext;
+  if (dataContext) validateDataContext(dataContext);
+
   const customChildren =
     customChildrenFromProps || customInnerHtml
       ? {
           children: customChildrenFromProps,
           dangerouslySetInnerHTML: customInnerHtml
-            ? { __html: replaceInternalLinks(customInnerHtml.__html) }
+            ? {
+                __html: replaceInternalLinks(customInnerHtml.__html, {
+                  dataContextContainer,
+                }),
+              }
             : undefined,
         }
       : undefined;
@@ -120,15 +147,34 @@ function renderPropsForField(
       return renderPropsForHtml(
         field as BasicField<'html'>,
         customChildren,
-        customOnClick
+        customOnClick,
+        dataContextContainer
       );
 
     case 'string':
-      return renderPropsForString(field, customChildren);
+      return renderPropsForString(
+        field as BasicField<'string'>,
+        customChildren,
+        dataContext
+      );
 
     case 'float':
     case 'integer':
-      return customChildren ?? renderPropsForNumber(field);
+      return (
+        customChildren ??
+        renderPropsForNumber(field as BasicField<'integer' | 'float'>)
+      );
+
+    case 'widget': {
+      return {
+        children: (
+          <WidgetValue
+            field={field as BasicField<'widget'>}
+            widgetProps={widgetProps}
+          />
+        ),
+      };
+    }
 
     case 'widgetlist': {
       return {
@@ -149,7 +195,8 @@ function renderPropsForField(
 function renderPropsForHtml(
   field: BasicField<'html'>,
   customChildren?: { children: React.ReactNode },
-  customOnClick?: (e: React.MouseEvent) => unknown
+  customOnClick?: (e: React.MouseEvent) => unknown,
+  dataContextContainer?: DataContextContainer
 ) {
   const diffContent = isComparisonActive()
     ? field.getHtmlDiffContent(getComparisonRange())
@@ -162,17 +209,26 @@ function renderPropsForHtml(
     };
   }
 
+  const dataContext = dataContextContainer?.dataContext;
+
   return {
     dangerouslySetInnerHTML: {
-      __html: replaceInternalLinks(diffContent || field.get()),
+      __html: replaceInternalLinks(
+        diffContent ||
+          (dataContext
+            ? replaceHtmlPlaceholdersWithData(field.get(), dataContext)
+            : field.get()),
+        { dataContextContainer }
+      ),
     },
     onClick: handleClickOnHtml,
   };
 }
 
 function renderPropsForString(
-  field: BasicField<AttributeType>,
-  customChildren?: { children: React.ReactNode }
+  field: BasicField<'string'>,
+  customChildren?: { children: React.ReactNode },
+  dataContext?: DataContext | DataContextCallback
 ) {
   if (isComparisonActive()) {
     const diffContent = field.getHtmlDiffContent(getComparisonRange());
@@ -182,10 +238,16 @@ function renderPropsForString(
     }
   }
 
-  return customChildren ?? { children: field.get() };
+  return (
+    customChildren ?? {
+      children: dataContext
+        ? replaceStringPlaceholdersWithData(field.get(), dataContext)
+        : field.get(),
+    }
+  );
 }
 
-function renderPropsForNumber(field: BasicField<AttributeType>) {
+function renderPropsForNumber(field: BasicField<'integer' | 'float'>) {
   const value = field.get();
   const parsedValue = value === 0 ? '0' : value;
 
@@ -222,4 +284,18 @@ function handleOpenInCurrentWindow<T>(
   e.preventDefault();
 
   BrowserLocation.push(resource);
+}
+
+function validateDataContext(context: DataContext | DataContextCallback) {
+  const id = getValueFromDataContext('_id', context);
+
+  if (id && !isValidDataId(id)) {
+    throwNextTick(new ArgumentError(`Invalid data ID: ${id}`));
+  }
+
+  const className = getValueFromDataContext('_class', context);
+
+  if (className && !isValidDataClassName(className)) {
+    throwNextTick(new ArgumentError(`Invalid data class name: ${className}`));
+  }
 }

@@ -66,6 +66,8 @@ export function deserialize(
       return deserializeHtmlOrStringValue(value);
     case 'stringlist':
       return deserializeStringlistValue(value);
+    case 'widget':
+      return deserializeWidgetValue(value, model);
     case 'widgetlist':
       return deserializeWidgetlistValue(value, model);
     default:
@@ -242,12 +244,33 @@ function deserializeStringlistValue(value: BackendValue) {
   return [];
 }
 
+function deserializeWidgetValue(
+  value: BackendValue,
+  model: ContentValueProvider
+) {
+  let widgetId: string | undefined;
+
+  if (isBackendValueOfType('widget', value)) [, widgetId] = value;
+  if (isBackendValueOfType('widgetlist', value)) [, [widgetId]] = value;
+
+  return widgetId ? model.widget(widgetId) : null;
+}
+
 function deserializeWidgetlistValue(
   value: BackendValue,
   model: ContentValueProvider
 ) {
   if (isBackendValueOfType('widgetlist', value)) {
     return value[1].map((widgetId) => model.widget(widgetId)!);
+  }
+
+  if (isBackendValueOfType('widget', value)) {
+    const [, widgetId] = value;
+
+    if (widgetId) {
+      const widget = model.widget(widgetId);
+      if (widget) return [widget];
+    }
   }
 
   return [];

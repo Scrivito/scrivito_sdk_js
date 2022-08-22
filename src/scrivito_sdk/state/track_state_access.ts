@@ -55,9 +55,10 @@ function trackChanges<T>(fn: () => T) {
   };
 }
 
-function recordDetectors<T>(
-  fn: () => T
-): { result: T; detectors: DetectorFunction[] } {
+function recordDetectors<T>(fn: () => T): {
+  result: T;
+  detectors: DetectorFunction[];
+} {
   const detectors: DetectorFunction[] = [];
   const result = detectorRecording.runWith(detectors, fn);
 

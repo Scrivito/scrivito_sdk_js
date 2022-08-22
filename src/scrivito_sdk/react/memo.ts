@@ -3,7 +3,7 @@ import * as React from 'react';
 import { equalsBestEffort } from 'scrivito_sdk/common';
 
 export function memo<P extends object>(
-  Component: React.SFC<P>
+  Component: React.ComponentType<P>
 ): React.NamedExoticComponent<P>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function memo<T extends React.ComponentType<any>>(

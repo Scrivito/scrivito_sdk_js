@@ -115,13 +115,11 @@ type LinklistAttributeJson = CustomAttributeJsonMapping['linklist'];
 type ReferenceAttributeJson = CustomAttributeJsonMapping['reference'];
 type ReferencelistAttributeJson = CustomAttributeJsonMapping['referencelist'];
 
-const CONVERSIONS: Partial<
-  {
-    [key in keyof CustomAttributeJsonMapping]: Conversion<
-      CustomAttributeJsonMapping[key]
-    >;
-  }
-> = {
+const CONVERSIONS: Partial<{
+  [key in keyof CustomAttributeJsonMapping]: Conversion<
+    CustomAttributeJsonMapping[key]
+  >;
+}> = {
   html: convertHtml,
   link: convertLink,
   linklist: convertLinklist,

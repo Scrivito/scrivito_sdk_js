@@ -55,6 +55,7 @@ export type { ChangesJson } from 'scrivito_sdk/client/get_workspace_changes';
 export {
   isExistentObjJson,
   isUnavailableObjJson,
+  isWidgetAttributeJson,
   isWidgetlistAttributeJson,
 } from 'scrivito_sdk/client/obj_json';
 export type {

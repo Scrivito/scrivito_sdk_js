@@ -24,15 +24,17 @@ export function initialContentFor(
       return attributeContent();
     }
 
-    if (isWidgetlist(attributeContent)) {
-      return attributeContent.map(
-        (widget: Widget): Widget => {
-          const basicWidget = widget._scrivitoPrivateContent;
-          const copy = basicWidget!.copy();
+    if (isWidget(attributeContent)) {
+      return wrapInAppClass(attributeContent._scrivitoPrivateContent!.copy());
+    }
 
-          return wrapInAppClass(copy);
-        }
-      );
+    if (isWidgetlist(attributeContent)) {
+      return attributeContent.map((widget) => {
+        const basicWidget = widget._scrivitoPrivateContent;
+        const copy = basicWidget.copy();
+
+        return wrapInAppClass(copy);
+      });
     }
 
     return attributeContent;

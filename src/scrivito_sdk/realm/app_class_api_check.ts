@@ -4,6 +4,7 @@ import {
   checkArgumentsFor,
   classify,
   tcomb as t,
+  underscore,
 } from 'scrivito_sdk/common';
 import { isAppClass } from 'scrivito_sdk/realm/schema';
 import {
@@ -17,16 +18,22 @@ export const {
   checkCreateWidgetClass,
   checkCreateObjClass,
   checkProvideComponent,
+  checkProvideLayoutComponent,
+  checkProvideDataErrorComponent,
   checkProvideObjClass,
   checkProvideWidgetClass,
+  checkProvideDataClass,
 } = (() => {
   if (process.env.NODE_ENV !== 'development') {
     return {
       checkCreateWidgetClass: noop,
       checkCreateObjClass: noop,
       checkProvideComponent: noop,
+      checkProvideLayoutComponent: noop,
+      checkProvideDataErrorComponent: noop,
       checkProvideObjClass: noop,
       checkProvideWidgetClass: noop,
+      checkProvideDataClass: noop,
     };
   }
 
@@ -53,6 +60,7 @@ export const {
             'referencelist',
             'string',
             'stringlist',
+            'widget',
             'widgetlist',
           ]),
           t.tuple([
@@ -63,6 +71,12 @@ export const {
           ]),
           t.tuple([
             t.enums.of(['reference', 'referencelist']),
+            t.interface({
+              only: t.union([t.String, t.list(t.String)]),
+            }),
+          ]),
+          t.tuple([
+            t.enums.of(['widget']),
             t.interface({
               only: t.union([t.String, t.list(t.String)]),
             }),
@@ -129,6 +143,25 @@ export const {
       }
     ),
 
+    checkProvideLayoutComponent: checkArgumentsFor(
+      'provideLayoutComponent',
+      [
+        ['objClass', ObjClassType],
+        ['component', t.irreducible('React component', isFunction)],
+      ],
+      {
+        docPermalink: 'js-sdk/provideLayoutComponent',
+      }
+    ),
+
+    checkProvideDataErrorComponent: checkArgumentsFor(
+      'provideDataErrorComponent',
+      [['component', t.irreducible('React component', isFunction)]],
+      {
+        docPermalink: 'js-sdk/provideDataErrorComponent',
+      }
+    ),
+
     checkProvideObjClass: (...args: unknown[]) => {
       checkProvideClass('objClass', ObjClassType, ObjClassDefinitionType, args);
     },
@@ -141,6 +174,20 @@ export const {
         args
       );
     },
+
+    checkProvideDataClass: checkArgumentsFor(
+      'provideDataClass',
+      [
+        ['name', t.String],
+        [
+          'dataClass',
+          t.interface({ connection: t.interface({ get: t.Function }) }),
+        ],
+      ],
+      {
+        docPermalink: 'js-sdk/provideDataClass',
+      }
+    ),
   };
 })();
 
@@ -174,5 +221,8 @@ function checkProvideClass(
 }
 
 function isCustomAttributeName(name: string): boolean {
-  return /^[a-z](_+[A-Z0-9]|[A-Za-z0-9])*$/.test(name);
+  return (
+    /^[a-z](_+[A-Z0-9]|[A-Za-z0-9])*$/.test(name) &&
+    underscore(name).length <= 50
+  );
 }

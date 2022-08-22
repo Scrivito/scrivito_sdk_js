@@ -128,6 +128,8 @@ function serializeEntry<Type extends AttributeType>(
       return ['string', serializeStringAttributeValue(value, name)];
     case 'stringlist':
       return ['stringlist', serializeStringlistAttributeValue(value, name)];
+    case 'widget':
+      return ['widget', serializeWidgetAttributeValue(value, name)];
     case 'widgetlist':
       return ['widgetlist', serializeWidgetlistAttributeValue(value, name)];
     default:
@@ -315,6 +317,11 @@ function isValidString(value: unknown): value is string | number {
   return isString(value) || isNumber(value);
 }
 
+function serializeWidgetAttributeValue(value: unknown, name: string): string {
+  if (value instanceof BasicWidget) return value.id();
+  throwInvalidAttributeValue(value, name, 'An instance of Widget.');
+}
+
 function serializeWidgetlistAttributeValue(
   value: unknown,
   name: string
@@ -325,7 +332,7 @@ function serializeWidgetlistAttributeValue(
 
   if (isBasicWidgetArray(value)) return value.map((v) => v.id());
 
-  throwInvalidAttributeValue(value, name, 'An array of BasicWidget instances.');
+  throwInvalidAttributeValue(value, name, 'An array of Widget instances.');
 }
 
 function isBasicWidgetArray(value: unknown): value is BasicWidget[] {

@@ -1,15 +1,17 @@
-import { find } from 'underscore';
+import { find, isArray } from 'underscore';
 
 import {
   AttributeJson,
   ExistentObjJson,
   WidgetJson,
+  isWidgetAttributeJson,
   isWidgetlistAttributeJson,
 } from 'scrivito_sdk/client';
 import { isSystemAttribute } from 'scrivito_sdk/common';
 
 export interface WidgetPlacement {
   attributeName: string;
+  attributeType: 'widgetlist' | 'widget';
   index: number;
   parentWidgetId?: string;
 }
@@ -53,17 +55,30 @@ function findWidgetPlacementIn(
     // cast is therefore safe.
     const attributeJson = jsonValue as AttributeJson;
 
-    if (!isWidgetlistAttributeJson(attributeJson)) return;
+    if (
+      !isWidgetAttributeJson(attributeJson) &&
+      !isWidgetlistAttributeJson(attributeJson)
+    ) {
+      return;
+    }
 
-    const widgetIds = attributeJson[1];
+    const attributeValue = attributeJson[1];
 
-    if (!widgetIds) return;
+    if (isArray(attributeValue)) {
+      const widgetIds = attributeJson[1];
+      if (!widgetIds) return;
 
-    const index = widgetIds.indexOf(widgetId);
+      const index = widgetIds.indexOf(widgetId);
 
-    if (index !== -1) {
-      placement = { attributeName, index };
-      return true;
+      if (index !== -1) {
+        placement = { attributeName, attributeType: 'widgetlist', index };
+        return true;
+      }
+    } else {
+      if (widgetId === attributeValue) {
+        placement = { attributeName, attributeType: 'widget', index: 0 };
+        return true;
+      }
     }
   });
 

@@ -231,11 +231,6 @@ export function reportUsedData<T>(fn: () => T): UsedDataReport<T> {
 
   return {
     result,
-    usedData: values(store),
+    usedData: Object.values(store),
   };
-}
-
-// Object.values replacement (IE11 doesn't have it)
-function values<V>(objekt: { [index: string]: V }): V[] {
-  return Object.keys(objekt).map((key) => objekt[key]);
 }

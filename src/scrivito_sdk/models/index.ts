@@ -38,7 +38,6 @@ export type {
 export {
   createObjFromFileIn,
   createObjIn,
-  createObjWithSerializedAttributesIn,
 } from 'scrivito_sdk/models/basic_scope_create_methods';
 export {
   getAllObjsByValueFrom,

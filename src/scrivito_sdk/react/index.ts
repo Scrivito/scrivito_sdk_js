@@ -1,6 +1,8 @@
 export { connect } from 'scrivito_sdk/react/connect';
 export { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_component';
 export { provideComponent } from 'scrivito_sdk/react/provide_component';
+export { provideLayoutComponent } from 'scrivito_sdk/react/provide_layout_component';
+export { provideDataErrorComponent } from 'scrivito_sdk/react/provide_data_error_component';
 export { registerComponent } from 'scrivito_sdk/react/register_component';
 export { getComponentForId } from 'scrivito_sdk/react/component_registry';
 export { BackgroundImageTag } from 'scrivito_sdk/react/components/background_image_tag';
@@ -9,6 +11,7 @@ export { ChildListTag } from 'scrivito_sdk/react/components/child_list_tag';
 export { ContentTag } from 'scrivito_sdk/react/components/content_tag';
 export type { ContentTagProps } from 'scrivito_sdk/react/components/content_tag';
 export { CurrentPage } from 'scrivito_sdk/react/components/current_page';
+export { Extensions } from 'scrivito_sdk/react/components/extensions';
 export { ImageTag } from 'scrivito_sdk/react/components/image_tag';
 export { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 export type { AttributeValueProps } from 'scrivito_sdk/react/components/content_tag/attribute_value';
@@ -25,8 +28,10 @@ export { alwaysShowOptionMarkers } from 'scrivito_sdk/react/always_show_option_m
 export { useForceUpdate } from 'scrivito_sdk/react/hooks/use_force_update';
 export { WidgetContent } from 'scrivito_sdk/react/components/content_tag/widget_content';
 export { memo, propsAreEqual } from 'scrivito_sdk/react/memo';
-
+export { useDataItem } from 'scrivito_sdk/react/use_data_item';
 export type {
   CustomPageComponentProps,
   CustomWidgetComponentProps,
 } from 'scrivito_sdk/react/register_component';
+export type { DataContextContainer } from 'scrivito_sdk/react/data_context_container';
+export { showExtension } from 'scrivito_sdk/react/components/extensions';

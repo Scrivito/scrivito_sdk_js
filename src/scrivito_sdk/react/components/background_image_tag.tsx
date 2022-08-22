@@ -92,68 +92,73 @@ ValidBackgroundOrBackgroundList.dispatch = (
 type BinaryToUrl = (binary: Binary) => string;
 
 /** @public */
-export const BackgroundImageTag: React.ComponentType<BackgroundImageTagProps> = connect(
-  class BackgroundImageTag extends React.Component<BackgroundImageTagProps> {
-    static displayName = 'Scrivito.BackgroundImageTag';
+export const BackgroundImageTag: React.ComponentType<BackgroundImageTagProps> =
+  connect(
+    class BackgroundImageTag extends React.Component<BackgroundImageTagProps> {
+      static displayName = 'Scrivito.BackgroundImageTag';
 
-    static propTypes = propTypes<BackgroundImageTagProps>(
-      {
-        tag: t.maybe(t.String),
-        style: t.maybe(
-          t.interface(
-            {
-              background: t.maybe(ValidBackgroundOrBackgroundList),
-            },
-            { strict: false }
-          )
-        ),
-      },
-      { strict: false }
-    );
-
-    static defaultProps = {
-      tag: 'div',
-      style: {},
-    };
-
-    private decoder: BackgroundImageDecoder;
-
-    constructor(props: BackgroundImageTagProps) {
-      super(props);
-
-      this.decoder = createBackgroundImageDecoder(() => this.forceUpdate());
-
-      this.binaryToUrl = this.binaryToUrl.bind(this);
-    }
-
-    componentWillUnmount() {
-      this.decoder.clear();
-    }
-
-    render() {
-      const { style, tag, ...passThroughProps } = this.props;
-      const Tag = tag as keyof JSX.IntrinsicElements;
-
-      assertNoBackgroundRelatedProperties(style);
-
-      return (
-        <Tag
-          {...passThroughProps}
-          style={calculateCSSProperties(style!, this.binaryToUrl)}
-        />
+      static propTypes = propTypes<BackgroundImageTagProps>(
+        {
+          tag: t.maybe(t.String),
+          style: t.maybe(
+            t.interface(
+              {
+                background: t.maybe(ValidBackgroundOrBackgroundList),
+              },
+              { strict: false }
+            )
+          ),
+        },
+        { strict: false }
       );
-    }
 
-    private binaryToUrl(binary: Binary): string {
-      const { initialUrl, highResUrlToDecode } = scaleDownBinary(binary);
-      const decodedBackgroundUrl =
-        highResUrlToDecode &&
-        this.decoder.getBackgroundImage(highResUrlToDecode);
+      static defaultProps = {
+        tag: 'div',
+        style: {},
+      };
 
-      return decodedBackgroundUrl || `url(${initialUrl})`;
+      private decoder: BackgroundImageDecoder;
+
+      constructor(props: BackgroundImageTagProps) {
+        super(props);
+
+        this.decoder = createBackgroundImageDecoder(() => this.forceUpdate());
+
+        this.binaryToUrl = this.binaryToUrl.bind(this);
+      }
+
+      componentDidMount() {
+        this.decoder.resumeUpdateCallback();
+      }
+
+      componentWillUnmount() {
+        this.decoder.clear();
+      }
+
+      render() {
+        const { style, tag, ...passThroughProps } = this.props;
+        const Tag = tag as keyof JSX.IntrinsicElements;
+
+        assertNoBackgroundRelatedProperties(style);
+
+        return (
+          <Tag
+            {...passThroughProps}
+            style={calculateCSSProperties(style!, this.binaryToUrl)}
+          />
+        );
+      }
+
+      private binaryToUrl(binary: Binary): string {
+        const { initialUrl, highResUrlToDecode } = scaleDownBinary(binary);
+        const decodedBackgroundUrl =
+          highResUrlToDecode &&
+          this.decoder.getBackgroundImage(highResUrlToDecode);
+
+        return decodedBackgroundUrl || `url(${initialUrl})`;
+      }
     }
-  }
-);
+  );
 
 // For test purpose only
 export function createBackgroundImageDecoder(

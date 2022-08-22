@@ -4,6 +4,7 @@ import {
   ObjJson,
   ObjSpaceId,
   WidgetJson,
+  isWidgetAttributeJson,
   isWidgetlistAttributeJson,
 } from 'scrivito_sdk/client';
 import {
@@ -89,12 +90,24 @@ export function serializeAttributes(
 ): SerializedWidgetAttributes;
 export function serializeAttributes(content: ContentValueProvider) {
   return mapObject(content.getData(), (value, name) => {
-    if (value && !isSystemAttribute(name) && isWidgetlistAttributeJson(value)) {
-      const widgets = getContentValueUsingInternalName(content, name, [
-        'widgetlist',
-      ]);
-      return ['widgetlist', widgets.map(serializeAttributes)];
+    if (value && !isSystemAttribute(name)) {
+      if (isWidgetAttributeJson(value)) {
+        const widget = getContentValueUsingInternalName(content, name, [
+          'widget',
+        ]);
+
+        return ['widget', widget ? serializeAttributes(widget) : null];
+      }
+
+      if (isWidgetlistAttributeJson(value)) {
+        const widgets = getContentValueUsingInternalName(content, name, [
+          'widgetlist',
+        ]);
+
+        return ['widgetlist', widgets.map(serializeAttributes)];
+      }
     }
+
     return value;
   });
 }
@@ -106,6 +119,10 @@ export function persistWidgets(
   Object.keys(attributes).forEach((key) => {
     const valueAndType = attributes[key];
 
+    if (isWidgetAttributeValueAndType(valueAndType)) {
+      valueAndType[0].persistInObjIfNecessary(obj);
+    }
+
     if (isWidgetlistAttributeValueAndType(valueAndType)) {
       const [value] = valueAndType;
       const widgets = Array.isArray(value) ? value : [value];
@@ -115,6 +132,18 @@ export function persistWidgets(
       });
     }
   });
+}
+
+export function isWidgetAttributeValueAndType(
+  valueAndType: NormalizedUnknownAttributeValue
+): valueAndType is [BasicWidget, BasicTypeInfo<'widget'>] {
+  if (valueAndType.length < 2) return false;
+
+  const [value, typeInfo] = valueAndType;
+  const [type] = typeInfo!;
+  if (type !== 'widget') return false;
+
+  return value instanceof BasicWidget;
 }
 
 export function isWidgetlistAttributeValueAndType(

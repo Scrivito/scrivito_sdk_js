@@ -91,7 +91,8 @@ export type OrderAttributes = Array<
 >;
 
 export class BasicObjSearch
-  implements ContinueIterable<BasicObj, ObjQueryContinuation> {
+  implements ContinueIterable<BasicObj, ObjQueryContinuation>
+{
   private _query: Query[];
   private _boost: BackendValueBoost[];
   private _batchSize?: number;

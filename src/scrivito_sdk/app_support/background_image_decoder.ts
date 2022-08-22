@@ -2,7 +2,7 @@ import { decodeBackgroundImage } from 'scrivito_sdk/app_support/decode_backgroun
 import { promiseAndFinally } from 'scrivito_sdk/common';
 
 export class BackgroundImageDecoder {
-  private readonly decodedUrls: {
+  private decodedUrls: {
     [imageUrl: string]: string | undefined;
   } = {};
 
@@ -10,8 +10,9 @@ export class BackgroundImageDecoder {
     [imageUrl: string]: Promise<void> | undefined;
   } = {};
 
-  private readonly clears: Array<() => void> = [];
-  private onUpdateCallback?: () => void;
+  private clears: Array<() => void> = [];
+  private onUpdateCallback: () => void;
+  private isOnUpdateCallbackActive: boolean = true;
 
   constructor(onUpdateCallback: () => void) {
     this.onUpdateCallback = onUpdateCallback;
@@ -26,8 +27,14 @@ export class BackgroundImageDecoder {
   }
 
   clear(): void {
-    this.clears.map((clear) => clear());
-    this.onUpdateCallback = undefined;
+    this.clears.forEach((clear) => clear());
+    this.clears = [];
+    this.decodedUrls = {};
+    this.isOnUpdateCallbackActive = false;
+  }
+
+  resumeUpdateCallback(): void {
+    this.isOnUpdateCallbackActive = true;
   }
 
   private ensureLoading(imageUrl: string) {
@@ -35,11 +42,14 @@ export class BackgroundImageDecoder {
 
     const promise = decodeBackgroundImage(imageUrl).then(
       ({ decodedBackgroundUrl, clear }) => {
-        if (clear) this.clears.push(clear);
-
-        this.decodedUrls[imageUrl] = decodedBackgroundUrl;
-
-        this.onUpdateCallback && this.onUpdateCallback();
+        if (this.isOnUpdateCallbackActive) {
+          if (clear) this.clears.push(clear);
+          this.decodedUrls[imageUrl] = decodedBackgroundUrl;
+          this.onUpdateCallback();
+        } else {
+          if (clear) clear();
+          this.decodedUrls[imageUrl] = undefined;
+        }
       }
     );
     this.loadingRegistry[imageUrl] = promiseAndFinally(

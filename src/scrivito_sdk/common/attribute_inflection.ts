@@ -16,10 +16,14 @@ export function isCamelCase(name: string): boolean {
 }
 
 export function underscore(name: string): string {
-  return name.replace(
+  const underscored = name.replace(
     CONVERT_TO_UNDERSCORE,
     (_match, group) => `_${group.toLowerCase()}`
   );
+
+  return underscored[0] === '_' && name[0] !== '_'
+    ? underscored.substring(1)
+    : underscored;
 }
 
 export function camelCase(name: string): string {

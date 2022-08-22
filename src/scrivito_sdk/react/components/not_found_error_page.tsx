@@ -10,8 +10,8 @@ interface NotFoundErrorPageProps {
 }
 
 /** @public */
-export const NotFoundErrorPage: React.ComponentType<NotFoundErrorPageProps> = connect(
-  function NotFoundErrorPage({ children }) {
+export const NotFoundErrorPage: React.ComponentType<NotFoundErrorPageProps> =
+  connect(function NotFoundErrorPage({ children }) {
     const navigationState = getNotFoundErrorPageState();
     if (!navigationState) return null;
     if (!isCurrentHistoryState(navigationState.historyState)) return null;
@@ -27,7 +27,6 @@ export const NotFoundErrorPage: React.ComponentType<NotFoundErrorPageProps> = co
         )}
       </div>
     );
-  }
-);
+  });
 
 NotFoundErrorPage.displayName = 'Scrivito.NotFoundErrorPage';

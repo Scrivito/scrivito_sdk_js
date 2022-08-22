@@ -7,6 +7,7 @@ interface TypeConfigMapping {
   multienum: { values: readonly string[] };
   reference: { validClasses: readonly string[] };
   referencelist: { validClasses: readonly string[] };
+  widget: { validClasses: readonly string[] };
   widgetlist:
     | { validClasses: readonly string[]; maximum?: number }
     | { validClasses?: readonly string[]; maximum: number };
@@ -17,26 +18,22 @@ interface NormalizedTypeConfigMapping {
   multienum: { values: readonly string[] };
   reference: { only?: readonly string[] };
   referencelist: { only?: readonly string[] };
+  widget: { only?: readonly string[] };
   widgetlist: { only?: readonly string[]; maximum?: number };
 }
 
-export type BasicTypeInfo<
-  Type extends AttributeType
-> = Type extends keyof TypeConfigMapping
-  ? BasicTypeInfoWithConfig<Type>
-  : [Type];
+export type BasicTypeInfo<Type extends AttributeType> =
+  Type extends keyof TypeConfigMapping ? BasicTypeInfoWithConfig<Type> : [Type];
 
-export type NormalizedTypeInfo<
-  Type extends AttributeType
-> = Type extends keyof NormalizedTypeConfigMapping
-  ? [Type, NormalizedTypeConfigMapping[Type]]
-  : [Type, {}];
+export type NormalizedTypeInfo<Type extends AttributeType> =
+  Type extends keyof NormalizedTypeConfigMapping
+    ? [Type, NormalizedTypeConfigMapping[Type]]
+    : [Type, {}];
 
-type BasicTypeInfoWithConfig<
-  Type extends keyof TypeConfigMapping
-> = Type extends AttributeTypeWithMandatoryConfig
-  ? [Type, TypeConfigMapping[Type]]
-  : [Type, TypeConfigMapping[Type]] | [Type];
+type BasicTypeInfoWithConfig<Type extends keyof TypeConfigMapping> =
+  Type extends AttributeTypeWithMandatoryConfig
+    ? [Type, TypeConfigMapping[Type]]
+    : [Type, TypeConfigMapping[Type]] | [Type];
 
 export type TypeInfo<Type extends AttributeType> =
   | BasicTypeInfo<Type>

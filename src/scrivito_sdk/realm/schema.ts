@@ -121,6 +121,7 @@ type AttributeTypeToConfigMapping = {
   multienum: { values: readonly string[] };
   reference: { only: string | readonly string[] };
   referencelist: { only: string | readonly string[] };
+  widget: { only: string | readonly string[] };
   widgetlist:
     | { only: string | readonly string[]; maximum?: number }
     | { only?: string | readonly string[]; maximum: number };
@@ -200,9 +201,9 @@ export class Schema {
 
   constructor(
     classDefinition: ObjClassDefinition | WidgetClassDefinition,
-    parent: ObjClass | WidgetClass
+    readonly parentClass: ObjClass | WidgetClass
   ) {
-    const parentSchema = parent._scrivitoPrivateSchema;
+    const parentSchema = this.parentClass._scrivitoPrivateSchema;
     const basicAttributeDefinitions: BasicAttributeDefinitions = parentSchema
       ? { ...parentSchema.attributes() }
       : {};
@@ -292,6 +293,10 @@ export class Schema {
 
     return blobDefinition[0] === 'binary';
   }
+
+  parent(): WidgetClass | ObjClass {
+    return this.parentClass;
+  }
 }
 
 export function isAppClass(object: object): object is AppClass {
@@ -325,6 +330,7 @@ function toNormalizedAttributeDefinition(
   switch (definition[0]) {
     case 'reference':
     case 'referencelist':
+    case 'widget':
     case 'widgetlist': {
       const { validClasses: only, ...otherConfig } = definition[1];
       return [definition[0], only ? { only, ...otherConfig } : otherConfig];

@@ -1,19 +1,29 @@
 import { BasicObj, BasicWidget } from 'scrivito_sdk/models';
 import { schemaFromBasicObjOrWidget } from 'scrivito_sdk/realm';
 
-export function subWidgets(root: BasicObj | BasicWidget): BasicWidget[] {
-  const rootSchema = schemaFromBasicObjOrWidget(root);
-  if (!rootSchema) return [];
+export function subWidgets(content: BasicObj | BasicWidget): BasicWidget[] {
+  const contentSchema = schemaFromBasicObjOrWidget(content);
+  if (!contentSchema) return [];
 
-  const attributes = rootSchema.attributes();
+  const attributes = contentSchema.attributes();
 
   return Object.keys(attributes).reduce((memo, attrName) => {
-    if (attributes[attrName][0] !== 'widgetlist') return memo;
-    const widgets = root.get(attrName, 'widgetlist');
+    const [attrType] = attributes[attrName];
 
-    return Array.prototype.concat(
-      memo,
-      ...widgets.map((widget) => [widget, ...subWidgets(widget)])
-    );
+    if (attrType === 'widget') {
+      const widget = content.get(attrName, 'widget');
+      if (widget) return [...memo, widget, ...subWidgets(widget)];
+    }
+
+    if (attrType === 'widgetlist') {
+      const widgets = content.get(attrName, 'widgetlist');
+
+      return Array.prototype.concat(
+        memo,
+        ...widgets.map((widget) => [widget, ...subWidgets(widget)])
+      );
+    }
+
+    return memo;
   }, []);
 }

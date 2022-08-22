@@ -1,4 +1,4 @@
-import { compact, reject, sortBy, uniq, values } from 'underscore';
+import { compact, reject, sortBy, uniq } from 'underscore';
 
 import {
   AttributeJson,
@@ -13,6 +13,7 @@ import {
   InternalError,
   ScrivitoError,
   camelCase,
+  computeAncestorPaths,
   equals,
   isSystemAttribute,
   parseStringToDate,
@@ -80,9 +81,12 @@ interface WidgetInsertionBefore {
 type WidgetInsertionAnchor =
   | WidgetInsertionBefore
   | { after: BasicWidget; before?: undefined };
+
 interface WidgetPlacementWithContainer extends WidgetPlacement {
   container: BasicObj | BasicWidget;
-  attributeValue: BasicAttributeValue<'widgetlist'>;
+  attributeValue:
+    | BasicAttributeValue<'widget'>
+    | BasicAttributeValue<'widgetlist'>;
 }
 
 export interface BasicObjAttributes {
@@ -261,6 +265,10 @@ export class BasicObj implements ContentValueProvider {
     return this.getAttributeData('_modification') || null;
   }
 
+  dataClass(): string | null {
+    return this.get('dataClass', 'string') || null;
+  }
+
   get<Type extends AttributeType>(
     attributeName: string,
     typeInfo: TypeInfo<Type>
@@ -404,8 +412,11 @@ export class BasicObj implements ContentValueProvider {
   insertWidget(widget: BasicWidget, anchor: WidgetInsertionAnchor): void {
     const id = widgetIdFromWidgetInsertionAnchor(anchor);
     const placement = this.widgetPlacementFor(id);
+
     if (placement) {
       const { attributeValue, attributeName, container, index } = placement;
+      if (!Array.isArray(attributeValue)) throw new InternalError();
+
       const newIndex = anchor.before ? index : index + 1;
       const newAttributeValue = [
         ...attributeValue.slice(0, newIndex),
@@ -420,11 +431,20 @@ export class BasicObj implements ContentValueProvider {
   }
 
   removeWidget(widget: BasicWidget): void {
-    const field = this.fieldContainingWidget(widget);
-    if (field) {
-      const value: BasicWidget[] = field.get();
+    const widgetOrWidgetlistField = this.fieldContainingWidget(widget);
+    if (!widgetOrWidgetlistField) return;
+
+    if (widgetOrWidgetlistField.type() === 'widgetlist') {
+      const widgetlistField =
+        widgetOrWidgetlistField as BasicField<'widgetlist'>;
+
+      const value = widgetlistField.get();
       const newValue = reject(value, (curWidget) => curWidget.equals(widget));
-      field.update(newValue);
+
+      widgetlistField.update(newValue);
+    } else {
+      const widgetField = widgetOrWidgetlistField as BasicField<'widget'>;
+      widgetField.update(null);
     }
   }
 
@@ -437,7 +457,9 @@ export class BasicObj implements ContentValueProvider {
     if (placement) {
       const { attributeValue, index } = placement;
 
-      return attributeValue[index + indexOffset];
+      if (Array.isArray(attributeValue)) {
+        return attributeValue[index + indexOffset];
+      }
     }
   }
 
@@ -493,18 +515,24 @@ export class BasicObj implements ContentValueProvider {
     if (!widgetPool) return [];
 
     return uniq(
-      compact(values(widgetPool)).map((widgetJson) => widgetJson._obj_class)
+      compact(Object.values(widgetPool)).map(
+        (widgetJson) => widgetJson._obj_class
+      )
     );
   }
 
   fieldContainingWidget(
     widget: BasicWidget
-  ): BasicField<'widgetlist'> | undefined {
+  ): BasicField<'widget'> | BasicField<'widgetlist'> | undefined {
     const widgetId = widget.id();
     const placement = this.widgetPlacementFor(widgetId);
+
     if (placement) {
-      const { container, attributeName } = placement;
-      return new BasicField(container, attributeName, ['widgetlist']);
+      const { container, attributeName, attributeValue } = placement;
+
+      return Array.isArray(attributeValue)
+        ? new BasicField<'widgetlist'>(container, attributeName, ['widgetlist'])
+        : new BasicField<'widget'>(container, attributeName, ['widget']);
     }
   }
 
@@ -560,9 +588,9 @@ export class BasicObj implements ContentValueProvider {
     attributeName: Key,
     type?: AttributeType
   ): ExistentObjJson[Key] {
-    return type === 'widgetlist'
-      ? this.objData.getWidgetlistAttribute(attributeName)
-      : this.objData.getNonWidgetAttribute(attributeName);
+    return type === 'widget' || type === 'widgetlist'
+      ? this.objData.getAttributeWithWidgetData(attributeName)
+      : this.objData.getAttributeWithoutWidgetData(attributeName);
   }
 
   getData(): ObjJson | undefined | null {
@@ -617,19 +645,18 @@ export class BasicObj implements ContentValueProvider {
     widgetId: string
   ): WidgetPlacementWithContainer | undefined {
     const data = this.objData.getIfExistent();
-
     if (!data) return;
 
     const placement = findWidgetPlacement(data, widgetId);
-
     if (!placement) return;
 
     const attributeName = camelCase(placement.attributeName);
-    const parentWidgetId = placement.parentWidgetId;
+    const { attributeType, index, parentWidgetId } = placement;
+
     let container;
+
     if (parentWidgetId) {
       container = this.widget(parentWidgetId);
-
       if (!container) return;
     } else {
       container = this;
@@ -638,8 +665,9 @@ export class BasicObj implements ContentValueProvider {
     return {
       container,
       attributeName,
-      attributeValue: container.get(attributeName, ['widgetlist']),
-      index: placement.index,
+      attributeType,
+      attributeValue: container.get(attributeName, [attributeType]),
+      index,
       parentWidgetId,
     };
   }
@@ -653,21 +681,6 @@ export class BasicObj implements ContentValueProvider {
       .search()
       .and('_parentPath', 'equals', path);
   }
-}
-
-function computeAncestorPaths(path: string): string[] {
-  const ancestorPaths = ['/'];
-
-  if (path === '/') return ancestorPaths;
-
-  const components = path.split('/').slice(1);
-  let ancestorPath = '';
-  components.forEach((component) => {
-    ancestorPath = `${ancestorPath}/${component}`;
-    ancestorPaths.push(ancestorPath);
-  });
-
-  return ancestorPaths;
 }
 
 function widgetIdFromWidgetInsertionAnchor(anchor: WidgetInsertionAnchor) {

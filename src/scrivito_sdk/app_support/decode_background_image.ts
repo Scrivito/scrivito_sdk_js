@@ -7,11 +7,6 @@ import {
   getCSSCanvasContext,
   hasGetCSSCanvasContext,
 } from 'scrivito_sdk/app_support/decode/get_css_canvas_context';
-import {
-  clearMozSetImageElement,
-  hasMozSetImageElement,
-  mozSetImageElement,
-} from 'scrivito_sdk/app_support/decode/moz_set_image_element';
 import { decodeOrLoadImg, hasDecodeImg } from './decode/decode_or_load_img';
 
 export interface DecodedBackgroundImage {
@@ -24,22 +19,11 @@ export function decodeBackgroundImage(
 ): Promise<DecodedBackgroundImage> {
   return decodeOrLoadImg(imageUrl)
     .then((img) => {
-      if (hasMozSetImageElement()) return mozElement(img);
       if (hasGetCSSCanvasContext()) return webkitCanvas(img);
       if (!hasDecodeImg(img)) return drawCanvas(img);
       return { decodedBackgroundUrl: `url(${imageUrl})` };
     })
     .catch(() => ({ decodedBackgroundUrl: `url(${imageUrl})` }));
-}
-
-function mozElement(img: HTMLImageElement): DecodedBackgroundImage {
-  const canvas = drawImgOnCanvas(img);
-  const mozCanvasIdentifier = `ScrivitoBackgroundImage${nextCounter()}`;
-  mozSetImageElement(mozCanvasIdentifier, canvas);
-  return {
-    decodedBackgroundUrl: `-moz-element(#${mozCanvasIdentifier})`,
-    clear: () => clearMozSetImageElement(mozCanvasIdentifier),
-  };
 }
 
 function webkitCanvas(img: HTMLImageElement): DecodedBackgroundImage {

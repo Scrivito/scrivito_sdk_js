@@ -21,6 +21,7 @@ export interface BasicAttributeMapping {
   referencelist: SingleReferenceValue[];
   string: string;
   stringlist: string[];
+  widget: BasicWidget | null;
   widgetlist: BasicWidget[];
 }
 
@@ -43,6 +44,7 @@ interface BasicAttributeMappingForUpdate {
   referencelist: BasicAttributeMapping['referencelist'];
   string: BasicAttributeMapping['string'] | null;
   stringlist: BasicAttributeMapping['stringlist'];
+  widget: BasicAttributeMapping['widget'];
   widgetlist: BasicAttributeMapping['widgetlist'];
 }
 
@@ -64,16 +66,15 @@ export type AttributeType =
   | 'referencelist'
   | 'string'
   | 'stringlist'
+  | 'widget'
   | 'widgetlist';
 
 // Content update related types section starts here
-export type BasicAttributeValue<
-  Type extends AttributeType
-> = BasicAttributeMapping[Type];
+export type BasicAttributeValue<Type extends AttributeType> =
+  BasicAttributeMapping[Type];
 
-export type BasicAttributeValueForUpdate<
-  Type extends AttributeType
-> = BasicAttributeMappingForUpdate[Type];
+export type BasicAttributeValueForUpdate<Type extends AttributeType> =
+  BasicAttributeMappingForUpdate[Type];
 
 export interface BasicAttributeDict extends SystemAttributeDict {
   [attributeName: string]:
@@ -90,7 +91,8 @@ interface SystemAttributeDict {
   _permalink: string | [string];
 }
 
-export type SystemAttributeValue = SystemAttributeDict[keyof SystemAttributeDict];
+export type SystemAttributeValue =
+  SystemAttributeDict[keyof SystemAttributeDict];
 
 interface BasicCustomAttributeDict {
   [attributeName: string]: AnyCustomAttributeValueAndTypeForUpdate;

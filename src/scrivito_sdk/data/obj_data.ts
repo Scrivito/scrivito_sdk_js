@@ -106,9 +106,12 @@ export class ObjData {
   }
 
   getWidgetPoolWithBadPerformance(): WidgetPoolJson | undefined {
-    return (getSubReader('_widget_pool', this.widgetData) as StateReader<
-      WidgetPoolJson
-    >).get();
+    return (
+      getSubReader(
+        '_widget_pool',
+        this.widgetData
+      ) as StateReader<WidgetPoolJson>
+    ).get();
   }
 
   getWidget(id: string): WidgetJson | undefined {
@@ -125,11 +128,11 @@ export class ObjData {
 
   /** Get a top-level attribute from the Obj.
    *
-   * If you are sure that no widgets are involved (key is not a widgetlist attribute),
-   * you could use getNonWidgetAttribute instead, which is faster.
+   * If you are sure that no widgets are involved (key is not a widget or a widgetlist attribute),
+   * you could use getAttributeWithoutWidgetData instead, which is faster.
    */
   getAttribute<Key extends keyof ObjJson & string>(key: Key): ObjJson[Key] {
-    if (isSystemAttribute(key)) return this.getNonWidgetAttribute(key);
+    if (isSystemAttribute(key)) return this.getAttributeWithoutWidgetData(key);
 
     if (!this.ensureAvailable()) return;
 
@@ -140,8 +143,8 @@ export class ObjData {
       : getSubReader(key, this.widgetData).get();
   }
 
-  /** Get a top-level attribute from the Obj, which is not a widgetlist */
-  getNonWidgetAttribute<Key extends keyof ObjJson & string>(
+  /** Get a top-level attribute from the Obj, which is not a widget or a widgetlist */
+  getAttributeWithoutWidgetData<Key extends keyof ObjJson & string>(
     key: Key
   ): ObjJson[Key] {
     if (key === '_widget_pool') {
@@ -152,7 +155,7 @@ export class ObjData {
     return getSubReader(key, this.baseData).get();
   }
 
-  getWidgetlistAttribute<Key extends keyof ObjJson & string>(
+  getAttributeWithWidgetData<Key extends keyof ObjJson & string>(
     key: Key
   ): ObjJson[Key] {
     return getSubReader(key, this.widgetData).get();
@@ -172,11 +175,11 @@ export class ObjData {
   }
 
   isForbidden(): boolean {
-    return !!this.getNonWidgetAttribute('_forbidden');
+    return !!this.getAttributeWithoutWidgetData('_forbidden');
   }
 
   isUnavailable(): boolean {
-    return !!this.getNonWidgetAttribute('_deleted');
+    return !!this.getAttributeWithoutWidgetData('_deleted');
   }
 
   // for test purposes only
@@ -354,6 +357,6 @@ function isWidgetKey<Key extends keyof ObjJson & string>(
     key === '_widget_pool' ||
     (!isSystemAttribute(key) &&
       Array.isArray(value) &&
-      value[0] === 'widgetlist')
+      (value[0] === 'widget' || value[0] === 'widgetlist'))
   );
 }

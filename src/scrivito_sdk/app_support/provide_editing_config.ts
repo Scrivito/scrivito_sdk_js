@@ -1,5 +1,6 @@
 import { uniq } from 'underscore';
 
+import { isValidDataContextIdentifier } from 'scrivito_sdk/app_support/data_context';
 import {
   AttributeEditingOptions,
   EditingConfig,
@@ -152,6 +153,17 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     'NonemptyArray'
   );
 
+  const AttributeDataContextConfigKeyType = t.refinement(
+    t.String,
+    isValidDataContextIdentifier,
+    'DataContextIdentifier'
+  );
+
+  const AttributeDataContextConfigType = t.dict(
+    t.String,
+    t.dict(AttributeDataContextConfigKeyType, t.String)
+  );
+
   const AttributesEditingConfigType = t.dict(
     t.String,
     t.interface({
@@ -184,12 +196,14 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
       t.Number,
       t.String,
       t.list(LinkType),
+      WidgetType,
       t.list(WidgetType),
       t.list(t.String),
     ])
   );
 
   const EditingConfigType = t.interface({
+    attributeDataContext: t.maybe(AttributeDataContextConfigType),
     attributes: t.maybe(AttributesEditingConfigType),
     description: t.maybe(t.String),
     descriptionForContent: t.maybe(t.Function),

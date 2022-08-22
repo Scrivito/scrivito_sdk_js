@@ -12,7 +12,8 @@ import {
 import { QueryParams } from 'scrivito_sdk/data/obj_id_query_batch';
 
 export class ObjDataQuery
-  implements ContinueIterable<ObjData, ObjQueryContinuation> {
+  implements ContinueIterable<ObjData, ObjQueryContinuation>
+{
   private readonly idQuery: ObjIdQuery;
 
   constructor(
@@ -47,7 +48,8 @@ export class ObjDataQuery
 }
 
 class ObjDataQueryIterator
-  implements ContinueIterator<ObjData, ObjQueryContinuation> {
+  implements ContinueIterator<ObjData, ObjQueryContinuation>
+{
   private done?: { done: true };
 
   constructor(

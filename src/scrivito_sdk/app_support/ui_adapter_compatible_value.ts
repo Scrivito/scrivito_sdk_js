@@ -91,7 +91,7 @@ function uiCompatibleObjectValue(object: ObjectValue) {
 
 function isObjSearch<T>(v: T | ObjSearch): v is ObjSearch {
   return (
-    ((v as unknown) as ObjSearch)._scrivitoPrivateContent instanceof
+    (v as unknown as ObjSearch)._scrivitoPrivateContent instanceof
     BasicObjSearch
   );
 }

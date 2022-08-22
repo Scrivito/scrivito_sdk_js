@@ -29,14 +29,18 @@ export {
   connect,
   ContentTag,
   CurrentPage,
+  Extensions,
   ImageTag,
   InPlaceEditingOff,
   LinkTag,
   NotFoundErrorPage,
   provideComponent,
+  provideLayoutComponent,
+  provideDataErrorComponent,
   registerComponent,
   RestoreInPlaceEditing,
   WidgetTag,
+  useDataItem,
 } from 'scrivito_sdk/react';
 
 export type {
@@ -58,6 +62,7 @@ export {
   currentPage,
   currentPageParams,
   currentSiteId,
+  isCurrentPage,
 } from 'scrivito_sdk/app_support/current_page';
 export { currentWorkspace } from 'scrivito_sdk/app_support/current_workspace';
 export { currentWorkspaceId } from 'scrivito_sdk/models/current_workspace_id';
@@ -80,12 +85,14 @@ export { useHistory } from 'scrivito_sdk/app_support/browser_location';
 export { validationResultsFor } from 'scrivito_sdk/app_support/validation_results_stub';
 export { uiContext } from 'scrivito_sdk/app_support/ui_context';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
+export { provideDataClass } from 'scrivito_sdk/app_support/provide_data_class';
 
 export { provideEditingConfig } from 'scrivito_sdk/app_support/provide_editing_config';
 export type {
   ObjEditingConfig,
   WidgetEditingConfig,
 } from 'scrivito_sdk/app_support/editing_config';
+export { isOnCurrentPath } from 'scrivito_sdk/app_support/is_on_current_path';
 
 /** @internal */
 export { unstable_selectSiteId } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
