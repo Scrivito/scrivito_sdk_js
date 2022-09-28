@@ -12,6 +12,11 @@ import {
 import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 
 const PLACEHOLDERS = /__([a-z](_?[a-z0-9]+)*)__/gi;
+const SINGLE_PLACEHOLDER = /^__([a-z](_?[a-z0-9]+)*)__$/i;
+
+export function containsSinglePlaceholder(text: string): boolean {
+  return !!text.match(SINGLE_PLACEHOLDER);
+}
 
 export function replaceStringPlaceholdersWithData(
   text: string,

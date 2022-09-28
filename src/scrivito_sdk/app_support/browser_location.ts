@@ -1,3 +1,4 @@
+// @rewire
 import { createBrowserHistory } from 'history';
 import type { Action, History as HistoryV4, UnregisterCallback } from 'history';
 import type { History as HistoryV5 } from 'history-5';

@@ -8,7 +8,7 @@
 // Client
 export { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
 export { load } from 'scrivito_sdk/loadable';
-export { Binary, FutureBinary } from 'scrivito_sdk/models';
+export { Binary, FutureBinary, DataLocatorError } from 'scrivito_sdk/models';
 
 export {
   createObjClass,
@@ -41,6 +41,8 @@ export {
   RestoreInPlaceEditing,
   WidgetTag,
   useDataItem,
+  useDataLocator,
+  useDataScope,
 } from 'scrivito_sdk/react';
 
 export type {
@@ -84,6 +86,7 @@ export { urlFor } from 'scrivito_sdk/app_support/url_for';
 export { useHistory } from 'scrivito_sdk/app_support/browser_location';
 export { validationResultsFor } from 'scrivito_sdk/app_support/validation_results_stub';
 export { uiContext } from 'scrivito_sdk/app_support/ui_context';
+export { editorLanguage } from 'scrivito_sdk/app_support/editor_language';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
 export { provideDataClass } from 'scrivito_sdk/app_support/provide_data_class';
 

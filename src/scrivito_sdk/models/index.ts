@@ -101,3 +101,14 @@ export {
 } from 'scrivito_sdk/models/content_versions';
 export { restrictToContent } from 'scrivito_sdk/models/restrict_to_content';
 export { Workspace } from 'scrivito_sdk/models/workspace';
+export type {
+  FilterTransformParams,
+  RefersToTransformParams,
+  DataLocator,
+} from 'scrivito_sdk/models/data_locator';
+export {
+  isFilterDataTransformParams,
+  isDataLocator,
+  isRefersToDataTransformParams,
+} from 'scrivito_sdk/models/data_locator';
+export { DataLocatorError } from 'scrivito_sdk/models/data_locator_error';

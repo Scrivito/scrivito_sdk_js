@@ -1,12 +1,19 @@
 import * as URI from 'urijs';
 
 import { basicObjToDataContext } from 'scrivito_sdk/app_support/basic_obj_to_data_context';
-import { isDataClassProvided } from 'scrivito_sdk/app_support/data_class_store';
+import { getDataClass } from 'scrivito_sdk/app_support/data_class';
+import {
+  DataItemEntry,
+  DataStack,
+  isDataItemEntry,
+} from 'scrivito_sdk/app_support/data_stack';
+import { isExternalDataClassProvided } from 'scrivito_sdk/app_support/external_data_class';
 import {
   ExternalData,
   getExternalDataFrom,
 } from 'scrivito_sdk/app_support/external_data_store';
 import { externalDataToDataContext } from 'scrivito_sdk/app_support/external_data_to_data_context';
+import { isObjDataClassProvided } from 'scrivito_sdk/app_support/obj_data_class';
 import { QueryParameters, underscore } from 'scrivito_sdk/common';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
 import {
@@ -17,7 +24,6 @@ import {
   objSpaceScope,
   restrictToObjClass,
 } from 'scrivito_sdk/models';
-import { DataContextContainer } from 'scrivito_sdk/react';
 
 export type DataContext = Record<DataContextIdentifier, DataContextValue>;
 
@@ -72,14 +78,14 @@ export function isValidDataClassName(
 
 export function getDataContextQuery(
   objOrLink: BasicObj | BasicLink,
-  contextContainer: DataContextContainer,
+  dataStack: DataStack,
   query?: string
 ): string | undefined {
-  const parameters = getDataContextParameters(objOrLink, contextContainer);
+  const parameters = getDataContextParameters(objOrLink, dataStack);
 
   if (parameters) {
     return URI.buildQuery(
-      query ? { ...parameters, ...URI.parseQuery(query) } : parameters
+      query ? Object.assign(parameters, URI.parseQuery(query)) : parameters
     );
   }
 
@@ -92,7 +98,7 @@ interface DataContextParameters {
 
 export function getDataContextParameters(
   objOrLink: BasicObj | BasicLink,
-  contextContainer: DataContextContainer
+  dataStack: DataStack
 ): DataContextParameters | undefined {
   const obj = getObj(objOrLink);
   if (!obj) return;
@@ -100,36 +106,20 @@ export function getDataContextParameters(
   const objDataClass = obj.dataClass();
   if (!objDataClass) return;
 
-  const dataContext = findDataContext(objDataClass, contextContainer);
-  const contextDataClass = getValueFromDataContext('_class', dataContext);
+  const dataContext = findMatchingDataItemEntry(objDataClass, dataStack);
+  if (!dataContext) return;
 
-  if (contextDataClass && objDataClass === contextDataClass) {
-    const contextDataId = getValueFromDataContext('_id', dataContext);
-
-    if (contextDataId) {
-      return { [parameterizeDataClass(objDataClass)]: contextDataId };
-    }
+  if (isDataItemEntry(dataContext) && objDataClass === dataContext._class) {
+    return { [parameterizeDataClass(objDataClass)]: dataContext._id };
   }
 }
 
-function findDataContext(
-  objDataClass: string,
-  contextContainer: DataContextContainer
-): DataContext | DataContextCallback {
-  const dataContext = contextContainer.dataContext;
-
-  if (
-    !getValueFromDataContext('_class', dataContext) ||
-    !getValueFromDataContext('_id', dataContext)
-  ) {
-    const dataContextFromStack = contextContainer.dataStack.find(
-      ({ _class: dataClass }) => dataClass === objDataClass
-    );
-
-    if (dataContextFromStack) return dataContextFromStack;
-  }
-
-  return dataContext;
+export function findMatchingDataItemEntry(
+  dataClassName: string,
+  dataStack: DataStack
+): DataItemEntry | undefined {
+  const dataItemEntries = dataStack.filter(isDataItemEntry);
+  return dataItemEntries.find((entry) => entry._class === dataClassName);
 }
 
 export function getDataContext(
@@ -139,15 +129,36 @@ export function getDataContext(
   const dataClassName = obj.dataClass();
   if (!dataClassName) return;
 
-  const dataId = params[parameterizeDataClass(dataClassName)];
-  if (typeof dataId !== 'string' || !dataId) return 'unavailable';
+  const dataId = getDataId(dataClassName, params);
+  if (!dataId) return 'unavailable';
 
-  return isDataClassProvided(dataClassName)
-    ? getDataContextFromDataClass(dataClassName, dataId)
-    : getDataContextFromObjClass(dataClassName, dataId);
+  if (isExternalDataClassProvided(dataClassName)) {
+    return getDataContextFromExternalData(dataClassName, dataId);
+  }
+
+  if (isObjDataClassProvided(dataClassName)) {
+    return getDataContextFromObjData(dataClassName, dataId);
+  }
 }
 
-function getDataContextFromDataClass(dataClassName: string, dataId: string) {
+function getDataId(dataClassName: string, params: QueryParameters) {
+  return (
+    getDataIdFromParams(dataClassName, params) ||
+    getDataIdOfFirstDataItem(dataClassName)
+  );
+}
+
+function getDataIdFromParams(dataClassName: string, params: QueryParameters) {
+  const dataId = params[parameterizeDataClass(dataClassName)];
+  if (typeof dataId === 'string' && dataId.length > 0) return dataId;
+}
+
+function getDataIdOfFirstDataItem(dataClassName: string) {
+  const [firstDataItem] = getDataClass(dataClassName).all().take(1);
+  if (firstDataItem) return firstDataItem.id();
+}
+
+function getDataContextFromExternalData(dataClassName: string, dataId: string) {
   return getDataContextFrom<ExternalData>(
     () => getExternalDataFrom(dataClassName, dataId),
     (externalData) =>
@@ -155,7 +166,7 @@ function getDataContextFromDataClass(dataClassName: string, dataId: string) {
   );
 }
 
-function getDataContextFromObjClass(objClassName: string, objId: string) {
+function getDataContextFromObjData(objClassName: string, objId: string) {
   return getDataContextFrom<BasicObj>(
     () => getBasicObjFrom(objClassName, objId),
     basicObjToDataContext

@@ -32,8 +32,6 @@ export {
   createObjData,
   clearObjDataCache,
 } from 'scrivito_sdk/data/obj_data_store';
-export type { ObjQueryContinuation } from 'scrivito_sdk/data/obj_id_query';
-export type { QueryParams } from 'scrivito_sdk/data/obj_id_query_batch';
 export { ObjData, configureForLazyWidgets } from 'scrivito_sdk/data/obj_data';
 export {
   diffObjJson,
@@ -42,8 +40,16 @@ export {
 } from 'scrivito_sdk/data/obj_patch';
 export type { ObjJsonPatch } from 'scrivito_sdk/data/obj_patch';
 export { REMOVE_THIS_KEY } from 'scrivito_sdk/data/remove_this_key';
-export { getObjQuery } from 'scrivito_sdk/data/obj_query_store';
-export type { ObjDataQuery } from 'scrivito_sdk/data/obj_data_query';
+export type { QueryParams } from 'scrivito_sdk/data/obj_query_store';
+export {
+  getObjQuery,
+  getObjQueryCount,
+} from 'scrivito_sdk/data/obj_query_store';
+export type {
+  DataQuery,
+  DataQueryIterator,
+  DataQueryContinuation,
+} from 'scrivito_sdk/data/data_query';
 export {
   objReplicationPool,
   useReplicationStrategy,

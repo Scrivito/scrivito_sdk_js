@@ -84,6 +84,7 @@ export type AttributeJson =
 export type CustomAttributeJsonMapping = {
   binary: ['binary', BinaryJson];
   boolean: ['boolean', boolean];
+  datalocator: ['datalocator', string];
   date: ['date', string];
   html: ['html', string];
   link: ['link', LinkJson];

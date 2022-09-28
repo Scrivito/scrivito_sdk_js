@@ -20,13 +20,7 @@ import {
 } from 'scrivito_sdk/loadable';
 import { getObjFrom, restrictToSiteAndGlobal } from 'scrivito_sdk/models';
 import { isBinaryBasicObj } from 'scrivito_sdk/realm';
-import { globalState } from 'scrivito_sdk/state';
-
-declare module 'scrivito_sdk/state/global_state' {
-  interface GlobalState {
-    currentPage: LoadableState<NavigationState>;
-  }
-}
+import { createStateContainer } from 'scrivito_sdk/state';
 
 export interface NavigationState {
   historyState: HistoryState;
@@ -103,7 +97,7 @@ function recognizeLocation(location: string) {
   return route;
 }
 
-const navigationState = globalState.subState('currentPage');
+const navigationState = createStateContainer<LoadableState<NavigationState>>();
 
 const loadableNavigationState = new LoadableData({
   state: navigationState,

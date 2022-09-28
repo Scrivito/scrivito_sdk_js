@@ -1,3 +1,4 @@
+// @rewire
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { VisitorAuthenticationProvider } from 'scrivito_sdk/client';
 import {

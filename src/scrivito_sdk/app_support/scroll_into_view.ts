@@ -1,3 +1,4 @@
+// @rewire
 import { randomHex } from 'scrivito_sdk/common';
 import { getCurrentPageId } from './get_current_page_id';
 import { scrollElementIntoView } from './scroll_element_into_view';

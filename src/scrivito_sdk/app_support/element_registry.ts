@@ -1,3 +1,4 @@
+// @rewire
 import { Streamable } from 'scrivito_sdk/common';
 import { LoadableData, LoadableState } from 'scrivito_sdk/loadable';
 import { createStateContainer } from 'scrivito_sdk/state';

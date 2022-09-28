@@ -1,3 +1,4 @@
+// @rewire
 import { difference, isEmpty, isEqual } from 'underscore';
 
 import { ObjJson, WidgetJson, WidgetPoolJson } from 'scrivito_sdk/client';

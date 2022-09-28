@@ -1,7 +1,7 @@
 import { isObject } from 'underscore';
 
-import { getDataClassConnection } from 'scrivito_sdk/app_support/data_class_store';
 import { isValidDataContextIdentifier } from 'scrivito_sdk/app_support/data_context';
+import { getExternalDataClassConnection } from 'scrivito_sdk/app_support/external_data_class_registry';
 import { ScrivitoError } from 'scrivito_sdk/common';
 import { LoadableCollection } from 'scrivito_sdk/loadable';
 
@@ -20,7 +20,7 @@ const loadableCollection = new LoadableCollection<
 >({
   loadElement: ([dataClass, dataId]) => ({
     loader: async () => {
-      const connection = getDataClassConnection(dataClass);
+      const connection = getExternalDataClassConnection(dataClass);
       if (!connection) {
         throw new ScrivitoError(`Missing data class with name ${dataClass}`);
       }

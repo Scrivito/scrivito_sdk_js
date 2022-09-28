@@ -4,6 +4,7 @@ import { registerLoadingActivity } from 'scrivito_sdk/app_support/loading_monito
 import { ArgumentError, InternalError } from 'scrivito_sdk/common';
 import { runWithPerformanceConstraint } from 'scrivito_sdk/data';
 import {
+  CaptureReport,
   LoadingSubscriber,
   capture,
   isCurrentlyCapturing,
@@ -13,6 +14,7 @@ import { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_c
 import { forwardElementTypeProps } from 'scrivito_sdk/react/get_element_type';
 import { useForceUpdate } from 'scrivito_sdk/react/hooks/use_force_update';
 import {
+  StateAccessReport,
   StateSubscriber,
   createSyncSubscriber,
   trackStateAccess,
@@ -161,16 +163,16 @@ function isConnectedComponent<Props>(
 
 const HierarchyLevelContext = React.createContext<number>(0);
 
+type CapturedState = CaptureReport<StateAccessReport<unknown>>;
+
 class ComponentConnector {
   private unregisterLoadingActivityCallback?: () => void;
-  private isMounted: boolean;
-  private onMount?: () => void;
+  private lastRenderedState?: CapturedState;
   private readonly loadingSubscriber: LoadingSubscriber;
   private stateSubscriber?: StateSubscriber;
   private hierachyLevel?: number;
 
   constructor(private component: ConnectorComponentInferface) {
-    this.isMounted = false;
     this.loadingSubscriber = new LoadingSubscriber();
   }
 
@@ -184,17 +186,12 @@ class ComponentConnector {
       this.hierachyLevel
     );
 
-    this.isMounted = true;
-    this.onMount?.call(null);
+    if (this.lastRenderedState) this.subscribeState(this.lastRenderedState);
   }
 
   componentWillUnmount() {
-    if (this.stateSubscriber) {
-      this.stateSubscriber.unsubscribe();
-    }
-    this.unregisterLoadingActivity();
-    this.isMounted = false;
-    this.loadingSubscriber.unsubscribe();
+    this.unsubscribeState();
+    this.stateSubscriber = undefined;
   }
 
   render(originalRender: () => React.ReactNode) {
@@ -231,44 +228,38 @@ class ComponentConnector {
       // we are inside a capture - no need to load anything ourselves
       // (this usually means the caller is prerendering, e.g. renderToString)
       return runWithFrozenState(originalRender);
-    } else {
-      const captured = capture(() =>
-        trackStateAccess(() =>
-          runWithPerformanceConstraint(() => runWithFrozenState(originalRender))
-        )
-      );
-
-      const { accessedState, result } = captured.result;
-
-      this.whenMounted(() => {
-        if (!this.stateSubscriber) {
-          throw new InternalError();
-        }
-        this.stateSubscriber.subscribeChanges(accessedState);
-        captured.subscribeLoading(this.loadingSubscriber);
-
-        if (captured.isAllDataLoaded()) {
-          this.unregisterLoadingActivity();
-        } else {
-          if (!this.unregisterLoadingActivityCallback) {
-            this.unregisterLoadingActivityCallback = registerLoadingActivity();
-          }
-        }
-      });
-
-      if (!captured.isAllDataLoaded()) {
-        return this.handleLoading(result);
-      }
-
-      return result;
     }
+
+    const captured = capture(() =>
+      trackStateAccess(() =>
+        runWithPerformanceConstraint(() => runWithFrozenState(originalRender))
+      )
+    );
+
+    this.lastRenderedState = captured;
+    this.subscribeState(captured);
+
+    const { result } = captured.result;
+
+    return captured.isAllDataLoaded() ? result : this.handleLoading(result);
   }
 
-  private whenMounted(fn: () => void) {
-    if (this.isMounted) {
-      delete this.onMount;
-      fn();
-    } else this.onMount = fn.bind(this);
+  private subscribeState(captured: CapturedState) {
+    // if there's no stateSubscriber then the component isn't mounted
+    // and thus doesn't need a subscription for state changes.
+    if (!this.stateSubscriber) return;
+
+    this.stateSubscriber.subscribeChanges(captured.result.accessedState);
+    captured.subscribeLoading(this.loadingSubscriber);
+
+    if (captured.isAllDataLoaded()) this.unregisterLoadingActivity();
+    else this.registerLoadingActivity();
+  }
+
+  private unsubscribeState() {
+    if (this.stateSubscriber) this.stateSubscriber.unsubscribe();
+    this.unregisterLoadingActivity();
+    this.loadingSubscriber.unsubscribe();
   }
 
   private handleLoading(preliminaryResult: React.ReactNode) {
@@ -277,6 +268,12 @@ class ComponentConnector {
     }
 
     return preliminaryResult;
+  }
+
+  private registerLoadingActivity() {
+    if (!this.unregisterLoadingActivityCallback) {
+      this.unregisterLoadingActivityCallback = registerLoadingActivity();
+    }
   }
 
   private unregisterLoadingActivity() {

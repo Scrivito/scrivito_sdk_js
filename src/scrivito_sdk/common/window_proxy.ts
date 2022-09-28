@@ -1,9 +1,14 @@
+// @rewire
 export function devicePixelRatio(windowObject: Window = window): number {
   return windowObject.devicePixelRatio || 1;
 }
 
 export function currentHref() {
   return windowLocation().href;
+}
+
+export function windowLocationHostname() {
+  return windowLocation().hostname;
 }
 
 export function windowLocationOrigin() {

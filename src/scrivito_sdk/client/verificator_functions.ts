@@ -1,3 +1,4 @@
+// @rewire
 import { Deferred, loadJs } from 'scrivito_sdk/common';
 
 export type VerificationForChallenge = (

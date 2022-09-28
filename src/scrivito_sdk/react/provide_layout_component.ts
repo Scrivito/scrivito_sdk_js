@@ -1,3 +1,4 @@
+import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { registerLayoutComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { connectAndMemoize } from 'scrivito_sdk/react/connect_and_memoize';
@@ -7,7 +8,6 @@ import {
   Obj,
   ObjClass,
   checkProvideLayoutComponent,
-  getClassName,
   isObjClass,
 } from 'scrivito_sdk/realm';
 

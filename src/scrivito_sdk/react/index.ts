@@ -29,9 +29,10 @@ export { useForceUpdate } from 'scrivito_sdk/react/hooks/use_force_update';
 export { WidgetContent } from 'scrivito_sdk/react/components/content_tag/widget_content';
 export { memo, propsAreEqual } from 'scrivito_sdk/react/memo';
 export { useDataItem } from 'scrivito_sdk/react/use_data_item';
+export { useDataLocator } from 'scrivito_sdk/react/use_data_locator';
+export { useDataScope } from 'scrivito_sdk/react/use_data_scope';
 export type {
   CustomPageComponentProps,
   CustomWidgetComponentProps,
 } from 'scrivito_sdk/react/register_component';
-export type { DataContextContainer } from 'scrivito_sdk/react/data_context_container';
 export { showExtension } from 'scrivito_sdk/react/components/extensions';

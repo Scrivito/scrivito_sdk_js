@@ -104,7 +104,7 @@ abstract class AbstractStateStore<StateType>
     const priorState = this.untrackedGet();
 
     if (priorState === undefined) {
-      const newState = Object.freeze({ [key]: newSubState });
+      const newState = { [key]: newSubState };
       // Since StateType is fully partial, newState is a valid StateType.
       // No way to tell TypeScript this, though.
       this.uncheckedSet(newState as unknown as StateType);
@@ -127,21 +127,19 @@ abstract class AbstractStateStore<StateType>
       throw new InternalError();
     }
 
-    const duplicate = { ...priorState };
+    // We know that priorState isn't null or undefined
+    const priorStateAsNonNull = priorState as NonNullable<StateType>;
 
-    // We know that duplicate isn't null or undefined
-    const duplicateAsNonNull = duplicate as NonNullable<typeof duplicate>;
-
-    if (newSubState === undefined) {
-      // remove undefined keys, avoid memory leak
-      delete duplicateAsNonNull[key];
-    } else {
-      // Since StateType is fully partial, this is true:
-      // (SubType<StateType, K> | undefined) == SubType<StateType, K>
-      duplicateAsNonNull[key] = newSubState as SubType<StateType, K>;
-    }
-
-    this.uncheckedSet(Object.freeze(duplicate));
+    performAsStateChange(() => {
+      if (newSubState === undefined) {
+        // remove undefined keys, avoid memory leak
+        delete priorStateAsNonNull[key];
+      } else {
+        // Since StateType is fully partial, this is true:
+        // (SubType<StateType, K> | undefined) == SubType<StateType, K>
+        priorStateAsNonNull[key] = newSubState as SubType<StateType, K>;
+      }
+    });
   }
 
   getSubState<K extends SubKey<StateType>>(
@@ -175,16 +173,22 @@ export class StateTree<TreeType> extends AbstractStateStore<TreeType> {
   }
 
   uncheckedSet(newState: TreeType) {
-    failIfFrozen('Changing state');
-
-    this.state = newState;
-
-    notifySubscribers();
+    performAsStateChange(() => {
+      this.state = newState;
+    });
   }
 
   id() {
     return '';
   }
+}
+
+function performAsStateChange(actualChange: () => void): void {
+  failIfFrozen('Changing state');
+
+  actualChange();
+
+  notifySubscribers();
 }
 
 // a node of a state tree.

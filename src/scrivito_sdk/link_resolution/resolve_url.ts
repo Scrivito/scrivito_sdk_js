@@ -1,3 +1,4 @@
+// @rewire
 import { InternalError } from 'scrivito_sdk/common';
 
 export type ResolvedUrl = RecognizedUrl | null;

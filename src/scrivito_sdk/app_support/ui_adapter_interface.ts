@@ -30,6 +30,7 @@ export const uiAdapterDescription = {
   currentWorkspace: GET,
   currentEditingContext: GET,
   getUiContext: GET,
+  getUiLanguage: GET,
 
   // LinkResolution methods
   getResolvedUrl: GET,
@@ -125,6 +126,7 @@ export interface UiAdapterInterface
   currentEditingContext(): { windowName?: string };
   currentWorkspace(): WorkspaceData;
   getUiContext(): UiContext;
+  getUiLanguage(): Locale | null;
 }
 
 export interface TenantConfiguration {
@@ -138,3 +140,5 @@ export interface UiAdapterOpenContentBrowserOptions {
   selection?: string[];
   validObjClasses?: readonly string[];
 }
+
+export type Locale = 'de' | 'en';

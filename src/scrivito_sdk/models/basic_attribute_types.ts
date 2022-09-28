@@ -8,12 +8,13 @@ import { TypeInfo } from 'scrivito_sdk/models/type_info';
 export interface BasicAttributeMapping {
   binary: Binary | null;
   boolean: boolean;
+  datalocator: unknown;
   date: Date | null;
   datetime: Date | null;
   enum: string | null;
   float: number | null;
-  integer: number | null;
   html: string;
+  integer: number | null;
   link: BasicLink | null;
   linklist: BasicLink[];
   multienum: string[];
@@ -31,6 +32,7 @@ export interface BasicAttributeMapping {
 interface BasicAttributeMappingForUpdate {
   binary: BasicAttributeMapping['binary'];
   boolean: BasicAttributeMapping['boolean'];
+  datalocator: BasicAttributeMapping['datalocator'];
   date: BasicAttributeMapping['date'];
   datetime: BasicAttributeMapping['datetime'];
   enum: BasicAttributeMapping['enum'];
@@ -53,12 +55,13 @@ export type SingleReferenceValue = BasicObj | ObjUnavailable;
 export type AttributeType =
   | 'binary'
   | 'boolean'
+  | 'datalocator'
   | 'date'
   | 'datetime'
   | 'enum'
   | 'float'
-  | 'integer'
   | 'html'
+  | 'integer'
   | 'link'
   | 'linklist'
   | 'multienum'

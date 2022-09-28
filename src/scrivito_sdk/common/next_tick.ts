@@ -1,3 +1,4 @@
+// @rewire
 type DelayedFunction = () => void;
 
 let nextTickScheduler = setTimeoutScheduler;

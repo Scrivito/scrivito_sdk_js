@@ -1,3 +1,4 @@
+// @rewire
 import { escape, unescape } from 'underscore';
 import * as URI from 'urijs';
 

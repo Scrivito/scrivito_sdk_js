@@ -1,3 +1,4 @@
+// @rewire
 import { pruneString } from 'scrivito_sdk/common';
 import { BasicObj, BasicWidget } from 'scrivito_sdk/models';
 import { Schema } from 'scrivito_sdk/realm';

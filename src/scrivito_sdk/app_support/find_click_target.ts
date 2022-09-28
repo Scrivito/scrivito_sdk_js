@@ -1,3 +1,4 @@
+// @rewire
 import { MouseEvent } from 'react';
 import * as URI from 'urijs';
 

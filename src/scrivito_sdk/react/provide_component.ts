@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { registerComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { WidgetComponentProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
@@ -13,7 +14,6 @@ import {
   ObjClass,
   WidgetClass,
   checkProvideComponent,
-  getClassName,
 } from 'scrivito_sdk/realm';
 
 /** @public */

@@ -1,4 +1,8 @@
-import { ArgumentError, QueryParameters } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  QueryParameters,
+  throwNextTick,
+} from 'scrivito_sdk/common';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 
 import { AttributeDefinitions, Obj } from 'scrivito_sdk/realm';
@@ -13,13 +17,16 @@ export interface PageComponentProps<
 
 export function getComponentForPageClass(
   pageClassName: string
-): React.ComponentType<PageComponentProps> {
+): React.ComponentType<PageComponentProps> | undefined {
   const pageComponent = getComponentForAppClass(pageClassName);
-  if (!pageComponent) {
-    throw new ArgumentError(
-      `No component registered for obj class "${pageClassName}"`
-    );
+
+  if (pageComponent) {
+    return pageComponent as React.ComponentType<PageComponentProps>;
   }
 
-  return pageComponent as React.ComponentType<PageComponentProps>;
+  throwNextTick(
+    new ArgumentError(
+      `No component registered for obj class "${pageClassName}"`
+    )
+  );
 }

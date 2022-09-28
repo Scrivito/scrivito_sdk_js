@@ -1,3 +1,4 @@
+// @rewire
 import {
   MissingWorkspaceError,
   cmsRestApi,

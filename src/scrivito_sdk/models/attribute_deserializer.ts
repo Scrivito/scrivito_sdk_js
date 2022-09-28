@@ -40,6 +40,8 @@ export function deserialize(
       return deserializeBinaryValue(value, model);
     case 'boolean':
       return deserializeBooleanValue(value);
+    case 'datalocator':
+      return deserializeDataLocatorValue(value);
     case 'date':
       return deserializeDateValue(value);
     case 'datetime':
@@ -92,6 +94,19 @@ function deserializeBooleanValue(value: BackendValue) {
   }
 
   return false;
+}
+
+function deserializeDataLocatorValue(value: BackendValue) {
+  return isBackendValueOfType('string', value) ? parseJson(value[1]) : null;
+}
+
+function parseJson(string: string) {
+  try {
+    return JSON.parse(string);
+  } catch (e: unknown) {
+    if (e instanceof SyntaxError) return null;
+    throw e;
+  }
 }
 
 function deserializeDateValue(value: BackendValue) {

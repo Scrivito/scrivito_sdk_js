@@ -105,7 +105,9 @@ export class Streamable<T> {
   /** Returns a new Streamable, truncated to the first value. */
   takeOne(): Streamable<T> {
     return new Streamable((subscriber) => {
-      const subscription = this.subscribe({
+      let subscription: null | Subscription = null;
+
+      subscription = this.subscribe({
         next: (value) => {
           if (subscription) subscription.unsubscribe();
           subscriber.next(value);

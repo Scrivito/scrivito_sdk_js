@@ -1,5 +1,9 @@
-import { BackendResponse } from 'scrivito_sdk/client/cms_rest_api';
-import { UnauthorizedError } from 'scrivito_sdk/client/unauthorized_error';
+import {
+  AuthorizationProvider,
+  RawResponse,
+  RequestFailedError,
+} from 'scrivito_sdk/client';
+import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
 import {
   Verification,
   VerificationForChallenge,
@@ -16,40 +20,52 @@ export interface Challenge {
   data: unknown;
 }
 
-class VerificationRequiredError extends UnauthorizedError {
-  details!: Challenge;
-}
-
 interface CurrentComputation {
   challenge: Challenge;
-  promise: Promise<string>;
+  promise: Promise<Verification>;
 }
 
 let computation: CurrentComputation | undefined;
 let verification: Verification | undefined;
 
-export async function authorize(
-  request: (authorization: string | undefined) => Promise<BackendResponse>
-): Promise<BackendResponse> {
-  async function handleError(error: Error): Promise<BackendResponse> {
-    if (!isVerificationRequiredError(error)) throw error;
+export const PublicAuthentication: AuthorizationProvider = {
+  async authorize(
+    request: (authorization: string | undefined) => Promise<RawResponse>
+  ): Promise<RawResponse> {
+    const response = await request(currentAuthorization());
 
-    try {
-      const computedVerification = await computeVerification(error.details);
-      return await request(computedVerification);
-    } catch (e: unknown) {
-      return handleError(e as Error);
+    if (response.httpStatus === 401) {
+      const { details, code } = parseErrorResponse(response.responseText);
+
+      if (code === ERROR_CODE_CLIENT_VERIFICATION_REQUIRED) {
+        if (!isChallenge(details)) throw new RequestFailedError();
+        verification = await computeVerification(details);
+        return this.authorize(request);
+      }
     }
-  }
 
-  try {
-    return await request(currentAuthorization());
-  } catch (e: unknown) {
-    return handleError(e as Error);
-  }
-}
+    return response;
+  },
 
-async function computeVerification(challenge: Challenge) {
+  // integration test support
+  currentState(): string | null {
+    const authorization = currentAuthorization();
+    if (authorization) {
+      return `Authorization: ${authorization}`;
+    }
+
+    if (computation) {
+      const challenge = computation.challenge;
+      return `Pending computation: ${challenge.verificator.id} with ${challenge.data}`;
+    }
+
+    return null;
+  },
+};
+
+async function computeVerification(
+  challenge: Challenge
+): Promise<Verification> {
   if (!computation) {
     // note that further request's challenges are ignored (intentionally)
     const { verificator, data } = challenge;
@@ -58,20 +74,14 @@ async function computeVerification(challenge: Challenge) {
       verificator.url
     ).then(
       (compute: VerificationForChallenge) =>
-        new ScrivitoPromise<string>((resolve) => {
-          function captureVerification(
-            computedVerification: Verification
-          ): void {
-            verification = computedVerification;
-            resolve(verification.authorization);
-          }
-          compute(data, captureVerification);
+        new ScrivitoPromise<Verification>((resolve) => {
+          compute(data, (result: Verification) => resolve(result));
         })
     );
 
     computation = {
       challenge: { verificator, data },
-      promise: promiseAndFinally<string>(promise, () => {
+      promise: promiseAndFinally<Verification>(promise, () => {
         computation = undefined;
       }),
     };
@@ -79,43 +89,21 @@ async function computeVerification(challenge: Challenge) {
   return computation.promise;
 }
 
-export function reset(): void {
+export function resetPublicAuthentication(): void {
   computation = undefined;
   verification = undefined;
 }
 
+function isChallenge(maybeChallenge: Object): maybeChallenge is Challenge {
+  return !!(maybeChallenge as Challenge).verificator;
+}
+
 function currentAuthorization(): string | undefined {
-  if (!verification) {
-    return;
-  }
+  if (!verification) return;
 
   if (verification.expiresAfter < new Date()) {
     verification = undefined;
     return;
   }
   return verification.authorization;
-}
-
-function isVerificationRequiredError(
-  error: Error
-): error is VerificationRequiredError {
-  return (
-    error instanceof UnauthorizedError &&
-    error.code === ERROR_CODE_CLIENT_VERIFICATION_REQUIRED
-  );
-}
-
-// integration test support
-export function currentState(): string | null {
-  const authorization = currentAuthorization();
-  if (authorization) {
-    return `Authorization: ${authorization}`;
-  }
-
-  if (computation) {
-    const challenge = computation.challenge;
-    return `Pending computation: ${challenge.verificator.id} with ${challenge.data}`;
-  }
-
-  return null;
 }

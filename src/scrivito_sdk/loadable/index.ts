@@ -10,10 +10,7 @@ export {
   LoadableData,
   reportUsedData,
 } from 'scrivito_sdk/loadable/loadable_data';
-export type {
-  LoaderApi,
-  LoaderCallback,
-} from 'scrivito_sdk/loadable/loader_callback_process';
+export type { LoaderCallback } from 'scrivito_sdk/loadable/loader_callback_process';
 export type { LoadableState } from 'scrivito_sdk/loadable/loadable_state';
 export { loadWithDefault } from 'scrivito_sdk/loadable/load_with_default';
 export { loadableMapReduce } from 'scrivito_sdk/loadable/map_reduce';

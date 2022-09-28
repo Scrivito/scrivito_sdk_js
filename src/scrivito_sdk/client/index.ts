@@ -13,13 +13,18 @@ export type {
   JSONArray,
   JSONObject,
 } from 'scrivito_sdk/client/cms_rest_api';
+export type { RawResponse } from 'scrivito_sdk/client/raw_response';
+export { RequestFailedError } from 'scrivito_sdk/client/request_failed_error';
 export { retrieveObj } from 'scrivito_sdk/client/obj_retrieval';
-export { UnauthorizedError } from 'scrivito_sdk/client/unauthorized_error';
 export {
   cmsRetrieval,
   replaceCmsRetrieval,
 } from 'scrivito_sdk/client/cms_retrieval';
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
+export {
+  getJrApiLocation,
+  setJrApiLocation,
+} from 'scrivito_sdk/client/jr_api_location';
 export { ClientError } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
 export type {
@@ -103,3 +108,4 @@ export type {
 } from 'scrivito_sdk/client/workspace_json';
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
 export * from 'scrivito_sdk/client/session_data';
+export { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';

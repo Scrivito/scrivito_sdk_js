@@ -1,3 +1,4 @@
+// @rewire
 import * as React from 'react';
 import { isObject, isString, last } from 'underscore';
 import { BackgroundImageDecoder } from 'scrivito_sdk/app_support/background_image_decoder';

@@ -33,6 +33,13 @@ export function configureForLazyWidgets(lazy: boolean): void {
   configuredForLazyWidgets = lazy;
 }
 
+let objChangeNotification: undefined | (() => void);
+
+// for test purposes
+export function setupObjChangeNotification(fn: () => void): void {
+  objChangeNotification = fn;
+}
+
 type WidgetObjJson = Partial<ExistentObjJson>;
 
 const widgetCollection = new LoadableCollection({
@@ -196,6 +203,8 @@ export class ObjData {
     this.widgetData.set(widgetJson);
 
     this._replication().notifyLocalState(newState);
+
+    if (objChangeNotification) objChangeNotification();
   }
 
   ensureAvailable(): boolean {

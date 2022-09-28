@@ -10,6 +10,7 @@ import {
   values as objectValues,
   without,
 } from 'underscore';
+
 import { AttributeJson } from 'scrivito_sdk/client';
 import { LinkJson } from 'scrivito_sdk/client';
 import {
@@ -32,6 +33,7 @@ import { BasicLink } from 'scrivito_sdk/models/basic_link';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
+import { isDataLocator } from 'scrivito_sdk/models/data_locator';
 import { ObjUnavailable } from 'scrivito_sdk/models/obj_unavailable';
 import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
@@ -96,6 +98,8 @@ function serializeEntry<Type extends AttributeType>(
       return ['binary', serializeBinaryAttributeValue(value, name)];
     case 'boolean':
       return ['boolean', serializeBooleanAttributeValue(value, name)];
+    case 'datalocator':
+      return ['string', serializeDataLocatorAttributeValue(value, name)];
     case 'date':
       return ['date', serializeDateAttributeValue(value, name)];
     case 'datetime':
@@ -160,6 +164,11 @@ function serializeBooleanAttributeValue(value: unknown, name: string) {
   if (value === false || value === true) return value;
 
   throwInvalidAttributeValue(value, name, 'A Boolean.');
+}
+
+function serializeDataLocatorAttributeValue(value: unknown, name: string) {
+  if (value === null || isDataLocator(value)) return JSON.stringify(value);
+  throwInvalidAttributeValue(value, name, 'A DataLocator.');
 }
 
 function serializeDateAttributeValue(value: unknown, name: string) {

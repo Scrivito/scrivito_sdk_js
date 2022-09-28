@@ -9,6 +9,7 @@ import {
   BasicObjSearch,
   BasicWidget,
   Binary,
+  DataLocator,
   ObjUnavailable,
 } from 'scrivito_sdk/models';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';
@@ -60,6 +61,7 @@ type BasicValueToAttributeValue<T> = T extends BasicObj[]
 interface AttributeMapping {
   binary: Binary | null;
   boolean: boolean;
+  datalocator: DataLocator | null;
   date: Date | null;
   datetime: Date | null;
   enum: string | null;

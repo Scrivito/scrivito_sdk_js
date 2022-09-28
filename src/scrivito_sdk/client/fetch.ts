@@ -1,6 +1,7 @@
+// @rewire
 import { isNumber } from 'underscore';
 
-import { RequestFailedError } from 'scrivito_sdk/client/cms_rest_api';
+import { RequestFailedError } from 'scrivito_sdk/client';
 import { getClientVersion } from 'scrivito_sdk/client/get_client_version';
 import { ScrivitoPromise } from 'scrivito_sdk/common';
 

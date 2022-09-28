@@ -1,3 +1,4 @@
+// @rewire
 import { ObjSpaceId, withEachAttributeJson } from 'scrivito_sdk/client';
 import { InternalError, ScrivitoPromise } from 'scrivito_sdk/common';
 import { ObjData, getObjData } from 'scrivito_sdk/data';

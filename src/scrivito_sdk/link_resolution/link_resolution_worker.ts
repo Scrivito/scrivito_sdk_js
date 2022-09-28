@@ -1,3 +1,4 @@
+// @rewire
 import { contains, isEqual } from 'underscore';
 import type {
   AttributeJson,

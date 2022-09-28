@@ -11,23 +11,22 @@ import {
 } from 'scrivito_sdk/client';
 import {
   ArgumentError,
-  ContinueIterable,
-  ContinueIterator,
   extractFromIterator,
   formatDateToString,
   isCamelCase,
   prettyPrint,
+  transformContinueIterable,
   underscore,
 } from 'scrivito_sdk/common';
 import {
+  DataQuery,
+  DataQueryContinuation,
   FacetQuery,
   FacetQueryOptions,
-  ObjData,
-  ObjDataQuery,
-  ObjQueryContinuation,
   QueryParams,
   SuggestOptions,
   getObjQuery,
+  getObjQueryCount,
   suggest,
 } from 'scrivito_sdk/data';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
@@ -90,9 +89,7 @@ export type OrderAttributes = Array<
   string | [string] | [string, 'asc' | 'desc' | undefined]
 >;
 
-export class BasicObjSearch
-  implements ContinueIterable<BasicObj, ObjQueryContinuation>
-{
+export class BasicObjSearch implements DataQuery<BasicObj> {
   private _query: Query[];
   private _boost: BackendValueBoost[];
   private _batchSize?: number;
@@ -229,7 +226,7 @@ export class BasicObjSearch
   }
 
   count(): number {
-    return this.getObjDataQuery().count();
+    return getObjQueryCount(this.objSpaceId(), this.queryParams());
   }
 
   first(): BasicObj | null {
@@ -244,23 +241,23 @@ export class BasicObjSearch
     return this.internalTake(undefined);
   }
 
-  iterator(): ContinueIterator<BasicObj, ObjQueryContinuation> {
-    return buildBasicObjIterator(this.getObjDataQuery().iterator());
+  iterator() {
+    return this.getObjDataQuery().iterator();
   }
 
-  iteratorFromContinuation(
-    continuation: ObjQueryContinuation
-  ): ContinueIterator<BasicObj, ObjQueryContinuation> {
-    return buildBasicObjIterator(
-      this.getObjDataQuery().iteratorFromContinuation(continuation)
-    );
+  iteratorFromContinuation(continuation: DataQueryContinuation) {
+    return this.getObjDataQuery().iteratorFromContinuation(continuation);
   }
 
-  getObjDataQuery(): ObjDataQuery {
-    return getObjQuery(
+  getObjDataQuery(): DataQuery<BasicObj> {
+    const objDataQuery = getObjQuery(
       this.objSpaceId(),
       this.queryParams(),
       this.getBatchSize()
+    );
+
+    return transformContinueIterable(objDataQuery, (iterator) =>
+      iterator.map((data) => new BasicObj(data))
     );
   }
 
@@ -334,24 +331,6 @@ export class BasicObjSearch
       this._batchSize = oldBatchSize;
     }
   }
-}
-
-function buildBasicObjIterator(
-  queryIterator: ContinueIterator<ObjData, ObjQueryContinuation>
-): ContinueIterator<BasicObj, ObjQueryContinuation> {
-  return {
-    next() {
-      const nextResult = queryIterator.next();
-
-      return nextResult.done
-        ? { done: true }
-        : { done: false, value: new BasicObj(nextResult.value) };
-    },
-
-    continuation() {
-      return queryIterator.continuation();
-    },
-  };
 }
 
 function buildSubQuery(

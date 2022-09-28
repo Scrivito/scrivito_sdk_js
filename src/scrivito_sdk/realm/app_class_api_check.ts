@@ -49,6 +49,7 @@ export const {
           t.enums.of([
             'binary',
             'boolean',
+            'datalocator',
             'date',
             'datetime',
             'float',

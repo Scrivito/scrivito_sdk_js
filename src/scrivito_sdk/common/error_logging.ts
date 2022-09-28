@@ -1,3 +1,4 @@
+// @rewire
 let consoleErrorIsDisabled = false;
 
 export function logError(...args: unknown[]): void {

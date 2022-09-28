@@ -1,3 +1,4 @@
+// @rewire
 import { InternalError } from 'scrivito_sdk/common';
 
 import { LoadableData } from 'scrivito_sdk/loadable';

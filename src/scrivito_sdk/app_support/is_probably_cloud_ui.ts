@@ -1,3 +1,4 @@
+// @rewire
 export function isProbablyCloudUi(): boolean {
   const parentFrame = window.parent;
 

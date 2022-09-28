@@ -1,3 +1,4 @@
+// @rewire
 import * as URI from 'urijs';
 
 import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';

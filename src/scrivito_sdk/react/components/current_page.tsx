@@ -56,7 +56,9 @@ const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
     params,
     <>
       <PageScroll navigationState={navigationState} />
-      <PageComponent page={wrapInAppClass(currentPage)} params={params} />
+      {PageComponent && (
+        <PageComponent page={wrapInAppClass(currentPage)} params={params} />
+      )}
     </>
   );
 });

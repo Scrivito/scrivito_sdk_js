@@ -1,3 +1,4 @@
+// @rewire
 import * as URI from 'urijs';
 
 import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
@@ -22,7 +23,11 @@ import {
 } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
 import { getVisitorAuthenticationProvider } from 'scrivito_sdk/app_support/visitor_authentication';
 import { linkViaPort } from 'scrivito_sdk/bridge';
-import { Priority, cmsRestApi } from 'scrivito_sdk/client';
+import {
+  Priority,
+  PublicAuthentication,
+  cmsRestApi,
+} from 'scrivito_sdk/client';
 import {
   DEFAULT_ENDPOINT,
   Deferred,
@@ -47,6 +52,7 @@ import {
   unwrapAppClass,
 } from 'scrivito_sdk/realm';
 import type { ForcedEditorLanguage } from 'scrivito_sdk/ui_interface/app_adapter';
+import type { ApiKeyAuthorizationProvider } from '../node_support/api_key_authorization_provider';
 import {
   ConstraintsValidationCallback,
   setConstraintsValidationCallback,
@@ -63,6 +69,7 @@ export interface Configuration {
   routingBasePath?: string;
   siteForUrl?: SiteMappingConfiguration['siteForUrl'];
   visitorAuthentication?: boolean;
+  apiKey?: string;
   priority?: Priority;
   editorLanguage?: ForcedEditorLanguage;
   strictSearchOperators?: boolean;
@@ -95,6 +102,7 @@ const AllowedConfiguration = t.interface({
   routingBasePath: t.maybe(t.String),
   siteForUrl: t.maybe(t.Function),
   visitorAuthentication: t.maybe(t.Boolean),
+  apiKey: t.maybe(t.String),
   unstable: t.maybe(t.Object),
   priority: t.maybe(t.enums.of(['foreground', 'background'])),
   editorLanguage: t.maybe(t.enums.of(['en', 'de'])),
@@ -122,6 +130,14 @@ export function configure(
   ...excessArgs: never[]
 ): void {
   checkConfigure(configuration, ...excessArgs);
+  if (configuration.apiKey && !ApiKeyAuthorizationProviderClass) {
+    throwInvalidArgumentsError(
+      PUBLIC_FUNCTION_NAME,
+      'The option "apiKey" is only available under Node.js.',
+      CHECK_ARGUMENTS_OPTIONS
+    );
+  }
+
   const routingConfiguration = getCheckedRoutingConfiguration(configuration);
 
   setConfiguration(configuration);
@@ -151,12 +167,13 @@ export function configure(
     } else {
       if (configuration.optimizedWidgetLoading) configureForLazyWidgets(true);
 
-      configureCmsRestApi(
+      configureCmsRestApi({
         endpoint,
         tenant,
-        configuration.visitorAuthentication,
-        configuration.priority
-      );
+        visitorAuthentication: configuration.visitorAuthentication,
+        priority: configuration.priority,
+        apiKey: configuration.apiKey,
+      });
     }
   }
 
@@ -206,18 +223,28 @@ function configureForUi(
   setAppAdapter(uiAdapterClient);
 }
 
-function configureCmsRestApi(
-  endpoint: string,
-  tenant: string,
-  visitorAuthentication?: boolean,
-  priority?: Priority
-) {
-  const provider = getVisitorAuthenticationProvider(visitorAuthentication);
-  if (provider) cmsRestApi.setAuthProvider(provider);
+function configureCmsRestApi({
+  endpoint,
+  tenant,
+  visitorAuthentication,
+  priority,
+  apiKey,
+}: {
+  endpoint: string;
+  tenant: string;
+  visitorAuthentication?: boolean;
+  priority?: Priority;
+  apiKey?: string;
+}) {
+  const authProvider =
+    (apiKey && new ApiKeyAuthorizationProviderClass!(apiKey)) ||
+    getVisitorAuthenticationProvider(visitorAuthentication) ||
+    PublicAuthentication;
   if (priority) cmsRestApi.setPriority(priority);
 
   cmsRestApi.init({
     apiBaseUrl: `https://${endpoint}/tenants/${tenant}`,
+    authProvider,
   });
 }
 
@@ -277,6 +304,16 @@ function setAppAdapter(uiAdapterClient: UiAdapterClient) {
     startAppAdapter(linkViaPort(channel.port1));
     uiAdapterClient.setAppAdapter(channel.port2);
   });
+}
+
+let ApiKeyAuthorizationProviderClass:
+  | typeof ApiKeyAuthorizationProvider
+  | undefined;
+
+export function setApiKeyAuthorizationProviderClass(
+  input: typeof ApiKeyAuthorizationProvider
+): void {
+  ApiKeyAuthorizationProviderClass = input;
 }
 
 /** exported for test purposes only */

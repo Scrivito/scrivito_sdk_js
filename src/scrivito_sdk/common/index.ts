@@ -47,14 +47,16 @@ export type {
   FinishedWithOptionalValueIterator as Iterator,
   IteratorResult,
 } from 'scrivito_sdk/common/finished_with_optional_value_iterator';
+export { TransIterator } from 'scrivito_sdk/common/trans_iterator';
 export { FileType, BlobType } from 'scrivito_sdk/common/input_types';
 export { isSystemAttribute } from 'scrivito_sdk/common/is_system_attribute';
 export { extractFromIterator } from 'scrivito_sdk/common/iterable';
-export type { Iterable } from 'scrivito_sdk/common/continue_iterable';
 export type {
+  Iterable,
   ContinueIterable,
   ContinueIterator,
 } from 'scrivito_sdk/common/continue_iterable';
+export { transformContinueIterable } from 'scrivito_sdk/common/continue_iterable';
 export { sliceFromIterable } from 'scrivito_sdk/common/slice_from_iterable';
 export { randomId, randomHex } from 'scrivito_sdk/common/random';
 export {
@@ -110,6 +112,7 @@ export {
   replaceHistoryState,
   screen,
   scrollTo,
+  windowLocationHostname,
   windowLocationOrigin,
 } from 'scrivito_sdk/common/window_proxy';
 export { isStringArray } from 'scrivito_sdk/common/is_string_array';

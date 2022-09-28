@@ -1,3 +1,4 @@
+// @rewire
 import { getCurrentNavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { loadableWithDefault } from 'scrivito_sdk/loadable';
 

@@ -1,3 +1,4 @@
+// @rewire
 import * as ReactDOM from 'react-dom';
 import { getDocument } from 'scrivito_sdk/common';
 

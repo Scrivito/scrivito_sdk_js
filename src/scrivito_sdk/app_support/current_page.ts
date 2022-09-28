@@ -1,3 +1,4 @@
+// @rewire
 import * as URI from 'urijs';
 import {
   getCurrentPageData,

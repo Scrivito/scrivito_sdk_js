@@ -2,10 +2,10 @@ import { registerDataErrorComponent } from 'scrivito_sdk/react/component_registr
 import { connectAndMemoize } from 'scrivito_sdk/react/connect_and_memoize';
 import { checkProvideDataErrorComponent } from 'scrivito_sdk/realm';
 
-/** @alpha */
+/** @beta */
 export function provideDataErrorComponent(component: React.ComponentType): void;
 
-/** @alpha */
+/** @beta */
 export function provideDataErrorComponent(
   component: React.ComponentType,
   ...excessArgs: never[]

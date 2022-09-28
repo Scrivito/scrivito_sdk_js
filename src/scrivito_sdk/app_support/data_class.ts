@@ -1,9 +1,30 @@
-import { isObject } from 'underscore';
+import {
+  ExternalDataClass,
+  ExternalDataItem,
+  ExternalDataScope,
+  isExternalDataClassProvided,
+} from 'scrivito_sdk/app_support/external_data_class';
+import {
+  ObjDataClass,
+  ObjDataItem,
+  ObjDataScope,
+  isObjDataClassProvided,
+} from 'scrivito_sdk/app_support/obj_data_class';
+import { DataLocatorError } from 'scrivito_sdk/models';
 import type { Obj } from 'scrivito_sdk/realm';
 
 export interface DataClass {
   name(): string;
+  create(attributes: DataItemAttributes): Promise<DataItem>;
+  all(): DataScope;
   get(id: string): DataItem | null;
+}
+
+export interface DataScope {
+  dataClass(): DataClass;
+  create(attributes: DataItemAttributes): Promise<DataItem>;
+  take(count: number): DataItem[];
+  filter(attributeName: string, value: string): DataScope;
 }
 
 export type DataItemAttributes = Record<string, string>;
@@ -19,18 +40,36 @@ export interface DataItem {
 
 export function isDataItem(maybeDataItem: unknown): maybeDataItem is DataItem {
   return (
-    isObject(maybeDataItem) &&
-    typeof (maybeDataItem as DataItem).id === 'function' &&
-    typeof (maybeDataItem as DataItem).id() === 'string' &&
-    typeof (maybeDataItem as DataItem).dataClass === 'function' &&
-    isDataClass((maybeDataItem as DataItem).dataClass())
+    maybeDataItem instanceof ObjDataItem ||
+    maybeDataItem instanceof ExternalDataItem
   );
 }
 
-function isDataClass(maybeDataClass: unknown): maybeDataClass is DataClass {
+export function isDataScope(
+  maybeDataScope: unknown
+): maybeDataScope is DataScope {
   return (
-    isObject(maybeDataClass) &&
-    typeof (maybeDataClass as DataClass).name === 'function' &&
-    typeof (maybeDataClass as DataClass).name() === 'string'
+    maybeDataScope instanceof ObjDataScope ||
+    maybeDataScope instanceof ExternalDataScope
   );
+}
+
+export function getDataClass(dataClassName: string): DataClass {
+  const dataClass =
+    getExternalDataClass(dataClassName) || getObjDataClass(dataClassName);
+  if (dataClass) return dataClass;
+
+  throw new DataLocatorError(`No "${dataClassName}" found`);
+}
+
+function getExternalDataClass(dataClassName: string) {
+  if (isExternalDataClassProvided(dataClassName)) {
+    return new ExternalDataClass(dataClassName);
+  }
+}
+
+function getObjDataClass(dataClassName: string) {
+  if (isObjDataClassProvided(dataClassName)) {
+    return new ObjDataClass(dataClassName);
+  }
 }

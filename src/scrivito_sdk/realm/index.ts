@@ -29,7 +29,6 @@ export {
   ObjClassType,
   WidgetClassType,
 } from 'scrivito_sdk/realm/tcomb_api_types';
-export { getClassName } from 'scrivito_sdk/realm/get_class_name';
 
 export {
   checkProvideComponent,

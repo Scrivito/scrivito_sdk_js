@@ -1,10 +1,6 @@
-import {
-  BackendResponse,
-  VisitorSession,
-  cmsRestApi,
-} from 'scrivito_sdk/client/cms_rest_api';
-import * as PublicAuthentication from 'scrivito_sdk/client/public_authentication';
-import { UnauthorizedError } from 'scrivito_sdk/client/unauthorized_error';
+import { AuthorizationProvider, RawResponse } from 'scrivito_sdk/client';
+import { VisitorSession, cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
+import { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
 import {
   Deferred,
   ScrivitoError,
@@ -25,7 +21,7 @@ import {
  * if they indicate an expired session, and retried either with a fresh
  * visitor session or without authentication.
  */
-export class VisitorAuthenticationProvider {
+export class VisitorAuthenticationProvider implements AuthorizationProvider {
   private readonly sessionId = randomId();
   private idToken = new Deferred<string>();
   private sessionRequest: Promise<VisitorSession>;
@@ -49,8 +45,8 @@ export class VisitorAuthenticationProvider {
   }
 
   async authorize(
-    request: (authorization: string | undefined) => Promise<BackendResponse>
-  ): Promise<BackendResponse> {
+    request: (authorization: string | undefined) => Promise<RawResponse>
+  ): Promise<RawResponse> {
     const sessionRequest = this.sessionRequest;
 
     let session: VisitorSession;
@@ -61,16 +57,15 @@ export class VisitorAuthenticationProvider {
       return PublicAuthentication.authorize(request);
     }
 
-    try {
-      return await request(`Session ${session.token}`);
-    } catch (error: unknown) {
-      const sessionHasExpired = error instanceof UnauthorizedError;
+    const response = await request(`Session ${session.token}`);
 
-      if (!sessionHasExpired) throw error;
+    if (response.httpStatus === 401) {
       if (this.sessionRequest === sessionRequest) this.renewSession();
 
       return this.authorize(request);
     }
+
+    return response;
   }
 
   private renewSession() {
@@ -81,7 +76,7 @@ export class VisitorAuthenticationProvider {
     try {
       const token = await this.idToken.promise;
       return await cmsRestApi.requestVisitorSession(this.sessionId, token);
-    } catch (error: unknown) {
+    } catch (error) {
       throwNextTick(
         new ScrivitoError(
           `Failed to establish visitor session: ${(error as Error).message}`

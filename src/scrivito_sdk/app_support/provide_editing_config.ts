@@ -12,6 +12,8 @@ import {
   getEditingConfigFor,
   setEditingConfigFor,
 } from 'scrivito_sdk/app_support/editing_config_store';
+import { ExternalDataClass } from 'scrivito_sdk/app_support/external_data_class';
+import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { ValidationsConfigType } from 'scrivito_sdk/app_support/validations_config';
 import { checkArgumentsFor, nextTick, tcomb as t } from 'scrivito_sdk/common';
 import { AttributeType, LinkType, WidgetType } from 'scrivito_sdk/models';
@@ -21,7 +23,6 @@ import {
   ObjClassType,
   WidgetClass,
   WidgetClassType,
-  getClassName,
 } from 'scrivito_sdk/realm';
 
 /** @public */
@@ -30,6 +31,12 @@ export function provideEditingConfig<
 >(
   objClass: ObjClass<AttrDefs>,
   editingConfig: ObjEditingConfig<AttrDefs>
+): void;
+
+/** @beta */
+export function provideEditingConfig(
+  dataClassName: ExternalDataClass,
+  editingConfig: ObjEditingConfig
 ): void;
 
 /** @public */
@@ -54,7 +61,7 @@ export function provideEditingConfig(
 
 /** @internal */
 export function provideEditingConfig(
-  classNameOrClass: string | ObjClass | WidgetClass,
+  classNameOrClass: string | ObjClass | WidgetClass | ExternalDataClass,
   editingConfig: EditingConfig,
   ...excessArgs: never[]
 ): void {
@@ -161,7 +168,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
 
   const AttributeDataContextConfigType = t.dict(
     t.String,
-    t.dict(AttributeDataContextConfigKeyType, t.String)
+    t.union([t.dict(AttributeDataContextConfigKeyType, t.String), t.String])
   );
 
   const AttributesEditingConfigType = t.dict(
@@ -202,6 +209,18 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     ])
   );
 
+  const ExternalDataClassType = t.refinement(
+    t.Object,
+    isExternalDataClass,
+    'ExternalDataClass'
+  );
+
+  function isExternalDataClass(
+    maybeExternalDataClass: object
+  ): maybeExternalDataClass is ExternalDataClass {
+    return maybeExternalDataClass instanceof ExternalDataClass;
+  }
+
   const EditingConfigType = t.interface({
     attributeDataContext: t.maybe(AttributeDataContextConfigType),
     attributes: t.maybe(AttributesEditingConfigType),
@@ -228,7 +247,12 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
       [
         [
           'classNameOrClass',
-          t.union([t.String, ObjClassType, WidgetClassType]),
+          t.union([
+            t.String,
+            ObjClassType,
+            WidgetClassType,
+            ExternalDataClassType,
+          ]),
         ],
         ['editingConfig', EditingConfigType],
       ],

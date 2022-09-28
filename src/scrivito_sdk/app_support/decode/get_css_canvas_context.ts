@@ -1,3 +1,4 @@
+// @rewire
 // currently only supported in safari
 export function getCSSCanvasContext(
   contextType: '2d',

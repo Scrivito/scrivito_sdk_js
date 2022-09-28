@@ -1,3 +1,4 @@
+// @rewire
 export function drawImgOnCanvas(img: HTMLImageElement): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.height = img.height;

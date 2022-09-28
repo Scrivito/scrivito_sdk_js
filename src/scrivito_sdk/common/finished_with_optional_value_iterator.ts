@@ -2,7 +2,7 @@
 // that avoid headscratching https://github.com/Microsoft/TypeScript/issues/11375
 
 interface UnfinishedIteratorResult<T> {
-  done: false;
+  done?: false;
   value: T;
 }
 

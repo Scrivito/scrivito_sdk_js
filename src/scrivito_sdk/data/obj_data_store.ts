@@ -1,3 +1,4 @@
+// @rewire
 import { ExistentObjJson, ObjJson, ObjSpaceId } from 'scrivito_sdk/client';
 import { ObjData } from 'scrivito_sdk/data/obj_data';
 import { load } from 'scrivito_sdk/loadable';

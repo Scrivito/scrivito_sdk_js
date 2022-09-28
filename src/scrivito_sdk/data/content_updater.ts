@@ -1,3 +1,4 @@
+// @rewire
 import {
   ObjSpaceId,
   getWorkspaceId,

@@ -1,3 +1,4 @@
+// @rewire
 import { isEmpty, isFunction } from 'underscore';
 
 import {

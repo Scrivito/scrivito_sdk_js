@@ -1,3 +1,4 @@
+// @rewire
 export function loadCss(
   url: string,
   targetDocument: Document = window.document

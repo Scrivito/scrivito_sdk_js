@@ -1,3 +1,4 @@
+// @rewire
 import { updateContent as updateContentWithWorkspace } from 'scrivito_sdk/data';
 import { currentWorkspaceId } from 'scrivito_sdk/models';
 

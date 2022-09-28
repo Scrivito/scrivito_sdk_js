@@ -20,6 +20,7 @@ export {
   trackStateAccess,
   StateReference,
 } from 'scrivito_sdk/state/track_state_access';
+export type { StateAccessReport } from 'scrivito_sdk/state/track_state_access';
 export { addBatchUpdate } from 'scrivito_sdk/state/batched_state_updater';
 export { observe } from 'scrivito_sdk/state/observe';
 export { observeSync } from 'scrivito_sdk/state/observe_sync';

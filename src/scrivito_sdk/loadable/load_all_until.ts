@@ -20,7 +20,7 @@ export function loadAllUntil<T>(
   const next = run.result;
 
   if (next.done || size === 0) {
-    return { done: next.done, objs };
+    return { done: !!next.done, objs };
   }
 
   return loadAllUntil(iterator, size - 1, objs.concat([next.value]));

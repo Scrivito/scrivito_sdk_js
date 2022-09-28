@@ -8,16 +8,9 @@ import {
 import { LoaderProcess } from 'scrivito_sdk/loadable/loading_registry';
 import { StateContainer, addBatchUpdate } from 'scrivito_sdk/state';
 
-export interface LoaderApi {
-  push: AddPushCallback;
-  wasCancelled: () => boolean;
-}
-export type LoaderCallback<T> = (api: LoaderApi) => Promise<T>;
+export type LoaderCallback<T> = () => Promise<T>;
 
 export type InvalidationCallback = () => LoadableVersion;
-
-type PushCallback = () => void;
-export type AddPushCallback = (callback: PushCallback) => void;
 
 type LoadId = number;
 
@@ -62,26 +55,16 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
 
     const loadId = loadIdCounter++;
 
-    const isUnchanged = () => this.currentLoad === loadId;
-
     const finishLoader = (effect: () => void) => {
-      if (isUnchanged()) {
+      if (this.currentLoad === loadId) {
         addBatchUpdate(() => {
           effect();
           this.currentLoad = undefined;
-          runPushCallbacks();
         });
       }
     };
 
-    const pushCallbacks: PushCallback[] = [];
-    const runPushCallbacks = () =>
-      pushCallbacks.forEach((callback) => callback());
-
-    this.loader({
-      push: (callback) => pushCallbacks.push(callback),
-      wasCancelled: () => !isUnchanged(),
-    }).then(
+    this.loader().then(
       (result) =>
         finishLoader(() =>
           this.stateContainer.set({

@@ -6,9 +6,6 @@ import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
 import {
   DataContext,
   DataContextCallback,
-  getValueFromDataContext,
-  isValidDataClassName,
-  isValidDataId,
 } from 'scrivito_sdk/app_support/data_context';
 import { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
 import {
@@ -21,7 +18,6 @@ import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_rang
 import { replaceInternalLinks } from 'scrivito_sdk/app_support/replace_internal_links';
 import { registerScrollTarget } from 'scrivito_sdk/app_support/scroll_into_view';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
-import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
@@ -125,8 +121,8 @@ function renderPropsForField(
   widgetProps: WidgetProps | undefined,
   dataContextContainer: DataContextContainer | undefined
 ): React.DOMAttributes<HTMLElement> {
-  const dataContext = dataContextContainer?.dataContext;
-  if (dataContext) validateDataContext(dataContext);
+  const placeholders = dataContextContainer?.placeholders;
+  const dataStack = dataContextContainer?.dataStack;
 
   const customChildren =
     customChildrenFromProps || customInnerHtml
@@ -135,7 +131,7 @@ function renderPropsForField(
           dangerouslySetInnerHTML: customInnerHtml
             ? {
                 __html: replaceInternalLinks(customInnerHtml.__html, {
-                  dataContextContainer,
+                  dataStack,
                 }),
               }
             : undefined,
@@ -155,7 +151,7 @@ function renderPropsForField(
       return renderPropsForString(
         field as BasicField<'string'>,
         customChildren,
-        dataContext
+        placeholders
       );
 
     case 'float':
@@ -209,16 +205,17 @@ function renderPropsForHtml(
     };
   }
 
-  const dataContext = dataContextContainer?.dataContext;
+  const placeholders = dataContextContainer?.placeholders;
+  const dataStack = dataContextContainer?.dataStack;
 
   return {
     dangerouslySetInnerHTML: {
       __html: replaceInternalLinks(
         diffContent ||
-          (dataContext
-            ? replaceHtmlPlaceholdersWithData(field.get(), dataContext)
+          (placeholders
+            ? replaceHtmlPlaceholdersWithData(field.get(), placeholders)
             : field.get()),
-        { dataContextContainer }
+        { dataStack }
       ),
     },
     onClick: handleClickOnHtml,
@@ -228,7 +225,7 @@ function renderPropsForHtml(
 function renderPropsForString(
   field: BasicField<'string'>,
   customChildren?: { children: React.ReactNode },
-  dataContext?: DataContext | DataContextCallback
+  placeholders?: DataContext | DataContextCallback
 ) {
   if (isComparisonActive()) {
     const diffContent = field.getHtmlDiffContent(getComparisonRange());
@@ -240,8 +237,8 @@ function renderPropsForString(
 
   return (
     customChildren ?? {
-      children: dataContext
-        ? replaceStringPlaceholdersWithData(field.get(), dataContext)
+      children: placeholders
+        ? replaceStringPlaceholdersWithData(field.get(), placeholders)
         : field.get(),
     }
   );
@@ -284,18 +281,4 @@ function handleOpenInCurrentWindow<T>(
   e.preventDefault();
 
   BrowserLocation.push(resource);
-}
-
-function validateDataContext(context: DataContext | DataContextCallback) {
-  const id = getValueFromDataContext('_id', context);
-
-  if (id && !isValidDataId(id)) {
-    throwNextTick(new ArgumentError(`Invalid data ID: ${id}`));
-  }
-
-  const className = getValueFromDataContext('_class', context);
-
-  if (className && !isValidDataClassName(className)) {
-    throwNextTick(new ArgumentError(`Invalid data class name: ${className}`));
-  }
 }

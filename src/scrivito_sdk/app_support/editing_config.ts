@@ -28,8 +28,10 @@ export interface LocalizedValue {
 }
 
 interface AttributeDataContextConfig {
-  [cmsAttributeName: string]: ContextDescription;
+  [cmsAttributeName: string]: ContextDescription | DataLocatorAttributeName;
 }
+
+type DataLocatorAttributeName = string;
 
 export interface ContextDescription {
   [contextAttributeName: string]: ContextAttributeDescription;

@@ -1,3 +1,4 @@
+// @rewire
 import { ScrivitoPromise } from 'scrivito_sdk/common';
 
 export function decodeOrLoadImg(imageUrl: string): Promise<HTMLImageElement> {
