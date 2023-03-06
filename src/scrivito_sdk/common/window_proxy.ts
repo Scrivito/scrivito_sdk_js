@@ -7,10 +7,6 @@ export function currentHref() {
   return windowLocation().href;
 }
 
-export function windowLocationHostname() {
-  return windowLocation().hostname;
-}
-
 export function windowLocationOrigin() {
   return windowLocation().origin;
 }

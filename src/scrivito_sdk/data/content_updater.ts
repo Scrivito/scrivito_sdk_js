@@ -6,15 +6,13 @@ import {
 } from 'scrivito_sdk/client';
 import { ScrivitoPromise } from 'scrivito_sdk/common';
 import { WorkspaceContentUpdater } from 'scrivito_sdk/data/workspace_content_updater';
-import { globalState } from 'scrivito_sdk/state';
+import { createStateContainer } from 'scrivito_sdk/state';
 
-declare module 'scrivito_sdk/state/global_state' {
-  interface GlobalState {
-    contentStateId: {
-      [workspaceId: string]: string | undefined;
-    };
-  }
+interface ContentStateIds {
+  [workspaceId: string]: string | undefined;
 }
+
+const contentStateIds = createStateContainer<ContentStateIds>();
 
 export interface ContentUpdateHandler {
   getContentStateId(workspaceId: string): string | undefined;
@@ -79,5 +77,5 @@ function workspaceContentUpdaterFor(
 }
 
 function getState(workspaceId: string) {
-  return globalState.subState('contentStateId').subState(workspaceId);
+  return contentStateIds.subState(workspaceId);
 }

@@ -1,12 +1,8 @@
 import * as React from 'react';
-import { isObject } from 'underscore';
+import { escape, isObject } from 'underscore';
 
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
-import {
-  DataContext,
-  DataContextCallback,
-} from 'scrivito_sdk/app_support/data_context';
 import { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
 import {
   OpenInCurrentWindow,
@@ -18,6 +14,10 @@ import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_rang
 import { replaceInternalLinks } from 'scrivito_sdk/app_support/replace_internal_links';
 import { registerScrollTarget } from 'scrivito_sdk/app_support/scroll_into_view';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
+import {
+  DataContext,
+  DataContextCallback,
+} from 'scrivito_sdk/data_integration';
 import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
@@ -27,10 +27,7 @@ import {
   DataContextContainer,
   useDataContextContainer,
 } from 'scrivito_sdk/react/data_context_container';
-import {
-  replaceHtmlPlaceholdersWithData,
-  replaceStringPlaceholdersWithData,
-} from 'scrivito_sdk/react/replace_placeholders_with_data';
+import { replacePlaceholdersWithData } from 'scrivito_sdk/react/replace_placeholders_with_data';
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
 
 export interface AttributeValueProps<Type extends AttributeType> {
@@ -213,7 +210,7 @@ function renderPropsForHtml(
       __html: replaceInternalLinks(
         diffContent ||
           (placeholders
-            ? replaceHtmlPlaceholdersWithData(field.get(), placeholders)
+            ? replacePlaceholdersWithData(field.get(), placeholders, escape)
             : field.get()),
         { dataStack }
       ),
@@ -238,7 +235,7 @@ function renderPropsForString(
   return (
     customChildren ?? {
       children: placeholders
-        ? replaceStringPlaceholdersWithData(field.get(), placeholders)
+        ? replacePlaceholdersWithData(field.get(), placeholders)
         : field.get(),
     }
   );

@@ -2,7 +2,7 @@ import { LoadableCollection, LoadableData, load } from 'scrivito_sdk/loadable';
 
 export interface QueryData {
   results: string[];
-  total: number;
+  total?: number;
   continuation?: string;
 }
 

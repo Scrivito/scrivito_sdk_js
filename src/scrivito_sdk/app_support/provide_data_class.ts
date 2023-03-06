@@ -1,18 +1,18 @@
-import { ExternalDataClass } from 'scrivito_sdk/app_support/external_data_class';
 import {
-  DataClassConnection,
-  registerExternalDataClassConnection,
-} from 'scrivito_sdk/app_support/external_data_class_registry';
+  ExternalDataClass,
+  ExternalDataConnection,
+  setExternalDataConnection,
+} from 'scrivito_sdk/data_integration';
 import { checkProvideDataClass } from 'scrivito_sdk/realm';
 
 /** @beta */
 export function provideDataClass(
   name: string,
-  dataClass: { connection: DataClassConnection },
+  dataClass: { connection: ExternalDataConnection },
   ...excessArgs: never[]
 ): ExternalDataClass {
   checkProvideDataClass(name, dataClass, ...excessArgs);
-  registerExternalDataClassConnection(name, dataClass.connection);
+  setExternalDataConnection(name, dataClass.connection);
 
   return new ExternalDataClass(name);
 }

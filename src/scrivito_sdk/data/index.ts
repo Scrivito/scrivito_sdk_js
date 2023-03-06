@@ -71,3 +71,5 @@ export {
   failIfPerformanceConstraint,
 } from 'scrivito_sdk/data/performance_constraint';
 export { isAttributeModified } from 'scrivito_sdk/data/is_attribute_modified';
+export { IdBatchQuery } from 'scrivito_sdk/data/id_batch_query';
+export { IdBatchCollection } from 'scrivito_sdk/data/id_batch';

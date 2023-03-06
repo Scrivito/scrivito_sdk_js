@@ -72,11 +72,7 @@ export class LoadableData<LoadableType> {
    * If the LoadableData is missing or loading, undefined will be returned.
    */
   get(): LoadableType | undefined {
-    const state = this.stateContainer.get();
-    if (!this.checkIfAvailableState(state)) return undefined;
-
-    notifyUsage(this.id, this);
-    return state.value;
+    return this.getWithDefault(undefined);
   }
 
   getAffiliation(): Affiliation | undefined {

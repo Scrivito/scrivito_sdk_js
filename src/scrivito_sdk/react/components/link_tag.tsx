@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import { basicUrlFor } from 'scrivito_sdk/app_support/basic_url_for';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
-import { getDataContextParameters } from 'scrivito_sdk/app_support/data_context';
 import { isModifierClick } from 'scrivito_sdk/app_support/is_modifier_click';
 import { navigateTo } from 'scrivito_sdk/app_support/navigate_to';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
@@ -12,6 +11,7 @@ import {
   openWindow,
   tcomb as t,
 } from 'scrivito_sdk/common';
+import { getDataContextParameters } from 'scrivito_sdk/data_integration';
 import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react/connect';
 import {
@@ -20,7 +20,7 @@ import {
 } from 'scrivito_sdk/react/data_context_container';
 import {
   containsSinglePlaceholder,
-  replaceStringPlaceholdersWithData,
+  replacePlaceholdersWithData,
 } from 'scrivito_sdk/react/replace_placeholders_with_data';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
@@ -120,7 +120,7 @@ export const LinkTag = connect(function LinkTag(props: {
     const placeholderIdentifier = getPlaceholderIdentifier(basicObjOrLink);
 
     if (placeholderIdentifier && placeholders) {
-      const url = replaceStringPlaceholdersWithData(
+      const url = replacePlaceholdersWithData(
         placeholderIdentifier,
         placeholders
       );

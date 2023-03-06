@@ -4,9 +4,9 @@ export {
 } from 'scrivito_sdk/common/collect_and_schedule';
 export {
   checkArgumentsFor,
-  docUrl,
   throwInvalidArgumentsError,
 } from 'scrivito_sdk/common/check_arguments_for';
+export { docUrl } from 'scrivito_sdk/common/doc_url';
 export type { TypeCheck } from 'scrivito_sdk/common/check_arguments_for';
 export { ContextContainer } from 'scrivito_sdk/common/context_container';
 export { Deferred } from 'scrivito_sdk/common/deferred';
@@ -112,7 +112,6 @@ export {
   replaceHistoryState,
   screen,
   scrollTo,
-  windowLocationHostname,
   windowLocationOrigin,
 } from 'scrivito_sdk/common/window_proxy';
 export { isStringArray } from 'scrivito_sdk/common/is_string_array';

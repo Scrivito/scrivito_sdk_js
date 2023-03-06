@@ -38,16 +38,22 @@ export function patchObjJson(
 // flavour of ObjJson. To express that in a way  that typescript believes it automatically is
 // likely difficult / complex.
 ObjJson;
+
+export function patchObjJson(
+  primitiveObj: null,
+  patch: ObjJsonPatch
+): ObjJsonPatch;
+
 export function patchObjJson(
   primitiveObj: undefined,
   patch: ObjJsonPatch
 ): ObjJsonPatch;
-export function patchObjJson(
-  primitiveObj: ObjJson | undefined,
-  patch: ObjJsonPatch
-) {
-  if (!primitiveObj) return patch;
 
+export function patchObjJson(
+  primitiveObj: ObjJson | null | undefined,
+  patch: ObjJsonPatch
+): ObjJsonPatch {
+  if (!primitiveObj) return patch;
   return patchJson(primitiveObj, patch);
 }
 

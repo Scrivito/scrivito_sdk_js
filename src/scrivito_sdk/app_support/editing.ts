@@ -6,9 +6,9 @@ import {
 } from 'scrivito_sdk/models';
 import { AttributeEditingOptions } from './editing_config';
 
-export { AttributeType } from 'scrivito_sdk/models';
-export { ContentBrowserResult } from 'scrivito_sdk/editing_support';
-export { UiAdapterOpenContentBrowserOptions } from 'scrivito_sdk/app_support/ui_adapter_interface';
+export type { AttributeType } from 'scrivito_sdk/models';
+export type { ContentBrowserResult } from 'scrivito_sdk/editing_support';
+export type { UiAdapterOpenContentBrowserOptions } from 'scrivito_sdk/app_support/ui_adapter_interface';
 
 export type DomMode = 'None' | 'Replace';
 

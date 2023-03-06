@@ -1,14 +1,7 @@
 // @rewire
 import { Streamable } from 'scrivito_sdk/common';
-import { LoadableData, LoadableState } from 'scrivito_sdk/loadable';
-import { createStateContainer } from 'scrivito_sdk/state';
+import { LoadableCollection } from 'scrivito_sdk/loadable';
 import { ElementBoundaries } from 'scrivito_sdk/ui_interface';
-
-interface ElementBoundariesState {
-  [elementId: string]: LoadableState<ElementBoundaries | null> | undefined;
-}
-
-const stateContainer = createStateContainer<ElementBoundariesState>();
 
 const registry: ElementRegistry = {};
 
@@ -36,7 +29,7 @@ export function getElementBoundaries(
     return null;
   }
 
-  return getData(elementId).get();
+  return elementBoundaries.get(elementId).get();
 }
 
 // For test purpose only.
@@ -66,9 +59,8 @@ export function calculateElementBoundaries(
   };
 }
 
-function getData(elementId: number) {
-  return new LoadableData({
-    state: getState(elementId),
+const elementBoundaries = new LoadableCollection({
+  loadElement: (elementId: number) => ({
     stream: new Streamable<ElementBoundaries | null>((subscriber) => {
       const updateElementBoundaries = () => {
         const element = registry[elementId];
@@ -80,9 +72,5 @@ function getData(elementId: number) {
 
       return () => window.clearInterval(intervalId);
     }),
-  });
-}
-
-function getState(elementId: number) {
-  return stateContainer.subState(elementId.toString());
-}
+  }),
+});

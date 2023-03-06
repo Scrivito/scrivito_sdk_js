@@ -1,4 +1,5 @@
-import { StateContainer, globalState } from 'scrivito_sdk/state';
+import { StateContainer } from 'scrivito_sdk/state';
+import { globalState } from 'scrivito_sdk/state/global_state';
 
 declare module 'scrivito_sdk/state/global_state' {
   interface GlobalState {

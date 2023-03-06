@@ -1,20 +1,30 @@
 import * as URI from 'urijs';
 
-import { basicObjToDataContext } from 'scrivito_sdk/app_support/basic_obj_to_data_context';
-import { getDataClass } from 'scrivito_sdk/app_support/data_class';
 import {
-  DataItemEntry,
+  ArgumentError,
+  QueryParameters,
+  throwNextTick,
+  underscore,
+} from 'scrivito_sdk/common';
+import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
+import {
+  DataIdentifier,
+  isValidDataIdentifier,
+} from 'scrivito_sdk/data_integration/data_identifier';
+import {
   DataStack,
-  isDataItemEntry,
-} from 'scrivito_sdk/app_support/data_stack';
-import { isExternalDataClassProvided } from 'scrivito_sdk/app_support/external_data_class';
+  ItemElement,
+  isItemElement,
+} from 'scrivito_sdk/data_integration/data_stack';
 import {
   ExternalData,
-  getExternalDataFrom,
-} from 'scrivito_sdk/app_support/external_data_store';
-import { externalDataToDataContext } from 'scrivito_sdk/app_support/external_data_to_data_context';
-import { isObjDataClassProvided } from 'scrivito_sdk/app_support/obj_data_class';
-import { QueryParameters, underscore } from 'scrivito_sdk/common';
+  getExternalData,
+} from 'scrivito_sdk/data_integration/external_data';
+import { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
+import { externalDataToDataContext } from 'scrivito_sdk/data_integration/external_data_to_data_context';
+import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
+import { getDefaultItemIdForDataClass } from 'scrivito_sdk/data_integration/global_data';
+import { isObjDataClassProvided } from 'scrivito_sdk/data_integration/obj_data_class';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
 import {
   BasicLink,
@@ -25,17 +35,15 @@ import {
   restrictToObjClass,
 } from 'scrivito_sdk/models';
 
-export type DataContext = Record<DataContextIdentifier, DataContextValue>;
-
-export type DataContextIdentifier = string;
+export type DataContext = Record<DataIdentifier, DataContextValue>;
 export type DataContextValue = string;
 
 export type DataContextCallback = (
-  identifier: DataContextIdentifier
+  identifier: DataIdentifier
 ) => DataContextValue | undefined;
 
 export function getValueFromDataContext(
-  identifier: DataContextIdentifier,
+  identifier: DataIdentifier,
   context: DataContext | DataContextCallback
 ): DataContextValue | undefined {
   return typeof context === 'function'
@@ -43,28 +51,10 @@ export function getValueFromDataContext(
     : context[identifier];
 }
 
-export function isValidDataContextIdentifier(
-  maybeIdentifier: string
-): maybeIdentifier is DataContextIdentifier {
-  return (
-    !!maybeIdentifier.match(/^[a-z](_?[a-z0-9]+)*$/i) &&
-    maybeIdentifier.length <= 50
-  );
-}
-
 export function isValidDataContextValue(
   maybeValue: unknown
 ): maybeValue is DataContextValue | undefined {
   return typeof maybeValue === 'string' || maybeValue === undefined;
-}
-
-export function isValidDataId(
-  maybeDataId: unknown
-): maybeDataId is DataContextValue {
-  return (
-    typeof maybeDataId === 'string' &&
-    (!!maybeDataId.match(/^\d+$/) || !!maybeDataId.match(/^[a-f0-9]{8,}$/i))
-  );
 }
 
 export function isValidDataClassName(
@@ -106,20 +96,39 @@ export function getDataContextParameters(
   const objDataClass = obj.dataClass();
   if (!objDataClass) return;
 
-  const dataContext = findMatchingDataItemEntry(objDataClass, dataStack);
-  if (!dataContext) return;
-
-  if (isDataItemEntry(dataContext) && objDataClass === dataContext._class) {
-    return { [parameterizeDataClass(objDataClass)]: dataContext._id };
+  const itemElement = findMatchingItemElement(objDataClass, dataStack);
+  if (itemElement && itemElement._class === objDataClass) {
+    return { [parameterizeDataClass(objDataClass)]: itemElement._id };
   }
 }
 
-export function findMatchingDataItemEntry(
+export function findMatchingItemElement(
   dataClassName: string,
   dataStack: DataStack
-): DataItemEntry | undefined {
-  const dataItemEntries = dataStack.filter(isDataItemEntry);
-  return dataItemEntries.find((entry) => entry._class === dataClassName);
+): ItemElement | undefined {
+  return (
+    findMatchingItemElementInDataStack(dataClassName, dataStack) ||
+    findMatchingItemElementInGlobalData(dataClassName)
+  );
+}
+
+function findMatchingItemElementInDataStack(
+  dataClassName: string,
+  dataStack: DataStack
+) {
+  const itemElements = dataStack.filter(isItemElement);
+  return itemElements.find((element) => element._class === dataClassName);
+}
+
+function findMatchingItemElementInGlobalData(dataClassName: string) {
+  const defaultItemId = getDefaultItemIdForDataClass(dataClassName);
+
+  if (defaultItemId) {
+    return {
+      _class: dataClassName,
+      _id: defaultItemId,
+    };
+  }
 }
 
 export function getDataContext(
@@ -160,7 +169,7 @@ function getDataIdOfFirstDataItem(dataClassName: string) {
 
 function getDataContextFromExternalData(dataClassName: string, dataId: string) {
   return getDataContextFrom<ExternalData>(
-    () => getExternalDataFrom(dataClassName, dataId),
+    () => getExternalData(dataClassName, dataId),
     (externalData) =>
       externalDataToDataContext(externalData, dataClassName, dataId)
   );
@@ -174,7 +183,7 @@ function getDataContextFromObjData(objClassName: string, objId: string) {
 }
 
 function getDataContextFrom<T>(
-  load: () => T | null,
+  load: () => T | null | undefined,
   map: (data: T) => DataContext | 'loading' | 'unavailable' | undefined
 ) {
   const data = loadWithDefault('loading', load);
@@ -203,4 +212,20 @@ function getObj(objOrLink: BasicObj | BasicLink) {
     const obj = objOrLink.obj();
     if (obj instanceof BasicObj) return obj;
   }
+}
+
+export function getDataContextValue(
+  identifier: DataIdentifier,
+  context: DataContext | DataContextCallback
+): DataContextValue | undefined {
+  if (!isValidDataIdentifier(identifier)) return undefined;
+
+  const value = getValueFromDataContext(identifier, context);
+  if (isValidDataContextValue(value)) return value;
+
+  throwNextTick(
+    new ArgumentError(
+      `Expected a data context value to be a string or undefined, but got ${value}`
+    )
+  );
 }

@@ -1,5 +1,6 @@
 import { flatten } from 'underscore';
 
+import { docUrl } from 'scrivito_sdk/common';
 import { logError } from 'scrivito_sdk/common/error_logging';
 import { ArgumentError } from 'scrivito_sdk/common/errors';
 import { throwNextTick } from 'scrivito_sdk/common/next_tick';
@@ -53,10 +54,6 @@ export function throwInvalidArgumentsError(
   } else {
     throw new ArgumentError(fullErrorMessage);
   }
-}
-
-export function docUrl(docPermalink: string): string {
-  return `https://scrivito.com/${docPermalink}`;
 }
 
 function errorMessageForArguments(

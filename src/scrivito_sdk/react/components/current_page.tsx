@@ -2,9 +2,9 @@ import * as React from 'react';
 import * as URI from 'urijs';
 
 import { getCurrentPageData } from 'scrivito_sdk/app_support/current_page_data';
-import { getDataContext } from 'scrivito_sdk/app_support/data_context';
 import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { QueryParameters } from 'scrivito_sdk/common';
+import { getDataContext } from 'scrivito_sdk/data_integration';
 import { BasicObj } from 'scrivito_sdk/models';
 import { getDataErrorComponent } from 'scrivito_sdk/react/component_registry';
 import { useLayout } from 'scrivito_sdk/react/components/current_page/use_layout';

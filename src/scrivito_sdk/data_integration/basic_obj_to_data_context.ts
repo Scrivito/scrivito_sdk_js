@@ -1,4 +1,4 @@
-import type { DataContext } from 'scrivito_sdk/app_support/data_context';
+import type { DataContext } from 'scrivito_sdk/data_integration/data_context';
 import type { BasicObj } from 'scrivito_sdk/models';
 import { schemaFromBasicObjOrWidget } from 'scrivito_sdk/realm';
 

@@ -1,4 +1,5 @@
 export { connect } from 'scrivito_sdk/react/connect';
+export { Hibernation } from 'scrivito_sdk/react/hibernation';
 export { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_component';
 export { provideComponent } from 'scrivito_sdk/react/provide_component';
 export { provideLayoutComponent } from 'scrivito_sdk/react/provide_layout_component';

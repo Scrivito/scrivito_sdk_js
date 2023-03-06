@@ -3,7 +3,7 @@ import * as React from 'react';
 import { isObject, isString, last } from 'underscore';
 import { BackgroundImageDecoder } from 'scrivito_sdk/app_support/background_image_decoder';
 import { scaleDownBinary } from 'scrivito_sdk/app_support/scale_down_binary';
-import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
+import { ArgumentError, docUrl, throwNextTick } from 'scrivito_sdk/common';
 import { tcomb as t } from 'scrivito_sdk/common';
 import { Binary, BinaryType, ObjType } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react/connect';
@@ -330,7 +330,7 @@ function assertNoBackgroundRelatedProperties(style: unknown) {
           new ArgumentError(
             `Invalid background related CSS property "${key}". ` +
               'Expected property "background" alongside with any non-background properties' +
-              'For further details, see https://www.scrivito.com/js-sdk/BackgroundImageTag'
+              `For further details, see ${docUrl('js-sdk/BackgroundImageTag')}`
           )
         );
       }

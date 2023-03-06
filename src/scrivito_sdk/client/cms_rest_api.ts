@@ -1,5 +1,4 @@
 import { RawResponse, RequestFailedError } from 'scrivito_sdk/client';
-import * as AuthFailureCounter from 'scrivito_sdk/client/auth_failure_counter';
 import { ClientError } from 'scrivito_sdk/client/client_error';
 import { FetchOptions, Priority, fetch } from 'scrivito_sdk/client/fetch';
 import {
@@ -155,8 +154,6 @@ class CmsRestApi {
       requestParams,
       providedAuthorization: null,
     });
-
-    AuthFailureCounter.reset();
 
     return response as SessionData;
   }

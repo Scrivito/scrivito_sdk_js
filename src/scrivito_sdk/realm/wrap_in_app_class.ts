@@ -1,6 +1,7 @@
 import { mapObject } from 'underscore';
 
 import { ArgumentError, isSystemAttribute } from 'scrivito_sdk/common';
+import { DataLocator } from 'scrivito_sdk/data_integration';
 import {
   AttributeType,
   BasicAttributeValue,
@@ -9,7 +10,6 @@ import {
   BasicObjSearch,
   BasicWidget,
   Binary,
-  DataLocator,
   ObjUnavailable,
 } from 'scrivito_sdk/models';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';

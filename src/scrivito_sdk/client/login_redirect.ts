@@ -1,13 +1,13 @@
+import { RawResponse, RequestFailedError } from 'scrivito_sdk/client';
+import { ClientError } from 'scrivito_sdk/client/client_error';
 import {
-  RawResponse,
-  RequestFailedError,
-  getJrApiLocation,
-} from 'scrivito_sdk/client';
-import * as AuthFailureCounter from 'scrivito_sdk/client/auth_failure_counter';
+  getJrRestApiEndpoint,
+  isJrRestApiConfiguredForUi,
+} from 'scrivito_sdk/client/jr_rest_api';
 import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
-import { never, redirectTo } from 'scrivito_sdk/common';
+import { currentHref, never, redirectTo } from 'scrivito_sdk/common';
 
-const JR_API_LOCATION_PLACEHOLDER = '$JR_API_LOCATION';
+const JR_REST_API_ENDPOINT_PLACEHOLDER = '$JR_API_LOCATION';
 
 export async function requestWithLoginRedirect(
   request: () => Promise<RawResponse>
@@ -22,24 +22,29 @@ export async function requestWithLoginRedirect(
     if (code === 'auth_missing') {
       if (!isAuthMissingDetails(details)) throw new RequestFailedError();
 
-      redirectTo(authenticationUrlFor(details.visit));
-      return never();
+      if (isJrRestApiConfiguredForUi()) {
+        throw new ClientError('Unauthorized', code, details);
+      } else {
+        redirectTo(await authenticationUrlFor(details.visit));
+        return never();
+      }
     }
   }
 
   return response;
 }
 
-function authenticationUrlFor(visit: string): string {
-  const retry = AuthFailureCounter.currentFailureCount();
-  const returnTo = AuthFailureCounter.augmentedRedirectUrl();
+async function authenticationUrlFor(visit: string): Promise<string> {
+  const authUrl = visit.replace(
+    '$RETURN_TO',
+    encodeURIComponent(currentHref())
+  );
 
-  const authUrl = visit
-    .replace('retry=RETRY', `retry=${retry}`)
-    .replace('$RETURN_TO', encodeURIComponent(returnTo));
-
-  if (authUrl.includes(JR_API_LOCATION_PLACEHOLDER)) {
-    return authUrl.replace(JR_API_LOCATION_PLACEHOLDER, getJrApiLocation());
+  if (authUrl.includes(JR_REST_API_ENDPOINT_PLACEHOLDER)) {
+    return authUrl.replace(
+      JR_REST_API_ENDPOINT_PLACEHOLDER,
+      await getJrRestApiEndpoint()
+    );
   }
 
   return authUrl;

@@ -313,6 +313,10 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
     return wrapInAppClass(this._scrivitoPrivateContent.children());
   }
 
+  orderedChildren(): Obj[] {
+    return wrapInAppClass(this._scrivitoPrivateContent.orderedChildren());
+  }
+
   permalink(): string | null {
     return this._scrivitoPrivateContent.permalink();
   }

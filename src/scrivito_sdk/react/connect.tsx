@@ -1,7 +1,13 @@
 import * as React from 'react';
 
 import { registerLoadingActivity } from 'scrivito_sdk/app_support/loading_monitor';
-import { ArgumentError, InternalError } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  InternalError,
+  Streamable,
+  Subscription,
+} from 'scrivito_sdk/common';
+
 import { runWithPerformanceConstraint } from 'scrivito_sdk/data';
 import {
   CaptureReport,
@@ -161,7 +167,14 @@ function isConnectedComponent<Props>(
   );
 }
 
-const HierarchyLevelContext = React.createContext<number>(0);
+interface ConnectContext {
+  hierarchyLevel: number;
+  awakeness?: Streamable<boolean>;
+}
+
+export const ReactConnectContext = React.createContext<ConnectContext>({
+  hierarchyLevel: 0,
+});
 
 type CapturedState = CaptureReport<StateAccessReport<unknown>>;
 
@@ -170,26 +183,33 @@ class ComponentConnector {
   private lastRenderedState?: CapturedState;
   private readonly loadingSubscriber: LoadingSubscriber;
   private stateSubscriber?: StateSubscriber;
-  private hierachyLevel?: number;
+  private context?: ConnectContext;
+  private childContext?: ConnectContext;
+  private awakeSubscription?: Subscription;
 
   constructor(private component: ConnectorComponentInferface) {
     this.loadingSubscriber = new LoadingSubscriber();
   }
 
   componentDidMount() {
-    if (this.hierachyLevel === undefined) {
+    if (this.context === undefined) {
       throw new InternalError();
     }
 
     this.stateSubscriber = createSyncSubscriber(
       () => withUnfrozenState(() => this.component.forceUpdate()),
-      this.hierachyLevel
+      this.context.hierarchyLevel
+    );
+
+    this.awakeSubscription = this.context.awakeness?.subscribe((awake) =>
+      this.stateSubscriber?.setAwake(awake)
     );
 
     if (this.lastRenderedState) this.subscribeState(this.lastRenderedState);
   }
 
   componentWillUnmount() {
+    this.awakeSubscription?.unsubscribe();
     this.unsubscribeState();
     this.stateSubscriber = undefined;
   }
@@ -198,29 +218,33 @@ class ComponentConnector {
     const reactElement = this.renderLoadingAware(originalRender);
 
     return (
-      <HierarchyLevelContext.Consumer
-        {...forwardElementTypeProps(reactElement)}
-      >
-        {(level) =>
-          this.grabHierarchyLevel(
-            level,
-            <HierarchyLevelContext.Provider value={level + 1}>
-              {reactElement}
-            </HierarchyLevelContext.Provider>
-          )
-        }
-      </HierarchyLevelContext.Consumer>
+      <ReactConnectContext.Consumer {...forwardElementTypeProps(reactElement)}>
+        {(context) => (
+          <ReactConnectContext.Provider
+            value={this.grabAndProvideChildContext(context)}
+          >
+            {reactElement}
+          </ReactConnectContext.Provider>
+        )}
+      </ReactConnectContext.Consumer>
     );
   }
 
-  /* grab hierarchy level as a side-effect of rendering.
-   * ugly, but for a better way, React 16.6 would be needed, see:
-   * https://reactjs.org/docs/context.html#classcontexttype
+  /* grab connect context as a side-effect of rendering.
+   * ugly, but doing this nicer is only possible in a hook-only way
+   * and Scrivito.connect needs to support class components also.
    */
-  private grabHierarchyLevel(level: number, node: React.ReactNode) {
-    this.hierachyLevel = level;
+  private grabAndProvideChildContext(context: ConnectContext) {
+    this.context = context;
 
-    return node;
+    // avoid creating a new context object on each render
+    this.childContext ||= {
+      ...context,
+
+      hierarchyLevel: context.hierarchyLevel + 1,
+    };
+
+    return this.childContext;
   }
 
   private renderLoadingAware(originalRender: () => React.ReactNode) {

@@ -1,5 +1,3 @@
-import * as AuthFailureCounter from 'scrivito_sdk/client/auth_failure_counter';
-export { AuthFailureCounter };
 export type { BackendBinaryData } from 'scrivito_sdk/client/binary_urls_retrieval';
 export type { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
 export {
@@ -22,9 +20,12 @@ export {
 } from 'scrivito_sdk/client/cms_retrieval';
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
 export {
-  getJrApiLocation,
-  setJrApiLocation,
-} from 'scrivito_sdk/client/jr_api_location';
+  setJrRestApiTokenProvider,
+  setJrRestApiEndpoint,
+  getJrRestApiUrl,
+  JrRestApi,
+  getWithoutLoginRedirect,
+} from 'scrivito_sdk/client/jr_rest_api';
 export { ClientError } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
 export type {
@@ -109,3 +110,8 @@ export type {
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
 export * from 'scrivito_sdk/client/session_data';
 export { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
+export {
+  requestApiIdempotent,
+  requestApiNonIdempotent,
+  USER_IS_LOGGED_IN_PARAM_NAME,
+} from 'scrivito_sdk/client/request_api';

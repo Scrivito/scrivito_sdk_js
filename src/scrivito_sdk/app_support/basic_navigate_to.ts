@@ -53,22 +53,20 @@ export function basicNavigateTo(
 
   return load(() => destinationForTarget(target)).then((routingTarget) => {
     if (isLatestNavigateToCallId(callId)) {
-      if (routingTarget.type === 'remote') {
-        changeLocation(routingTarget.url);
-      } else if (routingTarget.type === 'local') {
-        navigateToResource(routingTarget.resource);
-      } else if (routingTarget.type === 'crossSite') {
-        const uri = new URI(routingTarget.url);
-
-        if (isLocalUri(uri)) {
-          navigateToResource(uri.resource());
-        } else {
-          redirectTo(routingTarget.url);
-        }
-      } else if (routingTarget.type === 'unavailable') {
-        logError(
-          `Could not navigate to Obj ${routingTarget.objId}, no URL found`
-        );
+      switch (routingTarget.type) {
+        case 'remote':
+          changeLocation(routingTarget.url);
+          break;
+        case 'local':
+          navigateToResource(routingTarget.resource);
+          break;
+        case 'crossSite':
+          navigateCrossSiteTo(routingTarget.url);
+          break;
+        case 'unavailable':
+          logError(
+            `Could not navigate to Obj ${routingTarget.objId}, no URL found`
+          );
       }
     }
   });
@@ -119,4 +117,14 @@ function destinationForUrl(url: string) {
   return isLocalUri(uri)
     ? { type: 'local' as const, resource: uri.resource() }
     : { type: 'remote' as const, url };
+}
+
+function navigateCrossSiteTo(url: string) {
+  const uri = new URI(url);
+
+  if (isLocalUri(uri)) {
+    navigateToResource(uri.resource());
+  } else {
+    redirectTo(url);
+  }
 }

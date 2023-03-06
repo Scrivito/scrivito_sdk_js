@@ -1,4 +1,5 @@
 import { UiContext } from 'scrivito_sdk/app_support/ui_context';
+import { UserData } from 'scrivito_sdk/app_support/user';
 import { AdapterConnection, GET, SEND, STREAM } from 'scrivito_sdk/bridge';
 import { CmsRetrieval, ComparisonRange, ObjSpaceId } from 'scrivito_sdk/client';
 import { Position } from 'scrivito_sdk/common';
@@ -6,14 +7,12 @@ import {
   ContentUpdateHandler,
   ObjStreamReplicationEndpoint,
 } from 'scrivito_sdk/data';
-import { ContentBrowserResult } from 'scrivito_sdk/editing_support';
+import { ContentBrowserResult, TeamData } from 'scrivito_sdk/editing_support';
 import { ResolvedUrl } from 'scrivito_sdk/link_resolution';
 import {
   BinaryHandler,
   CopyObjHandler,
-  EditorData,
   ObjSearchParams,
-  TeamData,
 } from 'scrivito_sdk/models';
 import { WorkspaceData } from 'scrivito_sdk/models/workspace';
 import { OptionMarkerPosition } from 'scrivito_sdk/react_editing/option_marker';
@@ -23,6 +22,7 @@ export const uiAdapterDescription = {
   canWrite: GET,
   comparisonBase: GET,
   comparisonRange: GET,
+  getEditorAuthToken: GET,
   getContentStateId: GET,
   translate: GET,
   currentEditor: GET,
@@ -84,6 +84,7 @@ export interface UiAdapterInterface
     ObjStreamReplicationEndpoint {
   canEdit(workspaceId: string, objId: string): boolean;
   canWrite(workspaceId: string): boolean;
+  getEditorAuthToken(): { token: string } | { error: string } | undefined;
   comparisonBase(): ObjSpaceId;
   comparisonRange(): ComparisonRange;
   setAppAdapter(adapterPort: MessagePort): void;
@@ -121,7 +122,7 @@ export interface UiAdapterInterface
   translate(key: string): string | undefined;
   dragTo(position: Position): void;
   drop(): void;
-  currentEditor(): EditorData;
+  currentEditor(): UserData;
   currentEditorTeams(): TeamData[];
   currentEditingContext(): { windowName?: string };
   currentWorkspace(): WorkspaceData;
@@ -132,7 +133,6 @@ export interface UiAdapterInterface
 export interface TenantConfiguration {
   tenant: string;
   endpoint?: string;
-  useRailsAuth?: boolean;
 }
 
 export interface UiAdapterOpenContentBrowserOptions {

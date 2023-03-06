@@ -3,9 +3,14 @@ import * as React from 'react';
 import {
   DataContext,
   DataContextCallback,
-  getValueFromDataContext,
-} from 'scrivito_sdk/app_support/data_context';
-import { DataStack, DataStackItem } from 'scrivito_sdk/app_support/data_stack';
+  DataItem,
+  DataScope,
+  DataStack,
+  DataStackElement,
+  getNextDataStack,
+  toDataContext,
+} from 'scrivito_sdk/data_integration';
+import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface DataContextContainer {
   placeholders: DataContext | DataContextCallback;
@@ -31,34 +36,51 @@ export function useDataStack(): DataStack | undefined {
   return React.useContext(ReactContext)?.dataStack;
 }
 
-export function useDataStackItem(): DataStackItem | undefined {
+export function useLastDataStackElement(): DataStackElement | undefined {
   const dataStack = React.useContext(ReactContext)?.dataStack;
   return dataStack && dataStack[0];
 }
 
 export function DataContextProvider({
-  dataContext,
+  dataContext: maybeDataContext,
   children,
 }: {
-  dataContext: DataContext | DataContextCallback | undefined;
+  dataContext:
+    | DataContext
+    | DataContextCallback
+    | DataItem
+    | DataScope
+    | Obj
+    | null
+    | undefined;
   children: React.ReactElement;
 }) {
   const prevDataStack = React.useContext(ReactContext)?.dataStack || [];
 
+  if (!maybeDataContext) return children;
+
+  if (maybeDataContext instanceof DataScope) {
+    return (
+      <ReactContext.Provider
+        value={{
+          placeholders: {},
+          dataStack: [
+            {
+              _class: maybeDataContext.dataClass().name(),
+              filters: maybeDataContext.getFilters(),
+            },
+            ...prevDataStack,
+          ],
+        }}
+        children={children}
+      />
+    );
+  }
+
+  const dataContext = toDataContext(unwrapAppClass(maybeDataContext));
   if (!dataContext) return children;
 
-  const dataClassName = getValueFromDataContext('_class', dataContext);
-  const dataId = getValueFromDataContext('_id', dataContext);
-
-  let dataStack: DataStack;
-
-  if (dataClassName) {
-    dataStack = dataId
-      ? [{ _class: dataClassName, _id: dataId }, ...prevDataStack]
-      : [{ _class: dataClassName }, ...prevDataStack];
-  } else {
-    dataStack = prevDataStack;
-  }
+  const dataStack = getNextDataStack(prevDataStack, dataContext);
 
   return (
     <ReactContext.Provider

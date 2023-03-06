@@ -1,6 +1,5 @@
 import { uniq } from 'underscore';
 
-import { isValidDataContextIdentifier } from 'scrivito_sdk/app_support/data_context';
 import {
   AttributeEditingOptions,
   EditingConfig,
@@ -12,10 +11,14 @@ import {
   getEditingConfigFor,
   setEditingConfigFor,
 } from 'scrivito_sdk/app_support/editing_config_store';
-import { ExternalDataClass } from 'scrivito_sdk/app_support/external_data_class';
 import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { ValidationsConfigType } from 'scrivito_sdk/app_support/validations_config';
 import { checkArgumentsFor, nextTick, tcomb as t } from 'scrivito_sdk/common';
+import {
+  DataItem,
+  ExternalDataClass,
+  isValidDataIdentifier,
+} from 'scrivito_sdk/data_integration';
 import { AttributeType, LinkType, WidgetType } from 'scrivito_sdk/models';
 import {
   AttributeDefinitions,
@@ -35,7 +38,13 @@ export function provideEditingConfig<
 
 /** @beta */
 export function provideEditingConfig(
-  dataClassName: ExternalDataClass,
+  dataClass: ExternalDataClass,
+  editingConfig: ObjEditingConfig
+): void;
+
+/** @beta */
+export function provideEditingConfig(
+  dataItem: DataItem,
   editingConfig: ObjEditingConfig
 ): void;
 
@@ -61,12 +70,12 @@ export function provideEditingConfig(
 
 /** @internal */
 export function provideEditingConfig(
-  classNameOrClass: string | ObjClass | WidgetClass | ExternalDataClass,
+  subject: string | ObjClass | WidgetClass | ExternalDataClass | DataItem,
   editingConfig: EditingConfig,
   ...excessArgs: never[]
 ): void {
-  checkProvideEditingConfig(classNameOrClass, editingConfig, ...excessArgs);
-  setEditingConfigFor(getClassName(classNameOrClass), editingConfig);
+  checkProvideEditingConfig(subject, editingConfig, ...excessArgs);
+  setEditingConfigFor(getClassName(subject), editingConfig);
 }
 
 export function getAttributeEditingOptionsFor(
@@ -162,8 +171,8 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
 
   const AttributeDataContextConfigKeyType = t.refinement(
     t.String,
-    isValidDataContextIdentifier,
-    'DataContextIdentifier'
+    isValidDataIdentifier,
+    'DataIdentifier'
   );
 
   const AttributeDataContextConfigType = t.dict(
@@ -179,6 +188,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
       values: t.maybe(t.list(EnumValueLocalizationType)),
       options: t.maybe(
         t.interface({
+          allowedTags: t.maybe(t.list(t.String)),
           toolbar: t.maybe(HtmlToolbarButtonsType),
           showHtmlSource: t.maybe(t.Boolean),
         })
@@ -221,6 +231,12 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     return maybeExternalDataClass instanceof ExternalDataClass;
   }
 
+  const DataItemType = t.refinement(t.Object, isDataItem, 'DataItem');
+
+  function isDataItem(maybeDataItem: object): maybeDataItem is DataItem {
+    return maybeDataItem instanceof DataItem;
+  }
+
   const EditingConfigType = t.interface({
     attributeDataContext: t.maybe(AttributeDataContextConfigType),
     attributes: t.maybe(AttributesEditingConfigType),
@@ -246,12 +262,13 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
       'provideEditingConfig',
       [
         [
-          'classNameOrClass',
+          'subject',
           t.union([
             t.String,
             ObjClassType,
             WidgetClassType,
             ExternalDataClassType,
+            DataItemType,
           ]),
         ],
         ['editingConfig', EditingConfigType],

@@ -1,4 +1,4 @@
-import { ContextContainer, ScrivitoError } from 'scrivito_sdk/common';
+import { ContextContainer, ScrivitoError, docUrl } from 'scrivito_sdk/common';
 import { LoadableData } from 'scrivito_sdk/loadable';
 
 interface CaptureList {
@@ -26,7 +26,7 @@ export function throwNoLoadingContext() {
   throw new ScrivitoError(
     'Content not yet loaded. ' +
       'Forgot to use Scrivito.load or Scrivito.connect? ' +
-      'See https://scrivito.com/content-not-yet-loaded-error'
+      `See ${docUrl('content-not-yet-loaded-error')}`
   );
 }
 

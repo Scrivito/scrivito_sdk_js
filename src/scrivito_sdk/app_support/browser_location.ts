@@ -3,14 +3,8 @@ import { createBrowserHistory } from 'history';
 import type { Action, History as HistoryV4, UnregisterCallback } from 'history';
 import type { History as HistoryV5 } from 'history-5';
 import * as URI from 'urijs';
-import { ArgumentError } from 'scrivito_sdk/common';
-import { globalState } from 'scrivito_sdk/state';
-
-declare module 'scrivito_sdk/state/global_state' {
-  interface GlobalState {
-    historyChangesCount: number;
-  }
-}
+import { ArgumentError, docUrl } from 'scrivito_sdk/common';
+import { createStateContainer } from 'scrivito_sdk/state';
 
 export interface HistoryState {
   historyChangesCount: number;
@@ -33,7 +27,7 @@ export function useHistory(historyToUse: HistoryV4 | HistoryV5): void {
   if (historyToUse.createHref({ pathname: '/' }) !== '/') {
     throw new ArgumentError(
       'Expected a history without a preconfigured basename.' +
-        ' For further details, see: https://www.scrivito.com/js-sdk/useHistory'
+        ` For further details, see: ${docUrl('js-sdk/useHistory')}`
     );
   }
 
@@ -63,7 +57,7 @@ export function get(): string {
 }
 
 export function getHistoryChangesCount(): number {
-  return historyChangesCountState().get() || 0;
+  return historyChangesCountState.get() || 0;
 }
 
 export function push(resource: string): void {
@@ -93,7 +87,7 @@ export function reset(): void {
   history = undefined;
   lastAction = undefined;
   unlistenToHistory = undefined;
-  historyChangesCountState().clear();
+  historyChangesCountState.clear();
 }
 
 // export for test purpose only
@@ -129,12 +123,10 @@ function listenToHistory(historyToListen: HistoryV4 | HistoryV5): void {
 
 function historyHasChanged(action?: Action) {
   lastAction = action;
-  historyChangesCountState().set(getHistoryChangesCount() + 1);
+  historyChangesCountState.set(getHistoryChangesCount() + 1);
 }
 
-function historyChangesCountState() {
-  return globalState.subState('historyChangesCount');
-}
+const historyChangesCountState = createStateContainer<number>();
 
 function isHistoryV4(
   historyToCheck: HistoryV4 | HistoryV5

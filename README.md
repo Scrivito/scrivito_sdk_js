@@ -19,9 +19,9 @@ npm install scrivito
 
 # Example application
 
-Signing up yields you a free trial based on our ready-to-use full-fledged Scrivito Example App, conveniently deployed to [Netlify](https://netlify.com), our recommended hosting partner.
+Signing up yields you a free trial based on our ready-to-use full-fledged Scrivito Example App, conveniently deployed to [Netlify](https://netlify.com).
 
-You can also [download the Scrivito Example App from GitHub](https://github.com/Scrivito/scrivito_example_app_js) and customize it to your needs. Getting started this way is easy, too; just follow the [instructions](https://www.scrivito.com/getting-started?utm_source=npm&utm_medium=web&utm_campaign=npm_package).
+You can also [download the Scrivito Example App from GitHub](https://github.com/Scrivito/scrivito_example_app_js) and customize it to your needs. Getting started this way is easy, too; just follow the [instructions](https://docs.scrivito.com/getting-started?utm_source=npm&utm_medium=web&utm_campaign=npm_package).
 
 # Source code
 
@@ -31,6 +31,6 @@ You can download and browse the [source code on GitHub](https://github.com/Scriv
 
 # Documentation
 
-Scrivito is fully documented. Whether you are a first-time user and wish to be guided by tutorials, or an experienced developer wanting to get to know the APIs: Check out our [documentation at scrivito.com](https://www.scrivito.com/documentation?utm_source=npm&utm_medium=web&utm_campaign=npm_package)!
+Scrivito is fully documented. Whether you are a first-time user and wish to be guided by tutorials, or an experienced developer wanting to get to know the APIs: Check out our [documentation at docs.scrivito.com](https://docs.scrivito.com/?utm_source=npm&utm_medium=web&utm_campaign=npm_package)!
 
 Feel free to [reach out to us](https://www.scrivito.com/support?utm_source=npm&utm_medium=natural&utm_campaign=npm_package) if you have any questions.

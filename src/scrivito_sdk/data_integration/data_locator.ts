@@ -14,15 +14,16 @@ interface DataLocatorSourceParams {
   dataClass: string;
 }
 
-type DataLocatorTransform = [
+export type DataLocatorTransform = [
   DataLocatorTransformType,
   DataLocatorTransformParams
 ];
 
-type DataLocatorTransformType = FilterTransformType | RefersToTransformType;
+type DataLocatorTransformType = FilterTransformType | ReferringTransformType;
+
 type DataLocatorTransformParams =
   | FilterTransformParams
-  | RefersToTransformParams;
+  | ReferringTransformParams;
 
 type FilterTransformType = 'filter';
 
@@ -31,9 +32,9 @@ export interface FilterTransformParams {
   equalsValue: string;
 }
 
-type RefersToTransformType = 'refersTo';
+type ReferringTransformType = 'refersTo' | 'referredBy';
 
-export interface RefersToTransformParams {
+export interface ReferringTransformParams {
   dataClass: string;
   viaAttribute: string;
 }
@@ -105,17 +106,17 @@ function isDataLocatorTransform(
   const [transformType, transformParams] = dataLocatorTransform;
 
   if (transformType === 'filter') {
-    return isFilterDataTransformParams(transformParams);
+    return isFilterTransformParams(transformParams);
   }
 
-  if (transformType === 'refersTo') {
-    return isRefersToDataTransformParams(transformParams);
+  if (transformType === 'refersTo' || transformType === 'referredBy') {
+    return isReferringTransformParams(transformParams);
   }
 
   return false;
 }
 
-export function isFilterDataTransformParams(
+export function isFilterTransformParams(
   transformParams: unknown
 ): transformParams is FilterTransformParams {
   if (!isObject(transformParams)) return false;
@@ -128,15 +129,15 @@ export function isFilterDataTransformParams(
   );
 }
 
-export function isRefersToDataTransformParams(
+export function isReferringTransformParams(
   transformParams: unknown
-): transformParams is RefersToTransformParams {
+): transformParams is ReferringTransformParams {
   if (!isObject(transformParams)) return false;
 
-  const refersToTransformParams = transformParams as RefersToTransformParams;
+  const referringTransformParams = transformParams as ReferringTransformParams;
 
   return (
-    typeof refersToTransformParams.dataClass === 'string' &&
-    typeof refersToTransformParams.viaAttribute === 'string'
+    typeof referringTransformParams.dataClass === 'string' &&
+    typeof referringTransformParams.viaAttribute === 'string'
   );
 }

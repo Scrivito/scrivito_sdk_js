@@ -1,4 +1,4 @@
-export { globalState, resetGlobalState } from 'scrivito_sdk/state/global_state';
+export { resetGlobalState } from 'scrivito_sdk/state/global_state';
 export {
   withBatchedUpdates,
   createNotificationCounter,

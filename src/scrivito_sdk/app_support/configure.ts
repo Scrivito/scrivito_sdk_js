@@ -5,10 +5,11 @@ import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import { cdnAssetUrlBase } from 'scrivito_sdk/app_support/cdn_asset_url_base';
 import { skipContentTagsForEmptyAttributes } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
+import { currentEditor } from 'scrivito_sdk/app_support/current_editor';
+import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
 import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
-
 import { initRouting } from 'scrivito_sdk/app_support/routing';
 import { SiteMappingConfiguration } from 'scrivito_sdk/app_support/site_mapping';
 import {
@@ -27,6 +28,8 @@ import {
   Priority,
   PublicAuthentication,
   cmsRestApi,
+  setJrRestApiEndpoint,
+  setJrRestApiTokenProvider,
 } from 'scrivito_sdk/client';
 import {
   DEFAULT_ENDPOINT,
@@ -75,6 +78,7 @@ export interface Configuration {
   strictSearchOperators?: boolean;
   optimizedWidgetLoading?: boolean;
   contentTagsForEmptyAttributes?: boolean;
+  jrRestApiEndpoint?: string;
 
   /** @internal */
   unstable?: {
@@ -109,6 +113,7 @@ const AllowedConfiguration = t.interface({
   strictSearchOperators: t.maybe(t.Boolean),
   optimizedWidgetLoading: t.maybe(t.Boolean),
   contentTagsForEmptyAttributes: t.maybe(t.Boolean),
+  jrRestApiEndpoint: t.maybe(t.String),
 });
 
 const PUBLIC_FUNCTION_NAME = 'configure';
@@ -161,19 +166,14 @@ export function configure(
       inofficialConfiguration?.assetUrlBase ?? cdnAssetUrlBase()
     );
 
-    if (uiAdapter) {
-      configureForUi(endpoint, tenant, uiAdapter, inofficialConfiguration);
-      loadEditingAssets();
-    } else {
-      if (configuration.optimizedWidgetLoading) configureForLazyWidgets(true);
+    setJrRestApiEndpoint(
+      configuration.jrRestApiEndpoint || calculateJrRestApiEndpoint()
+    );
 
-      configureCmsRestApi({
-        endpoint,
-        tenant,
-        visitorAuthentication: configuration.visitorAuthentication,
-        priority: configuration.priority,
-        apiKey: configuration.apiKey,
-      });
+    if (uiAdapter) {
+      configureWithUi(endpoint, tenant, uiAdapter);
+    } else {
+      configureWithoutUi(endpoint, tenant, configuration);
     }
   }
 
@@ -206,21 +206,44 @@ export function resetConfiguration(): void {
   configDeferred = new Deferred();
 }
 
-function configureForUi(
+function configureWithUi(
   endpoint: string,
   tenant: string,
-  uiAdapterClient: UiAdapterClient,
-  inofficialConfiguration: Configuration['unstable']
+  uiAdapterClient: UiAdapterClient
 ) {
+  setJrRestApiTokenProvider(() => load(() => currentEditor()?.authToken()));
+
   uiAdapterClient.configureTenant({
     tenant,
     endpoint,
-    useRailsAuth: inofficialConfiguration?.useRailsAuth,
   });
 
   if (useUnstableMultiSiteMode()) warnIfNoSiteIdSelection();
 
   setAppAdapter(uiAdapterClient);
+
+  loadEditingAssets();
+}
+
+function configureWithoutUi(
+  endpoint: string,
+  tenant: string,
+  {
+    optimizedWidgetLoading,
+    visitorAuthentication,
+    priority,
+    apiKey,
+  }: Configuration
+) {
+  if (optimizedWidgetLoading) configureForLazyWidgets(true);
+
+  configureCmsRestApi({
+    endpoint,
+    tenant,
+    visitorAuthentication,
+    priority,
+    apiKey,
+  });
 }
 
 function configureCmsRestApi({
@@ -246,6 +269,20 @@ function configureCmsRestApi({
     apiBaseUrl: `https://${endpoint}/tenants/${tenant}`,
     authProvider,
   });
+}
+
+function calculateJrRestApiEndpoint() {
+  const origin = currentOrigin();
+
+  // Node.js
+  if (!origin) return 'https://api.justrelate.com';
+
+  const originUri = URI(origin);
+
+  // Forward localhost requests as is
+  if (originUri.domain() === 'localhost') return origin;
+
+  return originUri.subdomain('api').origin();
 }
 
 function getCheckedRoutingConfiguration({

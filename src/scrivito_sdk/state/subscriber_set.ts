@@ -14,6 +14,11 @@ export interface StateSubscriber {
 
   /** unsubscribe from changes subscribed previously */
   unsubscribe(): void;
+
+  /** A StateSubscriber is awake by default.
+   * Call with false to pause the subscription, call with true to resume.
+   */
+  setAwake(awake: boolean): void;
 }
 
 type SubscriberStore = Subscriber[];
@@ -65,6 +70,8 @@ export class SubscriberSet {
 /** Subscriber is the internal implementation of the StateSubscriber interface. */
 class Subscriber implements StateSubscriber {
   private activeReference?: StateReference;
+  private awake = true;
+  private notificationDuringSleep = false;
 
   constructor(
     private readonly subscriberSet: SubscriberSet,
@@ -94,10 +101,29 @@ class Subscriber implements StateSubscriber {
     this.activeReference = undefined;
   }
 
+  /** This method is exposed to other packages as
+   * part of the StateSubscriber interface.
+   */
+  setAwake(awake: boolean) {
+    this.awake = awake;
+
+    if (awake && this.notificationDuringSleep) {
+      this.notify();
+      this.notificationDuringSleep = false;
+    }
+  }
+
   scheduleNotify = collectAndSchedule(nextTick, () => this.notify());
 
   notify(): void {
-    if (this.activeReference) this.listener();
+    if (!this.activeReference) return;
+
+    if (!this.awake) {
+      this.notificationDuringSleep = true;
+      return;
+    }
+
+    this.listener();
   }
 
   hasChanges(): boolean {

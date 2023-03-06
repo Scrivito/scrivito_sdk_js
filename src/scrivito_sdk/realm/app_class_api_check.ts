@@ -23,6 +23,7 @@ export const {
   checkProvideObjClass,
   checkProvideWidgetClass,
   checkProvideDataClass,
+  checkProvideDataItem,
 } = (() => {
   if (process.env.NODE_ENV !== 'development') {
     return {
@@ -34,6 +35,7 @@ export const {
       checkProvideObjClass: noop,
       checkProvideWidgetClass: noop,
       checkProvideDataClass: noop,
+      checkProvideDataItem: noop,
     };
   }
 
@@ -182,11 +184,30 @@ export const {
         ['name', t.String],
         [
           'dataClass',
-          t.interface({ connection: t.interface({ get: t.Function }) }),
+          t.interface({
+            connection: t.interface({
+              get: t.Function,
+              create: t.maybe(t.Function),
+              index: t.maybe(t.Function),
+              update: t.maybe(t.Function),
+              delete: t.maybe(t.Function),
+            }),
+          }),
         ],
       ],
       {
         docPermalink: 'js-sdk/provideDataClass',
+      }
+    ),
+
+    checkProvideDataItem: checkArgumentsFor(
+      'provideDataItem',
+      [
+        ['name', t.String],
+        ['read', t.Function],
+      ],
+      {
+        docPermalink: 'js-sdk/provideDataItem',
       }
     ),
   };

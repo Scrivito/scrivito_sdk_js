@@ -1,5 +1,3 @@
-import * as URI from 'urijs';
-
 export interface InternalUrl {
   obj_id: string;
   query?: string;
@@ -25,11 +23,11 @@ export function formatInternalLinks(
 }
 
 function parseInternalUrl(internalLinkUrl: string): InternalUrl {
-  const uri = new URI(internalLinkUrl);
+  const url = new URL(internalLinkUrl);
 
   return {
     obj_id: internalLinkUrl.slice(6, 22),
-    query: uri.query(),
-    hash: uri.fragment(),
+    query: url.search.slice(1),
+    hash: url.hash.slice(1),
   };
 }

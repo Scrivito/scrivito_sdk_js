@@ -92,23 +92,9 @@ export {
 export { restrictToObjClass } from 'scrivito_sdk/models/restrict_to_obj_class';
 export { getPlacementModificationInfos } from 'scrivito_sdk/models/get_placement_modification_infos';
 export type { PlacementModification } from 'scrivito_sdk/models/get_placement_modification_infos';
-export { Editor } from 'scrivito_sdk/models/editor';
-export type { EditorData } from 'scrivito_sdk/models/editor';
-export type { TeamData } from 'scrivito_sdk/models/team';
 export {
   versionsOnAllSites,
   versionOnSite,
 } from 'scrivito_sdk/models/content_versions';
 export { restrictToContent } from 'scrivito_sdk/models/restrict_to_content';
 export { Workspace } from 'scrivito_sdk/models/workspace';
-export type {
-  FilterTransformParams,
-  RefersToTransformParams,
-  DataLocator,
-} from 'scrivito_sdk/models/data_locator';
-export {
-  isFilterDataTransformParams,
-  isDataLocator,
-  isRefersToDataTransformParams,
-} from 'scrivito_sdk/models/data_locator';
-export { DataLocatorError } from 'scrivito_sdk/models/data_locator_error';
