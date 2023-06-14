@@ -15,6 +15,7 @@ import {
   getContentStateId,
   trackContentStateId,
 } from 'scrivito_sdk/data';
+import { disableExternalDataLoading } from 'scrivito_sdk/data_integration';
 import { load, reportUsedData } from 'scrivito_sdk/loadable';
 import { BasicObj, ObjType, currentObjSpaceId } from 'scrivito_sdk/models';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
@@ -50,27 +51,29 @@ export function renderPage<T>(
     const siteId = ensureSiteIsPresent(page);
 
     return load(() =>
-      reportUsedData(() => {
-        const baseUrl = baseUrlForSite(siteId);
-        if (!baseUrl) {
-          throw new ScrivitoError(
-            `The obj "${page.id()}" cannot be rendered because the baseUrlForSite callback did not return a URL for its site "${siteId}".`
-          );
-        }
-
-        // ID is currently good enough.
-        // no need for a vanity path with slug or permalink
-        const sitePath = `/${page.id()}`;
-
-        return withCurrentPageContext(
-          { page, siteId, baseUrl, sitePath },
-          () => {
-            ensureRoutingDataAvailable(page);
-
-            return usePrerenderScaling(render);
+      reportUsedData(() =>
+        disableExternalDataLoading(() => {
+          const baseUrl = baseUrlForSite(siteId);
+          if (!baseUrl) {
+            throw new ScrivitoError(
+              `The obj "${page.id()}" cannot be rendered because the baseUrlForSite callback did not return a URL for its site "${siteId}".`
+            );
           }
-        );
-      })
+
+          // ID is currently good enough.
+          // no need for a vanity path with slug or permalink
+          const sitePath = `/${page.id()}`;
+
+          return withCurrentPageContext(
+            { page, siteId, baseUrl, sitePath },
+            () => {
+              ensureRoutingDataAvailable(page);
+
+              return usePrerenderScaling(render);
+            }
+          );
+        })
+      )
     ).then(({ result, usedData }) => {
       return {
         result,

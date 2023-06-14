@@ -2,6 +2,7 @@ import { uniq } from 'underscore';
 
 import {
   AttributeEditingOptions,
+  DataClassEditingConfig,
   EditingConfig,
   ObjEditingConfig,
   PropertyGroup,
@@ -39,13 +40,7 @@ export function provideEditingConfig<
 /** @beta */
 export function provideEditingConfig(
   dataClass: ExternalDataClass,
-  editingConfig: ObjEditingConfig
-): void;
-
-/** @beta */
-export function provideEditingConfig(
-  dataItem: DataItem,
-  editingConfig: ObjEditingConfig
+  editingConfig: DataClassEditingConfig
 ): void;
 
 /** @public */
@@ -60,6 +55,12 @@ export function provideEditingConfig<
 >(
   widgetClass: WidgetClass<AttrDefs>,
   editingConfig: WidgetEditingConfig<AttrDefs>
+): void;
+
+/** @public */
+export function provideEditingConfig(
+  dataItem: DataItem,
+  editingConfig: DataClassEditingConfig
 ): void;
 
 /** @public */

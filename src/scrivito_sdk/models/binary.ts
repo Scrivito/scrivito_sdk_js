@@ -215,11 +215,11 @@ export class Binary {
   /** @internal */
   extname(): string {
     if (this.raw().filename().indexOf('.') > -1) {
-      const matches = /[^.\\]*$/.exec(this.raw().filename());
+      const parts = this.raw()
+        .filename()
+        .split(/[.\\]+/);
 
-      if (matches) {
-        return matches[0].toLowerCase();
-      }
+      if (parts.length > 1) return parts[parts.length - 1].toLowerCase();
     }
 
     return '';

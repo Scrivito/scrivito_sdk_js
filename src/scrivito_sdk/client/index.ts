@@ -79,13 +79,19 @@ export type {
   LinklistAttributeJson,
   // Custom attribute (value only)
   LinkJson,
+  DataLocatorJson,
+  DataLocatorQuery,
+  DataLocatorFilter,
+  DataLocatorValueFilter,
+  DataLocatorValueVia,
+  DataLocatorValueViaFilter,
+  OrderByItem,
 } from 'scrivito_sdk/client/obj_json';
 export type {
   BackendQueryRetrievalParams,
   BackendSearchOperator,
   BackendValueBoost,
   FieldBoost,
-  OrderByItem,
   Query,
   QueryResponse,
   SingleBackendSearchValue,

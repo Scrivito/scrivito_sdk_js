@@ -1,3 +1,4 @@
+import { DataLocator } from 'scrivito_sdk/data_integration';
 import { BasicLink } from 'scrivito_sdk/models/basic_link';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
@@ -8,7 +9,7 @@ import { TypeInfo } from 'scrivito_sdk/models/type_info';
 export interface BasicAttributeMapping {
   binary: Binary | null;
   boolean: boolean;
-  datalocator: unknown;
+  datalocator: DataLocator;
   date: Date | null;
   datetime: Date | null;
   enum: string | null;

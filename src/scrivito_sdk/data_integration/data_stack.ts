@@ -1,43 +1,26 @@
 import {
-  DataItem,
-  DataItemFilters,
+  DataItemPojo,
+  DataScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataContext,
   DataContextCallback,
   getValueFromDataContext,
 } from 'scrivito_sdk/data_integration/data_context';
-import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 
 export type DataStack = Array<DataStackElement>;
-export type DataStackElement = ItemElement | ScopeElement;
+export type DataStackElement = DataItemPojo | DataScopePojo;
 
-export interface ItemElement extends DataContext {
-  _id: string;
-  _class: string;
-}
-
-interface ScopeElement {
-  _class: string;
-  filters: DataItemFilters;
-}
-
-export function isItemElement(
+export function isDataItemPojo(
   element: DataStackElement
-): element is ItemElement {
-  return !!(element as ItemElement)._id;
+): element is DataItemPojo {
+  return !!(element as DataItemPojo)._id;
 }
 
-export function isScopeElement(
+export function isDataScopePojo(
   element: DataStackElement
-): element is ScopeElement {
-  return !isItemElement(element);
-}
-
-export function itemElementToDataItem(
-  itemElement: ItemElement
-): DataItem | undefined {
-  return getDataClass(itemElement._class).get(itemElement._id) || undefined;
+): element is DataScopePojo {
+  return !isDataItemPojo(element);
 }
 
 export function getNextDataStack(

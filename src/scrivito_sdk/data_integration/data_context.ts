@@ -7,14 +7,14 @@ import {
   underscore,
 } from 'scrivito_sdk/common';
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
+import { DataItemPojo } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataIdentifier,
   isValidDataIdentifier,
 } from 'scrivito_sdk/data_integration/data_identifier';
 import {
   DataStack,
-  ItemElement,
-  isItemElement,
+  isDataItemPojo,
 } from 'scrivito_sdk/data_integration/data_stack';
 import {
   ExternalData,
@@ -22,7 +22,7 @@ import {
 } from 'scrivito_sdk/data_integration/external_data';
 import { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
 import { externalDataToDataContext } from 'scrivito_sdk/data_integration/external_data_to_data_context';
-import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
+import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 import { getDefaultItemIdForDataClass } from 'scrivito_sdk/data_integration/global_data';
 import { isObjDataClassProvided } from 'scrivito_sdk/data_integration/obj_data_class';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
@@ -105,7 +105,7 @@ export function getDataContextParameters(
 export function findMatchingItemElement(
   dataClassName: string,
   dataStack: DataStack
-): ItemElement | undefined {
+): DataItemPojo | undefined {
   return (
     findMatchingItemElementInDataStack(dataClassName, dataStack) ||
     findMatchingItemElementInGlobalData(dataClassName)
@@ -116,7 +116,7 @@ function findMatchingItemElementInDataStack(
   dataClassName: string,
   dataStack: DataStack
 ) {
-  const itemElements = dataStack.filter(isItemElement);
+  const itemElements = dataStack.filter(isDataItemPojo);
   return itemElements.find((element) => element._class === dataClassName);
 }
 
@@ -163,7 +163,11 @@ function getDataIdFromParams(dataClassName: string, params: QueryParameters) {
 }
 
 function getDataIdOfFirstDataItem(dataClassName: string) {
-  const [firstDataItem] = getDataClass(dataClassName).all().take(1);
+  const [firstDataItem] = getDataClassOrThrow(dataClassName)
+    .all()
+    .transform({ limit: 1 })
+    .take();
+
   if (firstDataItem) return firstDataItem.id();
 }
 

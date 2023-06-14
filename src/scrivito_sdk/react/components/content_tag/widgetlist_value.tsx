@@ -20,72 +20,68 @@ interface WidgetlistValueProps {
   widgetProps?: WidgetProps;
 }
 
-export const WidgetlistValue = connect(
-  class WidgetlistValue extends React.Component<WidgetlistValueProps> {
-    render() {
-      if (isComparisonActive()) {
-        return this.widgetlistChildrenForComparison();
-      }
-
-      const field = this.props.field;
-      if (!isInPlaceEditingActive() || !canEditObjWithId(field.obj().id())) {
-        return this.renderWidgets(field, false);
-      }
-
-      return (
-        <InPlaceEditingEnabledContextConsumer>
-          {(isInPlaceEditingEnabled) =>
-            this.renderWidgets(field, isInPlaceEditingEnabled)
-          }
-        </InPlaceEditingEnabledContextConsumer>
-      );
-    }
-
-    private renderWidgets(
-      field: BasicField<'widgetlist'>,
-      isInPlaceEditingEnabled: boolean
-    ) {
-      const widgets = this.props.field.get();
-      if (widgets.length) {
-        return (
-          <>
-            {widgets.map((widget) => (
-              <WidgetContent
-                key={widget.id()}
-                widget={widget}
-                widgetProps={this.props.widgetProps}
-                fieldType="widgetlist"
-              />
-            ))}
-          </>
-        );
-      }
-
-      if (!isInPlaceEditingEnabled) return null;
-
-      const WidgetlistPlaceholder = importFrom(
-        'reactEditing',
-        'WidgetlistPlaceholder'
-      );
-
-      return WidgetlistPlaceholder ? (
-        <WidgetlistPlaceholder field={field} />
-      ) : null;
-    }
-
-    private widgetlistChildrenForComparison() {
-      return getPlacementModificationInfos(
-        this.props.field,
-        getComparisonRange()
-      ).map((info) => (
-        <WidgetContent
-          key={`${info.widget.id()}-${info.modification}`}
-          widget={info.widget}
-          widgetProps={this.props.widgetProps}
-          placementModification={info.modification}
-          fieldType="widgetlist"
-        />
-      ));
-    }
+export const WidgetlistValue = connect(function WidgetlistValue({
+  field,
+  widgetProps,
+}: WidgetlistValueProps) {
+  if (isComparisonActive()) {
+    return widgetlistChildrenForComparison();
   }
-);
+
+  if (!isInPlaceEditingActive() || !canEditObjWithId(field.obj().id())) {
+    return renderWidgets(false);
+  }
+
+  return (
+    <InPlaceEditingEnabledContextConsumer>
+      {(isInPlaceEditingEnabled) => renderWidgets(isInPlaceEditingEnabled)}
+    </InPlaceEditingEnabledContextConsumer>
+  );
+
+  function renderWidgets(isInPlaceEditingEnabled: boolean) {
+    const widgets = field.get();
+    if (widgets.length) {
+      return (
+        <>
+          {widgets.map((widget) => (
+            <WidgetContent
+              key={widget.id()}
+              widget={widget}
+              widgetProps={widgetProps}
+              fieldType="widgetlist"
+            />
+          ))}
+        </>
+      );
+    }
+
+    if (!isInPlaceEditingEnabled) return null;
+
+    const WidgetlistPlaceholder = importFrom(
+      'reactEditing',
+      'WidgetlistPlaceholder'
+    );
+
+    return WidgetlistPlaceholder ? (
+      <WidgetlistPlaceholder field={field} />
+    ) : null;
+  }
+
+  function widgetlistChildrenForComparison() {
+    return (
+      <>
+        {getPlacementModificationInfos(field, getComparisonRange()).map(
+          (info) => (
+            <WidgetContent
+              key={`${info.widget.id()}-${info.modification}`}
+              widget={info.widget}
+              widgetProps={widgetProps}
+              placementModification={info.modification}
+              fieldType="widgetlist"
+            />
+          )
+        )}
+      </>
+    );
+  }
+});

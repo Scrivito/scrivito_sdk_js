@@ -7,13 +7,15 @@ import {
   DataScope,
   DataStack,
   DataStackElement,
+  ExternalDataScope,
+  ObjDataScope,
   getNextDataStack,
   toDataContext,
 } from 'scrivito_sdk/data_integration';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface DataContextContainer {
-  placeholders: DataContext | DataContextCallback;
+  dataContext: DataContext | DataContextCallback;
   dataStack: DataStack;
 }
 
@@ -25,11 +27,11 @@ export function useDataContextContainer(): DataContextContainer | undefined {
   return React.useContext(ReactContext);
 }
 
-export function usePlaceholders():
+export function useDataContext():
   | DataContext
   | DataContextCallback
   | undefined {
-  return React.useContext(ReactContext)?.placeholders;
+  return React.useContext(ReactContext)?.dataContext;
 }
 
 export function useDataStack(): DataStack | undefined {
@@ -60,21 +62,22 @@ export function DataContextProvider({
   if (!maybeDataContext) return children;
 
   if (maybeDataContext instanceof DataScope) {
-    return (
-      <ReactContext.Provider
-        value={{
-          placeholders: {},
-          dataStack: [
-            {
-              _class: maybeDataContext.dataClass().name(),
-              filters: maybeDataContext.getFilters(),
-            },
-            ...prevDataStack,
-          ],
-        }}
-        children={children}
-      />
-    );
+    if (
+      maybeDataContext instanceof ObjDataScope ||
+      maybeDataContext instanceof ExternalDataScope
+    ) {
+      return (
+        <ReactContext.Provider
+          value={{
+            dataContext: {},
+            dataStack: [maybeDataContext.toPojo(), ...prevDataStack],
+          }}
+          children={children}
+        />
+      );
+    }
+
+    return children;
   }
 
   const dataContext = toDataContext(unwrapAppClass(maybeDataContext));
@@ -84,7 +87,7 @@ export function DataContextProvider({
 
   return (
     <ReactContext.Provider
-      value={{ placeholders: dataContext, dataStack }}
+      value={{ dataContext, dataStack }}
       children={children}
     />
   );

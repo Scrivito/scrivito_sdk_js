@@ -1,143 +1,107 @@
 import { isObject } from 'underscore';
 
-export interface DataLocator {
-  source: DataLocatorSource;
-  transforms?: DataLocatorTransform[];
+import {
+  DataLocatorJson,
+  DataLocatorQuery,
+  DataLocatorValueFilter,
+  DataLocatorValueVia,
+  DataLocatorValueViaFilter,
+  OrderByItem,
+} from 'scrivito_sdk/client';
+
+interface DataLocatorParams extends Omit<DataLocatorJson, 'class'> {
+  class: string | null;
 }
 
-type DataLocatorSource = [DataLocatorSourceType, DataLocatorSourceParams];
-type DataLocatorSourceType = 'all';
+/** @public */
+export class DataLocator {
+  private readonly _class: string | null;
+  private readonly _query?: DataLocatorQuery;
+  private readonly _order_by?: OrderByItem[];
+  private readonly _size?: number;
 
-const DATA_LOCATOR_SOURCE_TYPES: DataLocatorSourceType[] = ['all'];
-
-interface DataLocatorSourceParams {
-  dataClass: string;
-}
-
-export type DataLocatorTransform = [
-  DataLocatorTransformType,
-  DataLocatorTransformParams
-];
-
-type DataLocatorTransformType = FilterTransformType | ReferringTransformType;
-
-type DataLocatorTransformParams =
-  | FilterTransformParams
-  | ReferringTransformParams;
-
-type FilterTransformType = 'filter';
-
-export interface FilterTransformParams {
-  attribute: string;
-  equalsValue: string;
-}
-
-type ReferringTransformType = 'refersTo' | 'referredBy';
-
-export interface ReferringTransformParams {
-  dataClass: string;
-  viaAttribute: string;
-}
-
-export function isDataLocator(
-  dataLocator: unknown
-): dataLocator is DataLocator {
-  if (!isObject(dataLocator)) return false;
-
-  const { source, transforms } = dataLocator as DataLocator;
-
-  return isDataLocatorSource(source) && isDataLocatorTransforms(transforms);
-}
-
-function isDataLocatorSource(
-  dataLocatorSource: unknown
-): dataLocatorSource is DataLocatorSource {
-  if (!Array.isArray(dataLocatorSource)) return false;
-
-  const [dataLocatorSourceType, dataLocatorSourceParams] = dataLocatorSource;
-
-  return (
-    isDataLocatorSourceType(dataLocatorSourceType) &&
-    isDataLocatorSourceParams(dataLocatorSourceParams)
-  );
-}
-
-function isDataLocatorTransforms(
-  dataLocatorTransforms: unknown
-): dataLocatorTransforms is DataLocatorTransform[] {
-  return (
-    dataLocatorTransforms === undefined ||
-    (Array.isArray(dataLocatorTransforms) &&
-      dataLocatorTransforms.every(isDataLocatorTransform))
-  );
-}
-
-function isDataLocatorSourceType(
-  dataLocatorSourceType: unknown
-): dataLocatorSourceType is DataLocatorSourceType {
-  return (
-    typeof dataLocatorSourceType === 'string' &&
-    DATA_LOCATOR_SOURCE_TYPES.includes(
-      dataLocatorSourceType as DataLocatorSourceType
-    )
-  );
-}
-
-function isDataLocatorSourceParams(
-  dataLocatorSourceParams: unknown
-): dataLocatorSourceParams is DataLocatorSourceParams {
-  return (
-    isObject(dataLocatorSourceParams) &&
-    typeof (dataLocatorSourceParams as DataLocatorSourceParams).dataClass ===
-      'string'
-  );
-}
-
-function isDataLocatorTransform(
-  dataLocatorTransform: unknown
-): dataLocatorTransform is DataLocatorTransform {
-  if (
-    !Array.isArray(dataLocatorTransform) ||
-    dataLocatorTransform.length !== 2
-  ) {
-    return false;
+  /** @internal */
+  constructor(params: DataLocatorParams) {
+    this._class = params.class;
+    this._query = params.query;
+    this._order_by = params.order_by;
+    this._size = params.size;
   }
 
-  const [transformType, transformParams] = dataLocatorTransform;
-
-  if (transformType === 'filter') {
-    return isFilterTransformParams(transformParams);
+  /** @internal */
+  class(): string | null {
+    return this._class;
   }
 
-  if (transformType === 'refersTo' || transformType === 'referredBy') {
-    return isReferringTransformParams(transformParams);
+  /** @internal */
+  query(): DataLocatorQuery | undefined {
+    if (this._query) return [...this._query];
   }
 
-  return false;
+  /** @internal */
+  orderBy(): OrderByItem[] | undefined {
+    if (this._order_by) return [...this._order_by];
+  }
+
+  /** @internal */
+  size(): number | undefined {
+    return this._size;
+  }
+
+  /** @internal */
+  transform(params: {
+    class?: string;
+    query?: DataLocatorQuery;
+    order_by?: OrderByItem[];
+    size?: number | null;
+  }): DataLocator {
+    return new DataLocator({
+      class: params.class ?? this._class,
+      query: params.query || this.query(),
+      order_by: params.order_by || this.orderBy(),
+      size: params.size === null ? undefined : params.size ?? this._size,
+    });
+  }
+
+  /** @internal */
+  toPojo(): DataLocatorJson | null {
+    if (this._class === null) return null;
+
+    return {
+      class: this._class,
+      query: this.query(),
+      order_by: this.orderBy(),
+      size: this._size,
+    };
+  }
 }
 
-export function isFilterTransformParams(
-  transformParams: unknown
-): transformParams is FilterTransformParams {
-  if (!isObject(transformParams)) return false;
-
-  const filterTransformParams = transformParams as FilterTransformParams;
-
+export function isDataLocatorValueFilter(
+  filter: unknown
+): filter is DataLocatorValueFilter {
   return (
-    typeof filterTransformParams.attribute === 'string' &&
-    typeof filterTransformParams.equalsValue === 'string'
+    isObject(filter) &&
+    typeof (filter as DataLocatorValueFilter).field === 'string' &&
+    typeof (filter as DataLocatorValueFilter).value === 'string'
   );
 }
 
-export function isReferringTransformParams(
-  transformParams: unknown
-): transformParams is ReferringTransformParams {
-  if (!isObject(transformParams)) return false;
-
-  const referringTransformParams = transformParams as ReferringTransformParams;
-
+export function isDataLocatorValueViaFilter(
+  filter: unknown
+): filter is DataLocatorValueViaFilter {
   return (
-    typeof referringTransformParams.dataClass === 'string' &&
-    typeof referringTransformParams.viaAttribute === 'string'
+    isObject(filter) &&
+    typeof (filter as DataLocatorValueViaFilter).field === 'string' &&
+    isDataLocatorValueVia((filter as DataLocatorValueViaFilter).value_via)
+  );
+}
+
+export function isDataLocatorValueVia(
+  valueVia: unknown
+): valueVia is DataLocatorValueVia {
+  return (
+    isObject(valueVia) &&
+    typeof (valueVia as DataLocatorValueVia).class === 'string' &&
+    typeof (valueVia as DataLocatorValueVia).field === 'string'
   );
 }

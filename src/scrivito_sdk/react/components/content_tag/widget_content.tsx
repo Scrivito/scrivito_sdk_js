@@ -3,10 +3,10 @@ import * as React from 'react';
 import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
 import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 import { BasicWidget, PlacementModification } from 'scrivito_sdk/models';
-import { propsAreEqual } from 'scrivito_sdk/react';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
 import { connect } from 'scrivito_sdk/react/connect';
+import { memo } from 'scrivito_sdk/react/memo';
 import {
   AttributeDefinitions,
   Widget,
@@ -26,74 +26,82 @@ interface WidgetContentProps {
 
 type WidgetContentFieldType = 'widget' | 'widgetlist';
 
-interface WidgetContentState {
-  hasError: boolean;
-}
-
 export const WidgetContent: React.ComponentType<WidgetContentProps> = connect(
-  class WidgetContent extends React.Component<
-    WidgetContentProps,
-    WidgetContentState
-  > {
-    static displayName = 'Scrivito.ContentTag.WidgetContent';
+  function WidgetContent({
+    fieldType,
+    placementModification,
+    widget,
+    widgetProps,
+  }: WidgetContentProps) {
+    const widgetClass = widget.objClass();
+    const widgetComponent = getComponentForAppClass(
+      widgetClass
+    ) as React.ComponentType<WidgetComponentProps> | null;
 
-    constructor(props: WidgetContentProps) {
-      super(props);
+    return (
+      <WidgetTagContext.Provider
+        value={{ widget, placementModification, fieldType }}
+      >
+        <WidgetContentErrorBoundary
+          widget={widget}
+          widgetClass={widgetClass}
+          widgetComponent={widgetComponent}
+          widgetProps={widgetProps}
+        />
+      </WidgetTagContext.Provider>
+    );
+  }
+);
+WidgetContent.displayName = 'Scrivito.ContentTag.WidgetContent';
 
-      this.state = {
-        hasError: false,
-      };
+class WidgetContentErrorBoundary extends React.Component<
+  AppWidgetWrapperProps,
+  { hasError: boolean }
+> {
+  constructor(props: AppWidgetWrapperProps) {
+    super(props);
+
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(e: Error) {
+    throwNextTick(e);
+  }
+
+  componentDidUpdate(prevProps: AppWidgetWrapperProps) {
+    if (prevProps.widgetComponent !== this.props.widgetComponent) {
+      this.setState({ hasError: false });
     }
+  }
 
-    componentDidCatch(e: Error) {
-      throwNextTick(e);
-      this.setState({ hasError: true });
-    }
-
-    shouldComponentUpdate(
-      nextProps: WidgetContentProps,
-      nextState: WidgetContentState
-    ) {
-      return (
-        !propsAreEqual(this.props, nextProps) ||
-        nextState.hasError !== this.state.hasError
-      );
-    }
-
-    render() {
-      if (this.state.hasError) {
-        let children;
-        if (isInPlaceEditingActive()) {
-          children = (
+  render() {
+    if (this.state.hasError) {
+      if (isInPlaceEditingActive()) {
+        return (
+          <WidgetTag>
             <div className="content_error">
               Widget could not be rendered due to application error.
             </div>
-          );
-        }
-        return withWidgetContext(
-          this.props.widget,
-          <WidgetTag children={children} />,
-          this.props.placementModification
+          </WidgetTag>
         );
       }
 
-      return (
-        <AppWidgetWrapper
-          widget={this.props.widget}
-          widgetProps={this.props.widgetProps}
-          placementModification={this.props.placementModification}
-          fieldType={this.props.fieldType}
-        />
-      );
+      return <WidgetTag />;
     }
+
+    return <AppWidgetWrapper {...this.props} />;
   }
-);
+}
 
 interface AppWidgetWrapperProps {
   widget: BasicWidget;
+  widgetClass: string;
+  widgetComponent: React.ComponentType<WidgetComponentProps> | null;
   widgetProps?: WidgetProps;
-  placementModification?: PlacementModification;
-  fieldType?: WidgetContentFieldType;
 }
 
 /** @public */
@@ -103,63 +111,33 @@ export interface WidgetComponentProps<
   widget: Widget<AttrDefs>;
 }
 
-class AppWidgetWrapper extends React.Component<AppWidgetWrapperProps> {
-  constructor(props: AppWidgetWrapperProps) {
-    super(props);
-  }
-
-  render() {
-    return withWidgetContext(
-      this.props.widget,
-      React.createElement<WidgetComponentProps>(
-        this.getAppWidgetComponent(),
-        this.getWidgetComponentProps()
-      ),
-      this.props.placementModification,
-      this.props.fieldType
+const AppWidgetWrapper = memo(function AppWidgetWrapper({
+  widget,
+  widgetClass,
+  widgetComponent,
+  widgetProps,
+}: AppWidgetWrapperProps) {
+  if (!widgetComponent) {
+    throw new ArgumentError(
+      `No component registered for widget class "${widgetClass}"`
     );
   }
 
-  private getAppWidgetComponent(): React.ComponentType<WidgetComponentProps> {
-    const widgetClass = this.props.widget.objClass();
-    const widgetComponent = getComponentForAppClass(widgetClass);
-
-    if (!widgetComponent) {
-      throw new ArgumentError(
-        `No component registered for widget class "${widgetClass}"`
-      );
-    }
-
-    return widgetComponent as React.ComponentType<WidgetComponentProps>;
+  if (widgetProps?.hasOwnProperty('widget')) {
+    throwNextTick(
+      new ArgumentError('The prop "widget" is not allowed inside "widgetProps"')
+    );
   }
+  const widgetComponentProps: WidgetComponentProps = {
+    ...widgetProps,
+    widget: wrapInAppClass(widget),
+  };
 
-  private getWidgetComponentProps(): WidgetComponentProps {
-    const appWidget = wrapInAppClass(this.props.widget);
-    const widgetComponentProps: WidgetComponentProps = { widget: appWidget };
-
-    if (
-      this.props.widgetProps &&
-      this.props.widgetProps.hasOwnProperty('widget')
-    ) {
-      throwNextTick(
-        new ArgumentError(
-          'The prop "widget" is not allowed inside "widgetProps"'
-        )
-      );
-      const { widget, ...widgetPropsWithoutWidget } = this.props.widgetProps;
-
-      return {
-        ...widgetComponentProps,
-        ...widgetPropsWithoutWidget,
-      };
-    }
-
-    return {
-      ...widgetComponentProps,
-      ...this.props.widgetProps,
-    };
-  }
-}
+  return React.createElement<WidgetComponentProps>(
+    widgetComponent,
+    widgetComponentProps
+  );
+});
 
 interface WidgetTagContextValue {
   widget?: BasicWidget;
@@ -168,17 +146,3 @@ interface WidgetTagContextValue {
 }
 
 export const WidgetTagContext = React.createContext<WidgetTagContextValue>({});
-
-function withWidgetContext(
-  widget: BasicWidget,
-  reactElement: React.ReactElement<{}>,
-  placementModification?: PlacementModification,
-  fieldType?: WidgetContentFieldType
-): React.ReactElement<{}> {
-  return (
-    <WidgetTagContext.Provider
-      value={{ widget, placementModification, fieldType }}
-      children={reactElement}
-    />
-  );
-}

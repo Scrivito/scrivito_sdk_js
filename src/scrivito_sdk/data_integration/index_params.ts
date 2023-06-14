@@ -1,10 +1,13 @@
-import { DataItemFilters } from 'scrivito_sdk/data_integration/data_class';
+import {
+  DataItemFilters,
+  DataScopeParams,
+  OrderSpec,
+} from 'scrivito_sdk/data_integration/data_class';
 
 export class IndexParams {
   constructor(
     private readonly _continuation: string | undefined,
-    private readonly _filters: DataItemFilters,
-    private readonly _searchText: string
+    private readonly _params: DataScopeParams
   ) {}
 
   continuation(): string | undefined {
@@ -12,10 +15,14 @@ export class IndexParams {
   }
 
   filters(): DataItemFilters {
-    return this._filters;
+    return this._params.filters || {};
   }
 
   search(): string {
-    return this._searchText;
+    return this._params.search || '';
+  }
+
+  order(): OrderSpec {
+    return this._params.order || [];
   }
 }

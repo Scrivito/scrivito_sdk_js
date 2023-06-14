@@ -1,5 +1,6 @@
-import { intersection } from 'underscore';
+import { intersection, mapObject } from 'underscore';
 
+import { absoluteUrl } from 'scrivito_sdk/app_support/absolute_url';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { uiAdapterCompatibleValue } from 'scrivito_sdk/app_support/ui_adapter_compatible_value';
 import {
@@ -9,23 +10,24 @@ import {
 } from 'scrivito_sdk/common';
 import { OPERATORS, ObjSearchType } from 'scrivito_sdk/models';
 import { ObjSearch } from 'scrivito_sdk/realm';
-import { ContentBrowserFilterDefinition } from 'scrivito_sdk/ui_interface';
-
-type FilterDefinition = ContentBrowserFilterDefinition['filters'];
+import {
+  ContentBrowserFilterDefinition,
+  ContentBrowserFilters,
+} from 'scrivito_sdk/ui_interface';
 
 export interface FilterContext {
   _validObjClasses?: string[];
 }
-type FilterBuilder = (c: FilterContext) => FilterDefinition;
+type FilterBuilder = (c: FilterContext) => ContentBrowserFilters | undefined;
 
 interface Configuration {
-  filters: FilterDefinition | FilterBuilder;
+  filters: ContentBrowserFilters | FilterBuilder | undefined;
   baseFilter: {
     query?: ObjSearch;
   };
 }
 
-let filters: FilterDefinition | undefined;
+let filters: ContentBrowserFilters | undefined | undefined;
 let filtersBuilder: FilterBuilder | undefined;
 
 export function getContentBrowserConfiguration(
@@ -38,7 +40,7 @@ export function getContentBrowserConfiguration(
     }
     const dynamicFilters = filtersBuilder(context);
     if (dynamicFilters) {
-      return { filters: dynamicFilters };
+      return { filters: copyWithAbsoluteUrls(dynamicFilters) };
     }
   } else if (filters) {
     return { filters };
@@ -68,12 +70,11 @@ export function configureContentBrowser(
   }
 
   if (configuration.filters) {
-    filters = configuration.filters;
-    if (isFilterBuilder(filters)) {
-      filtersBuilder = filters;
+    if (isFilterBuilder(configuration.filters)) {
+      filtersBuilder = configuration.filters;
       filters = undefined;
     } else {
-      filters = configuration.filters;
+      filters = copyWithAbsoluteUrls(configuration.filters);
       filtersBuilder = undefined;
     }
   }
@@ -90,7 +91,7 @@ export function configureContentBrowser(
 }
 
 function isFilterBuilder(
-  maybeFilterBuilder: FilterDefinition | FilterBuilder
+  maybeFilterBuilder: ContentBrowserFilters | FilterBuilder | undefined
 ): maybeFilterBuilder is FilterBuilder {
   return typeof maybeFilterBuilder === 'function';
 }
@@ -224,3 +225,16 @@ const checkConfigure = (() => {
     }
   );
 })();
+
+function copyWithAbsoluteUrls(
+  contentBrowserFilters: ContentBrowserFilters | undefined
+): typeof contentBrowserFilters {
+  return mapObject(contentBrowserFilters, ({ icon, options, ...item }) => {
+    const hasCustomIcon = icon && !icon.match(/^\w+$/);
+
+    if (icon) item.icon = hasCustomIcon ? absoluteUrl(icon) : icon;
+    if (options) item.options = copyWithAbsoluteUrls(options);
+
+    return item;
+  });
+}

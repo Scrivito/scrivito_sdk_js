@@ -1,11 +1,14 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
+  DEFAULT_LIMIT,
   DataClass,
   DataItem,
   DataItemAttributes,
-  DataItemFilters,
   DataScope,
+  DataScopeParams,
+  PresentDataScopePojo,
   assertNoAttributeFilterConflicts,
+  combineFilters,
   combineSearches,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
@@ -18,7 +21,13 @@ import {
   objSpaceScope,
   restrictToObjClass,
 } from 'scrivito_sdk/models';
-import { Obj, Schema, getClass, wrapInAppClass } from 'scrivito_sdk/realm';
+import {
+  Obj,
+  ObjSearch,
+  Schema,
+  getClass,
+  wrapInAppClass,
+} from 'scrivito_sdk/realm';
 
 const SUPPORTED_ATTRIBUTE_TYPES = [
   'boolean',
@@ -64,8 +73,7 @@ function getDataObj(dataClass: DataClass, dataId: string): BasicObj | null {
 export class ObjDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
-    private readonly _filters: DataItemFilters = {},
-    private readonly _searchText?: string
+    private readonly _params: DataScopeParams = {}
   ) {
     super();
   }
@@ -80,7 +88,7 @@ export class ObjDataScope extends DataScope {
     const obj = createObjIn(
       this.objClassScope(),
       prepareAttributes(
-        { ...attributes, ...this._filters },
+        { ...attributes, ...this._params.filters },
         this._dataClass.name()
       )
     );
@@ -98,52 +106,51 @@ export class ObjDataScope extends DataScope {
     return this.wrapInDataItem(obj);
   }
 
-  take(count: number): DataItem[] {
-    if (count === undefined) {
-      throw new ArgumentError('DataScope#take requires an argument');
-    }
-
+  take(): DataItem[] {
     return this.getSearch()
-      .take(count)
+      .take(this._params.limit ?? DEFAULT_LIMIT)
       .map((obj) => this.wrapInDataItem(obj));
   }
 
-  filter(attributeName: string, value: string): DataScope {
-    this.assertNoConflictsWithFilters({ [attributeName]: value });
-
-    return new ObjDataScope(
-      this._dataClass,
-      {
-        ...this._filters,
-        [attributeName]: value,
-      },
-      this._searchText
-    );
+  transform({ filters, search, order, limit }: DataScopeParams): DataScope {
+    return new ObjDataScope(this._dataClass, {
+      filters: combineFilters(this._params.filters, filters),
+      search: combineSearches(this._params.search, search),
+      order: order || this._params.order,
+      limit: limit ?? this._params.limit,
+    });
   }
 
-  search(text: string): DataScope {
-    return new ObjDataScope(
-      this._dataClass,
-      { ...this._filters },
-      combineSearches(this._searchText, text)
-    );
+  objSearch(): ObjSearch {
+    return new ObjSearch(this.getSearch());
   }
 
   /** @internal */
-  getFilters(): DataItemFilters {
-    return this._filters;
+  toPojo(): PresentDataScopePojo {
+    return {
+      dataClass: this._dataClass.name(),
+      ...this._params,
+    };
   }
 
   private getSearch() {
     let initialSearch = this.objClassScope().and(excludeDeletedObjs).search();
 
-    if (this._searchText) {
-      initialSearch = initialSearch.and('*', 'matches', this._searchText);
+    const { filters, search, order } = this._params;
+
+    if (search) {
+      initialSearch = initialSearch.and('*', 'matches', search);
     }
 
-    return Object.keys(this._filters).reduce(
-      (search, attributeName) =>
-        search.and(attributeName, 'equals', this._filters[attributeName]),
+    if (order) {
+      initialSearch = initialSearch.order(order);
+    }
+
+    if (!filters) return initialSearch;
+
+    return Object.keys(filters).reduce(
+      (finalSearch, attributeName) =>
+        finalSearch.and(attributeName, 'equals', filters[attributeName]),
       initialSearch
     );
   }
@@ -157,7 +164,11 @@ export class ObjDataScope extends DataScope {
   }
 
   private assertNoConflictsWithFilters(attributes: DataItemAttributes) {
-    assertNoAttributeFilterConflicts(attributes, this._filters);
+    const { filters } = this._params;
+
+    if (filters) {
+      assertNoAttributeFilterConflicts(attributes, filters);
+    }
   }
 }
 

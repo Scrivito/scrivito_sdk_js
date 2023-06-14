@@ -9,9 +9,12 @@ import {
   isObjDataClassProvided,
 } from 'scrivito_sdk/data_integration/obj_data_class';
 
-export function getDataClass(dataClassName: string): DataClass {
-  const dataClass =
-    getExternalDataClass(dataClassName) || getObjDataClass(dataClassName);
+export function getDataClass(dataClassName: string): DataClass | undefined {
+  return getExternalDataClass(dataClassName) || getObjDataClass(dataClassName);
+}
+
+export function getDataClassOrThrow(dataClassName: string): DataClass {
+  const dataClass = getDataClass(dataClassName);
   if (dataClass) return dataClass;
 
   throw new DataLocatorError(`No "${dataClassName}" found`);

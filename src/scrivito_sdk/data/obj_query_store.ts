@@ -10,9 +10,7 @@ import {
   isEmptySpaceId,
 } from 'scrivito_sdk/client';
 import {
-  ContinueIterable,
-  ContinueIterator,
-  IteratorResult,
+  EmptyContinueIterable,
   isPresent,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
@@ -142,24 +140,4 @@ function loadBatch(
         continuation: response.continuation,
       };
     });
-}
-
-export class EmptyContinueIterable<T, C> implements ContinueIterable<T, C> {
-  iterator() {
-    return new EmptyContinueIterator<T, C>();
-  }
-
-  iteratorFromContinuation(_continuation: C) {
-    return new EmptyContinueIterator<T, C>();
-  }
-}
-
-class EmptyContinueIterator<T, C> implements ContinueIterator<T, C> {
-  next(): IteratorResult<T> {
-    return { done: true };
-  }
-
-  continuation() {
-    return undefined;
-  }
 }

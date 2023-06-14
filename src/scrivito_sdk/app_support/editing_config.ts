@@ -17,7 +17,14 @@ export type WidgetEditingConfig<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > = SharedEditingConfig<Widget<AttrDefs>>;
 
-export type EditingConfig = SharedEditingConfig<Obj | Widget> &
+/** @public */
+export interface DataClassEditingConfig {
+  title?: string;
+  attributes?: AttributesEditingConfig;
+}
+
+export type EditingConfig = DataClassEditingConfig &
+  SharedEditingConfig<Obj | Widget> &
   ObjOnlyEditingConfig;
 
 type AttributeValueFunction = () => AttributeValue;

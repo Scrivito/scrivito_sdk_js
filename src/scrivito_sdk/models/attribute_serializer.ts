@@ -27,6 +27,7 @@ import {
   underscore,
 } from 'scrivito_sdk/common';
 import { ObjJsonPatch } from 'scrivito_sdk/data';
+import { DataLocator } from 'scrivito_sdk/data_integration';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';
 import { AttributeType } from 'scrivito_sdk/models/basic_attribute_types';
 import { BasicLink } from 'scrivito_sdk/models/basic_link';
@@ -98,7 +99,7 @@ function serializeEntry<Type extends AttributeType>(
     case 'boolean':
       return ['boolean', serializeBooleanAttributeValue(value, name)];
     case 'datalocator':
-      return ['string', serializeDataLocatorAttributeValue(value)];
+      return ['datalocator', serializeDataLocatorAttributeValue(value, name)];
     case 'date':
       return ['date', serializeDateAttributeValue(value, name)];
     case 'datetime':
@@ -165,8 +166,10 @@ function serializeBooleanAttributeValue(value: unknown, name: string) {
   throwInvalidAttributeValue(value, name, 'A Boolean.');
 }
 
-function serializeDataLocatorAttributeValue(value: unknown) {
-  return JSON.stringify(value);
+function serializeDataLocatorAttributeValue(value: unknown, name: string) {
+  if (value instanceof DataLocator) return value.toPojo();
+
+  throwInvalidAttributeValue(value, name, 'A DataLocator.');
 }
 
 function serializeDateAttributeValue(value: unknown, name: string) {

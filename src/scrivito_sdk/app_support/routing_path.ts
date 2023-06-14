@@ -36,7 +36,8 @@ export function recognizeRoutingPath({
   sitePath: pathToRecognize,
   siteData: { siteId },
 }: SiteDataAndPath): string | undefined {
-  const path = pathToRecognize.replace(new RegExp('^/+|/+$', 'g'), '');
+  const path = pathToRecognize.replace(/^\/+([^/]|$)|([^/]|^)\/+$/g, '$1$2');
+
   if (path === '') {
     return usesOldStyleRouting(siteId)
       ? homepageFromCallback()?.id()

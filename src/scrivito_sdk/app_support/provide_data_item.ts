@@ -5,7 +5,7 @@ import {
 } from 'scrivito_sdk/data_integration';
 import { checkProvideDataItem } from 'scrivito_sdk/realm';
 
-/** @beta */
+/** @public */
 export function provideDataItem(
   name: string,
   read: ExternalDataItemReadCallback,

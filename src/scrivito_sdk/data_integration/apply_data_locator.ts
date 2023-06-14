@@ -1,105 +1,120 @@
-import { DataItem, DataScope } from 'scrivito_sdk/data_integration/data_class';
+import {
+  DataLocatorFilter,
+  DataLocatorValueFilter,
+  DataLocatorValueVia,
+  DataLocatorValueViaFilter,
+} from 'scrivito_sdk/client';
+import { DataScope } from 'scrivito_sdk/data_integration/data_class';
 import { findMatchingItemElement } from 'scrivito_sdk/data_integration/data_context';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
-  DataLocatorTransform,
-  FilterTransformParams,
-  ReferringTransformParams,
-  isDataLocator,
-  isFilterTransformParams,
-  isReferringTransformParams,
+  DataLocator,
+  isDataLocatorValueFilter,
 } from 'scrivito_sdk/data_integration/data_locator';
 import { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
-import {
-  DataStack,
-  itemElementToDataItem,
-} from 'scrivito_sdk/data_integration/data_stack';
-import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
+import { DataStack } from 'scrivito_sdk/data_integration/data_stack';
+import { dataItemFromPojo } from 'scrivito_sdk/data_integration/deserialization';
+import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
+import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 
 export function applyDataLocator(
   dataStack: DataStack | undefined,
-  dataLocator: unknown
-): DataScope | DataItem | null {
-  if (!isDataLocator(dataLocator)) {
-    throw new DataLocatorError('Data locator contains unknown elements');
-  }
+  dataLocator: DataLocator | null | undefined
+): DataScope {
+  if (!dataLocator) return new EmptyDataScope();
 
-  const {
-    source: [, { dataClass }],
-    transforms,
-  } = dataLocator;
+  const className = dataLocator.class();
+  if (className === null) return new EmptyDataScope();
 
-  const dataScope = getDataClass(dataClass).all();
-  if (!transforms) return dataScope;
+  let dataScope = getDataClassOrThrow(className).all();
 
-  return transforms.reduce(
-    (intermediateResult, transform) =>
-      applyTransform(intermediateResult, transform, dataStack),
-    dataScope
-  );
-}
+  const query = dataLocator.query();
 
-function applyTransform(
-  intermediateResult: DataScope | DataItem | null,
-  [type, params]: DataLocatorTransform,
-  dataStack: DataStack | undefined
-) {
-  if (!(intermediateResult instanceof DataScope)) {
-    throw new DataLocatorError(
-      'A scope-to-item transform is followed by a scope-to-scope transform'
+  if (query) {
+    dataScope = query.reduce(
+      (scope, filter) => applyFilter(scope, filter, dataStack),
+      dataScope
     );
   }
 
-  if (type === 'filter' && isFilterTransformParams(params)) {
-    return applyFilterTransform(intermediateResult, params);
+  const orderBy = dataLocator.orderBy();
+
+  if (orderBy) {
+    dataScope = dataScope.transform({ order: orderBy });
   }
 
-  if (type === 'refersTo' && isReferringTransformParams(params)) {
-    return applyRefersToTransform(intermediateResult, params, dataStack);
+  const size = dataLocator.size();
+
+  if (size !== undefined) {
+    dataScope = dataScope.transform({ limit: size });
   }
 
-  if (type === 'referredBy' && isReferringTransformParams(params)) {
-    return applyReferredByTransform(intermediateResult, params, dataStack);
-  }
-
-  throw new DataLocatorError(`Unknown transform "${type}"`);
+  return dataScope;
 }
 
-function applyFilterTransform(
-  intermediateResult: DataScope,
-  { attribute, equalsValue }: FilterTransformParams
-) {
-  return intermediateResult.filter(attribute, equalsValue);
-}
-
-function applyRefersToTransform(
-  intermediateResult: DataScope,
-  { dataClass, viaAttribute }: ReferringTransformParams,
+function applyFilter(
+  scope: DataScope,
+  filter: DataLocatorFilter,
   dataStack: DataStack | undefined
 ) {
-  const itemElement = findMatchingItemElementOrThrow(dataClass, dataStack);
-  return intermediateResult.filter(viaAttribute, itemElement._id);
+  return isDataLocatorValueFilter(filter)
+    ? applyValueFilter(scope, filter)
+    : applyValueViaFilter(scope, filter, dataStack);
 }
 
-function applyReferredByTransform(
-  intermediateResult: DataScope,
-  { dataClass, viaAttribute }: ReferringTransformParams,
+function applyValueFilter(
+  scope: DataScope,
+  { field, value }: DataLocatorValueFilter
+) {
+  return scope.transform({ filters: { [field]: value } });
+}
+
+function applyValueViaFilter(
+  scope: DataScope,
+  { field, value_via: valueVia }: DataLocatorValueViaFilter,
   dataStack: DataStack | undefined
 ) {
-  const itemElement = findMatchingItemElementOrThrow(dataClass, dataStack);
-  const referringDataItem = itemElementToDataItem(itemElement);
+  const value = resolveValueVia(valueVia, dataStack);
 
-  if (!referringDataItem) {
+  if (field === '_id' && !isValidDataId(value)) {
+    throw new DataLocatorError(`${value} is not a valid data ID`);
+  }
+
+  return applyValueFilter(scope, { field, value });
+}
+
+function resolveValueVia(
+  { class: viaClass, field: viaField }: DataLocatorValueVia,
+  dataStack: DataStack | undefined
+) {
+  const dataItem = findMatchingDataItemOrThrow(viaClass, dataStack);
+  if (viaField === '_id') return dataItem.id();
+
+  const value = dataItem.get(viaField);
+
+  if (typeof value !== 'string') {
     throw new DataLocatorError(
-      `No ${dataClass} item with ID ${itemElement._id} found`
+      `Attribute ${viaField} of ${viaClass} must be a string`
     );
   }
 
-  const referredDataItemId = referringDataItem.get(viaAttribute);
+  return value;
+}
 
-  return isValidDataId(referredDataItemId)
-    ? intermediateResult.get(referredDataItemId)
-    : null;
+function findMatchingDataItemOrThrow(
+  viaClass: string,
+  dataStack: DataStack | undefined
+) {
+  const itemElement = findMatchingItemElementOrThrow(viaClass, dataStack);
+  const dataItem = dataItemFromPojo(itemElement);
+
+  if (!dataItem) {
+    throw new DataLocatorError(
+      `No ${viaClass} item with ID ${itemElement._id} found`
+    );
+  }
+
+  return dataItem;
 }
 
 function findMatchingItemElementOrThrow(
@@ -107,13 +122,13 @@ function findMatchingItemElementOrThrow(
   dataStack: DataStack | undefined
 ) {
   if (!dataStack) {
-    throw new DataLocatorError(`No ${dataClass} item found`);
+    throw new DataLocatorError(`No ${dataClass} found`);
   }
 
   const itemElement = findMatchingItemElement(dataClass, dataStack);
 
   if (!itemElement) {
-    throw new DataLocatorError(`No ${dataClass} found`);
+    throw new DataLocatorError(`No ${dataClass} item found`);
   }
 
   return itemElement;

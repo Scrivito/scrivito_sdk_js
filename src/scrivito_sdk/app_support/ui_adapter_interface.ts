@@ -84,7 +84,9 @@ export interface UiAdapterInterface
     ObjStreamReplicationEndpoint {
   canEdit(workspaceId: string, objId: string): boolean;
   canWrite(workspaceId: string): boolean;
-  getEditorAuthToken(): { token: string } | { error: string } | undefined;
+  getEditorAuthToken(options?: {
+    treatLocalhostLike?: string;
+  }): { token: string } | { error: string } | undefined;
   comparisonBase(): ObjSpaceId;
   comparisonRange(): ComparisonRange;
   setAppAdapter(adapterPort: MessagePort): void;

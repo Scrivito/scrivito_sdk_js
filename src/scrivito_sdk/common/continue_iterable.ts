@@ -29,6 +29,26 @@ export function transformContinueIterable<From, To, C>(
   return new TransformedContinueIterable(iterable, transform);
 }
 
+export class EmptyContinueIterable<T, C> implements ContinueIterable<T, C> {
+  iterator() {
+    return new EmptyContinueIterator<T, C>();
+  }
+
+  iteratorFromContinuation(_continuation: C) {
+    return new EmptyContinueIterator<T, C>();
+  }
+}
+
+class EmptyContinueIterator<T, C> implements ContinueIterator<T, C> {
+  next(): IteratorResult<T> {
+    return { done: true };
+  }
+
+  continuation() {
+    return undefined;
+  }
+}
+
 class TransformedContinueIterable<From, To, C>
   implements ContinueIterable<To, C>
 {

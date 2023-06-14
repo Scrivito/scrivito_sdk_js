@@ -1,9 +1,18 @@
 import { isObject } from 'underscore';
 
-import { ArgumentError, transformContinueIterable } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  EmptyContinueIterable,
+  transformContinueIterable,
+} from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
-import { DataItemFilters } from 'scrivito_sdk/data_integration/data_class';
+import {
+  DataItemFilters,
+  OrderSpec,
+  PresentDataScopePojo,
+} from 'scrivito_sdk/data_integration/data_class';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
+import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/disable_external_data_loading';
 import {
   getExternalData,
   setExternalData,
@@ -30,14 +39,17 @@ const batchCollection = new IdBatchCollection({
     ) || '',
 });
 
-export function getExternalDataQuery(
-  dataClass: string,
-  filters: DataItemFilters,
-  searchText: string
-): DataQuery<DataId> {
+export function getExternalDataQuery({
+  dataClass,
+  filters,
+  search,
+  order,
+}: PresentDataScopePojo): DataQuery<DataId> {
+  if (isExternalDataLoadingDisabled()) return new EmptyContinueIterable();
+
   const idQuery = new IdBatchQuery((batchNumber) =>
     batchCollection.getBatch(
-      [dataClass, filters, searchText],
+      [dataClass, filters, search, order],
       -1, // Dummy value for the batch size, since it's ignored anyways
       batchNumber
     )
@@ -60,12 +72,18 @@ export function notifyExternalDataWrite(dataClass: string): void {
 }
 
 async function loadBatch(
-  [dataClass, filters, searchText]: [string, DataItemFilters, string],
+  [dataClass, filters, search, order]: [
+    string,
+    DataItemFilters | undefined,
+    string | undefined,
+    OrderSpec | undefined
+  ],
   continuation: string | undefined
 ) {
   const indexCallback = getIndexCallback(dataClass);
+
   const result = await indexCallback(
-    new IndexParams(continuation, filters, searchText)
+    new IndexParams(continuation, { filters, search, order })
   );
 
   assertValidIndexResult(result);

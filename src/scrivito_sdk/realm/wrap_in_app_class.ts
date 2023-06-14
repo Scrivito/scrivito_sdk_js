@@ -61,7 +61,7 @@ type BasicValueToAttributeValue<T> = T extends BasicObj[]
 interface AttributeMapping {
   binary: Binary | null;
   boolean: boolean;
-  datalocator: DataLocator | null;
+  datalocator: DataLocator;
   date: Date | null;
   datetime: Date | null;
   enum: string | null;

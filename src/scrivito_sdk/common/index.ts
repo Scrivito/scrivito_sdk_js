@@ -56,7 +56,10 @@ export type {
   ContinueIterable,
   ContinueIterator,
 } from 'scrivito_sdk/common/continue_iterable';
-export { transformContinueIterable } from 'scrivito_sdk/common/continue_iterable';
+export {
+  transformContinueIterable,
+  EmptyContinueIterable,
+} from 'scrivito_sdk/common/continue_iterable';
 export { sliceFromIterable } from 'scrivito_sdk/common/slice_from_iterable';
 export { randomId, randomHex } from 'scrivito_sdk/common/random';
 export {
@@ -117,3 +120,4 @@ export {
 export { isStringArray } from 'scrivito_sdk/common/is_string_array';
 export { isEmptyValue } from 'scrivito_sdk/common/is_empty_value';
 export { computeAncestorPaths } from 'scrivito_sdk/common/compute_ancestor_paths';
+export { isLocalhostUrl } from 'scrivito_sdk/common/is_localhost_url';

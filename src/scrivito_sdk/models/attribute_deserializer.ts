@@ -11,6 +11,7 @@ import {
   deserializeAsInteger,
   isValidFloat,
 } from 'scrivito_sdk/common';
+import { DataLocator } from 'scrivito_sdk/data_integration';
 import {
   AttributeType,
   BasicLink,
@@ -97,16 +98,11 @@ function deserializeBooleanValue(value: BackendValue) {
 }
 
 function deserializeDataLocatorValue(value: BackendValue) {
-  return isBackendValueOfType('string', value) ? parseJson(value[1]) : null;
-}
-
-function parseJson(string: string) {
-  try {
-    return JSON.parse(string);
-  } catch (e: unknown) {
-    if (e instanceof SyntaxError) return null;
-    throw e;
+  if (isBackendValueOfType('datalocator', value)) {
+    return new DataLocator(value[1] || { class: null });
   }
+
+  return new DataLocator({ class: null });
 }
 
 function deserializeDateValue(value: BackendValue) {

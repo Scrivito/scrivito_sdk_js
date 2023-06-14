@@ -5,7 +5,9 @@ import { assertValidDataItemAttributes } from 'scrivito_sdk/data_integration/dat
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
+import { createStateContainer } from 'scrivito_sdk/state';
 
+/** @beta */
 export interface ExternalDataConnection {
   create?: CreateCallback;
   index?: IndexCallback;
@@ -50,34 +52,39 @@ export function assertValidResultItem(
   }
 }
 
-const connections = new Map<string, ExternalDataConnection>();
+const connectionsState =
+  createStateContainer<Record<string, ExternalDataConnection>>();
 
 export function setExternalDataConnection(
-  dataClassName: string,
+  name: string,
   connection: ExternalDataConnection
 ): void {
-  connections.set(dataClassName, connection);
+  connectionsState.set({
+    ...connectionsState.get(),
+    [name]: connection,
+  });
 }
 
 export function getExternalDataConnection(
-  dataClassName: string
+  name: string
 ): ExternalDataConnection | undefined {
-  return connections.get(dataClassName);
+  const connections = connectionsState.get();
+  if (connections) return connections[name];
+}
+
+export function getExternalDataConnectionNames(): string[] {
+  const connections = connectionsState.get();
+  return connections ? Object.keys(connections) : [];
 }
 
 export function getExternalDataConnectionOrThrow(
-  dataClassName: string
+  name: string
 ): ExternalDataConnection {
-  const connection = getExternalDataConnection(dataClassName);
+  const connection = getExternalDataConnection(name);
 
   if (!connection) {
-    throw new ScrivitoError(`Missing data class with name ${dataClassName}`);
+    throw new ScrivitoError(`Missing data class with name ${name}`);
   }
 
   return connection;
-}
-
-// For test purpose only.
-export function resetExternalDataConnections(): void {
-  connections.clear();
 }

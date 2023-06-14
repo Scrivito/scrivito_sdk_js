@@ -4,13 +4,16 @@ import {
   transformContinueIterable,
 } from 'scrivito_sdk/common';
 import {
+  DEFAULT_LIMIT,
   DataClass,
   DataItem,
   DataItemAttributes,
-  DataItemFilters,
   DataScope,
+  DataScopeParams,
+  PresentDataScopePojo,
   assertNoAttributeFilterConflicts,
   assertValidDataItemAttributes,
+  combineFilters,
   combineSearches,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
@@ -20,6 +23,7 @@ import {
 import {
   assertValidResultItem,
   getExternalDataConnection,
+  getExternalDataConnectionNames,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
   getExternalDataQuery,
@@ -27,6 +31,7 @@ import {
 } from 'scrivito_sdk/data_integration/external_data_query';
 import { load } from 'scrivito_sdk/loadable';
 
+/** @beta */
 export class ExternalDataClass extends DataClass {
   constructor(private readonly _name: string) {
     super();
@@ -59,11 +64,17 @@ export function isExternalDataClassProvided(name: string): boolean {
   return !!getExternalDataConnection(name);
 }
 
+export function allExternalDataClasses(): ExternalDataClass[] {
+  return getExternalDataConnectionNames().map(
+    (name) => new ExternalDataClass(name)
+  );
+}
+
+/** @beta */
 export class ExternalDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
-    private readonly _filters: DataItemFilters = {},
-    private readonly _searchText?: string
+    private readonly _params: DataScopeParams = {}
   ) {
     super();
   }
@@ -73,11 +84,16 @@ export class ExternalDataScope extends DataScope {
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
+    this.assertNoIdFilter();
     assertValidDataItemAttributes(attributes);
-    assertNoAttributeFilterConflicts(attributes, this._filters);
+
+    const { filters } = this._params;
+    if (filters) {
+      assertNoAttributeFilterConflicts(attributes, filters);
+    }
 
     const createCallback = this.getCreateCallback();
-    const dataForCallback = { ...attributes, ...this._filters };
+    const dataForCallback = { ...attributes, ...filters };
     const result = await createCallback(dataForCallback);
     assertValidResultItem(result);
 
@@ -93,9 +109,12 @@ export class ExternalDataScope extends DataScope {
     const dataItem = this._dataClass.get(id);
     if (!dataItem) return null;
 
-    const hasConflict = Object.keys(this._filters).some((attributeName) => {
+    const { filters } = this._params;
+    if (!filters) return dataItem;
+
+    const hasConflict = Object.keys(filters).some((attributeName) => {
       const dataItemValue = dataItem.get(attributeName);
-      const filterValue = this._filters[attributeName];
+      const filterValue = filters[attributeName];
 
       return dataItemValue !== filterValue;
     });
@@ -103,31 +122,32 @@ export class ExternalDataScope extends DataScope {
     return hasConflict ? null : dataItem;
   }
 
-  take(count: number): DataItem[] {
-    return extractFromIterator(this.getIterator(), count);
-  }
-
-  filter(attributeName: string, value: string): DataScope {
-    const patch = { [attributeName]: value };
-    assertNoAttributeFilterConflicts(patch, this._filters);
-
-    return new ExternalDataScope(this._dataClass, {
-      ...this._filters,
-      ...patch,
-    });
-  }
-
-  search(text: string): DataScope {
-    return new ExternalDataScope(
-      this._dataClass,
-      { ...this._filters },
-      combineSearches(this._searchText, text)
+  take(): DataItem[] {
+    return extractFromIterator(
+      this.getIterator(),
+      this._params.limit ?? DEFAULT_LIMIT
     );
   }
 
+  transform({ filters, search, order, limit }: DataScopeParams): DataScope {
+    return new ExternalDataScope(this._dataClass, {
+      filters: combineFilters(this._params.filters, filters),
+      search: combineSearches(this._params.search, search),
+      order: order || this._params.order,
+      limit: limit ?? this._params.limit,
+    });
+  }
+
+  objSearch(): undefined {
+    return;
+  }
+
   /** @internal */
-  getFilters(): DataItemFilters {
-    return this._filters;
+  toPojo(): PresentDataScopePojo {
+    return {
+      dataClass: this.dataClassName(),
+      ...this._params,
+    };
   }
 
   private dataClassName() {
@@ -148,18 +168,25 @@ export class ExternalDataScope extends DataScope {
   }
 
   private getIterator() {
-    const externalDataQuery = getExternalDataQuery(
-      this.dataClassName(),
-      this._filters,
-      this._searchText || ''
-    );
-
-    return transformContinueIterable(externalDataQuery, (iterator) =>
-      iterator.map((dataId) => new ExternalDataItem(this._dataClass, dataId))
+    return transformContinueIterable(
+      getExternalDataQuery(this.toPojo()),
+      (iterator) =>
+        iterator.map((dataId) => new ExternalDataItem(this._dataClass, dataId))
     ).iterator();
+  }
+
+  private assertNoIdFilter() {
+    const { filters } = this._params;
+
+    if (filters && Object.keys(filters).includes('_id')) {
+      throw new ArgumentError(
+        `Cannot create a ${this.dataClassName()} from a scope that includes "_id" in its filters`
+      );
+    }
   }
 }
 
+/** @beta */
 export class ExternalDataItem extends DataItem {
   constructor(
     private readonly _dataClass: DataClass,

@@ -167,7 +167,7 @@ function siteForUrl(url: string): SiteForUrlResult {
 }
 
 function removeTrailingSlashes(input: string) {
-  return input.replace(/\/+$/, '');
+  return input.replace(/([^/]|^)\/+$/, '$1');
 }
 
 function reportUnexpectedReturnValue(

@@ -9,7 +9,11 @@
 export { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
 export { load } from 'scrivito_sdk/loadable';
 export { Binary, FutureBinary } from 'scrivito_sdk/models';
-export { DataLocatorError } from 'scrivito_sdk/data_integration';
+export {
+  DataLocator,
+  DataLocatorError,
+  objsFromDataLocator,
+} from 'scrivito_sdk/data_integration';
 export {
   ClientError,
   JrRestApi as unstable_JrRestApi,

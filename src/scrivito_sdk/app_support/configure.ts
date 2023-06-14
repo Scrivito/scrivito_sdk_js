@@ -12,6 +12,7 @@ import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_
 import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
 import { initRouting } from 'scrivito_sdk/app_support/routing';
 import { SiteMappingConfiguration } from 'scrivito_sdk/app_support/site_mapping';
+import { setTreatLocalhostLike } from 'scrivito_sdk/app_support/treat_localhost_like';
 import {
   UiAdapterClient,
   uiAdapter,
@@ -36,9 +37,11 @@ import {
   Deferred,
   ScrivitoError,
   checkArgumentsFor,
+  isLocalhostUrl,
   logError,
   tcomb as t,
   throwInvalidArgumentsError,
+  windowLocationOrigin,
 } from 'scrivito_sdk/common';
 import {
   IN_MEMORY_TENANT,
@@ -79,6 +82,7 @@ export interface Configuration {
   optimizedWidgetLoading?: boolean;
   contentTagsForEmptyAttributes?: boolean;
   jrRestApiEndpoint?: string;
+  treatLocalhostLike?: string;
 
   /** @internal */
   unstable?: {
@@ -114,6 +118,7 @@ const AllowedConfiguration = t.interface({
   optimizedWidgetLoading: t.maybe(t.Boolean),
   contentTagsForEmptyAttributes: t.maybe(t.Boolean),
   jrRestApiEndpoint: t.maybe(t.String),
+  treatLocalhostLike: t.maybe(t.String),
 });
 
 const PUBLIC_FUNCTION_NAME = 'configure';
@@ -169,6 +174,15 @@ export function configure(
     setJrRestApiEndpoint(
       configuration.jrRestApiEndpoint || calculateJrRestApiEndpoint()
     );
+
+    const treatLocalhostLike = configuration.treatLocalhostLike;
+    if (
+      treatLocalhostLike &&
+      typeof window !== 'undefined' &&
+      isLocalhostUrl(windowLocationOrigin())
+    ) {
+      setTreatLocalhostLike(treatLocalhostLike);
+    }
 
     if (uiAdapter) {
       configureWithUi(endpoint, tenant, uiAdapter);

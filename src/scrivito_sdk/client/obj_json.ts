@@ -84,7 +84,7 @@ export type AttributeJson =
 export type CustomAttributeJsonMapping = {
   binary: ['binary', BinaryJson];
   boolean: ['boolean', boolean];
-  datalocator: ['datalocator', string];
+  datalocator: ['datalocator', DataLocatorJson | null];
   date: ['date', string];
   html: ['html', string];
   link: ['link', LinkJson];
@@ -116,6 +116,36 @@ export interface LinkJson {
 
 export interface BinaryJson {
   id: string;
+}
+
+export type OrderByItem = [string, 'asc' | 'desc'];
+
+export interface DataLocatorJson {
+  class: string;
+  query?: DataLocatorQuery;
+  order_by?: OrderByItem[];
+  size?: number;
+}
+
+export type DataLocatorQuery = DataLocatorFilter[];
+
+export type DataLocatorFilter =
+  | DataLocatorValueFilter
+  | DataLocatorValueViaFilter;
+
+export interface DataLocatorValueFilter {
+  field: string;
+  value: string;
+}
+
+export interface DataLocatorValueViaFilter {
+  field: string;
+  value_via: DataLocatorValueVia;
+}
+
+export interface DataLocatorValueVia {
+  class: string;
+  field: string;
 }
 
 export function buildNonexistentObjJson(

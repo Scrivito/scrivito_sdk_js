@@ -3,7 +3,7 @@ import {
   MissingWorkspaceError,
   cmsRestApi,
 } from 'scrivito_sdk/client/cms_rest_api';
-import { ExistentObjJson } from 'scrivito_sdk/client/obj_json';
+import { ExistentObjJson, OrderByItem } from 'scrivito_sdk/client/obj_json';
 
 export interface QueryResponse {
   results: string[];
@@ -32,8 +32,6 @@ export interface BackendValueBoost {
   condition: BoostCondition[];
   factor: number;
 }
-
-export type OrderByItem = [string, 'asc' | 'desc'];
 
 export type BackendSearchOperator =
   | 'contains'

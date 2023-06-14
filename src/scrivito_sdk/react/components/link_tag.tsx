@@ -12,16 +12,16 @@ import {
   tcomb as t,
 } from 'scrivito_sdk/common';
 import { getDataContextParameters } from 'scrivito_sdk/data_integration';
+import {
+  isSinglePlaceholder,
+  replacePlaceholdersWithData,
+} from 'scrivito_sdk/data_integration';
 import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react/connect';
 import {
+  useDataContext,
   useDataStack,
-  usePlaceholders,
 } from 'scrivito_sdk/react/data_context_container';
-import {
-  containsSinglePlaceholder,
-  replacePlaceholdersWithData,
-} from 'scrivito_sdk/react/replace_placeholders_with_data';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 /** @public */
@@ -35,7 +35,7 @@ export const LinkTag = connect(function LinkTag(props: {
   children?: React.ReactNode;
 }) {
   const dataStack = useDataStack();
-  const placeholders = usePlaceholders();
+  const dataContext = useDataContext();
 
   checkLinkTagProps(props);
 
@@ -117,13 +117,13 @@ export const LinkTag = connect(function LinkTag(props: {
     if (!props.to) return null;
 
     const basicObjOrLink = unwrapAppClass(props.to);
-    const placeholderIdentifier = getPlaceholderIdentifier(basicObjOrLink);
+    const singlePlaceholder = getSinglePlaceholder(basicObjOrLink);
 
-    if (placeholderIdentifier && placeholders) {
-      const url = replacePlaceholdersWithData(
-        placeholderIdentifier,
-        placeholders
-      );
+    if (singlePlaceholder) {
+      const url = replacePlaceholdersWithData(singlePlaceholder, {
+        dataContext,
+        dataStack,
+      });
 
       return {
         to: new Link({ url }),
@@ -166,12 +166,12 @@ export const LinkTag = connect(function LinkTag(props: {
     });
   }
 
-  function getPlaceholderIdentifier(basicObjOrLink: BasicObj | BasicLink) {
+  function getSinglePlaceholder(basicObjOrLink: BasicObj | BasicLink) {
     if (basicObjOrLink instanceof BasicLink && basicObjOrLink.isExternal()) {
-      const maybeIdentifier = basicObjOrLink.url();
+      const maybeSinglePlaceholder = basicObjOrLink.url();
 
-      if (containsSinglePlaceholder(maybeIdentifier)) {
-        return maybeIdentifier;
+      if (isSinglePlaceholder(maybeSinglePlaceholder)) {
+        return maybeSinglePlaceholder;
       }
     }
   }

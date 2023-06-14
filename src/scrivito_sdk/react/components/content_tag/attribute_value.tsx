@@ -14,10 +14,7 @@ import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_rang
 import { replaceInternalLinks } from 'scrivito_sdk/app_support/replace_internal_links';
 import { registerScrollTarget } from 'scrivito_sdk/app_support/scroll_into_view';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
-import {
-  DataContext,
-  DataContextCallback,
-} from 'scrivito_sdk/data_integration';
+import { replacePlaceholdersWithData } from 'scrivito_sdk/data_integration';
 import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
@@ -27,7 +24,6 @@ import {
   DataContextContainer,
   useDataContextContainer,
 } from 'scrivito_sdk/react/data_context_container';
-import { replacePlaceholdersWithData } from 'scrivito_sdk/react/replace_placeholders_with_data';
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
 
 export interface AttributeValueProps<Type extends AttributeType> {
@@ -118,7 +114,6 @@ function renderPropsForField(
   widgetProps: WidgetProps | undefined,
   dataContextContainer: DataContextContainer | undefined
 ): React.DOMAttributes<HTMLElement> {
-  const placeholders = dataContextContainer?.placeholders;
   const dataStack = dataContextContainer?.dataStack;
 
   const customChildren =
@@ -148,7 +143,7 @@ function renderPropsForField(
       return renderPropsForString(
         field as BasicField<'string'>,
         customChildren,
-        placeholders
+        dataContextContainer
       );
 
     case 'float':
@@ -202,16 +197,18 @@ function renderPropsForHtml(
     };
   }
 
-  const placeholders = dataContextContainer?.placeholders;
+  const dataContext = dataContextContainer?.dataContext;
   const dataStack = dataContextContainer?.dataStack;
 
   return {
     dangerouslySetInnerHTML: {
       __html: replaceInternalLinks(
         diffContent ||
-          (placeholders
-            ? replacePlaceholdersWithData(field.get(), placeholders, escape)
-            : field.get()),
+          replacePlaceholdersWithData(field.get(), {
+            dataContext,
+            dataStack,
+            transform: escape,
+          }),
         { dataStack }
       ),
     },
@@ -222,7 +219,7 @@ function renderPropsForHtml(
 function renderPropsForString(
   field: BasicField<'string'>,
   customChildren?: { children: React.ReactNode },
-  placeholders?: DataContext | DataContextCallback
+  dataContextContainer?: DataContextContainer
 ) {
   if (isComparisonActive()) {
     const diffContent = field.getHtmlDiffContent(getComparisonRange());
@@ -232,11 +229,15 @@ function renderPropsForString(
     }
   }
 
+  const dataContext = dataContextContainer?.dataContext;
+  const dataStack = dataContextContainer?.dataStack;
+
   return (
     customChildren ?? {
-      children: placeholders
-        ? replacePlaceholdersWithData(field.get(), placeholders)
-        : field.get(),
+      children: replacePlaceholdersWithData(field.get(), {
+        dataContext,
+        dataStack,
+      }),
     }
   );
 }

@@ -1,5 +1,4 @@
 export function computeParentPath(path?: string | null): string | null {
-  return !path || path === '/' ? null : path.replace(LAST_PATH_COMPONENT, '');
+  if (!path || path === '/') return null;
+  return path.split('/').slice(0, -1).join('/') || '/';
 }
-
-const LAST_PATH_COMPONENT = /\b\/?[^/]*$/;
