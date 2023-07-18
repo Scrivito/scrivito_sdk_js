@@ -4,12 +4,17 @@ import { ArgumentError } from 'scrivito_sdk/common';
 import { isValidDataIdentifier } from 'scrivito_sdk/data_integration/data_identifier';
 import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
 
-/** @beta */
+/** @public */
 export abstract class DataClass {
+  /** @beta */
   abstract name(): string;
+  /** @beta */
   abstract create(attributes: DataItemAttributes): Promise<DataItem>;
+  /** @beta */
   abstract all(): DataScope;
+  /** @beta */
   abstract get(id: string): DataItem | null;
+  /** @beta */
   abstract getUnchecked(id: string): DataItem;
 }
 
@@ -21,11 +26,11 @@ export abstract class DataScope {
   abstract create(attributes: DataItemAttributes): Promise<DataItem>;
   /** @beta */
   abstract get(id: string): DataItem | null;
-  /** @beta */
-  abstract take(): DataItem[];
-  /** @beta */
-  abstract transform(params: DataScopeParams): DataScope;
 
+  /** @public */
+  abstract take(): DataItem[];
+  /** @public */
+  abstract transform(params: DataScopeParams): DataScope;
   /** @public */
   abstract objSearch(): ObjSearch | undefined;
 
@@ -44,8 +49,11 @@ export abstract class DataScope {
 }
 
 export type DataItemAttributes = Record<string, unknown>;
+
+/** @public */
 export type DataItemFilters = Record<string, string>;
 
+/** @public */
 export interface DataScopeParams {
   filters?: DataItemFilters;
   search?: string;
@@ -55,6 +63,7 @@ export interface DataScopeParams {
 
 export const DEFAULT_LIMIT = 20;
 
+/** @public */
 export type OrderSpec = Array<[string, 'asc' | 'desc']>;
 
 export type DataScopePojo = PresentDataScopePojo | EmptyDataScopePojo;
@@ -72,10 +81,12 @@ export abstract class DataItem {
   abstract id(): string;
   /** @beta */
   abstract dataClass(): DataClass;
-  /** @beta */
+  /** @public */
   abstract obj(): Obj | undefined;
-  /** @beta */
+
+  /** @public */
   abstract get(attributeName: string): unknown;
+
   /** @beta */
   abstract update(attributes: DataItemAttributes): Promise<void>;
   /** @beta */

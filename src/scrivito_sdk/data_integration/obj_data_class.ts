@@ -136,21 +136,24 @@ export class ObjDataScope extends DataScope {
   private getSearch() {
     let initialSearch = this.objClassScope().and(excludeDeletedObjs).search();
 
-    const { filters, search, order } = this._params;
+    const { filters, search, order: givenOrder } = this._params;
 
     if (search) {
       initialSearch = initialSearch.and('*', 'matches', search);
     }
 
-    if (order) {
-      initialSearch = initialSearch.order(order);
+    if (givenOrder) {
+      const order = givenOrder.filter(([attributeName]) => !!attributeName);
+      if (order.length) initialSearch = initialSearch.order(order);
     }
 
     if (!filters) return initialSearch;
 
     return Object.keys(filters).reduce(
       (finalSearch, attributeName) =>
-        finalSearch.and(attributeName, 'equals', filters[attributeName]),
+        attributeName
+          ? finalSearch.and(attributeName, 'equals', filters[attributeName])
+          : finalSearch,
       initialSearch
     );
   }

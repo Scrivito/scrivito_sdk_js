@@ -1,8 +1,4 @@
-import {
-  ScrivitoError,
-  checkArgumentsFor,
-  tcomb as t,
-} from 'scrivito_sdk/common';
+import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
 import { Modification } from 'scrivito_sdk/data';
 import {
   BasicObj,
@@ -414,7 +410,7 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
 
   attributeDefinitions(): NormalizedAttributeDefinitions {
     const schema = Schema.forInstance(this);
-    if (!schema) throw new ScrivitoError('No schema found');
+    if (!schema) return {};
 
     return schema.normalizedAttributes();
   }

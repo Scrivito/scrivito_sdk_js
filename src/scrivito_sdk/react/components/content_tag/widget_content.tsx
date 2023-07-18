@@ -4,9 +4,9 @@ import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context
 import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
 import { BasicWidget, PlacementModification } from 'scrivito_sdk/models';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
+import { AutomaticDataContext } from 'scrivito_sdk/react/components/automatic_data_context';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
-import { connect } from 'scrivito_sdk/react/connect';
-import { memo } from 'scrivito_sdk/react/memo';
+import { connectAndMemoize } from 'scrivito_sdk/react/connect_and_memoize';
 import {
   AttributeDefinitions,
   Widget,
@@ -26,8 +26,8 @@ interface WidgetContentProps {
 
 type WidgetContentFieldType = 'widget' | 'widgetlist';
 
-export const WidgetContent: React.ComponentType<WidgetContentProps> = connect(
-  function WidgetContent({
+export const WidgetContent: React.ComponentType<WidgetContentProps> =
+  connectAndMemoize(function WidgetContent({
     fieldType,
     placementModification,
     widget,
@@ -50,8 +50,7 @@ export const WidgetContent: React.ComponentType<WidgetContentProps> = connect(
         />
       </WidgetTagContext.Provider>
     );
-  }
-);
+  });
 WidgetContent.displayName = 'Scrivito.ContentTag.WidgetContent';
 
 class WidgetContentErrorBoundary extends React.Component<
@@ -111,7 +110,7 @@ export interface WidgetComponentProps<
   widget: Widget<AttrDefs>;
 }
 
-const AppWidgetWrapper = memo(function AppWidgetWrapper({
+function AppWidgetWrapper({
   widget,
   widgetClass,
   widgetComponent,
@@ -133,11 +132,15 @@ const AppWidgetWrapper = memo(function AppWidgetWrapper({
     widget: wrapInAppClass(widget),
   };
 
-  return React.createElement<WidgetComponentProps>(
-    widgetComponent,
-    widgetComponentProps
+  return (
+    <AutomaticDataContext content={widget}>
+      {React.createElement<WidgetComponentProps>(
+        widgetComponent,
+        widgetComponentProps
+      )}
+    </AutomaticDataContext>
   );
-});
+}
 
 interface WidgetTagContextValue {
   widget?: BasicWidget;

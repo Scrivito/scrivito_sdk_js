@@ -1,3 +1,5 @@
+import { isEmpty } from 'underscore';
+
 import {
   ArgumentError,
   extractFromIterator,
@@ -98,8 +100,14 @@ export class ExternalDataScope extends DataScope {
     assertValidResultItem(result);
 
     const dataClassName = this.dataClassName();
-    const { id, data: dataFromCallback } = result;
-    setExternalData(dataClassName, id, dataFromCallback || dataForCallback);
+    const { _id: id, ...dataFromCallback } = result;
+
+    setExternalData(
+      dataClassName,
+      id,
+      (!isEmpty(dataFromCallback) && dataFromCallback) || dataForCallback
+    );
+
     notifyExternalDataWrite(dataClassName);
 
     return new ExternalDataItem(this._dataClass, id);

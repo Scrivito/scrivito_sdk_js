@@ -9,7 +9,6 @@ export type {
   AuthorizationProvider,
   BackendResponse,
   JSONArray,
-  JSONObject,
 } from 'scrivito_sdk/client/cms_rest_api';
 export type { RawResponse } from 'scrivito_sdk/client/raw_response';
 export { RequestFailedError } from 'scrivito_sdk/client/request_failed_error';
@@ -86,6 +85,7 @@ export type {
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
   OrderByItem,
+  OrderDirection,
 } from 'scrivito_sdk/client/obj_json';
 export type {
   BackendQueryRetrievalParams,

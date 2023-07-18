@@ -1,8 +1,4 @@
-import {
-  ArgumentError,
-  InternalError,
-  ScrivitoError,
-} from 'scrivito_sdk/common';
+import { ArgumentError, InternalError } from 'scrivito_sdk/common';
 import { BasicWidget } from 'scrivito_sdk/models';
 import { assertValidAttributeName } from 'scrivito_sdk/realm/assert_valid_attribute_name';
 
@@ -127,7 +123,7 @@ export class Widget<
 
   attributeDefinitions(): NormalizedAttributeDefinitions {
     const schema = Schema.forInstance(this);
-    if (!schema) throw new ScrivitoError('No schema found');
+    if (!schema) return {};
 
     return schema.normalizedAttributes();
   }

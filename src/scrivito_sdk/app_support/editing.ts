@@ -28,7 +28,7 @@ export interface AbstractEditorClass<Type extends AttributeType> {
 }
 
 export declare class AbstractEditorInterface<Type extends AttributeType> {
-  onClick: (e: EditorEvent) => void;
+  onClick: () => void;
   constructor(args: { controller: EditController<Type> });
   contentDidChange(): void;
   editorWillBeActivated(): void;
@@ -43,9 +43,4 @@ export interface EditController<Type extends AttributeType> {
   setDomMode(domMode: DomMode): void;
   validObjClasses(): readonly string[] | undefined;
   options(): Readonly<EditingOptions> | undefined;
-}
-
-export interface EditorEvent {
-  preventDefault(): void;
-  stopPropagation(): void;
 }

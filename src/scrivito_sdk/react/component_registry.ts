@@ -1,17 +1,27 @@
 import { Obj } from 'scrivito_sdk/realm';
+import { createStateContainer } from 'scrivito_sdk/state';
 
 const registry = new Map<string, React.ComponentType>();
+const componentsChangesCounterState = createStateContainer<{
+  [componentId: string]: number;
+}>();
 
 export function registerComponentForId(
   componentId: string,
   componentClass: React.ComponentType
 ): void {
   registry.set(componentId, componentClass);
+
+  const componentChangesCounter = getComponentChangesCounterState(componentId);
+  const changesCounter = componentChangesCounter.get() ?? 0;
+  componentChangesCounter.set(changesCounter + 1);
 }
 
 export function getComponentForId(
   componentId: string
 ): React.ComponentType | null {
+  getComponentChangesCounterState(componentId).get();
+
   return registry.get(componentId) || null;
 }
 
@@ -25,7 +35,7 @@ export function registerComponentForAppClass(
 export function registerDataErrorComponent(
   componentClass: React.ComponentType
 ): void {
-  registry.set('dataErrorComponent', componentClass);
+  registerComponentForId('dataErrorComponent', componentClass);
 }
 
 export function getComponentForAppClass(
@@ -35,7 +45,11 @@ export function getComponentForAppClass(
 }
 
 export function getDataErrorComponent(): React.ComponentType | null {
-  return registry.get('dataErrorComponent') || null;
+  return getComponentForId('dataErrorComponent');
+}
+
+function getComponentChangesCounterState(componentId: string) {
+  return componentsChangesCounterState.subState(componentId);
 }
 
 function componentAppClassId(className: string) {
@@ -43,10 +57,15 @@ function componentAppClassId(className: string) {
 }
 
 const layoutRegistry = new Map<string, React.ComponentType>();
+const layoutsChangesCounterState = createStateContainer<{
+  [componentId: string]: number;
+}>();
 
 export function getLayoutComponentForAppClass(
   className: string
 ): React.ComponentType | React.ComponentType<{ page: Obj }> | null {
+  getLayoutChangesCounterState(className).get();
+
   return layoutRegistry.get(className) || null;
 }
 
@@ -55,10 +74,24 @@ export function registerLayoutComponentForAppClass(
   componentClass: React.ComponentType
 ): void {
   layoutRegistry.set(className, componentClass);
+
+  const layoutChangesCounter = getLayoutChangesCounterState(className);
+  const changesCounter = layoutChangesCounter.get() ?? 0;
+  layoutChangesCounter.set(changesCounter + 1);
+
+  if (!layoutComponentsStoredState.get()) {
+    layoutComponentsStoredState.set(true);
+  }
 }
 
+const layoutComponentsStoredState = createStateContainer<boolean>();
+
 export function areLayoutComponentsStored() {
-  return layoutRegistry.size > 0;
+  return layoutComponentsStoredState.get() ?? false;
+}
+
+function getLayoutChangesCounterState(className: string) {
+  return layoutsChangesCounterState.subState(className);
 }
 
 // For test purpose only.

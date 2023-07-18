@@ -1,4 +1,14 @@
+import { ArgumentError } from 'scrivito_sdk/common';
+
 export type DataIdentifier = string;
+
+export function assertValidDataIdentifier(
+  key: string
+): asserts key is DataIdentifier {
+  if (!isValidDataIdentifier(key)) {
+    throw new ArgumentError(`Invalid data identifier "${key}"`);
+  }
+}
 
 export function isValidDataIdentifier(key: string): key is DataIdentifier {
   return (

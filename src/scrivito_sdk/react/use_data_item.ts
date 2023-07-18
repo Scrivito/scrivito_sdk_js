@@ -5,7 +5,7 @@ import {
 } from 'scrivito_sdk/data_integration';
 import { useLastDataStackElement } from 'scrivito_sdk/react/data_context_container';
 
-/** @beta */
+/** @public */
 export function useDataItem(): DataItem | undefined {
   const element = useLastDataStackElement();
 

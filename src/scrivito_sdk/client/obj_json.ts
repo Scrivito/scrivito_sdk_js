@@ -118,7 +118,8 @@ export interface BinaryJson {
   id: string;
 }
 
-export type OrderByItem = [string, 'asc' | 'desc'];
+export type OrderByItem = [string, OrderDirection];
+export type OrderDirection = 'asc' | 'desc';
 
 export interface DataLocatorJson {
   class: string;

@@ -16,8 +16,8 @@ import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { ValidationsConfigType } from 'scrivito_sdk/app_support/validations_config';
 import { checkArgumentsFor, nextTick, tcomb as t } from 'scrivito_sdk/common';
 import {
+  DataClass,
   DataItem,
-  ExternalDataClass,
   isValidDataIdentifier,
 } from 'scrivito_sdk/data_integration';
 import { AttributeType, LinkType, WidgetType } from 'scrivito_sdk/models';
@@ -37,12 +37,6 @@ export function provideEditingConfig<
   editingConfig: ObjEditingConfig<AttrDefs>
 ): void;
 
-/** @beta */
-export function provideEditingConfig(
-  dataClass: ExternalDataClass,
-  editingConfig: DataClassEditingConfig
-): void;
-
 /** @public */
 export function provideEditingConfig(
   objClassName: string,
@@ -59,6 +53,12 @@ export function provideEditingConfig<
 
 /** @public */
 export function provideEditingConfig(
+  dataClass: DataClass,
+  editingConfig: DataClassEditingConfig
+): void;
+
+/** @public */
+export function provideEditingConfig(
   dataItem: DataItem,
   editingConfig: DataClassEditingConfig
 ): void;
@@ -71,7 +71,7 @@ export function provideEditingConfig(
 
 /** @internal */
 export function provideEditingConfig(
-  subject: string | ObjClass | WidgetClass | ExternalDataClass | DataItem,
+  subject: string | ObjClass | WidgetClass | DataClass | DataItem,
   editingConfig: EditingConfig,
   ...excessArgs: never[]
 ): void {
@@ -220,16 +220,10 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     ])
   );
 
-  const ExternalDataClassType = t.refinement(
-    t.Object,
-    isExternalDataClass,
-    'ExternalDataClass'
-  );
+  const DataClassType = t.refinement(t.Object, isDataClass, 'DataClass');
 
-  function isExternalDataClass(
-    maybeExternalDataClass: object
-  ): maybeExternalDataClass is ExternalDataClass {
-    return maybeExternalDataClass instanceof ExternalDataClass;
+  function isDataClass(maybeDataClass: object): maybeDataClass is DataClass {
+    return maybeDataClass instanceof DataClass;
   }
 
   const DataItemType = t.refinement(t.Object, isDataItem, 'DataItem');
@@ -268,7 +262,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
             t.String,
             ObjClassType,
             WidgetClassType,
-            ExternalDataClassType,
+            DataClassType,
             DataItemType,
           ]),
         ],

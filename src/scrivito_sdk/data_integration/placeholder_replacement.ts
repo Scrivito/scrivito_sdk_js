@@ -1,6 +1,5 @@
 import {
   DataContext,
-  DataContextCallback,
   findMatchingItemElement,
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
@@ -21,7 +20,7 @@ export function replacePlaceholdersWithData(
     dataStack,
     transform,
   }: {
-    dataContext?: DataContext | DataContextCallback;
+    dataContext?: DataContext;
     dataStack?: DataStack;
     transform?: (rawValue: string) => string;
   } = {}

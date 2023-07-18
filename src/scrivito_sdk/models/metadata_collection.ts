@@ -1,3 +1,4 @@
+import { isObject } from 'underscore';
 import {
   BackendMetadataResponse,
   ObjSpaceId,
@@ -139,13 +140,17 @@ function deserializeMetadata(
   response: BackendMetadataResponse
 ): BinaryMetadata {
   const backendMetadata = response.meta_data;
+
+  if (!isObject(backendMetadata)) {
+    throw new InternalError();
+  }
+
   const metadata: BinaryMetadata = {};
 
-  for (const key of Object.keys(backendMetadata)) {
-    const [backendType, backendValue] = backendMetadata[key] as [
-      BackendBinaryMetadataType,
-      BackendBinaryMetadataValue
-    ];
+  for (const key of Object.keys(backendMetadata as object)) {
+    const [backendType, backendValue] = (backendMetadata as object)[
+      key as keyof typeof backendMetadata
+    ] as [BackendBinaryMetadataType, BackendBinaryMetadataValue];
 
     if (backendValue === null || backendValue === undefined) {
       throw new InternalError();

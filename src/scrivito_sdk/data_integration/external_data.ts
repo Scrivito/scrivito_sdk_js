@@ -1,6 +1,7 @@
 import { isObject } from 'underscore';
 
-import { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
+import { ClientError } from 'scrivito_sdk/client';
+import { ArgumentError } from 'scrivito_sdk/common';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
   DataIdentifier,
@@ -15,11 +16,10 @@ export type ExternalData = Record<DataIdentifier, unknown>;
 export function setExternalData(
   dataClass: string,
   dataId: string,
-  data: ExternalData | null
+  data: unknown
 ): void {
-  loadableCollection
-    .get([dataClass, dataId])
-    .set(data ? asExternalData(data) : null);
+  assertExternalData(data, dataClass);
+  loadableCollection.get([dataClass, dataId]).set(data);
 }
 
 export function getExternalData(
@@ -41,24 +41,38 @@ const loadableCollection = new LoadableCollection<
       }
 
       const connection = getExternalDataConnectionOrThrow(dataClass);
-      const unknownValue = await connection.get(dataId);
+      let unknownValue;
 
-      if (unknownValue === null) return null;
-      if (isObject(unknownValue)) return asExternalData(unknownValue);
+      try {
+        unknownValue = await connection.get(dataId);
+      } catch (error) {
+        if (error instanceof ClientError && error.code === '404') return null;
 
-      throw new ScrivitoError(
-        `"GetCallback" of the connection of the data class ${dataClass} returned neither an object nor null`
-      );
+        throw error;
+      }
+
+      assertExternalData(unknownValue, dataClass);
+
+      return unknownValue;
     },
   }),
 });
 
-function asExternalData(data: Object): ExternalData {
-  Object.keys(data).forEach((key) => {
+function assertExternalData(
+  data: unknown,
+  dataClass: string
+): asserts data is ExternalData {
+  if (data === null) return;
+
+  if (!isObject(data)) {
+    throw new ArgumentError(
+      `"GetCallback" of the connection of the data class ${dataClass} returned neither an object nor null`
+    );
+  }
+
+  Object.keys(data as Object).forEach((key) => {
     if (!isValidDataIdentifier(key)) {
       throw new ArgumentError(`Invalid data identifier ${key}`);
     }
   });
-
-  return data as ExternalData;
 }

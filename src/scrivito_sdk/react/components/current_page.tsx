@@ -3,16 +3,15 @@ import * as URI from 'urijs';
 
 import { getCurrentPageData } from 'scrivito_sdk/app_support/current_page_data';
 import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
-import { QueryParameters } from 'scrivito_sdk/common';
-import { getDataContext } from 'scrivito_sdk/data_integration';
 import { BasicObj } from 'scrivito_sdk/models';
-import { getDataErrorComponent } from 'scrivito_sdk/react/component_registry';
-import { useLayout } from 'scrivito_sdk/react/components/current_page/use_layout';
+import { AutomaticDataContext } from 'scrivito_sdk/react/components/automatic_data_context';
 import { PageScroll } from 'scrivito_sdk/react/components/page_scroll';
 import { connect } from 'scrivito_sdk/react/connect';
-import { DataContextProvider } from 'scrivito_sdk/react/data_context_container';
 import { getComponentForPageClass } from 'scrivito_sdk/react/get_component_for_page_class';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
+
+import { DetailsPageDataContext } from './current_page/details_page_data_context';
+import { useLayout } from './current_page/use_layout';
 
 /** @public */
 export const CurrentPage: React.ComponentType<unknown> = connect(
@@ -39,50 +38,25 @@ const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
   currentPage: BasicObj;
   navigationState: NavigationState;
 }) {
-  const layout = useLayout(currentPage);
-
   const params = URI.parseQuery(navigationState?.locationRoute?.query ?? '');
 
-  if (layout) {
-    return layout === 'loading'
-      ? null
-      : withCurrentPageDataContext(currentPage, params, layout);
-  }
+  const layout = useLayout(currentPage, params);
+  if (layout) return layout === 'loading' ? null : layout;
 
   const PageComponent = getComponentForPageClass(currentPage.objClass());
 
-  return withCurrentPageDataContext(
-    currentPage,
-    params,
-    <>
-      <PageScroll navigationState={navigationState} />
-      {PageComponent && (
-        <PageComponent page={wrapInAppClass(currentPage)} params={params} />
-      )}
-    </>
+  return (
+    <DetailsPageDataContext page={currentPage} params={params}>
+      <AutomaticDataContext content={currentPage}>
+        <>
+          <PageScroll navigationState={navigationState} />
+          {PageComponent && (
+            <PageComponent page={wrapInAppClass(currentPage)} params={params} />
+          )}
+        </>
+      </AutomaticDataContext>
+    </DetailsPageDataContext>
   );
 });
-
-function withCurrentPageDataContext(
-  currentPage: BasicObj,
-  params: QueryParameters,
-  children: React.ReactElement
-) {
-  const dataContext = getDataContext(currentPage, params);
-
-  if (dataContext === 'loading') return null;
-  if (dataContext === 'unavailable') return renderDataError();
-
-  return (
-    <DataContextProvider dataContext={dataContext}>
-      {children}
-    </DataContextProvider>
-  );
-}
-
-function renderDataError() {
-  const DataErrorComponent = getDataErrorComponent();
-  return DataErrorComponent ? <DataErrorComponent /> : <>Data Not Found</>;
-}
 
 CurrentPage.displayName = 'Scrivito.CurrentPage';

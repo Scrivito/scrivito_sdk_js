@@ -22,11 +22,7 @@ export interface AuthorizationProvider {
   ) => Promise<RawResponse>;
 }
 
-type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
-
-export interface JSONObject {
-  [key: string]: JSONValue | undefined;
-}
+type JSONValue = string | number | boolean | null | JSONArray;
 
 export type JSONArray = Array<JSONValue>;
 
@@ -36,7 +32,7 @@ type ParamsType = unknown;
 
 interface SuccessfulTaskData {
   status: 'success';
-  result: JSONObject;
+  result: unknown;
 }
 
 interface OpenTaskData {

@@ -1,4 +1,4 @@
-import { isObject } from 'underscore';
+import { isEmpty, isObject } from 'underscore';
 
 import { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
 import { assertValidDataItemAttributes } from 'scrivito_sdk/data_integration/data_class';
@@ -7,29 +7,44 @@ import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { createStateContainer } from 'scrivito_sdk/state';
 
-/** @beta */
-export interface ExternalDataConnection {
-  create?: CreateCallback;
+/** @public */
+export interface ReadOnlyDataConnection {
   index?: IndexCallback;
   get: GetCallback;
+}
+
+/** @public */
+export type IndexCallback = (params: IndexParams) => Promise<IndexResult>;
+/** @public */
+export type GetCallback = (id: string) => Promise<unknown | null>;
+
+/** @beta */
+export interface ReadWriteDataConnection extends ReadOnlyDataConnection {
+  create?: CreateCallback;
   update?: UpdateCallback;
   delete?: DeleteCallback;
 }
 
+/** @beta */
 export type CreateCallback = (data: ExternalData) => Promise<ResultItem>;
-export type IndexCallback = (params: IndexParams) => Promise<IndexResult>;
-export type GetCallback = (id: string) => Promise<Object | null>;
+/** @beta */
 export type UpdateCallback = (id: string, data: ExternalData) => Promise<void>;
+/** @beta */
 export type DeleteCallback = (id: string) => Promise<void>;
 
+/** @public */
 export interface IndexResult {
   results: Array<DataId | ResultItem>;
   continuation?: string;
 }
 
-export interface ResultItem {
-  id: DataId;
-  data?: ExternalData;
+/** @public */
+export interface ResultItem extends ResultItemData {
+  _id: DataId;
+}
+
+export interface ResultItemData {
+  [key: string]: unknown;
 }
 
 export function assertValidResultItem(
@@ -39,7 +54,7 @@ export function assertValidResultItem(
     throw new ArgumentError('A result item must be an object');
   }
 
-  const { id, data } = resultItem as ResultItem;
+  const { _id: id, ...data } = resultItem as ResultItem;
 
   if (!isValidDataId(id)) {
     throw new ArgumentError(
@@ -47,17 +62,15 @@ export function assertValidResultItem(
     );
   }
 
-  if (data !== undefined) {
-    assertValidDataItemAttributes(data);
-  }
+  if (!isEmpty(data)) assertValidDataItemAttributes(data);
 }
 
 const connectionsState =
-  createStateContainer<Record<string, ExternalDataConnection>>();
+  createStateContainer<Record<string, ReadWriteDataConnection>>();
 
 export function setExternalDataConnection(
   name: string,
-  connection: ExternalDataConnection
+  connection: ReadWriteDataConnection
 ): void {
   connectionsState.set({
     ...connectionsState.get(),
@@ -67,7 +80,7 @@ export function setExternalDataConnection(
 
 export function getExternalDataConnection(
   name: string
-): ExternalDataConnection | undefined {
+): ReadWriteDataConnection | undefined {
   const connections = connectionsState.get();
   if (connections) return connections[name];
 }
@@ -79,7 +92,7 @@ export function getExternalDataConnectionNames(): string[] {
 
 export function getExternalDataConnectionOrThrow(
   name: string
-): ExternalDataConnection {
+): ReadWriteDataConnection {
   const connection = getExternalDataConnection(name);
 
   if (!connection) {

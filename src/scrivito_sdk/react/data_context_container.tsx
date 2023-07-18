@@ -2,93 +2,75 @@ import * as React from 'react';
 
 import {
   DataContext,
-  DataContextCallback,
   DataItem,
   DataScope,
   DataStack,
   DataStackElement,
-  ExternalDataScope,
-  ObjDataScope,
-  getNextDataStack,
   toDataContext,
 } from 'scrivito_sdk/data_integration';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface DataContextContainer {
-  dataContext: DataContext | DataContextCallback;
+  dataContext: DataContext;
   dataStack: DataStack;
 }
 
-const ReactContext = React.createContext<DataContextContainer | undefined>(
-  undefined
-);
+const DataStackReactContext = React.createContext<
+  DataContextContainer | undefined
+>(undefined);
 
 export function useDataContextContainer(): DataContextContainer | undefined {
-  return React.useContext(ReactContext);
+  return React.useContext(DataStackReactContext);
 }
 
-export function useDataContext():
-  | DataContext
-  | DataContextCallback
-  | undefined {
-  return React.useContext(ReactContext)?.dataContext;
+export function useDataContext(): DataContext | undefined {
+  return React.useContext(DataStackReactContext)?.dataContext;
 }
 
 export function useDataStack(): DataStack | undefined {
-  return React.useContext(ReactContext)?.dataStack;
+  return React.useContext(DataStackReactContext)?.dataStack;
 }
 
 export function useLastDataStackElement(): DataStackElement | undefined {
-  const dataStack = React.useContext(ReactContext)?.dataStack;
+  const dataStack = React.useContext(DataStackReactContext)?.dataStack;
   return dataStack && dataStack[0];
 }
 
-export function DataContextProvider({
-  dataContext: maybeDataContext,
+export function PushOntoDataStack({
+  item,
   children,
 }: {
-  dataContext:
-    | DataContext
-    | DataContextCallback
-    | DataItem
-    | DataScope
-    | Obj
-    | null
-    | undefined;
+  item: DataContext | DataItem | DataScope | Obj;
   children: React.ReactElement;
 }) {
-  const prevDataStack = React.useContext(ReactContext)?.dataStack || [];
-
-  if (!maybeDataContext) return children;
-
-  if (maybeDataContext instanceof DataScope) {
-    if (
-      maybeDataContext instanceof ObjDataScope ||
-      maybeDataContext instanceof ExternalDataScope
-    ) {
-      return (
-        <ReactContext.Provider
-          value={{
-            dataContext: {},
-            dataStack: [maybeDataContext.toPojo(), ...prevDataStack],
-          }}
-          children={children}
-        />
-      );
-    }
-
-    return children;
-  }
-
-  const dataContext = toDataContext(unwrapAppClass(maybeDataContext));
-  if (!dataContext) return children;
-
-  const dataStack = getNextDataStack(prevDataStack, dataContext);
+  const prevDataStack =
+    React.useContext(DataStackReactContext)?.dataStack || [];
 
   return (
-    <ReactContext.Provider
-      value={{ dataContext, dataStack }}
+    <DataStackReactContext.Provider
+      value={computeContextValue(item, prevDataStack)}
       children={children}
     />
   );
+}
+
+function computeContextValue(
+  givenDataContext: DataContext | DataItem | DataScope | Obj,
+  prevDataStack: DataStack
+) {
+  if (givenDataContext instanceof DataScope) {
+    return {
+      dataContext: {},
+      dataStack: [givenDataContext.toPojo(), ...prevDataStack],
+    };
+  }
+
+  const dataContext = toDataContext(unwrapAppClass(givenDataContext));
+
+  const { _class, _id } = dataContext;
+
+  const dataStack =
+    _class && _id ? [{ _class, _id }, ...prevDataStack] : prevDataStack;
+
+  return { dataStack, dataContext };
 }

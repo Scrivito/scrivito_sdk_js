@@ -20,6 +20,7 @@ import {
 import {
   IndexResult,
   ResultItem,
+  ResultItemData,
   assertValidResultItem,
   getExternalDataConnectionOrThrow,
 } from 'scrivito_sdk/data_integration/external_data_connection';
@@ -57,7 +58,7 @@ export function getExternalDataQuery({
 
   return transformContinueIterable(idQuery, (iterator) =>
     iterator
-      .map((idOrItem) => toResultItem(idOrItem, dataClass))
+      .map((idOrItem) => toDataResult(idOrItem, dataClass))
       .takeWhile(({ data }) => data !== undefined)
       .filter(({ data }) => data !== null)
       .map(({ id }) => id)
@@ -154,13 +155,8 @@ function handleDataId(dataClass: string, dataId: string) {
 }
 
 function handleResultItem(dataClass: string, resultItem: ResultItem) {
-  const { id, data } = resultItem;
-
-  if (data) {
-    setExternalData(dataClass, id, data);
-  } else {
-    preloadExternalData(dataClass, id);
-  }
+  const { _id: id, ...data } = resultItem;
+  setExternalData(dataClass, id, data);
 
   return id;
 }
@@ -199,11 +195,19 @@ function getOrCreateWriteCounterState(dataClass: string) {
   return counterState;
 }
 
-function toResultItem(idOrItem: DataId | ResultItem, dataClass: string) {
-  return typeof idOrItem === 'string'
-    ? {
-        id: idOrItem,
-        data: getExternalData(dataClass, idOrItem),
-      }
-    : idOrItem;
+interface DataResult {
+  id: string;
+  data: ResultItemData | null | undefined;
+}
+
+function toDataResult(
+  idOrItem: DataId | ResultItem,
+  dataClass: string
+): DataResult {
+  if (typeof idOrItem === 'string') {
+    return { id: idOrItem, data: getExternalData(dataClass, idOrItem) };
+  }
+
+  const { _id: id, ...data } = idOrItem;
+  return { id, data };
 }

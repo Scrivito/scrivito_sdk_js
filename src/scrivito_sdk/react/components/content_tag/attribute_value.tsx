@@ -34,7 +34,7 @@ export interface AttributeValueProps<Type extends AttributeType> {
     onClick?: <T>(e: React.MouseEvent<T>) => void;
   };
   field: BasicField<Type>;
-  onClick?: <T>(e: React.MouseEvent<T>) => void;
+  onClick?: <T extends {}>(e: React.MouseEvent<T>) => void;
   tag: string;
   widgetProps?: WidgetProps;
   elementCallback?: (element?: HTMLElement) => void;

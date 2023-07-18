@@ -1,5 +1,6 @@
 import { RequestFailedError } from 'scrivito_sdk/client';
 import { parseOrThrowRequestFailedError } from './cms_rest_api/parse_or_throw_request_failed_error';
+import { ErrorResponse, isErrorResponse } from './is_error_response';
 
 interface BackendError {
   message: string;
@@ -13,19 +14,17 @@ interface BackendError {
  * https://docs.google.com/document/d/1rZUtyD7nPuY5aApHoTiOf9PJaWSxVxb5mXGcd6pZPDc#heading=h.dt58jqsstqr0
  */
 export function parseErrorResponse(responseText: string): BackendError {
-  const { error, code, details } = parseOrThrowRequestFailedError(responseText);
+  const parsedResponse = parseOrThrowRequestFailedError(responseText);
 
-  if (typeof error !== 'string') throw new RequestFailedError();
+  if (isErrorResponse(parsedResponse)) {
+    const { error, code, details } = parsedResponse as ErrorResponse;
 
-  if (code !== undefined && typeof code !== 'string') {
-    throw new RequestFailedError();
+    return {
+      message: error,
+      code: code || '',
+      details: details || {},
+    };
   }
 
-  if (details && typeof details !== 'object') throw new RequestFailedError();
-
-  return {
-    message: error,
-    code: code || '',
-    details: details || {},
-  };
+  throw new RequestFailedError();
 }

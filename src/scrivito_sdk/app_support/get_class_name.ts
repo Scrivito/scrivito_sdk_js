@@ -1,13 +1,13 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import { DataItem, ExternalDataClass } from 'scrivito_sdk/data_integration';
+import { DataClass, DataItem } from 'scrivito_sdk/data_integration';
 import { ObjClass, Schema, WidgetClass } from 'scrivito_sdk/realm';
 
 export function getClassName(
-  subject: string | ObjClass | WidgetClass | ExternalDataClass | DataItem
+  subject: string | ObjClass | WidgetClass | DataClass | DataItem
 ): string {
   if (typeof subject === 'string') return subject;
 
-  if (subject instanceof ExternalDataClass) {
+  if (subject instanceof DataClass) {
     return subject.name();
   }
 

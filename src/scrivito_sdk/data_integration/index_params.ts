@@ -4,6 +4,7 @@ import {
   OrderSpec,
 } from 'scrivito_sdk/data_integration/data_class';
 
+/** @public */
 export class IndexParams {
   constructor(
     private readonly _continuation: string | undefined,
@@ -15,7 +16,13 @@ export class IndexParams {
   }
 
   filters(): DataItemFilters {
-    return this._params.filters || {};
+    return Object.entries(this._params.filters || {}).reduce(
+      (nextFilters, [attributeName, attributeValue]) =>
+        attributeName
+          ? { ...nextFilters, [attributeName]: attributeValue }
+          : nextFilters,
+      {}
+    );
   }
 
   search(): string {
@@ -23,6 +30,8 @@ export class IndexParams {
   }
 
   order(): OrderSpec {
-    return this._params.order || [];
+    return (this._params.order || []).filter(
+      ([attributeName]) => !!attributeName
+    );
   }
 }

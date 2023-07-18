@@ -14,7 +14,6 @@ import {
 } from 'scrivito_sdk/common';
 import {
   DataContext,
-  DataContextCallback,
   DataItem,
   DataScope,
 } from 'scrivito_sdk/data_integration';
@@ -23,7 +22,7 @@ import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { connect } from 'scrivito_sdk/react/connect';
-import { DataContextProvider } from 'scrivito_sdk/react/data_context_container';
+import { PushOntoDataStack } from 'scrivito_sdk/react/data_context_container';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
 export interface ContentTagProps<
@@ -32,13 +31,7 @@ export interface ContentTagProps<
   tag?: string;
   content: Obj<AttrDefs> | Widget<AttrDefs> | null;
   attribute: keyof AttrDefs & string;
-  dataContext?:
-    | DataContext
-    | DataContextCallback
-    | Obj
-    | DataItem
-    | DataScope
-    | null;
+  dataContext?: DataContext | Obj | DataItem | DataScope | null;
   widgetProps?: WidgetProps;
 
   [key: string]: unknown;
@@ -120,10 +113,10 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
       return attributeValue;
     }
 
+    if (!dataContext) return attributeValue;
+
     return (
-      <DataContextProvider dataContext={dataContext}>
-        {attributeValue}
-      </DataContextProvider>
+      <PushOntoDataStack item={dataContext}>{attributeValue}</PushOntoDataStack>
     );
   });
 
@@ -183,20 +176,12 @@ export const ContentTag = connect(
 ContentTag.displayName = 'Scrivito.ContentTag';
 
 function isDataContextObject(
-  dataContext:
-    | DataContext
-    | DataContextCallback
-    | DataScope
-    | DataItem
-    | Obj
-    | null
-    | undefined
+  dataContext: DataContext | DataScope | DataItem | Obj | null | undefined
 ): dataContext is DataContext {
   return (
     !!dataContext &&
     !(dataContext instanceof DataItem) &&
     !(dataContext instanceof DataScope) &&
-    !(dataContext instanceof Obj) &&
-    typeof dataContext !== 'function'
+    !(dataContext instanceof Obj)
   );
 }

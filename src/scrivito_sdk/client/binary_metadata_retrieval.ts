@@ -1,9 +1,9 @@
 import { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
-import { JSONObject, cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
+import { cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
 import { asBackendObjSpaceId } from 'scrivito_sdk/client/obj_space_id';
 
 export interface BackendMetadataResponse {
-  meta_data: JSONObject;
+  meta_data: unknown;
 }
 
 interface BinaryMetadataRequestParams {

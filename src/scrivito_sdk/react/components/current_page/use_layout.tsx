@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { computeAncestorPaths } from 'scrivito_sdk/common';
+import { QueryParameters, computeAncestorPaths } from 'scrivito_sdk/common';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
 import {
   BasicObj,
@@ -16,10 +16,13 @@ import { CurrentPage } from 'scrivito_sdk/react/components/current_page';
 import { connect } from 'scrivito_sdk/react/connect';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
 
+import { DetailsPageDataContext } from './details_page_data_context';
+
 const LayoutIndexContext = React.createContext(0);
 
 export function useLayout(
-  page: BasicObj
+  page: BasicObj,
+  params: QueryParameters
 ): React.ReactElement | 'loading' | undefined {
   const layoutIndex = React.useContext(LayoutIndexContext);
   if (!areLayoutComponentsStored()) return;
@@ -32,7 +35,9 @@ export function useLayout(
   if (nextPage === undefined) return;
   if (nextPage === 'loading') return 'loading';
 
-  return <LayoutFor page={nextPage} layoutIndex={layoutIndex} />;
+  return (
+    <PageLayout page={nextPage} params={params} layoutIndex={layoutIndex} />
+  );
 }
 
 function getNextPage(page: BasicObj, layoutIndex: number) {
@@ -55,25 +60,26 @@ function objByPath(path: string) {
   );
 }
 
-const LayoutFor = connect(function LayoutFor({
+const PageLayout = connect(function PageLayout({
   page,
+  params,
   layoutIndex,
 }: {
   page: BasicObj | null;
+  params: QueryParameters;
   layoutIndex: number;
 }) {
   const Component = page && getLayoutComponentForAppClass(page.objClass());
 
-  return withLayoutContext(
-    layoutIndex,
-    Component ? <Component page={wrapInAppClass(page)} /> : <CurrentPage />
+  return (
+    <DetailsPageDataContext page={page} params={params}>
+      <LayoutIndexContext.Provider value={layoutIndex + 1}>
+        {Component ? (
+          <Component page={wrapInAppClass(page)} />
+        ) : (
+          <CurrentPage />
+        )}
+      </LayoutIndexContext.Provider>
+    </DetailsPageDataContext>
   );
 });
-
-function withLayoutContext(layoutIndex: number, children: React.ReactElement) {
-  return (
-    <LayoutIndexContext.Provider value={layoutIndex + 1}>
-      {children}
-    </LayoutIndexContext.Provider>
-  );
-}

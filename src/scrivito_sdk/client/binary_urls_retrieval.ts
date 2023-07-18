@@ -1,7 +1,7 @@
 import { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
-import { JSONObject, cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
+import { JSONArray, cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
 import { asBackendObjSpaceId } from 'scrivito_sdk/client/obj_space_id';
-import { BatchRetrieval, InternalError } from 'scrivito_sdk/common';
+import { BatchRetrieval } from 'scrivito_sdk/common';
 import { TransformationDefinition } from 'scrivito_sdk/models';
 
 export type BackendBinaryData =
@@ -23,7 +23,12 @@ interface PublicBackendBinaryData {
 }
 
 interface PrivateBackendBinaryData {
-  public_access?: undefined;
+  public_access: {
+    get: {
+      url: string;
+    };
+  };
+
   private_access: {
     get: {
       url: string;
@@ -41,8 +46,8 @@ const batchRetrieval = new BatchRetrieval<BinaryRequest, BackendBinaryData>(
   (blobs) =>
     cmsRestApi
       .get('blobs/mget', { blobs })
-      .then(({ results }: { results: JSONObject[] }) =>
-        results.map((result) => parseBackendResponse(result))
+      .then(({ results }: { results: JSONArray }) =>
+        results.map((result) => result as unknown as BackendBinaryData)
       )
 );
 
@@ -62,35 +67,4 @@ export function retrieveBinaryUrls(
   }
 
   return batchRetrieval.retrieve(blob);
-}
-
-function parseBackendResponse(response: JSONObject): BackendBinaryData {
-  const publicAccessData = response.public_access as JSONObject;
-  const getPublicAccessData = publicAccessData.get as JSONObject;
-
-  if (!getPublicAccessData.url) throw new InternalError();
-
-  const binaryData: BackendBinaryData = {
-    public_access: {
-      get: {
-        url: getPublicAccessData.url as string,
-      },
-    },
-  };
-
-  const privateAccessData = response.private_access as JSONObject;
-
-  if (privateAccessData) {
-    const getPrivateAccessData = privateAccessData.get as JSONObject;
-
-    if (getPrivateAccessData.url) {
-      binaryData.private_access = {
-        get: {
-          url: getPrivateAccessData.url as string,
-        },
-      };
-    }
-  }
-
-  return binaryData;
 }

@@ -3,6 +3,7 @@ import { ClientError } from 'scrivito_sdk/client/client_error';
 import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
 import { uniqueErrorMessage } from 'scrivito_sdk/common';
 import { parseOrThrowRequestFailedError } from './cms_rest_api/parse_or_throw_request_failed_error';
+import { isErrorResponse } from './is_error_response';
 
 export class AccessDeniedError extends ClientError {}
 
@@ -29,9 +30,12 @@ export async function parseResponse({ httpStatus, responseText }: RawResponse) {
   // The backend server responds with a proper error text on a server error.
   // If however not the backend server, but the surrounding infrastructure fails, then there is
   // no proper error text. In that case include the response text as a hint for debugging.
-  const { error } = parseOrThrowRequestFailedError(responseText);
+  const parsedResponse = parseOrThrowRequestFailedError(responseText);
+
   const message =
-    httpStatus === 500 && typeof error === 'string' ? error : responseText;
+    httpStatus === 500 && isErrorResponse(parsedResponse)
+      ? parsedResponse.error
+      : responseText;
 
   throw new RequestFailedError(uniqueErrorMessage(message));
 }

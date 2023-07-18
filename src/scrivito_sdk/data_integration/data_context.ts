@@ -8,6 +8,7 @@ import {
 } from 'scrivito_sdk/common';
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
 import { DataItemPojo } from 'scrivito_sdk/data_integration/data_class';
+import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
   DataIdentifier,
   isValidDataIdentifier,
@@ -41,15 +42,6 @@ export type DataContextValue = string;
 export type DataContextCallback = (
   identifier: DataIdentifier
 ) => DataContextValue | undefined;
-
-export function getValueFromDataContext(
-  identifier: DataIdentifier,
-  context: DataContext | DataContextCallback
-): DataContextValue | undefined {
-  return typeof context === 'function'
-    ? context(identifier)
-    : context[identifier];
-}
 
 export function isValidDataContextValue(
   maybeValue: unknown
@@ -96,9 +88,37 @@ export function getDataContextParameters(
   const objDataClass = obj.dataClass();
   if (!objDataClass) return;
 
-  const itemElement = findMatchingItemElement(objDataClass, dataStack);
-  if (itemElement && itemElement._class === objDataClass) {
-    return { [parameterizeDataClass(objDataClass)]: itemElement._id };
+  const stackElement = findMatchingItemElement(objDataClass, dataStack);
+  let params = dataContextParamsForElement(stackElement, objDataClass);
+
+  if (dataStack.length > 0) {
+    obj.ancestors().forEach((ancestor) => {
+      const ancestorDataClass = ancestor?.dataClass();
+      if (!ancestorDataClass) return;
+
+      const ancestorItemElement = findMatchingItemElementInDataStack(
+        ancestorDataClass,
+        dataStack
+      );
+
+      params = {
+        ...params,
+        ...dataContextParamsForElement(ancestorItemElement, ancestorDataClass),
+      };
+    });
+  }
+
+  return params;
+}
+
+function dataContextParamsForElement(
+  stackElement: DataItemPojo | undefined,
+  dataClass: string
+): DataContextParameters | undefined {
+  if (stackElement && stackElement._class === dataClass) {
+    return {
+      [parameterizeDataClass(dataClass)]: stackElement._id,
+    };
   }
 }
 
@@ -131,7 +151,7 @@ function findMatchingItemElementInGlobalData(dataClassName: string) {
   }
 }
 
-export function getDataContext(
+export function dataContextFromQueryParams(
   obj: BasicObj,
   params: QueryParameters
 ): DataContext | 'loading' | 'unavailable' | undefined {
@@ -139,7 +159,7 @@ export function getDataContext(
   if (!dataClassName) return;
 
   const dataId = getDataId(dataClassName, params);
-  if (!dataId) return 'unavailable';
+  if (!isValidDataId(dataId)) return 'unavailable';
 
   if (isExternalDataClassProvided(dataClassName)) {
     return getDataContextFromExternalData(dataClassName, dataId);
@@ -220,11 +240,11 @@ function getObj(objOrLink: BasicObj | BasicLink) {
 
 export function getDataContextValue(
   identifier: DataIdentifier,
-  context: DataContext | DataContextCallback
+  context: DataContext
 ): DataContextValue | undefined {
   if (!isValidDataIdentifier(identifier)) return undefined;
 
-  const value = getValueFromDataContext(identifier, context);
+  const value = context[identifier];
   if (isValidDataContextValue(value)) return value;
 
   throwNextTick(

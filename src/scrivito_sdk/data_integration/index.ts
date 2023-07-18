@@ -1,15 +1,15 @@
 export { allCustomAttributesOfTypeString } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
-export { DataItem, DataScope } from 'scrivito_sdk/data_integration/data_class';
+export {
+  DataClass,
+  DataItem,
+  DataScope,
+} from 'scrivito_sdk/data_integration/data_class';
 export { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 export { ObjDataScope } from 'scrivito_sdk/data_integration/obj_data_class';
-export type {
-  DataContext,
-  DataContextCallback,
-} from 'scrivito_sdk/data_integration/data_context';
+export type { DataContext } from 'scrivito_sdk/data_integration/data_context';
 export {
-  getDataContext,
+  dataContextFromQueryParams,
   getDataContextQuery,
-  getValueFromDataContext,
   getDataContextParameters,
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
@@ -25,12 +25,17 @@ export {
   allExternalDataClasses,
 } from 'scrivito_sdk/data_integration/external_data_class';
 export { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
-export type { ExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
-export { isValidDataIdentifier } from 'scrivito_sdk/data_integration/data_identifier';
+export type {
+  ReadOnlyDataConnection,
+  ReadWriteDataConnection,
+} from 'scrivito_sdk/data_integration/external_data_connection';
+export {
+  assertValidDataIdentifier,
+  isValidDataIdentifier,
+} from 'scrivito_sdk/data_integration/data_identifier';
 export {
   isDataItemPojo,
   isDataScopePojo,
-  getNextDataStack,
 } from 'scrivito_sdk/data_integration/data_stack';
 export { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 export {
@@ -54,3 +59,4 @@ export {
   dataScopeFromPojo,
   dataItemFromPojo,
 } from 'scrivito_sdk/data_integration/deserialization';
+export { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
