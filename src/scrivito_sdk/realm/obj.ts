@@ -59,6 +59,9 @@ type ObjSystemAttributes = {
 
   /** @internal */
   _modification?: string | null;
+
+  /** @internal */
+  _dataParam?: [string] | null;
 };
 
 export type ObjAttributes<AttrDefs extends AttributeDefinitions> =
@@ -77,7 +80,7 @@ export interface ObjClass<
   readonly _scrivitoPrivateSchema?: Schema;
 
   /** bogus constructor, to let TypeScript understand that this is a class. */
-  new (dontUseThis: never): Obj<AttrDefs>;
+  new (dontUseThis: { dontUseThis: never }): Obj<AttrDefs>;
 
   get(id: string): Obj<AttrDefs> | null;
 

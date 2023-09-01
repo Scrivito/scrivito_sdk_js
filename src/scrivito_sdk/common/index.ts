@@ -97,7 +97,6 @@ export { anticipatedStream } from 'scrivito_sdk/common/anticipated_stream';
 export { Subject, BehaviorSubject } from 'scrivito_sdk/common/subject';
 export { extractTitleAndDescription } from 'scrivito_sdk/common/extract_title_and_description';
 export { never } from 'scrivito_sdk/common/never';
-export { DEFAULT_ENDPOINT } from 'scrivito_sdk/common/default_endpoint';
 export { pruneString } from 'scrivito_sdk/common/prune_string';
 export {
   currentHash,

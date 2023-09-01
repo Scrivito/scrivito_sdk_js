@@ -4,7 +4,7 @@ import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
 import { Binary, BinaryType, LinkType, ObjType } from 'scrivito_sdk/models';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
-interface UrlForOptions {
+export interface UrlForOptions {
   readonly query?: string;
   readonly hash?: string;
   readonly fragment?: string; // deprecated

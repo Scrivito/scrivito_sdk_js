@@ -8,7 +8,6 @@ export {
 export type {
   AuthorizationProvider,
   BackendResponse,
-  JSONArray,
 } from 'scrivito_sdk/client/cms_rest_api';
 export type { RawResponse } from 'scrivito_sdk/client/raw_response';
 export { RequestFailedError } from 'scrivito_sdk/client/request_failed_error';
@@ -19,7 +18,7 @@ export {
 } from 'scrivito_sdk/client/cms_retrieval';
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
 export {
-  setJrRestApiTokenProvider,
+  setJrRestApiAuthProvider,
   setJrRestApiEndpoint,
   getJrRestApiUrl,
   JrRestApi,
@@ -32,6 +31,7 @@ export type {
   BackendFacetQueryResponse,
   BackendRequestFacet,
 } from 'scrivito_sdk/client/facet_query_retrieval';
+export { fetchToRawResponse } from 'scrivito_sdk/client/fetch_to_raw_response';
 export type {
   BackendSuggestParams,
   BackendSuggestResponse,
@@ -121,3 +121,5 @@ export {
   requestApiNonIdempotent,
   USER_IS_LOGGED_IN_PARAM_NAME,
 } from 'scrivito_sdk/client/request_api';
+export { disableLoginRedirect } from 'scrivito_sdk/client/login_redirect';
+export { retryOnRequestFailed } from 'scrivito_sdk/client/retry';

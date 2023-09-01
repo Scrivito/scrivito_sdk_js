@@ -2,12 +2,17 @@
 import * as URI from 'urijs';
 
 import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
+import { BearerTokenAuthorizationProvider } from 'scrivito_sdk/app_support/bearer_token_authorization_provider';
 import { cdnAssetUrlBase } from 'scrivito_sdk/app_support/cdn_asset_url_base';
 import { skipContentTagsForEmptyAttributes } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { currentEditor } from 'scrivito_sdk/app_support/current_editor';
-import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
+import {
+  getDefaultCmsEndpoint,
+  getJrRestApiDefaultEndpoint,
+} from 'scrivito_sdk/app_support/default_cms_endpoint';
+import { setExtensionsUrl } from 'scrivito_sdk/app_support/extensions_url';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
 import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
 import { initRouting } from 'scrivito_sdk/app_support/routing';
@@ -29,11 +34,11 @@ import {
   Priority,
   PublicAuthentication,
   cmsRestApi,
+  disableLoginRedirect,
+  setJrRestApiAuthProvider,
   setJrRestApiEndpoint,
-  setJrRestApiTokenProvider,
 } from 'scrivito_sdk/client';
 import {
-  DEFAULT_ENDPOINT,
   Deferred,
   ScrivitoError,
   checkArgumentsFor,
@@ -51,6 +56,7 @@ import {
 } from 'scrivito_sdk/data';
 import { load } from 'scrivito_sdk/loadable';
 import { getRootObjFrom, restrictToSite } from 'scrivito_sdk/models';
+import type { ApiKeyAuthorizationProvider } from 'scrivito_sdk/node_support/api_key_authorization_provider';
 import {
   Obj,
   enableStrictSearchOperators,
@@ -58,11 +64,15 @@ import {
   unwrapAppClass,
 } from 'scrivito_sdk/realm';
 import type { ForcedEditorLanguage } from 'scrivito_sdk/ui_interface/app_adapter';
-import type { ApiKeyAuthorizationProvider } from '../node_support/api_key_authorization_provider';
 import {
   ConstraintsValidationCallback,
   setConstraintsValidationCallback,
 } from './constraints_validation_callback';
+
+export interface IamApiKey {
+  clientId: string;
+  clientSecret: string;
+}
 
 export interface Configuration {
   tenant: string;
@@ -75,9 +85,10 @@ export interface Configuration {
   routingBasePath?: string;
   siteForUrl?: SiteMappingConfiguration['siteForUrl'];
   visitorAuthentication?: boolean;
-  apiKey?: string;
+  apiKey?: string | IamApiKey;
   priority?: Priority;
   editorLanguage?: ForcedEditorLanguage;
+  extensionsUrl?: string;
   strictSearchOperators?: boolean;
   optimizedWidgetLoading?: boolean;
   contentTagsForEmptyAttributes?: boolean;
@@ -105,12 +116,21 @@ const AllowedConfiguration = t.interface({
   baseUrlForSite: t.maybe(t.Function),
   constraintsValidation: t.maybe(t.Function),
   endpoint: t.maybe(t.String),
+  extensionsUrl: t.maybe(t.String),
   homepage: t.maybe(t.Function),
   origin: t.maybe(OriginValue),
   routingBasePath: t.maybe(t.String),
   siteForUrl: t.maybe(t.Function),
   visitorAuthentication: t.maybe(t.Boolean),
-  apiKey: t.maybe(t.String),
+  apiKey: t.maybe(
+    t.union([
+      t.String,
+      t.interface({
+        clientId: t.String,
+        clientSecret: t.String,
+      }),
+    ])
+  ),
   unstable: t.maybe(t.Object),
   priority: t.maybe(t.enums.of(['foreground', 'background'])),
   editorLanguage: t.maybe(t.enums.of(['en', 'de'])),
@@ -165,14 +185,23 @@ export function configure(
     disableObjReplication();
   } else {
     const tenant = configuration.tenant;
-    const endpoint = configuration.endpoint || DEFAULT_ENDPOINT;
+
+    const {
+      jrRestApiEndpoint: configuredJrRestApiEndpoint,
+      endpoint: configuredEndpoint,
+    } = configuration;
+
+    const defaultEndpoint = getDefaultCmsEndpoint({
+      configuredJrRestApiEndpoint,
+      configuredEndpoint,
+    });
 
     configureAssetUrlBase(
       inofficialConfiguration?.assetUrlBase ?? cdnAssetUrlBase()
     );
 
     setJrRestApiEndpoint(
-      configuration.jrRestApiEndpoint || calculateJrRestApiEndpoint()
+      configuration.jrRestApiEndpoint || getJrRestApiDefaultEndpoint()
     );
 
     const treatLocalhostLike = configuration.treatLocalhostLike;
@@ -185,9 +214,9 @@ export function configure(
     }
 
     if (uiAdapter) {
-      configureWithUi(endpoint, tenant, uiAdapter);
+      configureWithUi(tenant, uiAdapter);
     } else {
-      configureWithoutUi(endpoint, tenant, configuration);
+      configureWithoutUi(defaultEndpoint, tenant, configuration);
     }
   }
 
@@ -200,6 +229,7 @@ export function configure(
 
   if (configuration.strictSearchOperators) enableStrictSearchOperators();
   setForcedEditorLanguage(configuration.editorLanguage || null);
+  setExtensionsUrl(configuration.extensionsUrl || undefined);
 }
 
 export function getConfiguration(): Promise<Configuration> {
@@ -220,16 +250,16 @@ export function resetConfiguration(): void {
   configDeferred = new Deferred();
 }
 
-function configureWithUi(
-  endpoint: string,
-  tenant: string,
-  uiAdapterClient: UiAdapterClient
-) {
-  setJrRestApiTokenProvider(() => load(() => currentEditor()?.authToken()));
+function configureWithUi(tenant: string, uiAdapterClient: UiAdapterClient) {
+  disableLoginRedirect();
+  setJrRestApiAuthProvider(
+    new BearerTokenAuthorizationProvider(() =>
+      load(() => currentEditor()?.authToken())
+    )
+  );
 
   uiAdapterClient.configureTenant({
     tenant,
-    endpoint,
   });
 
   if (useUnstableMultiSiteMode()) warnIfNoSiteIdSelection();
@@ -271,32 +301,41 @@ function configureCmsRestApi({
   tenant: string;
   visitorAuthentication?: boolean;
   priority?: Priority;
-  apiKey?: string;
+  apiKey?: string | IamApiKey;
 }) {
-  const authProvider =
-    (apiKey && new ApiKeyAuthorizationProviderClass!(apiKey)) ||
-    getVisitorAuthenticationProvider(visitorAuthentication) ||
-    PublicAuthentication;
   if (priority) cmsRestApi.setPriority(priority);
+  const [cmsAuthProvider, jrAuthProvider] = getAuthProviders(
+    apiKey,
+    visitorAuthentication
+  );
 
   cmsRestApi.init({
-    apiBaseUrl: `https://${endpoint}/tenants/${tenant}`,
-    authProvider,
+    apiBaseUrl: `${endpoint}/tenants/${tenant}`,
+    authProvider: cmsAuthProvider,
   });
+
+  if (jrAuthProvider) {
+    setJrRestApiAuthProvider(jrAuthProvider);
+  }
 }
 
-function calculateJrRestApiEndpoint() {
-  const origin = currentOrigin();
+function getAuthProviders(
+  apiKey?: string | IamApiKey,
+  visitorAuthentication?: boolean
+) {
+  if (!apiKey) {
+    return [
+      getVisitorAuthenticationProvider(visitorAuthentication) ||
+        PublicAuthentication,
+    ];
+  }
 
-  // Node.js
-  if (!origin) return 'https://api.justrelate.com';
+  const authProvider = new ApiKeyAuthorizationProviderClass!(apiKey);
 
-  const originUri = URI(origin);
-
-  // Forward localhost requests as is
-  if (originUri.domain() === 'localhost') return origin;
-
-  return originUri.subdomain('api').origin();
+  return [
+    authProvider,
+    typeof apiKey !== 'string' ? authProvider : undefined,
+  ] as const;
 }
 
 function getCheckedRoutingConfiguration({

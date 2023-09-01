@@ -59,6 +59,7 @@ export interface AttributeEditingConfig {
 
 export interface AttributeEditingOptions {
   allowedTags?: readonly (keyof JSX.IntrinsicElements)[];
+  multiLine?: boolean;
   showHtmlSource?: boolean;
   toolbar?: readonly ToolbarButton[];
 }

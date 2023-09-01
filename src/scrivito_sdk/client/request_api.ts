@@ -1,15 +1,14 @@
-import { RawResponse, RequestFailedError } from 'scrivito_sdk/client';
-import { ClientError } from 'scrivito_sdk/client/client_error';
 import {
-  getJrRestApiEndpoint,
-  isJrRestApiConfiguredForUi,
-} from 'scrivito_sdk/client/jr_rest_api';
+  RawResponse,
+  RequestFailedError,
+  retryOnRequestFailed,
+} from 'scrivito_sdk/client';
+import { ClientError } from 'scrivito_sdk/client/client_error';
+import { getJrRestApiEndpoint } from 'scrivito_sdk/client/jr_rest_api';
+import { isLoginRedirectEnabled } from 'scrivito_sdk/client/login_redirect';
 import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
 import { parseResponse } from 'scrivito_sdk/client/parse_response';
-import {
-  requestWithRateLimitRetry,
-  retryOnRequestFailed,
-} from 'scrivito_sdk/client/retry';
+import { requestWithRateLimitRetry } from 'scrivito_sdk/client/retry';
 import { currentHref, never, redirectTo } from 'scrivito_sdk/common';
 
 export const USER_IS_LOGGED_IN_PARAM_NAME = '__scrivitoUserIsLoggedIn';
@@ -51,12 +50,12 @@ async function requestAndHandleMissingAuth(
     if (code === 'auth_missing') {
       if (!isAuthMissingDetails(details)) throw new RequestFailedError();
 
-      if (isJrRestApiConfiguredForUi() || !withLoginRedirect) {
-        throw new ClientError('Unauthorized', code, details);
-      } else {
+      if (isLoginRedirectEnabled() && withLoginRedirect) {
         redirectTo(await authenticationUrlFor(details.visit));
         return never();
       }
+
+      throw new ClientError('Unauthorized', code, details);
     }
   }
 

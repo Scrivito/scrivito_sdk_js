@@ -42,8 +42,6 @@ export class EmptyDataScope extends DataScope {
 
   /** @internal */
   toPojo(): EmptyDataScopePojo {
-    return {
-      dataClass: null,
-    };
+    return { _class: null };
   }
 }

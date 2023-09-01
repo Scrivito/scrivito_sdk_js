@@ -89,8 +89,19 @@ export function getAttributeEditingOptionsFor(
   const options = attribute ? attribute.options : undefined;
 
   if (!options) return;
-  if (attributeType === 'html') return options;
-  nextTick(() => throwInvalidOptions(options));
+  let invalidOptions = options;
+
+  if (attributeType === 'html') {
+    const { allowedTags, showHtmlSource, toolbar, ...rest } = options;
+    invalidOptions = rest;
+  } else if (attributeType === 'string') {
+    const { multiLine, ...rest } = options;
+    invalidOptions = rest;
+  }
+
+  if (Object.keys(invalidOptions).length === 0) return options;
+
+  nextTick(() => throwInvalidOptions(invalidOptions));
 }
 
 const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
@@ -190,6 +201,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
       options: t.maybe(
         t.interface({
           allowedTags: t.maybe(t.list(t.String)),
+          multiLine: t.maybe(t.Boolean),
           toolbar: t.maybe(HtmlToolbarButtonsType),
           showHtmlSource: t.maybe(t.Boolean),
         })

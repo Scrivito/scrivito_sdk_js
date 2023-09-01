@@ -25,10 +25,7 @@ export {
   allExternalDataClasses,
 } from 'scrivito_sdk/data_integration/external_data_class';
 export { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
-export type {
-  ReadOnlyDataConnection,
-  ReadWriteDataConnection,
-} from 'scrivito_sdk/data_integration/external_data_connection';
+export type { DataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 export {
   assertValidDataIdentifier,
   isValidDataIdentifier,
@@ -53,7 +50,6 @@ export {
   replacePlaceholdersWithData,
 } from 'scrivito_sdk/data_integration/placeholder_replacement';
 export { disableExternalDataLoading } from 'scrivito_sdk/data_integration/disable_external_data_loading';
-export { objsFromDataLocator } from 'scrivito_sdk/data_integration/objs_from_data_locator';
 export { getGlobalDataItems } from 'scrivito_sdk/data_integration/global_data';
 export {
   dataScopeFromPojo,

@@ -1,5 +1,6 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 
+/** @public */
 export type DataIdentifier = string;
 
 export function assertValidDataIdentifier(

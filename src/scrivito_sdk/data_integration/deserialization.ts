@@ -8,7 +8,7 @@ import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 
 export function dataScopeFromPojo({
-  dataClass,
+  _class: dataClass,
   ...dataScopeParams
 }: DataScopePojo): DataScope {
   return dataClass

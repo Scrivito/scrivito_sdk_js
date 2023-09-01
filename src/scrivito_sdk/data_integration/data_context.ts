@@ -7,7 +7,10 @@ import {
   underscore,
 } from 'scrivito_sdk/common';
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
-import { DataItemPojo } from 'scrivito_sdk/data_integration/data_class';
+import {
+  DataItemPojo,
+  DataScopePojo,
+} from 'scrivito_sdk/data_integration/data_class';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
   DataIdentifier,
@@ -15,7 +18,9 @@ import {
 } from 'scrivito_sdk/data_integration/data_identifier';
 import {
   DataStack,
+  DataStackElement,
   isDataItemPojo,
+  isDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_stack';
 import {
   ExternalData,
@@ -82,33 +87,26 @@ export function getDataContextParameters(
   objOrLink: BasicObj | BasicLink,
   dataStack: DataStack
 ): DataContextParameters | undefined {
-  const obj = getObj(objOrLink);
-  if (!obj) return;
+  if (dataStack.length === 0) return;
 
-  const objDataClass = obj.dataClass();
-  if (!objDataClass) return;
+  const target = getObj(objOrLink);
+  if (!target) return;
 
-  const stackElement = findMatchingItemElement(objDataClass, dataStack);
-  let params = dataContextParamsForElement(stackElement, objDataClass);
+  let params: DataContextParameters = {};
 
-  if (dataStack.length > 0) {
-    obj.ancestors().forEach((ancestor) => {
-      const ancestorDataClass = ancestor?.dataClass();
-      if (!ancestorDataClass) return;
+  [target, ...target.ancestors()].forEach((obj) => {
+    const dataClass = obj?.dataClass();
+    if (!dataClass) return;
 
-      const ancestorItemElement = findMatchingItemElementInDataStack(
-        ancestorDataClass,
-        dataStack
-      );
+    const itemElement = findItemInDataStack(dataClass, dataStack);
 
-      params = {
-        ...params,
-        ...dataContextParamsForElement(ancestorItemElement, ancestorDataClass),
-      };
-    });
-  }
+    params = {
+      ...params,
+      ...dataContextParamsForElement(itemElement, dataClass),
+    };
+  });
 
-  return params;
+  if (Object.keys(params).length > 0) return params;
 }
 
 function dataContextParamsForElement(
@@ -122,25 +120,43 @@ function dataContextParamsForElement(
   }
 }
 
-export function findMatchingItemElement(
+export function findItemInDataStackAndGlobalData(
   dataClassName: string,
   dataStack: DataStack
 ): DataItemPojo | undefined {
   return (
-    findMatchingItemElementInDataStack(dataClassName, dataStack) ||
-    findMatchingItemElementInGlobalData(dataClassName)
+    findItemInDataStack(dataClassName, dataStack) ||
+    findItemInGlobalData(dataClassName)
   );
 }
 
-function findMatchingItemElementInDataStack(
+export function findScopeInDataStackAndGlobalData(
   dataClassName: string,
   dataStack: DataStack
+): DataScopePojo | undefined {
+  return (
+    findInDataStack(dataClassName, dataStack, isDataScopePojo) ||
+    findScopeInGlobalData(dataClassName)
+  );
+}
+
+function findItemInDataStack(
+  dataClassName: string,
+  dataStack: DataStack
+): DataItemPojo | undefined {
+  return findInDataStack(dataClassName, dataStack, isDataItemPojo);
+}
+
+function findInDataStack<T extends DataStackElement>(
+  dataClassName: string,
+  dataStack: DataStack,
+  matcher: (element: DataStackElement) => element is T
 ) {
-  const itemElements = dataStack.filter(isDataItemPojo);
+  const itemElements = dataStack.filter(matcher);
   return itemElements.find((element) => element._class === dataClassName);
 }
 
-function findMatchingItemElementInGlobalData(dataClassName: string) {
+function findItemInGlobalData(dataClassName: string) {
   const defaultItemId = getDefaultItemIdForDataClass(dataClassName);
 
   if (defaultItemId) {
@@ -148,6 +164,15 @@ function findMatchingItemElementInGlobalData(dataClassName: string) {
       _class: dataClassName,
       _id: defaultItemId,
     };
+  }
+}
+
+function findScopeInGlobalData(dataClassName: string) {
+  const item = findItemInGlobalData(dataClassName);
+
+  if (item) {
+    const { _class, _id } = item;
+    return { _class, filters: { _id } };
   }
 }
 

@@ -24,6 +24,7 @@ import {
 } from 'scrivito_sdk/data_integration/external_data';
 import {
   assertValidResultItem,
+  autocorrectResultItemId,
   getExternalDataConnection,
   getExternalDataConnectionNames,
 } from 'scrivito_sdk/data_integration/external_data_connection';
@@ -96,11 +97,12 @@ export class ExternalDataScope extends DataScope {
 
     const createCallback = this.getCreateCallback();
     const dataForCallback = { ...attributes, ...filters };
-    const result = await createCallback(dataForCallback);
-    assertValidResultItem(result);
+    const resultItem = await createCallback(dataForCallback);
+    assertValidResultItem(resultItem);
 
     const dataClassName = this.dataClassName();
-    const { _id: id, ...dataFromCallback } = result;
+    const { _id: id, ...dataFromCallback } =
+      autocorrectResultItemId(resultItem);
 
     setExternalData(
       dataClassName,
@@ -114,23 +116,27 @@ export class ExternalDataScope extends DataScope {
   }
 
   get(id: string): DataItem | null {
-    const dataItem = this._dataClass.get(id);
-    if (!dataItem) return null;
+    const { filters, search } = this._params;
 
-    const { filters } = this._params;
-    if (!filters) return dataItem;
+    if (!search && !filters) return this._dataClass.get(id);
 
-    const hasConflict = Object.keys(filters).some((attributeName) => {
-      const dataItemValue = dataItem.get(attributeName);
-      const filterValue = filters[attributeName];
+    const scopeId = this.getScopeId();
 
-      return dataItemValue !== filterValue;
-    });
+    if (scopeId) {
+      return scopeId === id ? this._dataClass.get(id) : null;
+    }
 
-    return hasConflict ? null : dataItem;
+    return this.transform({ filters: { _id: id }, limit: 1 }).take()[0];
   }
 
   take(): DataItem[] {
+    const scopeId = this.getScopeId();
+
+    if (scopeId) {
+      const item = this.get(scopeId);
+      return item ? [item] : [];
+    }
+
     return extractFromIterator(
       this.getIterator(),
       this._params.limit ?? DEFAULT_LIMIT
@@ -153,7 +159,7 @@ export class ExternalDataScope extends DataScope {
   /** @internal */
   toPojo(): PresentDataScopePojo {
     return {
-      dataClass: this.dataClassName(),
+      _class: this.dataClassName(),
       ...this._params,
     };
   }
@@ -191,6 +197,14 @@ export class ExternalDataScope extends DataScope {
         `Cannot create a ${this.dataClassName()} from a scope that includes "_id" in its filters`
       );
     }
+  }
+
+  private getScopeId() {
+    const { filters, search } = this._params;
+    const hasOnlyIdFilter =
+      filters && Object.keys(filters).length === 1 && filters._id;
+
+    return !search && hasOnlyIdFilter && filters._id;
   }
 }
 

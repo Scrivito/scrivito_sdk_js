@@ -11,6 +11,7 @@ import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/dis
 import { getExternalDataConnectionOrThrow } from 'scrivito_sdk/data_integration/external_data_connection';
 import { LoadableCollection } from 'scrivito_sdk/loadable';
 
+/** @public */
 export type ExternalData = Record<DataIdentifier, unknown>;
 
 export function setExternalData(
@@ -18,8 +19,7 @@ export function setExternalData(
   dataId: string,
   data: unknown
 ): void {
-  assertExternalData(data, dataClass);
-  loadableCollection.get([dataClass, dataId]).set(data);
+  loadableCollection.get([dataClass, dataId]).set(handleExternalData(data));
 }
 
 export function getExternalData(
@@ -51,28 +51,28 @@ const loadableCollection = new LoadableCollection<
         throw error;
       }
 
-      assertExternalData(unknownValue, dataClass);
-
-      return unknownValue;
+      return handleExternalData(unknownValue);
     },
   }),
 });
 
-function assertExternalData(
-  data: unknown,
-  dataClass: string
-): asserts data is ExternalData {
-  if (data === null) return;
+function handleExternalData(data: unknown) {
+  if (data === null) return null;
+  if (isExternalData(data)) return filterValidDataIdentifiers(data);
 
-  if (!isObject(data)) {
-    throw new ArgumentError(
-      `"GetCallback" of the connection of the data class ${dataClass} returned neither an object nor null`
-    );
-  }
+  throw new ArgumentError('External data must be an object or null');
+}
 
-  Object.keys(data as Object).forEach((key) => {
-    if (!isValidDataIdentifier(key)) {
-      throw new ArgumentError(`Invalid data identifier ${key}`);
-    }
+function isExternalData(data: unknown): data is ExternalData {
+  return isObject(data) && typeof data !== 'function' && !Array.isArray(data);
+}
+
+function filterValidDataIdentifiers(data: ExternalData) {
+  const filteredData: ExternalData = {};
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (isValidDataIdentifier(key)) filteredData[key] = value;
   });
+
+  return filteredData;
 }

@@ -1,36 +1,35 @@
-import { isEmpty, isObject } from 'underscore';
+import { isObject } from 'underscore';
 
 import { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
-import { assertValidDataItemAttributes } from 'scrivito_sdk/data_integration/data_class';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { createStateContainer } from 'scrivito_sdk/state';
 
 /** @public */
-export interface ReadOnlyDataConnection {
+export interface DataConnection {
   index?: IndexCallback;
   get: GetCallback;
+  create?: CreateCallback;
+  update?: UpdateCallback;
+  delete?: DeleteCallback;
 }
 
 /** @public */
 export type IndexCallback = (params: IndexParams) => Promise<IndexResult>;
 /** @public */
 export type GetCallback = (id: string) => Promise<unknown | null>;
-
-/** @beta */
-export interface ReadWriteDataConnection extends ReadOnlyDataConnection {
-  create?: CreateCallback;
-  update?: UpdateCallback;
-  delete?: DeleteCallback;
-}
-
-/** @beta */
+/** @public */
 export type CreateCallback = (data: ExternalData) => Promise<ResultItem>;
-/** @beta */
-export type UpdateCallback = (id: string, data: ExternalData) => Promise<void>;
-/** @beta */
-export type DeleteCallback = (id: string) => Promise<void>;
+
+/** @public */
+export type UpdateCallback = (
+  id: string,
+  data: ExternalData
+) => Promise<unknown>;
+
+/** @public */
+export type DeleteCallback = (id: string) => Promise<unknown>;
 
 /** @public */
 export interface IndexResult {
@@ -39,7 +38,14 @@ export interface IndexResult {
 }
 
 /** @public */
-export interface ResultItem extends ResultItemData {
+export type ResultItem = ResultItemConvenienceId | ResultItemWithId;
+
+interface ResultItemConvenienceId extends ResultItemData {
+  _id?: undefined;
+  id: DataId;
+}
+
+interface ResultItemWithId extends ResultItemData {
   _id: DataId;
 }
 
@@ -54,23 +60,35 @@ export function assertValidResultItem(
     throw new ArgumentError('A result item must be an object');
   }
 
-  const { _id: id, ...data } = resultItem as ResultItem;
+  const { _id: id } = autocorrectResultItemId(resultItem as ResultItem);
 
   if (!isValidDataId(id)) {
     throw new ArgumentError(
       '"id" key of a result object must contain a valid data ID'
     );
   }
-
-  if (!isEmpty(data)) assertValidDataItemAttributes(data);
 }
 
-const connectionsState =
-  createStateContainer<Record<string, ReadWriteDataConnection>>();
+export function autocorrectResultItemId(
+  resultItem: ResultItem
+): ResultItemWithId {
+  if (isResultItemWithId(resultItem)) return resultItem;
+
+  const { id, ...rest } = resultItem;
+  return { _id: id, ...rest };
+}
+
+function isResultItemWithId(
+  resultItem: ResultItem
+): resultItem is ResultItemWithId {
+  return typeof resultItem._id === 'string';
+}
+
+const connectionsState = createStateContainer<Record<string, DataConnection>>();
 
 export function setExternalDataConnection(
   name: string,
-  connection: ReadWriteDataConnection
+  connection: DataConnection
 ): void {
   connectionsState.set({
     ...connectionsState.get(),
@@ -80,7 +98,7 @@ export function setExternalDataConnection(
 
 export function getExternalDataConnection(
   name: string
-): ReadWriteDataConnection | undefined {
+): DataConnection | undefined {
   const connections = connectionsState.get();
   if (connections) return connections[name];
 }
@@ -90,9 +108,7 @@ export function getExternalDataConnectionNames(): string[] {
   return connections ? Object.keys(connections) : [];
 }
 
-export function getExternalDataConnectionOrThrow(
-  name: string
-): ReadWriteDataConnection {
+export function getExternalDataConnectionOrThrow(name: string): DataConnection {
   const connection = getExternalDataConnection(name);
 
   if (!connection) {

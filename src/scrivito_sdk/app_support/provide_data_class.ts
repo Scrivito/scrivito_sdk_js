@@ -1,8 +1,7 @@
 import {
   DataClass,
+  DataConnection,
   ExternalDataClass,
-  ReadOnlyDataConnection,
-  ReadWriteDataConnection,
   assertValidDataIdentifier,
   setExternalDataConnection,
 } from 'scrivito_sdk/data_integration';
@@ -11,19 +10,13 @@ import { checkProvideDataClass } from 'scrivito_sdk/realm';
 /** @public */
 export function provideDataClass(
   name: string,
-  dataClass: { connection: ReadOnlyDataConnection }
-): DataClass;
-
-/** @beta */
-export function provideDataClass(
-  name: string,
-  dataClass: { connection: ReadWriteDataConnection }
+  dataClass: { connection: DataConnection }
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  dataClass: { connection: ReadOnlyDataConnection | ReadWriteDataConnection },
+  dataClass: { connection: DataConnection },
   ...excessArgs: never[]
 ): DataClass {
   checkProvideDataClass(name, dataClass, ...excessArgs);

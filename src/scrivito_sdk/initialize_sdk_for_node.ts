@@ -4,7 +4,11 @@ import { setOriginProvider } from 'scrivito_sdk/app_support/current_origin';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setHtmlToTextConverter } from 'scrivito_sdk/app_support/extract_text/remove_html_tags';
 import { initialContentFor } from 'scrivito_sdk/app_support/initialize_content';
-import { useDefaultPriority, useXmlHttpRequest } from 'scrivito_sdk/client';
+import {
+  disableLoginRedirect,
+  useDefaultPriority,
+  useXmlHttpRequest,
+} from 'scrivito_sdk/client';
 import {
   ObjBackendReplication,
   useReplicationStrategy,
@@ -23,4 +27,5 @@ export function initializeSdk() {
   useDefaultPriority('background');
   setInitialContentFor(initialContentFor);
   setApiKeyAuthorizationProviderClass(ApiKeyAuthorizationProvider);
+  disableLoginRedirect();
 }

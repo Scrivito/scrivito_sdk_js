@@ -22,6 +22,7 @@ import {
   ResultItem,
   ResultItemData,
   assertValidResultItem,
+  autocorrectResultItemId,
   getExternalDataConnectionOrThrow,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
@@ -41,7 +42,7 @@ const batchCollection = new IdBatchCollection({
 });
 
 export function getExternalDataQuery({
-  dataClass,
+  _class: dataClass,
   filters,
   search,
   order,
@@ -130,14 +131,8 @@ function handleResults(results: unknown[], dataClass: string) {
       return handleDataId(dataClass, idOrItem);
     }
 
-    if (isObject(idOrItem)) {
-      assertValidResultItem(idOrItem);
-      return handleResultItem(dataClass, idOrItem);
-    }
-
-    throw new ArgumentError(
-      'Results of an index result must contain either strings or objects'
-    );
+    assertValidResultItem(idOrItem);
+    return handleResultItem(dataClass, idOrItem);
   });
 }
 
@@ -155,7 +150,7 @@ function handleDataId(dataClass: string, dataId: string) {
 }
 
 function handleResultItem(dataClass: string, resultItem: ResultItem) {
-  const { _id: id, ...data } = resultItem;
+  const { _id: id, ...data } = autocorrectResultItemId(resultItem);
   setExternalData(dataClass, id, data);
 
   return id;
@@ -208,6 +203,6 @@ function toDataResult(
     return { id: idOrItem, data: getExternalData(dataClass, idOrItem) };
   }
 
-  const { _id: id, ...data } = idOrItem;
+  const { _id: id, ...data } = autocorrectResultItemId(idOrItem);
   return { id, data };
 }

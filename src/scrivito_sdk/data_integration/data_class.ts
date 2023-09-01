@@ -7,8 +7,6 @@ import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
 /** @public */
 export abstract class DataClass {
   /** @beta */
-  abstract name(): string;
-  /** @beta */
   abstract create(attributes: DataItemAttributes): Promise<DataItem>;
   /** @beta */
   abstract all(): DataScope;
@@ -16,6 +14,9 @@ export abstract class DataClass {
   abstract get(id: string): DataItem | null;
   /** @beta */
   abstract getUnchecked(id: string): DataItem;
+
+  /** @public */
+  abstract name(): string;
 }
 
 /** @public */
@@ -23,10 +24,10 @@ export abstract class DataScope {
   /** @beta */
   abstract dataClass(): DataClass | null;
   /** @beta */
-  abstract create(attributes: DataItemAttributes): Promise<DataItem>;
-  /** @beta */
   abstract get(id: string): DataItem | null;
 
+  /** @public */
+  abstract create(attributes: DataItemAttributes): Promise<DataItem>;
   /** @public */
   abstract take(): DataItem[];
   /** @public */
@@ -48,6 +49,7 @@ export abstract class DataScope {
   abstract toPojo(): DataScopePojo;
 }
 
+/** @public */
 export type DataItemAttributes = Record<string, unknown>;
 
 /** @public */
@@ -67,8 +69,8 @@ export const DEFAULT_LIMIT = 20;
 export type OrderSpec = Array<[string, 'asc' | 'desc']>;
 
 export type DataScopePojo = PresentDataScopePojo | EmptyDataScopePojo;
-export type PresentDataScopePojo = { dataClass: string } & DataScopeParams;
-export type EmptyDataScopePojo = { dataClass: null };
+export type PresentDataScopePojo = { _class: string } & DataScopeParams;
+export type EmptyDataScopePojo = { _class: null };
 
 export interface DataItemPojo {
   _id: string;
@@ -77,19 +79,17 @@ export interface DataItemPojo {
 
 /** @public */
 export abstract class DataItem {
-  /** @beta */
+  /** @public */
   abstract id(): string;
-  /** @beta */
+  /** @public */
   abstract dataClass(): DataClass;
   /** @public */
   abstract obj(): Obj | undefined;
-
   /** @public */
   abstract get(attributeName: string): unknown;
-
-  /** @beta */
+  /** @public */
   abstract update(attributes: DataItemAttributes): Promise<void>;
-  /** @beta */
+  /** @public */
   abstract destroy(): Promise<void>;
 }
 

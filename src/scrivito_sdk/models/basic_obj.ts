@@ -102,6 +102,7 @@ export interface SerializedObjAttributes {
   _obj_class: string;
   _restriction?: [string] | null;
   _language?: string | null;
+  _data_param?: [string] | null;
 }
 
 export class BasicObj implements ContentValueProvider {
@@ -267,6 +268,10 @@ export class BasicObj implements ContentValueProvider {
 
   dataClass(): string | null {
     return this.get('dataClass', 'string') || null;
+  }
+
+  dataParam(): [string] | null {
+    return this.getAttributeData('_data_param') ?? null;
   }
 
   get<Type extends AttributeType>(

@@ -9,6 +9,7 @@ import {
   getJrRestApiUrl,
 } from 'scrivito_sdk/client';
 import {
+  ScrivitoPromise,
   currentHref,
   redirectTo,
   reload,
@@ -81,10 +82,21 @@ function isUserLoggedInCached() {
 }
 
 async function verifyUserIsLoggedIn() {
-  if ((await load(currentUser)) === null) {
+  const user = await ScrivitoPromise.race([
+    load(currentUser),
+    timeoutAfter30Seconds(),
+  ]);
+
+  if (user === null) {
     removeFlagFromLocalStorage();
     reload();
   }
+}
+
+function timeoutAfter30Seconds() {
+  return new ScrivitoPromise((resolve) =>
+    setTimeout(() => resolve(null), 30000)
+  );
 }
 
 function setFlagInLocalStorage() {

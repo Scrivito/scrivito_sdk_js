@@ -1,27 +1,24 @@
 // @rewire
 
 import {
+  AuthorizationProvider,
   requestApiIdempotent,
   requestApiNonIdempotent,
 } from 'scrivito_sdk/client';
 import { fetchToRawResponse } from 'scrivito_sdk/client/fetch_to_raw_response';
 import { Deferred } from 'scrivito_sdk/common';
 
-export type TokenProvider = () => Promise<string | undefined>;
+let authProvider: AuthorizationProvider | undefined;
 
-let tokenProvider: TokenProvider | undefined;
-
-export function setJrRestApiTokenProvider(provider: TokenProvider): void {
-  tokenProvider = provider;
+export function setJrRestApiAuthProvider(
+  provider: AuthorizationProvider
+): void {
+  authProvider = provider;
 }
 
 // For test purpose only
-export function getJrRestApiTokenProvider(): TokenProvider | undefined {
-  return tokenProvider;
-}
-
-export function isJrRestApiConfiguredForUi(): boolean {
-  return !!tokenProvider;
+export function getJrRestApiAuthProvider(): AuthorizationProvider | undefined {
+  return authProvider;
 }
 
 let endpointDeferred = new Deferred<string>();
@@ -40,7 +37,7 @@ export async function getJrRestApiUrl(path: string): Promise<string> {
 
 // For test purpose only.
 export function resetJrRestApi(): void {
-  tokenProvider = undefined;
+  authProvider = undefined;
   endpointDeferred = new Deferred();
 }
 
@@ -50,7 +47,7 @@ interface Options {
 }
 
 interface Params {
-  [name: string]: string;
+  [name: string]: string | null | undefined;
 }
 
 interface Data {
@@ -91,92 +88,93 @@ function fetch(
   );
 }
 
-async function get(path: string, options?: Options): Promise<unknown> {
-  const url = await calculateRequestUrl(path, options?.params);
-  const fetchOptions = await calculateOptions();
-
-  return requestApiIdempotent(() =>
-    fetchToRawResponse(url, { method: 'GET', ...fetchOptions })
-  );
+async function get(
+  path: string,
+  options?: Options,
+  withLoginRedirect = true
+): Promise<unknown> {
+  return request('GET', path, options, withLoginRedirect);
 }
 
 export async function getWithoutLoginRedirect(
   path: string,
   options?: Options
 ): Promise<unknown> {
-  const url = await calculateRequestUrl(path, options?.params);
-  const fetchOptions = await calculateOptions();
-
-  return requestApiIdempotent(
-    () => fetchToRawResponse(url, { method: 'GET', ...fetchOptions }),
-    false
-  );
+  return get(path, options, false);
 }
 
 async function post(path: string, options?: Options): Promise<unknown> {
-  const url = await calculateRequestUrl(path, options?.params);
-  const fetchOptions = await calculateOptionsWithData(options?.data);
-
-  return requestApiNonIdempotent(() =>
-    fetchToRawResponse(url, { method: 'POST', ...fetchOptions })
-  );
+  return request('POST', path, options);
 }
 
 async function put(path: string, options?: Options): Promise<unknown> {
-  return requestIdempotentWithData('PUT', path, options);
+  return request('PUT', path, options);
 }
 
 async function patch(path: string, options?: Options): Promise<unknown> {
-  return requestIdempotentWithData('PATCH', path, options);
+  return request('PATCH', path, options);
 }
 
 async function _delete(path: string, options?: Options): Promise<unknown> {
-  return requestIdempotentWithData('DELETE', path, options);
+  return request('DELETE', path, options);
 }
 
-async function requestIdempotentWithData(
-  method: string,
+async function request(
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
-  options?: Options
+  options?: Options,
+  withLoginRedirect = true
 ) {
-  const url = await calculateRequestUrl(path, options?.params);
-  const fetchOptions = await calculateOptionsWithData(options?.data);
+  const plainRequest = async (authorization?: string) =>
+    fetchToRawResponse(
+      await calculateRequestUrl(path, options?.params),
+      calculateOptions(method, options?.data, authorization)
+    );
 
-  return requestApiIdempotent(() =>
-    fetchToRawResponse(url, { method, ...fetchOptions })
-  );
+  const currentAuthProvider = authProvider;
+
+  const doRequest = currentAuthProvider
+    ? () => currentAuthProvider.authorize(plainRequest)
+    : () => plainRequest();
+
+  return method === 'POST'
+    ? requestApiNonIdempotent(doRequest, withLoginRedirect)
+    : requestApiIdempotent(doRequest, withLoginRedirect);
 }
 
-async function calculateRequestUrl(path: string, params: Params | undefined) {
+async function calculateRequestUrl(path: string, params?: Params) {
   const apiUrl = new URL(await getJrRestApiUrl(path));
 
   if (params) {
     for (const [name, value] of Object.entries(params)) {
-      apiUrl.searchParams.append(name, value);
+      if (typeof value === 'string') {
+        apiUrl.searchParams.append(name, value);
+      }
     }
   }
 
   return apiUrl.toString();
 }
 
-async function calculateOptions(headers: Record<string, string> = {}) {
-  if (tokenProvider) {
-    const token = await tokenProvider();
+function calculateOptions(
+  method: string,
+  data?: Data,
+  authorization?: string
+): RequestInit {
+  const headers: Record<string, string> = {};
 
-    if (token !== undefined) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+  if (data) {
+    headers['Content-Type'] = 'application/json; charset=utf-8';
   }
 
-  const options: RequestInit = { credentials: 'include', headers };
+  if (authorization) {
+    headers.Authorization = authorization;
+  }
 
-  return options;
-}
-
-async function calculateOptionsWithData(data: Data | undefined) {
-  const options = await calculateOptions({
-    'Content-Type': 'application/json; charset=utf-8',
-  });
-
-  return data ? { body: JSON.stringify(data), ...options } : options;
+  return {
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: 'include',
+    headers,
+    method,
+  };
 }

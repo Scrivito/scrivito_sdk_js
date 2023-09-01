@@ -1,6 +1,6 @@
 import {
   DataContext,
-  findMatchingItemElement,
+  findItemInDataStackAndGlobalData,
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
 import { DataStack } from 'scrivito_sdk/data_integration/data_stack';
@@ -50,7 +50,10 @@ function replaceQualifiedPlaceholder(
   placeholder: string,
   dataStack: DataStack = []
 ) {
-  const itemElement = findMatchingItemElement(dataClassName, dataStack);
+  const itemElement = findItemInDataStackAndGlobalData(
+    dataClassName,
+    dataStack
+  );
   if (!itemElement) return '';
 
   const dataClass = getDataClass(dataClassName);

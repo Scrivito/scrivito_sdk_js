@@ -16,6 +16,10 @@ export function notifyScrollWindow(navigationState: NavigationState) {
 }
 
 function shouldScroll(currentNavigationState: NavigationState): boolean {
+  if (currentNavigationState.historyState.historyChangesCount === 0) {
+    return false;
+  }
+
   if (currentNavigationState.historyState.isRevisit) return false;
 
   const hasFragment =

@@ -93,6 +93,8 @@ interface SystemAttributeDict {
 
   _path: string | [string];
   _permalink: string | [string];
+
+  _data_param: [string] | null;
 }
 
 export type SystemAttributeValue =

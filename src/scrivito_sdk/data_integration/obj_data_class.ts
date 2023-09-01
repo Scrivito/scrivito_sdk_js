@@ -128,7 +128,7 @@ export class ObjDataScope extends DataScope {
   /** @internal */
   toPojo(): PresentDataScopePojo {
     return {
-      dataClass: this._dataClass.name(),
+      _class: this._dataClass.name(),
       ...this._params,
     };
   }

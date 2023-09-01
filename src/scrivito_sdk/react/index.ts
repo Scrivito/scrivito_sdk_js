@@ -32,6 +32,7 @@ export { memo, propsAreEqual } from 'scrivito_sdk/react/memo';
 export { useDataItem } from 'scrivito_sdk/react/use_data_item';
 export { useDataLocator } from 'scrivito_sdk/react/use_data_locator';
 export { useDataScope } from 'scrivito_sdk/react/use_data_scope';
+export { useUrlFor } from 'scrivito_sdk/react/use_url_for';
 export type {
   CustomPageComponentProps,
   CustomWidgetComponentProps,

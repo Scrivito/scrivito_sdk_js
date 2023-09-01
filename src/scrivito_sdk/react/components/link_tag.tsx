@@ -16,6 +16,7 @@ import {
   isSinglePlaceholder,
   replacePlaceholdersWithData,
 } from 'scrivito_sdk/data_integration';
+import { load } from 'scrivito_sdk/loadable';
 import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react/connect';
 import {
@@ -76,7 +77,7 @@ export const LinkTag = connect(function LinkTag(props: {
     }
   }
 
-  function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
+  async function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (props.onClick) {
       props.onClick(e);
 
@@ -85,7 +86,7 @@ export const LinkTag = connect(function LinkTag(props: {
 
     e.preventDefault();
 
-    const destination = getDestination();
+    const destination = await load(getDestination);
     if (!destination) return;
 
     const target = getTarget();

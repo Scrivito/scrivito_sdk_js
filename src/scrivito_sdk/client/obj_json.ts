@@ -57,6 +57,8 @@ export interface ObjSystemAttributeJson extends Partial<ObjReplicationJson> {
   _published_by?: string | null;
   _created_at?: string;
   _created_by?: string;
+
+  _data_param?: [string] | null;
 }
 
 interface ObjReplicationJson {
@@ -121,11 +123,22 @@ export interface BinaryJson {
 export type OrderByItem = [string, OrderDirection];
 export type OrderDirection = 'asc' | 'desc';
 
-export interface DataLocatorJson {
+export type DataLocatorJson = DataLocatorDefinition | DataLocatorReference;
+
+export interface DataLocatorDefinition {
   class: string;
+  via_ref?: undefined;
   query?: DataLocatorQuery;
   order_by?: OrderByItem[];
   size?: number;
+}
+
+export interface DataLocatorReference {
+  class: string;
+  via_ref: true;
+  query?: undefined;
+  order_by?: undefined;
+  size?: undefined;
 }
 
 export type DataLocatorQuery = DataLocatorFilter[];

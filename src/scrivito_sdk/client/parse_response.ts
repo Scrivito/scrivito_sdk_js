@@ -10,6 +10,7 @@ export class AccessDeniedError extends ClientError {}
 /** return the parsed JSON for a successful response, or throw an error */
 export async function parseResponse({ httpStatus, responseText }: RawResponse) {
   if (httpStatus >= 200 && httpStatus < 300) {
+    if (!responseText.length) return null;
     return parseOrThrowRequestFailedError(responseText);
   }
 

@@ -1,5 +1,5 @@
 import { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
-import { JSONArray, cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
+import { cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
 import { asBackendObjSpaceId } from 'scrivito_sdk/client/obj_space_id';
 import { BatchRetrieval } from 'scrivito_sdk/common';
 import { TransformationDefinition } from 'scrivito_sdk/models';
@@ -46,7 +46,7 @@ const batchRetrieval = new BatchRetrieval<BinaryRequest, BackendBinaryData>(
   (blobs) =>
     cmsRestApi
       .get('blobs/mget', { blobs })
-      .then(({ results }: { results: JSONArray }) =>
+      .then(({ results }: { results: Array<unknown> }) =>
         results.map((result) => result as unknown as BackendBinaryData)
       )
 );

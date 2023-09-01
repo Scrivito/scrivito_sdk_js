@@ -5,15 +5,24 @@ import {
   DataLocatorValueViaFilter,
 } from 'scrivito_sdk/client';
 import { DataScope } from 'scrivito_sdk/data_integration/data_class';
-import { findMatchingItemElement } from 'scrivito_sdk/data_integration/data_context';
+import {
+  findItemInDataStackAndGlobalData,
+  findScopeInDataStackAndGlobalData,
+} from 'scrivito_sdk/data_integration/data_context';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
   DataLocator,
   isDataLocatorValueFilter,
 } from 'scrivito_sdk/data_integration/data_locator';
 import { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
-import { DataStack } from 'scrivito_sdk/data_integration/data_stack';
-import { dataItemFromPojo } from 'scrivito_sdk/data_integration/deserialization';
+import {
+  DataStack,
+  isDataScopePojo,
+} from 'scrivito_sdk/data_integration/data_stack';
+import {
+  dataItemFromPojo,
+  dataScopeFromPojo,
+} from 'scrivito_sdk/data_integration/deserialization';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 
@@ -26,6 +35,16 @@ export function applyDataLocator(
   const className = dataLocator.class();
   if (className === null) return new EmptyDataScope();
 
+  return dataLocator.viaRef()
+    ? findMatchingDataScopeOrThrow(className, dataStack)
+    : applyDataLocatorDefinition(className, dataStack, dataLocator);
+}
+
+function applyDataLocatorDefinition(
+  className: string,
+  dataStack: DataStack | undefined,
+  dataLocator: DataLocator
+): DataScope {
   let dataScope = getDataClassOrThrow(className).all();
 
   const query = dataLocator.query();
@@ -117,6 +136,16 @@ function findMatchingDataItemOrThrow(
   return dataItem;
 }
 
+function findMatchingDataScopeOrThrow(
+  className: string,
+  dataStack: DataStack | undefined
+): DataScope {
+  const itemElement = findMatchingScopeElementOrThrow(className, dataStack);
+  if (isDataScopePojo(itemElement)) return dataScopeFromPojo(itemElement);
+
+  throw new DataLocatorError(`No ${className} scope found`);
+}
+
 function findMatchingItemElementOrThrow(
   dataClass: string,
   dataStack: DataStack | undefined
@@ -125,10 +154,27 @@ function findMatchingItemElementOrThrow(
     throw new DataLocatorError(`No ${dataClass} found`);
   }
 
-  const itemElement = findMatchingItemElement(dataClass, dataStack);
+  const itemElement = findItemInDataStackAndGlobalData(dataClass, dataStack);
 
   if (!itemElement) {
     throw new DataLocatorError(`No ${dataClass} item found`);
+  }
+
+  return itemElement;
+}
+
+function findMatchingScopeElementOrThrow(
+  dataClass: string,
+  dataStack: DataStack | undefined
+) {
+  if (!dataStack) {
+    throw new DataLocatorError(`No ${dataClass} found`);
+  }
+
+  const itemElement = findScopeInDataStackAndGlobalData(dataClass, dataStack);
+
+  if (!itemElement) {
+    throw new DataLocatorError(`No ${dataClass} scope found`);
   }
 
   return itemElement;

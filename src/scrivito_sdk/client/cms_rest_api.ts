@@ -22,10 +22,6 @@ export interface AuthorizationProvider {
   ) => Promise<RawResponse>;
 }
 
-type JSONValue = string | number | boolean | null | JSONArray;
-
-export type JSONArray = Array<JSONValue>;
-
 export type BackendResponse = unknown;
 
 type ParamsType = unknown;
