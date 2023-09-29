@@ -12,7 +12,9 @@ export async function fetchIamToken(apiKey: IamApiKey): Promise<String> {
         method: 'POST',
         headers: {
           Authorization: `Basic ${btoa(
-            `${apiKey.clientId}:${apiKey.clientSecret}`
+            `${encodeURIComponent(apiKey.clientId)}:${encodeURIComponent(
+              apiKey.clientSecret
+            )}`
           )}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
