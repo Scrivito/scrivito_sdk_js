@@ -1,6 +1,4 @@
 // @rewire
-import { isNumber } from 'underscore';
-
 import { RequestFailedError } from 'scrivito_sdk/client';
 import { getClientVersion } from 'scrivito_sdk/client/get_client_version';
 import { ScrivitoPromise } from 'scrivito_sdk/common';
@@ -115,7 +113,7 @@ function onAjaxLoad(
   connectionCounter -= 1;
 
   const status = request.status;
-  if (!status || !isNumber(status)) {
+  if (!status || typeof status !== 'number') {
     const message =
       `Unexpected response status: ${status};` +
       ` body: ${status === 0 ? request.statusText : request.responseText}`;

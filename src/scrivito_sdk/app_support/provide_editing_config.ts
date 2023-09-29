@@ -1,4 +1,4 @@
-import { uniq } from 'underscore';
+import uniqBy from 'lodash-es/uniqBy';
 
 import {
   AttributeEditingOptions,
@@ -293,5 +293,5 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
 
 function haveGroupsUniqueKey(groups: PropertyGroup[]) {
   const groupsWithKey = groups.filter((group) => !!group.key);
-  return uniq(groupsWithKey, 'key').length === groupsWithKey.length;
+  return uniqBy(groupsWithKey, 'key').length === groupsWithKey.length;
 }

@@ -1,5 +1,6 @@
 // @rewire
-import { contains, isEqual } from 'underscore';
+import isEqual from 'lodash-es/isEqual';
+
 import type {
   AttributeJson,
   HtmlAttributeJson,
@@ -23,7 +24,7 @@ export type AnyLinkResolutionAttributeJson =
 export function isAnyLinkResolutionAttributeJson(
   attributeData: AttributeJson
 ): attributeData is AnyLinkResolutionAttributeJson {
-  return contains(['html', 'link', 'linklist'], attributeData[0]);
+  return ['html', 'link', 'linklist'].includes(attributeData[0]);
 }
 
 export function runWorker(

@@ -1,9 +1,11 @@
-import { isElement, isFunction, isObject } from 'underscore';
+import isElement from 'lodash-es/isElement';
+import isObject from 'lodash-es/isObject';
+
 import { Obj } from 'scrivito_sdk/realm';
 
 export function prettyPrint(input: unknown): string {
   try {
-    if (isFunction(input)) {
+    if (typeof input === 'function') {
       return printFunction(input);
     }
 
@@ -20,12 +22,14 @@ export function prettyPrint(input: unknown): string {
 function printObject(object: {}): string {
   const basicContent = (object as Obj)._scrivitoPrivateContent;
 
-  if (basicContent && isFunction(basicContent.toPrettyPrint)) {
+  if (basicContent && typeof basicContent.toPrettyPrint === 'function') {
     return basicContent.toPrettyPrint();
   }
 
   if (isElement(object)) {
-    return `[object HTMLElement ${printTruncated(object.outerHTML)}]`;
+    return `[object HTMLElement ${printTruncated(
+      (<Element>object).outerHTML
+    )}]`;
   }
 
   return printTruncated(object);

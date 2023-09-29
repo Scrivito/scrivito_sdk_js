@@ -1,4 +1,3 @@
-import { isFinite } from 'underscore';
 import { InternalError } from 'scrivito_sdk/common';
 
 const INTEGER_RANGE_START = -9007199254740991;

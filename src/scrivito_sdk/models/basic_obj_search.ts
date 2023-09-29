@@ -1,4 +1,5 @@
-import { contains, isDate, without } from 'underscore';
+import difference from 'lodash-es/difference';
+import isDate from 'lodash-es/isDate';
 
 import {
   BackendSearchOperator,
@@ -345,8 +346,8 @@ function buildSubQuery(
   return { field, operator, value };
 }
 
-function assertBoostableOperator(operator: string) {
-  if (!contains(BOOSTABLE_OPERATORS, operator)) {
+function assertBoostableOperator(operator: SearchOperator) {
+  if (!BOOSTABLE_OPERATORS.includes(operator)) {
     throw new ArgumentError(
       `Boosting operator "${operator}" is invalid. ${explainValidOperators([
         'contains',
@@ -356,8 +357,8 @@ function assertBoostableOperator(operator: string) {
   }
 }
 
-function assertNegatableOperator(operator: string) {
-  if (!contains(NEGATABLE_OPERATORS, operator)) {
+function assertNegatableOperator(operator: SearchOperator) {
+  if (!NEGATABLE_OPERATORS.includes(operator)) {
     throw new ArgumentError(
       `Negating operator "${operator}" is invalid. ${explainValidOperators(
         NEGATABLE_OPERATORS
@@ -406,7 +407,7 @@ function roundToNearestMinute(value: Date) {
 }
 
 function convertOperator(operator: SearchOperator): BackendSearchOperator {
-  if (!contains(OPERATORS, operator)) {
+  if (!OPERATORS.includes(operator)) {
     throw new ArgumentError(
       `Operator "${operator}" is invalid. ${explainValidOperators(OPERATORS)}`
     );
@@ -461,7 +462,7 @@ const VALID_FACET_OPTIONS = ['limit', 'includeObjs'];
 function assertValidFacetOptions(
   options: FacetQueryOptions
 ): FacetQueryOptions {
-  const invalidOptions = without(Object.keys(options), ...VALID_FACET_OPTIONS);
+  const invalidOptions = difference(Object.keys(options), VALID_FACET_OPTIONS);
   if (invalidOptions.length) {
     throw new ArgumentError(
       'Invalid facet options: ' +

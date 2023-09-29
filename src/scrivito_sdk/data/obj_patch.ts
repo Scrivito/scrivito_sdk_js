@@ -1,5 +1,7 @@
 // @rewire
-import { difference, isEmpty, isEqual } from 'underscore';
+import difference from 'lodash-es/difference';
+import isEmpty from 'lodash-es/isEmpty';
+import isEqual from 'lodash-es/isEqual';
 
 import { ObjJson, WidgetJson, WidgetPoolJson } from 'scrivito_sdk/client';
 import { isSystemAttribute } from 'scrivito_sdk/common';

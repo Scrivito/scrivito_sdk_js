@@ -1,5 +1,7 @@
 // @rewire
-import { escape, unescape } from 'underscore';
+import escape from 'lodash-es/escape';
+import unescape from 'lodash-es/unescape';
+
 import * as URI from 'urijs';
 
 import { resolveUrl } from 'scrivito_sdk/link_resolution/resolve_url';

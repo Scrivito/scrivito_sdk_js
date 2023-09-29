@@ -22,10 +22,14 @@ import {
   subscriberCountForLoading,
 } from 'scrivito_sdk/loadable/loading_registry';
 import { NotLoadedError } from 'scrivito_sdk/loadable/not_loaded_error';
-import { StateContainer, StateReader } from 'scrivito_sdk/state';
+import {
+  StateContainer,
+  StateReader,
+  createStateContainer,
+} from 'scrivito_sdk/state';
 
 type LoadableDataOptions<T> = LoaderProcessOptions<T> & {
-  state: StateContainer<LoadableState<T>>;
+  state?: StateContainer<LoadableState<T>>;
   affiliation?: Affiliation;
 };
 
@@ -53,8 +57,8 @@ export class LoadableData<LoadableType> {
 
   // state is the stateContainer where the LoadableData should store its state.
   constructor(options: LoadableDataOptions<LoadableType>) {
-    this.stateContainer = options.state;
-    this.id = options.state.id();
+    this.stateContainer = options.state ?? createStateContainer();
+    this.id = this.stateContainer.id();
     this.affiliation = options.affiliation;
     this.invalidation = options.invalidation;
     this.processFactory = () =>

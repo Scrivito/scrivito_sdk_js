@@ -1,5 +1,3 @@
-import { contains } from 'underscore';
-
 import { ArgumentError } from 'scrivito_sdk/common';
 import { AttributeType, BasicTypeInfo } from 'scrivito_sdk/models';
 import { Schema } from './schema';
@@ -54,7 +52,7 @@ function assertValidExtractTextAttribute(
   }
 
   const [attributeType] = definition;
-  if (contains(ATTRIBUTE_TYPES_WHITELIST, attributeType)) return;
+  if (ATTRIBUTE_TYPES_WHITELIST.includes(attributeType)) return;
 
   throw new ArgumentError(
     `Invalid value for "extractTextAttributes": Attribute ${attribute} of type ${attributeType} is not supported.`

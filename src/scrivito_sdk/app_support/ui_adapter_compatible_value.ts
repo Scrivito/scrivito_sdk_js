@@ -1,6 +1,7 @@
 // Supported types must not exceed the supported types mentioned here:
 // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
-import { isDate } from 'underscore';
+import isDate from 'lodash-es/isDate';
+
 import { BasicObjSearch, ObjSearchParams } from 'scrivito_sdk/models';
 import { ObjSearch } from 'scrivito_sdk/realm/obj_search';
 

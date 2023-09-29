@@ -1,4 +1,6 @@
-import { isEmpty, isEqual } from 'underscore';
+import isEmpty from 'lodash-es/isEmpty';
+import isEqual from 'lodash-es/isEqual';
+
 import * as URI from 'urijs';
 
 import {

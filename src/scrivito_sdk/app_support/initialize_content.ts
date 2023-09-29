@@ -1,4 +1,5 @@
-import { isEmpty, isFunction } from 'underscore';
+import isEmpty from 'lodash-es/isEmpty';
+
 import { getEditingConfigFor } from 'scrivito_sdk/app_support/editing_config_store';
 import { presentUiAdapter } from 'scrivito_sdk/app_support/present_ui_adapter';
 import { load } from 'scrivito_sdk/loadable';
@@ -20,7 +21,7 @@ export function initialContentFor(
   if (initialContent) {
     const attributeContent = initialContent[attributeName];
 
-    if (isFunction(attributeContent)) {
+    if (typeof attributeContent === 'function') {
       return attributeContent();
     }
 

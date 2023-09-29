@@ -1,4 +1,5 @@
-import { intersection, mapObject } from 'underscore';
+import intersection from 'lodash-es/intersection';
+import mapValues from 'lodash-es/mapValues';
 
 import { absoluteUrl } from 'scrivito_sdk/app_support/absolute_url';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
@@ -229,7 +230,8 @@ const checkConfigure = (() => {
 function copyWithAbsoluteUrls(
   contentBrowserFilters: ContentBrowserFilters | undefined
 ): typeof contentBrowserFilters {
-  return mapObject(contentBrowserFilters, ({ icon, options, ...item }) => {
+  return mapValues(contentBrowserFilters, ({ ...item }) => {
+    const { icon, options } = item;
     const hasCustomIcon = icon && !icon.match(/^\w+$/);
 
     if (icon) item.icon = hasCustomIcon ? absoluteUrl(icon) : icon;

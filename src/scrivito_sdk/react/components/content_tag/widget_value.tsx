@@ -13,7 +13,7 @@ import {
   WidgetProps,
 } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { connect } from 'scrivito_sdk/react/connect';
-import { InPlaceEditingEnabledContextConsumer } from 'scrivito_sdk/react/in_place_editing_enabled_context';
+import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/use_layout_aware_in_place_editing';
 
 export const WidgetValue = connect(function WidgetValue({
   field,
@@ -22,36 +22,54 @@ export const WidgetValue = connect(function WidgetValue({
   field: BasicField<'widget'>;
   widgetProps?: WidgetProps;
 }) {
+  const isInPlaceEditingEnabled = useLayoutAwareInPlaceEditing();
+
   if (isComparisonActive()) throw new InternalError('Not yet implemented');
 
   if (!isInPlaceEditingActive() || !canEditObjWithId(field.obj().id())) {
-    return renderWidget(false);
+    return (
+      <WidgetValueContent
+        field={field}
+        widgetProps={widgetProps}
+        isInPlaceEditingEnabled={false}
+      />
+    );
   }
 
   return (
-    <InPlaceEditingEnabledContextConsumer>
-      {(isInPlaceEditingEnabled) => renderWidget(isInPlaceEditingEnabled)}
-    </InPlaceEditingEnabledContextConsumer>
+    <WidgetValueContent
+      field={field}
+      widgetProps={widgetProps}
+      isInPlaceEditingEnabled={isInPlaceEditingEnabled}
+    />
   );
+});
 
-  function renderWidget(isInPlaceEditingEnabled: boolean) {
-    const widget = field.get();
+const WidgetValueContent = connect(function WidgetValueContent({
+  field,
+  widgetProps,
+  isInPlaceEditingEnabled,
+}: {
+  field: BasicField<'widget'>;
+  widgetProps?: WidgetProps;
+  isInPlaceEditingEnabled: boolean;
+}) {
+  const widget = field.get();
 
-    if (widget) {
-      return (
-        <WidgetContent
-          key={widget.id()}
-          widget={widget}
-          widgetProps={widgetProps}
-          fieldType="widget"
-        />
-      );
-    }
-
-    if (!isInPlaceEditingEnabled) return null;
-
-    const WidgetPlaceholder = importFrom('reactEditing', 'WidgetPlaceholder');
-
-    return WidgetPlaceholder ? <WidgetPlaceholder field={field} /> : null;
+  if (widget) {
+    return (
+      <WidgetContent
+        key={widget.id()}
+        widget={widget}
+        widgetProps={widgetProps}
+        fieldType="widget"
+      />
+    );
   }
+
+  if (!isInPlaceEditingEnabled) return null;
+
+  const WidgetPlaceholder = importFrom('reactEditing', 'WidgetPlaceholder');
+
+  return WidgetPlaceholder ? <WidgetPlaceholder field={field} /> : null;
 });

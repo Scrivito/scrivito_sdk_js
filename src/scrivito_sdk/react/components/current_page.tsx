@@ -8,6 +8,7 @@ import { AutomaticDataContext } from 'scrivito_sdk/react/components/automatic_da
 import { PageScroll } from 'scrivito_sdk/react/components/page_scroll';
 import { connect } from 'scrivito_sdk/react/connect';
 import { getComponentForPageClass } from 'scrivito_sdk/react/get_component_for_page_class';
+import { IsInsideLayoutContext } from 'scrivito_sdk/react/is_inside_layout_context';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
 
 import { DetailsPageDataContext } from './current_page/details_page_data_context';
@@ -48,12 +49,12 @@ const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
   return (
     <DetailsPageDataContext page={currentPage} params={params}>
       <AutomaticDataContext content={currentPage}>
-        <>
+        <IsInsideLayoutContext.Provider value={false}>
           <PageScroll navigationState={navigationState} />
           {PageComponent && (
             <PageComponent page={wrapInAppClass(currentPage)} params={params} />
           )}
-        </>
+        </IsInsideLayoutContext.Provider>
       </AutomaticDataContext>
     </DetailsPageDataContext>
   );

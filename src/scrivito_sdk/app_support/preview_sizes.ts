@@ -1,4 +1,4 @@
-import { uniq } from 'underscore';
+import uniqBy from 'lodash-es/uniqBy';
 
 import {
   ArgumentError,
@@ -20,7 +20,7 @@ export function configurePreviewSizes(previewSizes: PreviewSize[]): void {
     );
   }
 
-  if (uniq(previewSizes, 'width').length !== previewSizes.length) {
+  if (uniqBy(previewSizes, 'width').length !== previewSizes.length) {
     throw new ArgumentError('A "width" must be unique for sizes');
   }
 

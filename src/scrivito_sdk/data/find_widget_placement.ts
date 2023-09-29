@@ -1,5 +1,3 @@
-import { find, isArray } from 'underscore';
-
 import {
   AttributeJson,
   ExistentObjJson,
@@ -24,7 +22,11 @@ export function findWidgetPlacement(
 
   if (placement) return placement;
 
-  find(objData._widget_pool!, (parentWidgetData, parentWidgetId) => {
+  const widgetPool = objData._widget_pool;
+  if (!widgetPool) return placement;
+
+  Object.keys(widgetPool).find((parentWidgetId) => {
+    const parentWidgetData = widgetPool[parentWidgetId];
     if (parentWidgetData) {
       placement = findWidgetPlacementIn(parentWidgetData, widgetId);
 
@@ -34,6 +36,7 @@ export function findWidgetPlacement(
         return true;
       }
     }
+    return false;
   });
 
   return placement;
@@ -45,10 +48,11 @@ function findWidgetPlacementIn(
 ): WidgetPlacement | undefined {
   let placement;
 
-  find(objOrWidgetData, (jsonValue, attributeName) => {
-    if (!jsonValue) return;
+  Object.keys(objOrWidgetData).find((attributeName) => {
+    const jsonValue = objOrWidgetData[attributeName];
+    if (!jsonValue) return false;
 
-    if (isSystemAttribute(attributeName)) return;
+    if (isSystemAttribute(attributeName)) return false;
 
     // Typescript cannot know that once blank and system attribute entries
     // are excluded, what's left must be a custom attribute entry, and the
@@ -59,14 +63,14 @@ function findWidgetPlacementIn(
       !isWidgetAttributeJson(attributeJson) &&
       !isWidgetlistAttributeJson(attributeJson)
     ) {
-      return;
+      return false;
     }
 
     const attributeValue = attributeJson[1];
 
-    if (isArray(attributeValue)) {
+    if (Array.isArray(attributeValue)) {
       const widgetIds = attributeJson[1];
-      if (!widgetIds) return;
+      if (!widgetIds) return false;
 
       const index = widgetIds.indexOf(widgetId);
 
@@ -80,6 +84,8 @@ function findWidgetPlacementIn(
         return true;
       }
     }
+
+    return false;
   });
 
   return placement;

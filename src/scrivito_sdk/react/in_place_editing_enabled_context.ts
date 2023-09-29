@@ -1,6 +1,3 @@
-import { createConnectedContext } from 'scrivito_sdk/react/create_connected_context';
+import * as React from 'react';
 
-export const {
-  Consumer: InPlaceEditingEnabledContextConsumer,
-  Provider: InPlaceEditingEnabledContextProvider,
-} = createConnectedContext(true);
+export const InPlaceEditingEnabledContext = React.createContext(true);

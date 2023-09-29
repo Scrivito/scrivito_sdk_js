@@ -1,43 +1,20 @@
-import { getConfiguration } from 'scrivito_sdk/app_support/configure';
-import { User, UserData } from 'scrivito_sdk/app_support/user';
-import { ClientError, getWithoutLoginRedirect } from 'scrivito_sdk/client';
-import { LoadableData } from 'scrivito_sdk/loadable';
-import { createStateContainer } from 'scrivito_sdk/state';
-
-export interface UserInfo {
-  sub: string;
-  name: string;
-  email: string;
-}
+import { User } from 'scrivito_sdk/app_support/user';
+import { getUserInfo } from 'scrivito_sdk/app_support/userinfo';
+import { ClientError } from 'scrivito_sdk/client';
 
 /** @public */
 export function currentUser(): User | null {
-  const userData = loadableUserData.get();
+  const userData = getUserData();
   return userData ? new User(userData) : null;
 }
 
-export async function getUserInfoPath(): Promise<string> {
-  const { tenant: instanceId } = await getConfiguration();
-  return `iam/instances/${instanceId}/userinfo`;
-}
-
-// For test purpose only
-export function setCurrentUserData(userData: UserData | null): void {
-  loadableUserData.set(userData);
-}
-
-const loadableUserData = new LoadableData<UserData | null>({
-  state: createStateContainer(),
-  loader: getUserData,
-});
-
-async function getUserData() {
+function getUserData() {
   try {
-    const {
-      sub: id,
-      name,
-      email,
-    } = (await getWithoutLoginRedirect(await getUserInfoPath())) as UserInfo;
+    const userInfo = getUserInfo();
+
+    if (!userInfo) return null;
+
+    const { sub: id, name, email } = userInfo;
 
     return { id, name, email };
   } catch (error: unknown) {

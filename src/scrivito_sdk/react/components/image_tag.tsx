@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { isNumber } from 'underscore';
 
 import { ImageDecoder } from 'scrivito_sdk/app_support/image_decoder';
 import {
@@ -149,7 +148,7 @@ function getFullWidth(
 
   const metadataWidth = metadata.get('width');
 
-  return isNumber(metadataWidth) ? metadataWidth : null;
+  return typeof metadataWidth === 'number' ? metadataWidth : null;
 }
 
 function getBinary(content: Obj | Widget, attribute: string) {

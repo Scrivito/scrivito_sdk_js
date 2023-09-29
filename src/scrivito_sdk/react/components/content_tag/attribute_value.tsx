@@ -1,5 +1,7 @@
+import escape from 'lodash-es/escape';
+import isObject from 'lodash-es/isObject';
+
 import * as React from 'react';
-import { escape, isObject } from 'underscore';
 
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';

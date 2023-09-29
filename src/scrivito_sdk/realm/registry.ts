@@ -1,4 +1,4 @@
-import { findKey, pick } from 'underscore';
+import pickBy from 'lodash-es/pickBy';
 
 import { AppClass, ObjClass, WidgetClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
@@ -24,7 +24,9 @@ export function getClass(name: string): AppClass | null {
 }
 
 export function objClassNameFor(modelClass: AppClass): string | null {
-  return findKey(mapping, (klass) => klass === modelClass) || null;
+  return (
+    Object.keys(mapping).find((klass) => mapping[klass] === modelClass) || null
+  );
 }
 
 function appClassFor(name: string, baseClass: AppClass): AppClass {
@@ -39,11 +41,13 @@ export function resetRegistry(): void {
 }
 
 export function allObjClasses(): ObjClassesByName {
-  return pick(mapping, (modelClass: AppClass) => Obj.isPrototypeOf(modelClass));
+  return pickBy(mapping as ObjClassesByName, (modelClass) =>
+    Obj.isPrototypeOf(modelClass)
+  );
 }
 
 export function allWidgetClasses(): WidgetClassesByName {
-  return pick(mapping, (modelClass: AppClass) =>
+  return pickBy(mapping as WidgetClassesByName, (modelClass) =>
     Widget.isPrototypeOf(modelClass)
   );
 }

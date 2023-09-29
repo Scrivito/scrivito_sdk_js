@@ -1,4 +1,4 @@
-import { isEqual } from 'underscore';
+import isEqual from 'lodash-es/isEqual';
 
 import type {
   ComparisonRange,

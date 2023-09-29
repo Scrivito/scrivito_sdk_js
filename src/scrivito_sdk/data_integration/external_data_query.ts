@@ -1,4 +1,4 @@
-import { isObject } from 'underscore';
+import isObject from 'lodash-es/isObject';
 
 import {
   ArgumentError,

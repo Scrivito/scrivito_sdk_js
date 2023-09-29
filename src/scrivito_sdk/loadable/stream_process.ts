@@ -1,4 +1,5 @@
-import { once } from 'underscore';
+import once from 'lodash-es/once';
+
 import {
   Subject,
   Subscription,

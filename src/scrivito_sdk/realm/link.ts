@@ -1,4 +1,5 @@
-import { has, isEmpty, without } from 'underscore';
+import difference from 'lodash-es/difference';
+import isEmpty from 'lodash-es/isEmpty';
 
 import {
   ArgumentError,
@@ -94,7 +95,7 @@ const ALLOWED_ATTRIBUTES = [
 ];
 
 function assertValidPublicAttributes(attributes: LinkAttributes) {
-  const unknownAttrs = without(Object.keys(attributes), ...ALLOWED_ATTRIBUTES);
+  const unknownAttrs = difference(Object.keys(attributes), ALLOWED_ATTRIBUTES);
   if (!isEmpty(unknownAttrs)) {
     throw new ArgumentError(
       `Unexpected attributes ${prettyPrint(unknownAttrs)}.` +
@@ -105,7 +106,7 @@ function assertValidPublicAttributes(attributes: LinkAttributes) {
 
 function toBasicAttributes(attributes: LinkAttributes): BasicLinkAttributes {
   assertValidPublicAttributes(attributes);
-  if (has(attributes, 'obj')) {
+  if (attributes.hasOwnProperty('obj')) {
     return {
       ...attributes,
       objId: objIdFromObjValue(attributes.obj),

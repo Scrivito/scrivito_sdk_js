@@ -1,5 +1,5 @@
 // @rewire
-import { isEmpty, isFunction } from 'underscore';
+import isEmpty from 'lodash-es/isEmpty';
 
 import {
   RoutingTarget,
@@ -74,7 +74,8 @@ export function navigateTo(
     hash = optionsHash || null;
   }
 
-  const providesTarget = () => (isFunction(target) ? target() : target);
+  const providesTarget = () =>
+    typeof target === 'function' ? target() : target;
   load(providesTarget)
     .then((evaluatedTarget: unknown) => {
       checkEvaluatedTarget(evaluatedTarget);

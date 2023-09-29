@@ -1,15 +1,7 @@
-import {
-  compact,
-  contains,
-  difference,
-  isDate,
-  isEmpty,
-  isNumber,
-  isObject,
-  isString,
-  values as objectValues,
-  without,
-} from 'underscore';
+import difference from 'lodash-es/difference';
+import isDate from 'lodash-es/isDate';
+import isEmpty from 'lodash-es/isEmpty';
+import isObject from 'lodash-es/isObject';
 
 import { AttributeJson } from 'scrivito_sdk/client';
 import { LinkJson } from 'scrivito_sdk/client';
@@ -185,7 +177,7 @@ function serializeEnumAttributeValue(
   name: string,
   { values }: { values: readonly string[] }
 ) {
-  if (contains(values, value)) return value as string;
+  if (values.includes(value as string)) return value as string;
 
   const e = `Valid attribute values are contained in its "values" array [${values}].`;
 
@@ -197,7 +189,7 @@ function serializeFloatAttributeValue(value: unknown, name: string) {
 
   let invalidValue = value;
 
-  if (isNumber(value)) {
+  if (typeof value === 'number') {
     invalidValue = String(value);
   }
 
@@ -209,7 +201,7 @@ function serializeFloatAttributeValue(value: unknown, name: string) {
 }
 
 function serializeHtmlAttributeValue(value: unknown, name: string) {
-  if (isString(value)) return value;
+  if (typeof value === 'string') return value;
 
   throwInvalidAttributeValue(value, name, 'A String.');
 }
@@ -297,7 +289,7 @@ function isValidReference(
   value: unknown
 ): value is string | BasicObj | ObjUnavailable {
   return (
-    isString(value) ||
+    typeof value === 'string' ||
     value instanceof BasicObj ||
     value instanceof ObjUnavailable
   );
@@ -324,7 +316,7 @@ function serializeStringlistAttributeValue(value: unknown, name: string) {
 }
 
 function isValidString(value: unknown): value is string | number {
-  return isString(value) || isNumber(value);
+  return typeof value === 'string' || typeof value === 'number';
 }
 
 function serializeWidgetAttributeValue(value: unknown, name: string): string {
@@ -360,17 +352,11 @@ function isValidLinkInputValue(value: unknown): value is ValidLinkInputValue {
   if (value instanceof BasicLink) return !value.isEmpty();
 
   if (!isObject(value)) return false;
-  if (isEmpty(compact(objectValues(value)))) return false;
+  if (isEmpty(Object.values(value).filter(Boolean))) return false;
 
-  const invalidKeys = without(
+  const invalidKeys = difference(
     Object.keys(value as { [key: string]: unknown }),
-    'hash',
-    'obj_id',
-    'query',
-    'rel',
-    'target',
-    'title',
-    'url'
+    ['hash', 'obj_id', 'query', 'rel', 'target', 'title', 'url']
   );
   return isEmpty(invalidKeys);
 }

@@ -1,5 +1,3 @@
-import { sortedIndex } from 'underscore';
-
 import { collectAndSchedule, nextTick } from 'scrivito_sdk/common';
 import { StateReference } from 'scrivito_sdk/state';
 import { CopyOnWriteStore } from 'scrivito_sdk/state/copy_on_write_store';
@@ -52,8 +50,9 @@ export class SubscriberSet {
 
   add(subscriber: Subscriber): void {
     this.subscribersStore.write((subscribers) => {
-      const index = sortedIndex(subscribers, subscriber, 'rank');
-      subscribers.splice(index, 0, subscriber);
+      const index = subscribers.findIndex((s) => s.rank > subscriber.rank);
+      const spliceIndex = index === -1 ? subscribers.length : index;
+      subscribers.splice(spliceIndex, 0, subscriber);
     });
   }
 

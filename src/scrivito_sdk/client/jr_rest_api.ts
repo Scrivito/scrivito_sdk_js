@@ -88,7 +88,8 @@ function fetch(
   );
 }
 
-async function get(
+// exported for test purposes only
+export async function get(
   path: string,
   options?: Options,
   withLoginRedirect = true

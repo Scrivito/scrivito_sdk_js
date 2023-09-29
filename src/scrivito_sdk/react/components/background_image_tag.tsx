@@ -1,6 +1,7 @@
 // @rewire
+import isObject from 'lodash-es/isObject';
+
 import * as React from 'react';
-import { isObject, isString, last } from 'underscore';
 import { BackgroundImageDecoder } from 'scrivito_sdk/app_support/background_image_decoder';
 import { scaleDownBinary } from 'scrivito_sdk/app_support/scale_down_binary';
 import { ArgumentError, docUrl, throwNextTick } from 'scrivito_sdk/common';
@@ -240,7 +241,7 @@ function mergeCSSProperty(
 function lastBackgroundColor(
   properties: BackgroundCSSProperties[]
 ): string | undefined {
-  const lastBackground = last(properties);
+  const lastBackground = properties[properties.length - 1];
 
   if (lastBackground) {
     return lastBackground.backgroundColor;
@@ -319,7 +320,7 @@ function cssPropertiesForBinary(
 function isPlainBackground(
   background: Background
 ): background is PlainBackground {
-  return isString(background.image);
+  return typeof background.image === 'string';
 }
 
 function assertNoBackgroundRelatedProperties(style: unknown) {

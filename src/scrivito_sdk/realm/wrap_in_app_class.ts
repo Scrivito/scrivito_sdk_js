@@ -1,4 +1,4 @@
-import { mapObject } from 'underscore';
+import mapValues from 'lodash-es/mapValues';
 
 import { ArgumentError, isSystemAttribute } from 'scrivito_sdk/common';
 import { DataLocator } from 'scrivito_sdk/data_integration';
@@ -8,6 +8,7 @@ import {
   BasicLink,
   BasicObj,
   BasicObjSearch,
+  BasicTypeInfo,
   BasicWidget,
   Binary,
   ObjUnavailable,
@@ -167,12 +168,14 @@ export function unwrapAppClass<T>(value: T | T[]) {
 }
 
 export function unwrapAppAttributes(
-  appAttributes: { [key: string]: unknown },
+  appAttributes: {
+    [key: string]: unknown;
+  },
   schema: Schema,
   appClassName: string
 ): NormalizedBasicAttributesWithUnknownValues {
-  return mapObject(appAttributes, (value, name) => {
-    if (isSystemAttribute(name)) return [value];
+  return mapValues(appAttributes, (value, name) => {
+    if (isSystemAttribute(name)) return [value] as [unknown];
 
     const normalizedTypeInfo = schema.attribute(name);
 
@@ -185,7 +188,10 @@ export function unwrapAppAttributes(
 
     const unwrappedValue = unwrapAppClass(value);
 
-    return [unwrappedValue, normalizedTypeInfo];
+    return [unwrappedValue, normalizedTypeInfo] as [
+      unknown,
+      BasicTypeInfo<AttributeType>
+    ];
   });
 }
 

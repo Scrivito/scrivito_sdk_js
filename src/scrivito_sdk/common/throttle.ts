@@ -1,4 +1,5 @@
-import { ThrottleSettings, throttle as underscoreThrottle } from 'underscore';
+import { type ThrottleSettings } from 'lodash-es/throttle';
+import doThrottle from 'lodash-es/throttle';
 
 let shouldBypassThrottle: boolean = false;
 
@@ -7,7 +8,9 @@ export function throttle<T extends (...args: unknown[]) => void>(
   ms: number,
   options?: ThrottleSettings
 ): T {
-  return shouldBypassThrottle ? fn : underscoreThrottle(fn, ms, options);
+  return shouldBypassThrottle
+    ? fn
+    : (doThrottle(fn, ms, options) as unknown as T);
 }
 
 export function bypassThrottle(): void {

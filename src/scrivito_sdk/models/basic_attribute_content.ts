@@ -1,6 +1,7 @@
-import { mapObject } from 'underscore';
+import mapValues from 'lodash-es/mapValues';
 
 import {
+  AttributeJson,
   ObjJson,
   ObjSpaceId,
   WidgetJson,
@@ -88,10 +89,12 @@ export function serializeAttributes(content: BasicObj): SerializedObjAttributes;
 export function serializeAttributes(
   content: BasicWidget
 ): SerializedWidgetAttributes;
-export function serializeAttributes(content: ContentValueProvider) {
-  return mapObject(content.getData(), (value, name) => {
-    if (value && !isSystemAttribute(name)) {
-      if (isWidgetAttributeJson(value)) {
+export function serializeAttributes(
+  content: ContentValueProvider
+): SerializedObjAttributes | SerializedWidgetAttributes {
+  return mapValues(content.getData(), (value, name) => {
+    if (value && !isSystemAttribute(name) && typeof value === 'object') {
+      if (isWidgetAttributeJson(value as AttributeJson)) {
         const widget = getContentValueUsingInternalName(content, name, [
           'widget',
         ]);
@@ -99,7 +102,7 @@ export function serializeAttributes(content: ContentValueProvider) {
         return ['widget', widget ? serializeAttributes(widget) : null];
       }
 
-      if (isWidgetlistAttributeJson(value)) {
+      if (isWidgetlistAttributeJson(value as AttributeJson)) {
         const widgets = getContentValueUsingInternalName(content, name, [
           'widgetlist',
         ]);
@@ -165,7 +168,7 @@ export function isWidgetlistAttributeValueAndType(
 export function normalizeAttributes(
   attributes: BasicObjAttributes | BasicWidgetAttributes
 ): NormalizedBasicAttributeDict {
-  return mapObject(attributes, (attributeValue, name) => {
+  return mapValues(attributes, (attributeValue, name) => {
     // Note: System attribute value normalization for public API input is
     // already performed by unwrapAppAttributes. Therefore this code exists
     // only for internal callers. Which could eventually be changed to

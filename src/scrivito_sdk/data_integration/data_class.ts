@@ -1,4 +1,4 @@
-import { isObject } from 'underscore';
+import isObject from 'lodash-es/isObject';
 
 import { ArgumentError } from 'scrivito_sdk/common';
 import { isValidDataIdentifier } from 'scrivito_sdk/data_integration/data_identifier';

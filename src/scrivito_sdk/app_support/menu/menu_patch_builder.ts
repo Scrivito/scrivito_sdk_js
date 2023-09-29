@@ -1,4 +1,5 @@
-import { mapObject, pick, unique } from 'underscore';
+import mapValues from 'lodash-es/mapValues';
+import pick from 'lodash-es/pick';
 
 import { absoluteUrl } from 'scrivito_sdk/app_support/absolute_url';
 import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
@@ -24,10 +25,12 @@ export class MenuPatchBuilder implements MenuBuilder {
   insert(customMenuItem: CustomMenuItem, ...excessArgs: never[]): void {
     checkMenuInsertArguments(customMenuItem, ...excessArgs);
 
-    this.patch.insertIds = unique([...this.patch.insertIds, customMenuItem.id]);
+    this.patch.insertIds = Array.from(
+      new Set(this.patch.insertIds).add(customMenuItem.id)
+    );
     this.patch.items[customMenuItem.id] = {
       ...pick(customMenuItem, 'description', 'group', 'position', 'title'),
-      ...mapObject(pick(customMenuItem, 'enabled'), (v?: boolean) => !!v),
+      ...mapValues(pick(customMenuItem, 'enabled'), (v?: boolean) => !!v),
       ...iconPatch(customMenuItem.icon),
     };
   }

@@ -1,4 +1,4 @@
-import { flatten } from 'underscore';
+import flatten from 'lodash-es/flatten';
 
 import { docUrl } from 'scrivito_sdk/common';
 import { logError } from 'scrivito_sdk/common/error_logging';

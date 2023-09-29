@@ -1,4 +1,4 @@
-import { isEmpty } from 'underscore';
+import isEmpty from 'lodash-es/isEmpty';
 
 import {
   BackendFacetQueryResponse,

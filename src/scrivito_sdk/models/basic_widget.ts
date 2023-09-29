@@ -1,4 +1,4 @@
-import { mapObject } from 'underscore';
+import mapValues from 'lodash-es/mapValues';
 
 import { ComparisonRange, ObjSpaceId, WidgetJson } from 'scrivito_sdk/client';
 import { ArgumentError, ScrivitoError, camelCase } from 'scrivito_sdk/common';
@@ -327,7 +327,7 @@ export class BasicWidget implements ContentValueProvider {
     const copy = new BasicWidget(
       undefined,
       undefined,
-      mapObject(this.attributesToBeSaved, copyNormalizedValue)
+      mapValues(this.attributesToBeSaved, copyNormalizedValue)
     );
 
     if (this.onDidPersistCallback) {

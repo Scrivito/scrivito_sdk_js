@@ -1,5 +1,4 @@
-import { compact, reject, sortBy, uniq } from 'underscore';
-
+import uniqBy from 'lodash-es/uniqBy';
 import {
   AttributeJson,
   ExistentObjJson,
@@ -336,18 +335,16 @@ export class BasicObj implements ContentValueProvider {
 
   orderedChildren(): BasicObj[] {
     const children = this.children();
-    const childOrder = this.get('childOrder', 'referencelist');
+    if (children.length === 0) return [];
 
-    if (!Array.isArray(childOrder)) return children;
+    const objId = (obj: BasicObj) => obj.id();
+    const validIds = new Set(children.map(objId));
 
-    const childOrderIds = childOrder.map(
-      (child) => child instanceof BasicObj && child.id()
+    const childOrder = this.get('childOrder', 'referencelist').filter(
+      (item): item is BasicObj => validIds.has(item.id())
     );
-    return sortBy(children, (child) => {
-      const childIndex = childOrderIds.indexOf(child.id());
 
-      return childIndex === -1 ? childOrder.length : childIndex;
-    });
+    return uniqBy(childOrder.concat(children), objId);
   }
 
   backlinks(): BasicObj[] {
@@ -444,7 +441,7 @@ export class BasicObj implements ContentValueProvider {
         widgetOrWidgetlistField as BasicField<'widgetlist'>;
 
       const value = widgetlistField.get();
-      const newValue = reject(value, (curWidget) => curWidget.equals(widget));
+      const newValue = value.filter((curWidget) => !curWidget.equals(widget));
 
       widgetlistField.update(newValue);
     } else {
@@ -519,11 +516,13 @@ export class BasicObj implements ContentValueProvider {
     const widgetPool = this.objData.getWidgetPoolWithBadPerformance();
     if (!widgetPool) return [];
 
-    return uniq(
-      compact(Object.values(widgetPool)).map(
-        (widgetJson) => widgetJson._obj_class
-      )
+    const classNames = new Set(
+      Object.values(widgetPool)
+        .filter((value): value is WidgetJson => !!value)
+        .map((widgetJson) => widgetJson._obj_class)
     );
+
+    return Array.from(classNames);
   }
 
   fieldContainingWidget(

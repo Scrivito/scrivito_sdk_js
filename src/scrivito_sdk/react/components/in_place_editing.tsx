@@ -1,11 +1,12 @@
 import * as React from 'react';
+
 import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
-import { InPlaceEditingEnabledContextProvider } from 'scrivito_sdk/react/in_place_editing_enabled_context';
+import { InPlaceEditingEnabledContext } from 'scrivito_sdk/react/in_place_editing_enabled_context';
 
 /** @public */
 export function InPlaceEditingOff({ children }: { children: React.ReactNode }) {
   return isInPlaceEditingActive() ? (
-    <InPlaceEditingEnabledContextProvider children={children} value={false} />
+    <InPlaceEditingEnabledContext.Provider children={children} value={false} />
   ) : (
     (children as ReactChildren)
   );
@@ -18,7 +19,7 @@ export function RestoreInPlaceEditing({
   children: React.ReactNode;
 }) {
   return isInPlaceEditingActive() ? (
-    <InPlaceEditingEnabledContextProvider children={children} value={true} />
+    <InPlaceEditingEnabledContext.Provider children={children} value={true} />
   ) : (
     (children as ReactChildren)
   );

@@ -1,10 +1,10 @@
-import {
-  currentUser,
-  getUserInfoPath,
-} from 'scrivito_sdk/app_support/current_user';
+import { currentUser } from 'scrivito_sdk/app_support/current_user';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import {
-  JrRestApi,
+  fetchLoggedUser,
+  startPollingLoggedUser,
+} from 'scrivito_sdk/app_support/user_logged_in_status';
+import {
   USER_IS_LOGGED_IN_PARAM_NAME,
   getJrRestApiUrl,
 } from 'scrivito_sdk/client';
@@ -25,6 +25,14 @@ let isUserLoggedInCache: boolean | undefined;
 /** @public */
 export function isUserLoggedIn(): boolean {
   if (uiAdapter) return true;
+
+  const isLoggedIn = checkIsUserLoggedIn();
+  if (isLoggedIn) startPollingLoggedUser();
+
+  return isLoggedIn;
+}
+
+function checkIsUserLoggedIn() {
   if (!isUserLoggedInCached()) return false;
 
   verifyUserIsLoggedIn();
@@ -68,7 +76,7 @@ async function ensureUserIsLoggedInAsync() {
   if (isUserLoggedIn()) return;
 
   // If the user isn't logged-in, this triggers a login redirect
-  await JrRestApi.get(await getUserInfoPath());
+  await fetchLoggedUser();
   setFlagInLocalStorage();
   reload();
 }

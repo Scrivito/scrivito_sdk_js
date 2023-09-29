@@ -13,7 +13,7 @@ import {
   WidgetProps,
 } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { connect } from 'scrivito_sdk/react/connect';
-import { InPlaceEditingEnabledContextConsumer } from 'scrivito_sdk/react/in_place_editing_enabled_context';
+import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/use_layout_aware_in_place_editing';
 
 interface WidgetlistValueProps {
   field: BasicField<'widgetlist'>;
@@ -24,56 +24,50 @@ export const WidgetlistValue = connect(function WidgetlistValue({
   field,
   widgetProps,
 }: WidgetlistValueProps) {
+  const isInPlaceEditingEnabled = useLayoutAwareInPlaceEditing();
+
   if (isComparisonActive()) {
-    return widgetlistChildrenForComparison();
+    return (
+      <WidgetlistValueContentForComparison
+        field={field}
+        widgetProps={widgetProps}
+      />
+    );
   }
 
   if (!isInPlaceEditingActive() || !canEditObjWithId(field.obj().id())) {
-    return renderWidgets(false);
+    return (
+      <WidgetlistValueContent
+        field={field}
+        widgetProps={widgetProps}
+        isInPlaceEditingEnabled={false}
+      />
+    );
   }
 
   return (
-    <InPlaceEditingEnabledContextConsumer>
-      {(isInPlaceEditingEnabled) => renderWidgets(isInPlaceEditingEnabled)}
-    </InPlaceEditingEnabledContextConsumer>
+    <WidgetlistValueContent
+      field={field}
+      widgetProps={widgetProps}
+      isInPlaceEditingEnabled={isInPlaceEditingEnabled}
+    />
   );
+});
 
-  function renderWidgets(isInPlaceEditingEnabled: boolean) {
-    const widgets = field.get();
-    if (widgets.length) {
-      return (
-        <>
-          {widgets.map((widget) => (
-            <WidgetContent
-              key={widget.id()}
-              widget={widget}
-              widgetProps={widgetProps}
-              fieldType="widgetlist"
-            />
-          ))}
-        </>
-      );
-    }
-
-    if (!isInPlaceEditingEnabled) return null;
-
-    const WidgetlistPlaceholder = importFrom(
-      'reactEditing',
-      'WidgetlistPlaceholder'
-    );
-
-    return WidgetlistPlaceholder ? (
-      <WidgetlistPlaceholder field={field} />
-    ) : null;
-  }
-
-  function widgetlistChildrenForComparison() {
+const WidgetlistValueContentForComparison = connect(
+  function WidgetlistValueContentForComparison({
+    field,
+    widgetProps,
+  }: {
+    field: BasicField<'widgetlist'>;
+    widgetProps?: WidgetProps;
+  }) {
     return (
       <>
         {getPlacementModificationInfos(field, getComparisonRange()).map(
           (info) => (
             <WidgetContent
-              key={`${info.widget.id()}-${info.modification}`}
+              key={calculateKey(info.widget.id(), info.modification)}
               widget={info.widget}
               widgetProps={widgetProps}
               placementModification={info.modification}
@@ -83,5 +77,45 @@ export const WidgetlistValue = connect(function WidgetlistValue({
         )}
       </>
     );
+
+    function calculateKey(widgetId: string, modification: string | null) {
+      return `${widgetId}-${modification}`;
+    }
   }
+);
+
+const WidgetlistValueContent = connect(function WidgetlistValueContent({
+  field,
+  widgetProps,
+  isInPlaceEditingEnabled,
+}: {
+  field: BasicField<'widgetlist'>;
+  widgetProps?: WidgetProps;
+  isInPlaceEditingEnabled: boolean;
+}) {
+  const widgets = field.get();
+
+  if (widgets.length) {
+    return (
+      <>
+        {widgets.map((widget) => (
+          <WidgetContent
+            key={widget.id()}
+            widget={widget}
+            widgetProps={widgetProps}
+            fieldType="widgetlist"
+          />
+        ))}
+      </>
+    );
+  }
+
+  if (!isInPlaceEditingEnabled) return null;
+
+  const WidgetlistPlaceholder = importFrom(
+    'reactEditing',
+    'WidgetlistPlaceholder'
+  );
+
+  return WidgetlistPlaceholder ? <WidgetlistPlaceholder field={field} /> : null;
 });

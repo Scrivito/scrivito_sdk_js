@@ -45,6 +45,7 @@ export {
   getObjIncludingUnavailableFrom,
   getRootObjFrom,
   getObjBy,
+  getObjByPath,
 } from 'scrivito_sdk/models/basic_scope_get_methods';
 export { allSitesAndGlobal } from 'scrivito_sdk/models/all_sites_and_global';
 export { emptyScope } from 'scrivito_sdk/models/empty_scope';
@@ -98,3 +99,4 @@ export {
 } from 'scrivito_sdk/models/content_versions';
 export { restrictToContent } from 'scrivito_sdk/models/restrict_to_content';
 export { Workspace } from 'scrivito_sdk/models/workspace';
+export { enableAutoConvertAttributes } from 'scrivito_sdk/models/auto_convert';

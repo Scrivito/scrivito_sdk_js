@@ -95,7 +95,10 @@ export function getDataContextParameters(
   let params: DataContextParameters = {};
 
   [target, ...target.ancestors()].forEach((obj) => {
-    const dataClass = obj?.dataClass();
+    const dataParam = obj?.dataParam();
+    if (!dataParam) return;
+
+    const [dataClass] = dataParam;
     if (!dataClass) return;
 
     const itemElement = findItemInDataStack(dataClass, dataStack);
@@ -180,7 +183,10 @@ export function dataContextFromQueryParams(
   obj: BasicObj,
   params: QueryParameters
 ): DataContext | 'loading' | 'unavailable' | undefined {
-  const dataClassName = obj.dataClass();
+  const dataParam = obj.dataParam();
+  if (!dataParam) return;
+
+  const [dataClassName] = dataParam;
   if (!dataClassName) return;
 
   const dataId = getDataId(dataClassName, params);

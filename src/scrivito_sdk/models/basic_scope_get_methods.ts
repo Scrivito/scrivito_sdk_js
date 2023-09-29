@@ -52,3 +52,7 @@ export function getAllObjsByValueFrom(
 export function getRootObjFrom(scope: ObjScope): BasicObj | null {
   return getObjBy(scope.and(excludeGlobal), '_path', '/');
 }
+
+export function getObjByPath(scope: ObjScope, path: string): BasicObj | null {
+  return getObjBy(scope, '_path', path);
+}

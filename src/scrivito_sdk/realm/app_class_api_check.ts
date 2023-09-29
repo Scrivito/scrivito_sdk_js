@@ -1,4 +1,3 @@
-import { isFunction } from 'underscore';
 import {
   PositiveInteger,
   checkArgumentsFor,
@@ -212,6 +211,10 @@ export const {
     ),
   };
 })();
+
+function isFunction(fn: unknown) {
+  return typeof fn === 'function';
+}
 
 function checkProvideClass(
   name: string,
