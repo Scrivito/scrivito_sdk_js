@@ -1,4 +1,3 @@
-import uniqBy from 'lodash-es/uniqBy';
 import {
   AttributeJson,
   ExistentObjJson,
@@ -337,14 +336,16 @@ export class BasicObj implements ContentValueProvider {
     const children = this.children();
     if (children.length === 0) return [];
 
-    const objId = (obj: BasicObj) => obj.id();
-    const validIds = new Set(children.map(objId));
+    const childOrder = this.get('childOrder', 'referencelist');
+    const idsOrder = childOrder.map((reference) => reference.id());
 
-    const childOrder = this.get('childOrder', 'referencelist').filter(
-      (item): item is BasicObj => validIds.has(item.id())
-    );
-
-    return uniqBy(childOrder.concat(children), objId);
+    return children
+      .map((child: BasicObj): [number, BasicObj] => {
+        const index = idsOrder.indexOf(child.id());
+        return [index === -1 ? children.length : index, child];
+      })
+      .sort(([a], [b]) => a - b)
+      .map(([, child]) => child);
   }
 
   backlinks(): BasicObj[] {
