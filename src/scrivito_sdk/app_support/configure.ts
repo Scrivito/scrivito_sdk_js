@@ -1,5 +1,4 @@
 // @rewire
-import * as URI from 'urijs';
 
 import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import { BearerTokenAuthorizationProvider } from 'scrivito_sdk/app_support/bearer_token_authorization_provider';
@@ -16,6 +15,11 @@ import { setExtensionsUrl } from 'scrivito_sdk/app_support/extensions_url';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
 import { enableLayoutEditing } from 'scrivito_sdk/app_support/layout_editing';
 import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
+import { initializeLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
+import {
+  isRunningInBrowser,
+  nodeAdapter,
+} from 'scrivito_sdk/app_support/node_adapter';
 import { initRouting } from 'scrivito_sdk/app_support/routing';
 import { SiteMappingConfiguration } from 'scrivito_sdk/app_support/site_mapping';
 import { setTreatLocalhostLike } from 'scrivito_sdk/app_support/treat_localhost_like';
@@ -35,7 +39,7 @@ import {
   Priority,
   PublicAuthentication,
   cmsRestApi,
-  disableLoginRedirect,
+  loginRedirectAuthorizationProvider,
   setJrRestApiAuthProvider,
   setJrRestApiEndpoint,
 } from 'scrivito_sdk/client';
@@ -43,11 +47,9 @@ import {
   Deferred,
   ScrivitoError,
   checkArgumentsFor,
-  isLocalhostUrl,
   logError,
   tcomb as t,
   throwInvalidArgumentsError,
-  windowLocationOrigin,
 } from 'scrivito_sdk/common';
 import {
   IN_MEMORY_TENANT,
@@ -57,11 +59,10 @@ import {
 } from 'scrivito_sdk/data';
 import { load } from 'scrivito_sdk/loadable';
 import {
-  enableAutoConvertAttributes,
   getRootObjFrom,
   restrictToSite,
+  setWantsAutoAttributeConversion,
 } from 'scrivito_sdk/models';
-import type { ApiKeyAuthorizationProvider } from 'scrivito_sdk/node_support/api_key_authorization_provider';
 import {
   Obj,
   enableStrictSearchOperators,
@@ -112,11 +113,15 @@ export interface Configuration {
   };
 }
 
-const OriginValue = t.refinement(
-  t.String,
-  (v: string) => URI(v).origin() === v,
-  'Origin String'
-);
+const OriginValue = t.refinement(t.String, isOrigin, 'Origin String');
+
+function isOrigin(origin: string) {
+  try {
+    return new URL(origin).origin === origin;
+  } catch {
+    return false;
+  }
+}
 
 const AllowedConfiguration = t.interface({
   tenant: t.String,
@@ -169,7 +174,7 @@ export function configure(
   ...excessArgs: never[]
 ): void {
   checkConfigure(configuration, ...excessArgs);
-  if (configuration.apiKey && !ApiKeyAuthorizationProviderClass) {
+  if (configuration.apiKey && isRunningInBrowser()) {
     throwInvalidArgumentsError(
       PUBLIC_FUNCTION_NAME,
       'The option "apiKey" is only available under Node.js.',
@@ -196,6 +201,8 @@ export function configure(
     const tenant = configuration.tenant;
     setConfiguredTenant(tenant);
 
+    if (isRunningInBrowser()) initializeLoggedInState();
+
     const {
       jrRestApiEndpoint: configuredJrRestApiEndpoint,
       endpoint: configuredEndpoint,
@@ -215,13 +222,7 @@ export function configure(
     );
 
     const treatLocalhostLike = configuration.treatLocalhostLike;
-    if (
-      treatLocalhostLike &&
-      typeof window !== 'undefined' &&
-      isLocalhostUrl(windowLocationOrigin())
-    ) {
-      setTreatLocalhostLike(treatLocalhostLike);
-    }
+    if (treatLocalhostLike) setTreatLocalhostLike(treatLocalhostLike);
 
     if (uiAdapter) {
       configureWithUi(tenant, uiAdapter);
@@ -238,7 +239,7 @@ export function configure(
   }
 
   if (configuration.strictSearchOperators) enableStrictSearchOperators();
-  if (configuration.autoConvertAttributes) enableAutoConvertAttributes();
+  setWantsAutoAttributeConversion(!!configuration.autoConvertAttributes);
   setForcedEditorLanguage(configuration.editorLanguage || null);
   setExtensionsUrl(configuration.extensionsUrl || undefined);
 
@@ -264,7 +265,6 @@ export function resetConfiguration(): void {
 }
 
 function configureWithUi(tenant: string, uiAdapterClient: UiAdapterClient) {
-  disableLoginRedirect();
   setJrRestApiAuthProvider(
     new BearerTokenAuthorizationProvider(() =>
       load(() => currentEditor()?.authToken())
@@ -317,38 +317,44 @@ function configureCmsRestApi({
   apiKey?: string | IamApiKey;
 }) {
   if (priority) cmsRestApi.setPriority(priority);
-  const [cmsAuthProvider, jrAuthProvider] = getAuthProviders(
-    apiKey,
-    visitorAuthentication
-  );
-
   cmsRestApi.init({
     apiBaseUrl: `${endpoint}/tenants/${tenant}`,
-    authProvider: cmsAuthProvider,
+    authProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
   });
+
+  const jrAuthProvider = getJrRestApiAuthProvider(apiKey);
 
   if (jrAuthProvider) {
     setJrRestApiAuthProvider(jrAuthProvider);
   }
 }
 
-function getAuthProviders(
+function getCmsAuthProvider(
   apiKey?: string | IamApiKey,
   visitorAuthentication?: boolean
 ) {
-  if (!apiKey) {
-    return [
-      getVisitorAuthenticationProvider(visitorAuthentication) ||
-        PublicAuthentication,
-    ];
+  if (apiKey && nodeAdapter) {
+    return new nodeAdapter.ApiKeyAuthorizationProvider(apiKey);
   }
 
-  const authProvider = new ApiKeyAuthorizationProviderClass!(apiKey);
+  return (
+    getVisitorAuthenticationProvider(visitorAuthentication) ||
+    PublicAuthentication
+  );
+}
 
-  return [
-    authProvider,
-    typeof apiKey !== 'string' ? authProvider : undefined,
-  ] as const;
+function getJrRestApiAuthProvider(apiKey?: string | IamApiKey) {
+  if (!nodeAdapter) {
+    // only inside the browser
+    return loginRedirectAuthorizationProvider;
+  }
+
+  if (apiKey) {
+    // JrRestApi can't use legacy string API keys, only IamApiKeys
+    if (typeof apiKey === 'string') return undefined;
+
+    return new nodeAdapter.ApiKeyAuthorizationProvider(apiKey);
+  }
 }
 
 function getCheckedRoutingConfiguration({
@@ -390,6 +396,14 @@ function getCheckedRoutingConfiguration({
     );
   }
 
+  if (origin !== undefined && !isOrigin(origin)) {
+    throwInvalidArgumentsError(
+      PUBLIC_FUNCTION_NAME,
+      `Unexpected value: '${origin}' is not a valid origin.`,
+      CHECK_ARGUMENTS_OPTIONS
+    );
+  }
+
   return { homepageCallback, origin, routingBasePath };
 }
 
@@ -407,16 +421,6 @@ function setAppAdapter(uiAdapterClient: UiAdapterClient) {
     startAppAdapter(linkViaPort(channel.port1));
     uiAdapterClient.setAppAdapter(channel.port2);
   });
-}
-
-let ApiKeyAuthorizationProviderClass:
-  | typeof ApiKeyAuthorizationProvider
-  | undefined;
-
-export function setApiKeyAuthorizationProviderClass(
-  input: typeof ApiKeyAuthorizationProvider
-): void {
-  ApiKeyAuthorizationProviderClass = input;
 }
 
 /** exported for test purposes only */

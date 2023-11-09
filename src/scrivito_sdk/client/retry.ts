@@ -1,44 +1,46 @@
 import { RequestFailedError } from 'scrivito_sdk/client';
-import { RawResponse } from 'scrivito_sdk/client/raw_response';
-import { waitMs } from 'scrivito_sdk/common';
+import { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
 
 export async function requestWithRateLimitRetry(
-  request: () => Promise<RawResponse>,
-  retryCount: number = 0
-): Promise<RawResponse> {
+  request: () => Promise<Response>
+): Promise<Response> {
   if (retriesAreDisabled) return request();
 
-  const response = await request();
+  const backoff = new ExponentialBackoff();
 
-  if (response.httpStatus === 429) {
+  // note: using a loop instead of recursion avoids stack overflow
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await request();
+
+    if (response.status !== 429) return response;
+
     // The value for the retry count limit should be high enough to show that the integer overflow
     // protection of the calculated timeout (currently: exponent limited to 16) is working.
-    if (limitedRetries && retryCount > 19) throw new Error();
+    if (limitedRetries && backoff.numberOfRetries() > 19) throw new Error();
 
-    const retryAfterHeader = Number(response.retryAfterHeader) || 0;
-
-    await waitMs(Math.max(retryAfterHeader * 1000, calculateDelay(retryCount)));
-
-    return requestWithRateLimitRetry(request, retryCount + 1);
+    await backoff.nextDelay();
   }
-
-  return response;
 }
 
 export async function retryOnRequestFailed<T>(
-  request: () => Promise<T>,
-  retryCount: number = 0
+  request: () => Promise<T>
 ): Promise<T> {
   if (retriesAreDisabled) return request();
 
-  try {
-    return await request();
-  } catch (error) {
-    if (!(error instanceof RequestFailedError)) throw error;
-    if (limitedRetries && retryCount > 5) throw error;
+  const backoff = new ExponentialBackoff();
 
-    await waitMs(calculateDelay(retryCount));
-    return retryOnRequestFailed(request, retryCount + 1);
+  // note: using a loop instead of recursion avoids stack overflow
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      return await request();
+    } catch (error) {
+      if (!(error instanceof RequestFailedError)) throw error;
+      if (limitedRetries && backoff.numberOfRetries() > 5) throw error;
+
+      await backoff.nextDelay();
+    }
   }
 }
 
@@ -54,8 +56,4 @@ export function disableRetries() {
 export function limitRetries() {
   retriesAreDisabled = undefined;
   limitedRetries = true;
-}
-
-function calculateDelay(retryCount: number): number {
-  return Math.pow(2, Math.min(retryCount, 16)) * 500;
 }

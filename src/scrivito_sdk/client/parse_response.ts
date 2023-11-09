@@ -1,14 +1,19 @@
-import { RawResponse, RequestFailedError } from 'scrivito_sdk/client';
+import { RequestFailedError } from 'scrivito_sdk/client';
 import { ClientError } from 'scrivito_sdk/client/client_error';
 import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
-import { uniqueErrorMessage } from 'scrivito_sdk/common';
+import { registerAsyncTask, uniqueErrorMessage } from 'scrivito_sdk/common';
 import { parseOrThrowRequestFailedError } from './cms_rest_api/parse_or_throw_request_failed_error';
 import { isErrorResponse } from './is_error_response';
 
 export class AccessDeniedError extends ClientError {}
 
 /** return the parsed JSON for a successful response, or throw an error */
-export async function parseResponse({ httpStatus, responseText }: RawResponse) {
+export async function parseResponse(response: Response) {
+  // response.text is a macrotask in firefox.
+  // it needs to be registered explicitly, to work with flushPromises.
+  const responseText = await registerAsyncTask(() => response.text());
+  const httpStatus = response.status;
+
   if (httpStatus >= 200 && httpStatus < 300) {
     if (!responseText.length) return null;
     return parseOrThrowRequestFailedError(responseText);

@@ -13,6 +13,7 @@ import {
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
 import { ObjType } from 'scrivito_sdk/models';
 import { Obj, wrapInAppClass } from 'scrivito_sdk/realm';
+import { createStateContainer } from 'scrivito_sdk/state';
 
 /** @public */
 export function currentPage(): Obj | null {
@@ -48,6 +49,9 @@ export function currentSiteId(): string | null {
   const errorMessage = forbiddenSiteContext.current();
   if (errorMessage) throw new ScrivitoError(errorMessage);
 
+  const customComponentSiteId = customComponentSiteIdState.get();
+  if (customComponentSiteId !== undefined) return customComponentSiteId;
+
   return (
     currentSiteContext.current() ?? getCurrentRoute()?.siteData?.siteId ?? null
   );
@@ -59,4 +63,10 @@ export function withDefaultSiteContext<T>(fn: () => T): T {
 
 export function withForbiddenSiteContext<T>(message: string, fn: () => T): T {
   return forbiddenSiteContext.runWith(message, fn);
+}
+
+const customComponentSiteIdState = createStateContainer<string | null>();
+
+export function setCustomComponentSiteId(siteId: string | null): void {
+  customComponentSiteIdState.set(siteId);
 }

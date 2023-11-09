@@ -63,9 +63,7 @@ export function assertValidResultItem(
   const { _id: id } = autocorrectResultItemId(resultItem as ResultItem);
 
   if (!isValidDataId(id)) {
-    throw new ArgumentError(
-      '"id" key of a result object must contain a valid data ID'
-    );
+    throw new ArgumentError('"_id" key must be numeric or hex');
   }
 }
 

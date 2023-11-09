@@ -28,7 +28,7 @@ function printObject(object: {}): string {
 
   if (isElement(object)) {
     return `[object HTMLElement ${printTruncated(
-      (<Element>object).outerHTML
+      (object as Element).outerHTML
     )}]`;
   }
 

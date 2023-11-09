@@ -20,8 +20,8 @@ import { load } from 'scrivito_sdk/loadable';
 import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react/connect';
 import {
-  useDataContext,
   useDataStack,
+  usePlaceholders,
 } from 'scrivito_sdk/react/data_context_container';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
@@ -36,7 +36,7 @@ export const LinkTag = connect(function LinkTag(props: {
   children?: React.ReactNode;
 }) {
   const dataStack = useDataStack();
-  const dataContext = useDataContext();
+  const placeholders = usePlaceholders();
 
   checkLinkTagProps(props);
 
@@ -122,7 +122,7 @@ export const LinkTag = connect(function LinkTag(props: {
 
     if (singlePlaceholder) {
       const url = replacePlaceholdersWithData(singlePlaceholder, {
-        dataContext,
+        placeholders,
         dataStack,
       });
 

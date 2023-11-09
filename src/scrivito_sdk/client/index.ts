@@ -9,7 +9,6 @@ export type {
   AuthorizationProvider,
   BackendResponse,
 } from 'scrivito_sdk/client/cms_rest_api';
-export type { RawResponse } from 'scrivito_sdk/client/raw_response';
 export { RequestFailedError } from 'scrivito_sdk/client/request_failed_error';
 export { retrieveObj } from 'scrivito_sdk/client/obj_retrieval';
 export {
@@ -22,7 +21,6 @@ export {
   setJrRestApiEndpoint,
   getJrRestApiUrl,
   JrRestApi,
-  getWithoutLoginRedirect,
 } from 'scrivito_sdk/client/jr_rest_api';
 export { ClientError } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
@@ -31,7 +29,7 @@ export type {
   BackendFacetQueryResponse,
   BackendRequestFacet,
 } from 'scrivito_sdk/client/facet_query_retrieval';
-export { fetchToRawResponse } from 'scrivito_sdk/client/fetch_to_raw_response';
+export { fetchWithTimeout } from 'scrivito_sdk/client/fetch_with_timeout';
 export type {
   BackendSuggestParams,
   BackendSuggestResponse,
@@ -49,6 +47,7 @@ export {
   isWorkspaceObjSpaceId,
   isObjSpaceId,
 } from 'scrivito_sdk/client/obj_space_id';
+export { loginRedirectAuthorizationProvider } from 'scrivito_sdk/client/login_redirect_authorization_provider';
 export type {
   ObjSpaceId,
   WorkspaceObjSpaceId,
@@ -119,7 +118,10 @@ export { PublicAuthentication } from 'scrivito_sdk/client/public_authentication'
 export {
   requestApiIdempotent,
   requestApiNonIdempotent,
-  USER_IS_LOGGED_IN_PARAM_NAME,
 } from 'scrivito_sdk/client/request_api';
-export { disableLoginRedirect } from 'scrivito_sdk/client/login_redirect';
+export {
+  disableUserIsLoggedInParam,
+  USER_IS_LOGGED_IN_PARAM_NAME,
+} from 'scrivito_sdk/client/authentication_url';
 export { retryOnRequestFailed } from 'scrivito_sdk/client/retry';
+export { TokenAuthorizationProvider } from 'scrivito_sdk/client/token_authorization_provider';

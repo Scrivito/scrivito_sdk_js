@@ -1,4 +1,7 @@
-import { RawResponse, RequestFailedError } from 'scrivito_sdk/client';
+import {
+  RequestFailedError,
+  loginRedirectAuthorizationProvider,
+} from 'scrivito_sdk/client';
 import { ClientError } from 'scrivito_sdk/client/client_error';
 import { FetchOptions, Priority, fetch } from 'scrivito_sdk/client/fetch';
 import {
@@ -18,8 +21,8 @@ export class MissingWorkspaceError extends ScrivitoError {}
 export interface AuthorizationProvider {
   currentState?: () => string | null;
   authorize: (
-    request: (auth: string | undefined) => Promise<RawResponse>
-  ) => Promise<RawResponse>;
+    request: (auth: string | undefined) => Promise<Response>
+  ) => Promise<Response>;
 }
 
 export type BackendResponse = unknown;
@@ -144,7 +147,7 @@ class CmsRestApi {
       method: 'PUT',
       path: `sessions/${sessionId}`,
       requestParams,
-      providedAuthorization: null,
+      providedAuthorization: loginRedirectAuthorizationProvider,
     });
 
     return response as SessionData;
@@ -210,24 +213,26 @@ class CmsRestApi {
     method: string;
     path: string;
     requestParams?: ParamsType;
-    providedAuthorization?: string | null;
+    providedAuthorization?: string | AuthorizationProvider;
   }): Promise<BackendResponse> {
     await this.ensureEnabledAndInitialized();
 
-    const doRequest = () =>
-      this.requestWithAuthorization(providedAuthorization, (authorization) =>
-        this.requestAndConvertToRawResponse({
-          method,
-          path,
-          requestParams,
-          authorization,
-        })
+    const sendRequest = () =>
+      this.requestWithAuthorization(
+        providedAuthorization ?? this.getAuthHeaderValueProvider(),
+        (authorization) =>
+          this.requestAndConvertToRawResponse({
+            method,
+            path,
+            requestParams,
+            authorization,
+          })
       );
 
     try {
       return await (method === 'POST'
-        ? requestApiNonIdempotent(doRequest)
-        : requestApiIdempotent(doRequest));
+        ? requestApiNonIdempotent(sendRequest)
+        : requestApiIdempotent(sendRequest));
     } catch (error) {
       throw error instanceof ClientError &&
         error.code === 'precondition_not_met.workspace_not_found'
@@ -256,13 +261,12 @@ class CmsRestApi {
   }
 
   private async requestWithAuthorization(
-    providedAuthorization: string | null | undefined,
-    request: (authorization?: string) => Promise<RawResponse>
+    providedAuthorization: string | AuthorizationProvider,
+    request: (authorization?: string) => Promise<Response>
   ) {
-    if (providedAuthorization) return request(providedAuthorization);
-    if (providedAuthorization === null) return request();
-
-    return this.getAuthHeaderValueProvider().authorize(request);
+    return typeof providedAuthorization === 'string'
+      ? request(providedAuthorization)
+      : providedAuthorization.authorize(request);
   }
 
   private async requestAndConvertToRawResponse({
@@ -275,7 +279,7 @@ class CmsRestApi {
     path: string;
     requestParams?: ParamsType;
     authorization: string | undefined;
-  }): Promise<RawResponse> {
+  }): Promise<Response> {
     const options: FetchOptions = {
       authorization,
       forceVerification: this.forceVerification,
@@ -290,13 +294,9 @@ class CmsRestApi {
 
     const fetchResponse = await fetch(method, this.url, options);
 
-    const { responseText, status: httpStatus } = fetchResponse;
-    const retryAfterHeader =
-      // the CMS backend allows access to Retry-After only on a 429 response
-      (httpStatus === 429 && fetchResponse.getResponseHeader('Retry-After')) ||
-      undefined;
+    const { responseText, status } = fetchResponse;
 
-    return { httpStatus, responseText, retryAfterHeader };
+    return new Response(responseText, { status });
   }
 
   private getAuthHeaderValueProvider() {

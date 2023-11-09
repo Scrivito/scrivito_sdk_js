@@ -100,7 +100,7 @@ export function isAttributeValidationConstraintsWithOptions(
 }
 
 function isAttributeValidationOptions(
-  maybeAttributeValidationOptions: AttributeValidationOptions | object
+  maybeAttributeValidationOptions: AttributeValidationOptions | unknown
 ): maybeAttributeValidationOptions is AttributeValidationOptions {
   if (!maybeAttributeValidationOptions) return false;
   if (typeof maybeAttributeValidationOptions !== 'object') return false;

@@ -148,9 +148,9 @@ function useConnectedRender(
   return connector.render(originalRender);
 }
 
-export function isClassComponent(
-  component: React.ComponentType
-): component is React.ComponentClass {
+export function isClassComponent<Props>(
+  component: React.ComponentType<Props>
+): component is React.ComponentClass<Props> {
   return (
     typeof component === 'function' &&
     component.prototype &&
@@ -159,7 +159,7 @@ export function isClassComponent(
 }
 
 function isConnectedComponent<Props>(
-  component: React.ComponentType
+  component: React.ComponentType<Props>
 ): component is ConnectedComponentClass<Props> {
   return (
     (component as ConnectedComponentClass<Props>)

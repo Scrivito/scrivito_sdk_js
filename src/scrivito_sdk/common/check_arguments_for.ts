@@ -1,6 +1,6 @@
 import flatten from 'lodash-es/flatten';
 
-import { docUrl } from 'scrivito_sdk/common';
+import { docUrl, nodeEnv } from 'scrivito_sdk/common';
 import { logError } from 'scrivito_sdk/common/error_logging';
 import { ArgumentError } from 'scrivito_sdk/common/errors';
 import { throwNextTick } from 'scrivito_sdk/common/next_tick';
@@ -18,7 +18,7 @@ export function checkArgumentsFor(
   argumentsDefinitions: ArgumentDefinition[],
   options: { docPermalink: string; severity?: 'warning' }
 ): TypeCheck {
-  if (process.env.NODE_ENV !== 'development') return noop;
+  if (nodeEnv !== 'development') return noop;
 
   return (...givenArguments: unknown[]) => {
     let errorMessage;

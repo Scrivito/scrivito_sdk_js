@@ -90,7 +90,7 @@ export abstract class DataItem {
   /** @public */
   abstract update(attributes: DataItemAttributes): Promise<void>;
   /** @public */
-  abstract destroy(): Promise<void>;
+  abstract delete(): Promise<void>;
 }
 
 export function assertValidDataItemAttributes(

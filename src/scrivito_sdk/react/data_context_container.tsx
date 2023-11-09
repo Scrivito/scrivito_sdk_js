@@ -6,12 +6,12 @@ import {
   DataScope,
   DataStack,
   DataStackElement,
-  toDataContext,
+  computePlaceholders,
 } from 'scrivito_sdk/data_integration';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface DataContextContainer {
-  dataContext: DataContext;
+  placeholders: DataContext;
   dataStack: DataStack;
 }
 
@@ -23,8 +23,8 @@ export function useDataContextContainer(): DataContextContainer | undefined {
   return React.useContext(DataStackReactContext);
 }
 
-export function useDataContext(): DataContext | undefined {
-  return React.useContext(DataStackReactContext)?.dataContext;
+export function usePlaceholders(): DataContext | undefined {
+  return React.useContext(DataStackReactContext)?.placeholders;
 }
 
 export function useDataStack(): DataStack | undefined {
@@ -40,37 +40,67 @@ export function PushOntoDataStack({
   item,
   children,
 }: {
-  item: DataContext | DataItem | DataScope | Obj;
+  item:
+    | DataItem
+    | DataScope
+    // Shortcut for tests only
+    | DataStackElement;
   children: React.ReactElement;
 }) {
-  const prevDataStack =
-    React.useContext(DataStackReactContext)?.dataStack || [];
+  const dataStack = React.useContext(DataStackReactContext)?.dataStack || [];
+  const stackElement = computeStackElement();
 
   return (
     <DataStackReactContext.Provider
-      value={computeContextValue(item, prevDataStack)}
+      value={{ dataStack: [stackElement, ...dataStack], placeholders: {} }}
       children={children}
     />
   );
+
+  function computeStackElement() {
+    if (item instanceof DataItem) {
+      return {
+        _class: item.dataClass().name(),
+        _id: item.id(),
+      };
+    }
+
+    return item instanceof DataScope ? item.toPojo() : item;
+  }
 }
 
-function computeContextValue(
-  givenDataContext: DataContext | DataItem | DataScope | Obj,
-  prevDataStack: DataStack
-) {
-  if (givenDataContext instanceof DataScope) {
+export function ProvidePlaceholders({
+  source,
+  children,
+}: {
+  source: DataContext | DataItem | DataScope | Obj;
+  children: React.ReactElement;
+}) {
+  const dataStack = React.useContext(DataStackReactContext)?.dataStack || [];
+
+  return (
+    <DataStackReactContext.Provider
+      value={computeValue()}
+      children={children}
+    />
+  );
+
+  function computeValue() {
+    if (source instanceof DataScope) {
+      return {
+        dataStack: [source.toPojo(), ...dataStack],
+        placeholders: {},
+      };
+    }
+
+    const placeholders = computePlaceholders(unwrapAppClass(source));
+
+    const { _class, _id } = placeholders;
+    const stackElement = _class && _id && { _class, _id };
+
     return {
-      dataContext: {},
-      dataStack: [givenDataContext.toPojo(), ...prevDataStack],
+      dataStack: stackElement ? [stackElement, ...dataStack] : dataStack,
+      placeholders,
     };
   }
-
-  const dataContext = toDataContext(unwrapAppClass(givenDataContext));
-
-  const { _class, _id } = dataContext;
-
-  const dataStack =
-    _class && _id ? [{ _class, _id }, ...prevDataStack] : prevDataStack;
-
-  return { dataStack, dataContext };
 }

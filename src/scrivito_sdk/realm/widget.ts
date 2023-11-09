@@ -111,8 +111,13 @@ export class Widget<
     return wrapInAppClass<AttrDefs>(basicWidget);
   }
 
+  /** @deprecated Use `Widget#delete` instead */
   destroy(): void {
-    this._scrivitoPrivateContent.remove();
+    this.delete();
+  }
+
+  delete(): void {
+    this._scrivitoPrivateContent.delete();
   }
 
   container(): Obj | Widget {

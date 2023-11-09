@@ -1,6 +1,6 @@
-import { getConfiguredTenant } from 'scrivito_sdk/app_support/configured_tenant';
-import { getWithoutLoginRedirect } from 'scrivito_sdk/client';
+import { JrRestApi } from 'scrivito_sdk/client';
 import { LoadableData } from 'scrivito_sdk/loadable';
+import { ensureConfiguredTenant } from './configured_tenant';
 
 export interface UserInfo {
   sub: string;
@@ -13,8 +13,10 @@ export function getUserInfo(): UserInfo | null | undefined {
   return loadableUserInfo.get();
 }
 
-export function getUserInfoPath(): string {
-  return `iam/instances/${getConfiguredTenant()}/userinfo`;
+export async function getUserInfoPath(): Promise<string> {
+  const tenant = await ensureConfiguredTenant();
+
+  return `iam/instances/${tenant}/userinfo`;
 }
 
 // For test purposes only
@@ -24,5 +26,10 @@ export function setUserInfo(userinfo: UserInfo | null): void {
 
 const loadableUserInfo = new LoadableData<UserInfo | null>({
   loader: async () =>
-    getWithoutLoginRedirect(getUserInfoPath()) as Promise<UserInfo>,
+    JrRestApi.getWithoutAuth(await getUserInfoPath()) as Promise<UserInfo>,
 });
+
+/** Throws an error, while data is still loading */
+export function getUserInfoOrThrow(): UserInfo | null {
+  return loadableUserInfo.getOrThrow();
+}

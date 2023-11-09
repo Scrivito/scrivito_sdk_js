@@ -1,7 +1,6 @@
 // @rewire
-import { randomHex } from 'scrivito_sdk/common';
+import { randomHex, scrollElementIntoView } from 'scrivito_sdk/common';
 import { getCurrentPageId } from './get_current_page_id';
-import { scrollElementIntoView } from './scroll_element_into_view';
 
 export type ScrollTarget = ObjFieldScrollTarget | WidgetScrollTarget;
 type RevealCallback = () => void;
@@ -24,7 +23,16 @@ export function registerScrollTarget(
   const targetKey = keyFor(targetId);
   const id = randomHex();
   const reveal = () => {
-    scrollElementIntoView(element);
+    scrollElementIntoView(element, {
+      // See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView for details
+      // * Chrome and Firefox support all options
+      // * Safari supports the most important options: "block" and "inline" (tested with Safari 12.1.1)
+      // * Edge: Unknown
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'center',
+    });
+
     if (onReveal) onReveal();
   };
 

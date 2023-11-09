@@ -112,6 +112,12 @@ abstract class AbstractStateStore<StateType>
       return;
     }
 
+    if (priorState === null) {
+      // if StateType includes null, then it is not fully partial
+      // and this methods should not be used!
+      throw new InternalError();
+    }
+
     if (newSubState === undefined) {
       const priorKeys = Object.keys(priorState);
       if (priorKeys.length === 1 && priorKeys[0] === key) {
@@ -121,23 +127,14 @@ abstract class AbstractStateStore<StateType>
       }
     }
 
-    if (priorState === null) {
-      // if StateType includes null, then it is not fully partial
-      // and this methods should not be used!
-      throw new InternalError();
-    }
-
-    // We know that priorState isn't null or undefined
-    const priorStateAsNonNull = priorState as NonNullable<StateType>;
-
     performAsStateChange(() => {
       if (newSubState === undefined) {
         // remove undefined keys, avoid memory leak
-        delete priorStateAsNonNull[key];
+        delete priorState[key];
       } else {
         // Since StateType is fully partial, this is true:
         // (SubType<StateType, K> | undefined) == SubType<StateType, K>
-        priorStateAsNonNull[key] = newSubState as SubType<StateType, K>;
+        priorState[key] = newSubState as SubType<StateType, K>;
       }
     });
   }

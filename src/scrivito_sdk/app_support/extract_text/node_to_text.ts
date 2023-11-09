@@ -8,6 +8,13 @@ export function nodeToText(node: Node): string {
   if (nodeName === '#text') return node.textContent || '';
 
   return childNodeListToArray(node.childNodes)
-    .map((child) => nodeToText(child))
-    .join(' ');
+    .map((child) =>
+      INLINE_NODES.includes(child.nodeName)
+        ? nodeToText(child)
+        : ` ${nodeToText(child)} `
+    )
+    .join('');
 }
+
+/** @see htmlToTextForNode for tags we consider inline */
+const INLINE_NODES = ['#text', 'A'];

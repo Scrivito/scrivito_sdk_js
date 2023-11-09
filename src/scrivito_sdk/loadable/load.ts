@@ -1,4 +1,3 @@
-// @rewire
 import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
 import { getValueOrThrowError } from 'scrivito_sdk/loadable/loadable_state';
 import { observeAndLoad } from 'scrivito_sdk/loadable/observe_and_load';

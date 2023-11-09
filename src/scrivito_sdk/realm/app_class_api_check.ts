@@ -2,6 +2,7 @@ import {
   PositiveInteger,
   checkArgumentsFor,
   classify,
+  nodeEnv,
   tcomb as t,
   underscore,
 } from 'scrivito_sdk/common';
@@ -24,7 +25,7 @@ export const {
   checkProvideDataClass,
   checkProvideDataItem,
 } = (() => {
-  if (process.env.NODE_ENV !== 'development') {
+  if (nodeEnv !== 'development') {
     return {
       checkCreateWidgetClass: noop,
       checkCreateObjClass: noop,
@@ -203,7 +204,13 @@ export const {
       'provideDataItem',
       [
         ['name', t.String],
-        ['read', t.Function],
+        [
+          'connection',
+          t.interface({
+            get: t.Function,
+            update: t.maybe(t.Function),
+          }),
+        ],
       ],
       {
         docPermalink: 'js-sdk/provideDataItem',

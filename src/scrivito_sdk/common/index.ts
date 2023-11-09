@@ -10,6 +10,7 @@ export { docUrl } from 'scrivito_sdk/common/doc_url';
 export type { TypeCheck } from 'scrivito_sdk/common/check_arguments_for';
 export { ContextContainer } from 'scrivito_sdk/common/context_container';
 export { Deferred } from 'scrivito_sdk/common/deferred';
+export { ensureUrlHasProtocol } from 'scrivito_sdk/common/ensure_url_has_protocol';
 export {
   ArgumentError,
   InternalError,
@@ -21,6 +22,7 @@ export {
   nextTick,
   setNextTickScheduler,
 } from 'scrivito_sdk/common/next_tick';
+export { nodeEnv } from 'scrivito_sdk/common/node_env';
 export { prettyPrint } from 'scrivito_sdk/common/pretty_print';
 export { tcomb } from 'scrivito_sdk/common/tcomb';
 export {
@@ -81,6 +83,7 @@ export {
 export { wait, waitMs } from 'scrivito_sdk/common/wait';
 export { equals, equalsBestEffort } from 'scrivito_sdk/common/equals';
 export { promiseAndFinally } from 'scrivito_sdk/common/promise_and_finally';
+export { assumePresence } from 'scrivito_sdk/common/assume_presence';
 export {
   ScrivitoPromise,
   setScrivitoPromise,
@@ -120,3 +123,8 @@ export { isStringArray } from 'scrivito_sdk/common/is_string_array';
 export { isEmptyValue } from 'scrivito_sdk/common/is_empty_value';
 export { computeAncestorPaths } from 'scrivito_sdk/common/compute_ancestor_paths';
 export { isLocalhostUrl } from 'scrivito_sdk/common/is_localhost_url';
+export {
+  registerAsyncTask,
+  setRegisterAsyncTaskHandler,
+} from 'scrivito_sdk/common/register_async_task';
+export { scrollElementIntoView } from 'scrivito_sdk/common/scroll_element_into_view';

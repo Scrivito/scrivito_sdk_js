@@ -1,27 +1,41 @@
+import { anonymousVisitorAuthHandler } from 'scrivito_sdk/app_support/anonymous_visitor_auth_handler';
+import { insideUiAuthHandler } from 'scrivito_sdk/app_support/inside_ui_auth_handler';
+import { isInLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
+import { loggedInVisitorAuthHandler } from 'scrivito_sdk/app_support/logged_in_visitor_auth_handler';
+import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { User } from 'scrivito_sdk/app_support/user';
-import { getUserInfo } from 'scrivito_sdk/app_support/userinfo';
-import { ClientError } from 'scrivito_sdk/client';
+import { getJrRestApiUrl } from 'scrivito_sdk/client';
+import { redirectTo } from 'scrivito_sdk/common';
 
 /** @public */
 export function currentUser(): User | null {
-  const userData = getUserData();
+  const userData = authHandler().getUserData();
+
   return userData ? new User(userData) : null;
 }
 
-function getUserData() {
-  try {
-    const userInfo = getUserInfo();
+/** @public */
+export function isUserLoggedIn(): boolean {
+  return authHandler().isUserLoggedIn();
+}
 
-    if (!userInfo) return null;
+/** @public */
+export function ensureUserIsLoggedIn(): void {
+  return authHandler().ensureUserIsLoggedIn();
+}
 
-    const { sub: id, name, email } = userInfo;
+/** @public */
+export function logout(): void {
+  logoutAsync();
+}
 
-    return { id, name, email };
-  } catch (error: unknown) {
-    if (error instanceof ClientError && error.code === 'auth_missing') {
-      return null;
-    }
+async function logoutAsync() {
+  redirectTo(await getJrRestApiUrl('iam/logout'));
+}
 
-    throw error;
-  }
+function authHandler() {
+  if (uiAdapter) return insideUiAuthHandler;
+  if (isInLoggedInState()) return loggedInVisitorAuthHandler;
+
+  return anonymousVisitorAuthHandler;
 }

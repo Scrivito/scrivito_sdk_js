@@ -256,7 +256,7 @@ export class ExternalDataItem extends DataItem {
     this.notifyWrite();
   }
 
-  async destroy(): Promise<void> {
+  async delete(): Promise<void> {
     const deleteCallback = this.getDeleteCallback();
     await deleteCallback(this._dataId);
 

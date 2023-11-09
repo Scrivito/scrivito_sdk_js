@@ -5,7 +5,7 @@ import { dataContextFromQueryParams } from 'scrivito_sdk/data_integration';
 import { BasicObj } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react';
 import { getDataErrorComponent } from 'scrivito_sdk/react/component_registry';
-import { PushOntoDataStack } from 'scrivito_sdk/react/data_context_container';
+import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
 
 export const DetailsPageDataContext = connect(function DetailsPageDataContext({
   page,
@@ -25,7 +25,9 @@ export const DetailsPageDataContext = connect(function DetailsPageDataContext({
 
   if (!dataContext) return children;
 
-  return <PushOntoDataStack item={dataContext}>{children}</PushOntoDataStack>;
+  return (
+    <ProvidePlaceholders source={dataContext}>{children}</ProvidePlaceholders>
+  );
 });
 
 function renderDataError() {

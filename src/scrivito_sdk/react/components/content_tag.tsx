@@ -22,7 +22,7 @@ import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { connect } from 'scrivito_sdk/react/connect';
-import { PushOntoDataStack } from 'scrivito_sdk/react/data_context_container';
+import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
 export interface ContentTagProps<
@@ -116,7 +116,9 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
     if (!dataContext) return attributeValue;
 
     return (
-      <PushOntoDataStack item={dataContext}>{attributeValue}</PushOntoDataStack>
+      <ProvidePlaceholders source={dataContext}>
+        {attributeValue}
+      </ProvidePlaceholders>
     );
   });
 

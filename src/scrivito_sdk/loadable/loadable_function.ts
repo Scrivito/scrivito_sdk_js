@@ -30,6 +30,8 @@ interface FunctionState<T> {
  *
  * If the function has parameters, an 'argsToString' function must be provided,
  * which maps each unique input to a unique string (which is used as the cache key).
+ *
+ * It is recommended to use primitive parameters, e.g. an obj ID instead of a `BasicObj` instance.
  */
 export function loadableFunction<Args extends unknown[], Return>(
   defaultValue: Return,

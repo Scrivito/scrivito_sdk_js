@@ -407,8 +407,13 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
     );
   }
 
+  /** @deprecated Use `Obj#delete` instead */
   destroy(): void {
-    this._scrivitoPrivateContent.destroy();
+    this.delete();
+  }
+
+  delete(): void {
+    this._scrivitoPrivateContent.delete();
   }
 
   attributeDefinitions(): NormalizedAttributeDefinitions {

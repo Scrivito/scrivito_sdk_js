@@ -39,11 +39,7 @@ export function fetch(
   if (xmlHttpRequest === undefined) {
     return ScrivitoPromise.resolve({
       status: 432,
-      responseText: JSON.stringify({
-        error: 'Forbidden',
-        code: 'auth_missing',
-        details: { visit: 'example.com' },
-      }),
+      responseText: JSON.stringify({ error: 'Missing XmlHttpRequest' }),
     } as XMLHttpRequest);
   }
 

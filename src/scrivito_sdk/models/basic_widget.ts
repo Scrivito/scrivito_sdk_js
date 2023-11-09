@@ -215,8 +215,8 @@ export class BasicWidget implements ContentValueProvider {
     widget.obj().insertWidget(this, { after: widget });
   }
 
-  remove(): void {
-    this.obj().removeWidget(this);
+  delete(): void {
+    this.obj().deleteWidget(this);
   }
 
   copy(): BasicWidget {

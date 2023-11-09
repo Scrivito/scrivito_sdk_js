@@ -66,12 +66,12 @@ export { configureContentBrowser } from 'scrivito_sdk/app_support/configure_cont
 export { configureObjClassForContentType } from 'scrivito_sdk/app_support/configure_obj_class_for_content_type';
 export { configurePreviewSizes } from 'scrivito_sdk/app_support/preview_sizes';
 export { currentEditor } from 'scrivito_sdk/app_support/current_editor';
-export { currentUser } from 'scrivito_sdk/app_support/current_user';
 export {
+  currentUser,
   isUserLoggedIn,
   ensureUserIsLoggedIn,
   logout,
-} from 'scrivito_sdk/app_support/is_user_logged_in';
+} from 'scrivito_sdk/app_support/current_user';
 export {
   currentPage,
   currentPageParams,
@@ -102,6 +102,11 @@ export { editorLanguage } from 'scrivito_sdk/app_support/editor_language';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
 export { provideDataClass } from 'scrivito_sdk/app_support/provide_data_class';
 export { provideDataItem } from 'scrivito_sdk/app_support/provide_data_item';
+export type {
+  DataClass,
+  DataItem,
+  DataScope,
+} from 'scrivito_sdk/data_integration/data_class';
 
 export { provideEditingConfig } from 'scrivito_sdk/app_support/provide_editing_config';
 export type {

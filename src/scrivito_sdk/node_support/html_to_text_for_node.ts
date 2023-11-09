@@ -4,6 +4,7 @@ export function htmlToTextForNode(html: string): string {
   return htmlToText(html, htmlToTextOptions);
 }
 
+/** @see nodeToText for tags we consider inline */
 const htmlToTextOptions = {
   tags: {
     '': { format: 'block' },

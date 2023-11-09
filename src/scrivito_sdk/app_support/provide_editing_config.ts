@@ -14,7 +14,12 @@ import {
 } from 'scrivito_sdk/app_support/editing_config_store';
 import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { ValidationsConfigType } from 'scrivito_sdk/app_support/validations_config';
-import { checkArgumentsFor, nextTick, tcomb as t } from 'scrivito_sdk/common';
+import {
+  checkArgumentsFor,
+  nextTick,
+  nodeEnv,
+  tcomb as t,
+} from 'scrivito_sdk/common';
 import {
   DataClass,
   DataItem,
@@ -105,7 +110,7 @@ export function getAttributeEditingOptionsFor(
 }
 
 const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
-  if (process.env.NODE_ENV !== 'development') {
+  if (nodeEnv !== 'development') {
     return {
       checkProvideEditingConfig: () => {},
       throwInvalidOptions: () => {},

@@ -72,7 +72,7 @@ export interface LivingComponentGroupDescription {
 }
 
 export type ComponentGroupDescription =
-  | LivingComponentGroupDescriptionForUi
+  | LivingComponentGroupDescription
   | RegisteredComponentGroupDescription;
 
 export interface PropertiesGroupDescription {
@@ -155,13 +155,6 @@ interface InitialContent {
 }
 
 type InitializeCallback<T extends Obj | Widget> = (instance: T) => void;
-
-interface LivingComponentGroupDescriptionForUi {
-  title: string;
-  component: null;
-  key: string;
-  enabled?: boolean;
-}
 
 type PropertiesGroupsCallback<T extends Obj | Widget> = (
   content: T

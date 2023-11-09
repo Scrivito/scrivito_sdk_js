@@ -6,20 +6,19 @@ import { ExternalDataItem } from 'scrivito_sdk/data_integration/external_data_cl
 import { externalDataToDataContext } from 'scrivito_sdk/data_integration/external_data_to_data_context';
 import { ObjDataItem } from 'scrivito_sdk/data_integration/obj_data_class';
 import { BasicObj } from 'scrivito_sdk/models';
-import { unwrapAppClass } from 'scrivito_sdk/realm';
 
-export function toDataContext(
-  maybeDataContext: DataContext | DataItem | BasicObj
+export function computePlaceholders(
+  from: DataContext | DataItem | BasicObj
 ): DataContext {
-  if (maybeDataContext instanceof DataItem) {
-    return dataItemToDataContext(maybeDataContext);
+  if (from instanceof DataItem) {
+    return dataItemToDataContext(from);
   }
 
-  if (maybeDataContext instanceof BasicObj) {
-    return basicObjToDataContext(maybeDataContext);
+  if (from instanceof BasicObj) {
+    return basicObjToDataContext(from);
   }
 
-  return maybeDataContext;
+  return from;
 }
 
 function dataItemToDataContext(dataItem: DataItem): DataContext {
@@ -32,7 +31,8 @@ function dataItemToDataContext(dataItem: DataItem): DataContext {
 }
 
 function objDataItemToDataContext(dataItem: ObjDataItem) {
-  return basicObjToDataContext(unwrapAppClass(dataItem.obj()));
+  const basiObj = dataItem.getBasicObj();
+  return basiObj ? basicObjToDataContext(basiObj) : {};
 }
 
 function externalDataItemToDataContext(dataItem: ExternalDataItem) {

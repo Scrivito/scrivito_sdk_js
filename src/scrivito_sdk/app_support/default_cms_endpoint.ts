@@ -1,7 +1,8 @@
 import * as URI from 'urijs';
 
 import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
-import { isUserLoggedIn } from 'scrivito_sdk/app_support/is_user_logged_in';
+import { isUserLoggedIn } from 'scrivito_sdk/app_support/current_user';
+import { isRunningInBrowser } from 'scrivito_sdk/app_support/node_adapter';
 
 export const DEFAULT_CMS_ENDPOINT = 'api.scrivito.com';
 
@@ -13,7 +14,7 @@ export function getDefaultCmsEndpoint({
   configuredEndpoint?: string;
 }): string {
   return withEnsuredProtocol(
-    isUserLoggedIn()
+    isRunningInBrowser() && isUserLoggedIn()
       ? (configuredJrRestApiEndpoint || getJrRestApiDefaultEndpoint()) +
           '/scrivito'
       : configuredEndpoint || DEFAULT_CMS_ENDPOINT

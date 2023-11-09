@@ -408,7 +408,7 @@ export class BasicObj implements ContentValueProvider {
     this.startLinkResolution();
   }
 
-  destroy(): void {
+  delete(): void {
     this.update({ _markedDeleted: [true] });
   }
 
@@ -433,7 +433,7 @@ export class BasicObj implements ContentValueProvider {
     }
   }
 
-  removeWidget(widget: BasicWidget): void {
+  deleteWidget(widget: BasicWidget): void {
     const widgetOrWidgetlistField = this.fieldContainingWidget(widget);
     if (!widgetOrWidgetlistField) return;
 

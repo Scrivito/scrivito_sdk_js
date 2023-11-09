@@ -2,10 +2,16 @@
 
 import {
   AuthorizationProvider,
+  fetchWithTimeout,
   requestApiIdempotent,
   requestApiNonIdempotent,
 } from 'scrivito_sdk/client';
-import { fetchToRawResponse } from 'scrivito_sdk/client/fetch_to_raw_response';
+import {
+  ApiClient,
+  FetchData,
+  FetchOptions,
+  FetchParams,
+} from 'scrivito_sdk/client/api_client';
 import { Deferred } from 'scrivito_sdk/common';
 
 let authProvider: AuthorizationProvider | undefined;
@@ -32,7 +38,8 @@ export function setJrRestApiEndpoint(endpoint: string): void {
 }
 
 export async function getJrRestApiUrl(path: string): Promise<string> {
-  return `${await getJrRestApiEndpoint()}/${path}`;
+  const sanitizedPath = path.replace(/^\//, '');
+  return `${await getJrRestApiEndpoint()}/${sanitizedPath}`;
 }
 
 // For test purpose only.
@@ -41,109 +48,33 @@ export function resetJrRestApi(): void {
   endpointDeferred = new Deferred();
 }
 
-interface Options {
-  params?: Params;
-  data?: Data;
-}
-
-interface Params {
-  [name: string]: string | null | undefined;
-}
-
-interface Data {
-  [name: string]: unknown;
-}
-
-type Method =
-  | 'delete'
-  | 'get'
-  | 'patch'
-  | 'post'
-  | 'put'
-  | 'DELETE'
-  | 'GET'
-  | 'PATCH'
-  | 'POST'
-  | 'PUT';
-
 /** @public */
-export const JrRestApi = {
-  delete: _delete,
-  fetch,
-  get,
-  patch,
-  post,
-  put,
-};
+export const JrRestApi = new ApiClient(fetch);
 
-function fetch(
-  path: string,
-  { method, ...otherOptions }: { method?: Method } & Options = {}
-): Promise<unknown> {
-  const apiMethod: Method = method || 'get';
+async function fetch(path: string, options?: FetchOptions) {
+  const method = options?.method?.toUpperCase() ?? 'GET';
 
-  return JrRestApi[apiMethod.toLowerCase() as Lowercase<Method>](
-    path,
-    otherOptions
-  );
-}
-
-// exported for test purposes only
-export async function get(
-  path: string,
-  options?: Options,
-  withLoginRedirect = true
-): Promise<unknown> {
-  return request('GET', path, options, withLoginRedirect);
-}
-
-export async function getWithoutLoginRedirect(
-  path: string,
-  options?: Options
-): Promise<unknown> {
-  return get(path, options, false);
-}
-
-async function post(path: string, options?: Options): Promise<unknown> {
-  return request('POST', path, options);
-}
-
-async function put(path: string, options?: Options): Promise<unknown> {
-  return request('PUT', path, options);
-}
-
-async function patch(path: string, options?: Options): Promise<unknown> {
-  return request('PATCH', path, options);
-}
-
-async function _delete(path: string, options?: Options): Promise<unknown> {
-  return request('DELETE', path, options);
-}
-
-async function request(
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-  path: string,
-  options?: Options,
-  withLoginRedirect = true
-) {
   const plainRequest = async (authorization?: string) =>
-    fetchToRawResponse(
+    fetchWithTimeout(
       await calculateRequestUrl(path, options?.params),
       calculateOptions(method, options?.data, authorization)
     );
 
   const currentAuthProvider = authProvider;
 
-  const doRequest = currentAuthProvider
-    ? () => currentAuthProvider.authorize(plainRequest)
-    : () => plainRequest();
+  const withAuth = options?.withAuth ?? true;
+
+  const sendRequest =
+    currentAuthProvider && withAuth
+      ? () => currentAuthProvider.authorize(plainRequest)
+      : plainRequest;
 
   return method === 'POST'
-    ? requestApiNonIdempotent(doRequest, withLoginRedirect)
-    : requestApiIdempotent(doRequest, withLoginRedirect);
+    ? requestApiNonIdempotent(sendRequest)
+    : requestApiIdempotent(sendRequest);
 }
 
-async function calculateRequestUrl(path: string, params?: Params) {
+async function calculateRequestUrl(path: string, params?: FetchParams) {
   const apiUrl = new URL(await getJrRestApiUrl(path));
 
   if (params) {
@@ -159,7 +90,7 @@ async function calculateRequestUrl(path: string, params?: Params) {
 
 function calculateOptions(
   method: string,
-  data?: Data,
+  data?: FetchData,
   authorization?: string
 ): RequestInit {
   const headers: Record<string, string> = {};

@@ -13,7 +13,7 @@ export {
   getDataContextParameters,
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
-export { toDataContext } from 'scrivito_sdk/data_integration/to_data_context';
+export { computePlaceholders } from 'scrivito_sdk/data_integration/compute_placeholders';
 export type {
   DataStackElement,
   DataStack,
@@ -43,7 +43,7 @@ export {
 } from 'scrivito_sdk/data_integration/data_locator';
 export { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
 export { applyDataLocator } from 'scrivito_sdk/data_integration/apply_data_locator';
-export type { ExternalDataItemReadCallback } from 'scrivito_sdk/data_integration/provide_external_data_item';
+export type { ExternalDataItemConnection } from 'scrivito_sdk/data_integration/provide_external_data_item';
 export { provideExternalDataItem } from 'scrivito_sdk/data_integration/provide_external_data_item';
 export {
   isSinglePlaceholder,

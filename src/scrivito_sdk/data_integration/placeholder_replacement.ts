@@ -16,11 +16,11 @@ export function isSinglePlaceholder(text: string): boolean {
 export function replacePlaceholdersWithData(
   text: string,
   {
-    dataContext,
+    placeholders,
     dataStack,
     transform,
   }: {
-    dataContext?: DataContext;
+    placeholders?: DataContext;
     dataStack?: DataStack;
     transform?: (rawValue: string) => string;
   } = {}
@@ -37,7 +37,7 @@ export function replacePlaceholdersWithData(
       );
     }
 
-    const rawValue = getDataContextValue(identifier, dataContext || {});
+    const rawValue = getDataContextValue(identifier, placeholders || {});
     if (rawValue === undefined) return placeholder;
 
     return transform ? transform(rawValue) : rawValue;

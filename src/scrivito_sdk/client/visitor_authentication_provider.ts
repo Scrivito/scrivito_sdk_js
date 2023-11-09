@@ -1,4 +1,4 @@
-import { AuthorizationProvider, RawResponse } from 'scrivito_sdk/client';
+import { AuthorizationProvider } from 'scrivito_sdk/client';
 import { VisitorSession, cmsRestApi } from 'scrivito_sdk/client/cms_rest_api';
 import { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
 import {
@@ -45,8 +45,8 @@ export class VisitorAuthenticationProvider implements AuthorizationProvider {
   }
 
   async authorize(
-    request: (authorization: string | undefined) => Promise<RawResponse>
-  ): Promise<RawResponse> {
+    request: (authorization: string | undefined) => Promise<Response>
+  ): Promise<Response> {
     const sessionRequest = this.sessionRequest;
 
     let session: VisitorSession;
@@ -59,7 +59,7 @@ export class VisitorAuthenticationProvider implements AuthorizationProvider {
 
     const response = await request(`Session ${session.token}`);
 
-    if (response.httpStatus === 401) {
+    if (response.status === 401) {
       if (this.sessionRequest === sessionRequest) this.renewSession();
 
       return this.authorize(request);
@@ -74,7 +74,7 @@ export class VisitorAuthenticationProvider implements AuthorizationProvider {
 
   private async fetchSession() {
     try {
-      const token = await this.idToken.promise;
+      const token = await this.idToken;
       return await cmsRestApi.requestVisitorSession(this.sessionId, token);
     } catch (error) {
       throwNextTick(

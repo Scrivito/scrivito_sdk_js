@@ -9,7 +9,6 @@ import { establishUiConnection } from 'scrivito_sdk/app_support/establish_ui_con
 import { htmlToTextForBrowser } from 'scrivito_sdk/app_support/extract_text/html_to_text_for_browser';
 import { setHtmlToTextConverter } from 'scrivito_sdk/app_support/extract_text/remove_html_tags';
 import { initialContentFor } from 'scrivito_sdk/app_support/initialize_content';
-import { detectIsUserLoggedIn } from 'scrivito_sdk/app_support/is_user_logged_in';
 import { loadEditingSupport } from 'scrivito_sdk/app_support/load_editing_support';
 import { getCurrentNavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { setUiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
@@ -47,7 +46,6 @@ export function initializeSdk() {
   setHtmlToTextConverter(htmlToTextForBrowser);
   useXmlHttpRequest(XMLHttpRequest);
   initializeUiRedirect();
-  detectIsUserLoggedIn();
 
   const parentWindow = window.parent;
   const insideIFrame = parentWindow !== window;

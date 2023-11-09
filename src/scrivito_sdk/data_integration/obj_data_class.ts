@@ -197,8 +197,17 @@ export class ObjDataItem extends DataItem {
     return wrapInAppClass(this.getExistingObj());
   }
 
+  /** @internal */
+  getBasicObj(): BasicObj | null {
+    if (this._obj === undefined) {
+      this._obj = getDataObj(this._dataClass, this._dataId);
+    }
+
+    return this._obj;
+  }
+
   get(attributeName: string): unknown {
-    const obj = this.getObj();
+    const obj = this.getBasicObj();
     if (!obj) return null;
 
     const typeInfo = getAttributeTypeInfo(this.dataClassName(), attributeName);
@@ -225,31 +234,23 @@ export class ObjDataItem extends DataItem {
     return obj.finishSaving();
   }
 
-  async destroy(): Promise<void> {
-    const obj = this.getObj();
+  async delete(): Promise<void> {
+    const obj = this.getBasicObj();
 
     if (obj) {
-      obj.destroy();
+      obj.delete();
       return obj.finishSaving();
     }
   }
 
   private getExistingObj() {
-    const obj = this.getObj();
+    const obj = this.getBasicObj();
 
     if (!obj) {
       throw new ArgumentError(`Missing obj with ID ${this._dataId}`);
     }
 
     return obj;
-  }
-
-  private getObj() {
-    if (this._obj === undefined) {
-      this._obj = getDataObj(this._dataClass, this._dataId);
-    }
-
-    return this._obj;
   }
 
   private dataClassName() {

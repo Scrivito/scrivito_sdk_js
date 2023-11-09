@@ -21,11 +21,7 @@ import {
   getObjIncludingUnavailableFrom,
 } from 'scrivito_sdk/models';
 import {
-  autoConvertToLink,
-  autoConvertToLinklist,
   autoConvertToList,
-  autoConvertToReference,
-  autoConvertToReferencelist,
   autoConvertToSingle,
 } from 'scrivito_sdk/models/auto_convert';
 import { ContentValueProvider } from 'scrivito_sdk/models/basic_attribute_content';
@@ -66,18 +62,15 @@ export function deserialize(
     case 'integer':
       return deserializeIntegerValue(autoConvertToSingle(value));
     case 'link':
-      return deserializeLinkValue(autoConvertToLink(value));
+      return deserializeLinkValue(autoConvertToSingle(value));
     case 'linklist':
-      return deserializeLinklistValue(autoConvertToLinklist(value));
+      return deserializeLinklistValue(autoConvertToList(value));
     case 'multienum':
       return deserializeMultienumValue(autoConvertToList(value), typeInfo);
     case 'reference':
-      return deserializeReferenceValue(autoConvertToReference(value), model);
+      return deserializeReferenceValue(autoConvertToSingle(value), model);
     case 'referencelist':
-      return deserializeReferencelistValue(
-        autoConvertToReferencelist(value),
-        model
-      );
+      return deserializeReferencelistValue(autoConvertToList(value), model);
     case 'string':
       return deserializeHtmlOrStringValue(autoConvertToSingle(value));
     case 'stringlist':

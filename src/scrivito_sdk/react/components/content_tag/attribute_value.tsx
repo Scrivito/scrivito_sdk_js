@@ -199,7 +199,7 @@ function renderPropsForHtml(
     };
   }
 
-  const dataContext = dataContextContainer?.dataContext;
+  const placeholders = dataContextContainer?.placeholders;
   const dataStack = dataContextContainer?.dataStack;
 
   return {
@@ -207,7 +207,7 @@ function renderPropsForHtml(
       __html: replaceInternalLinks(
         diffContent ||
           replacePlaceholdersWithData(field.get(), {
-            dataContext,
+            placeholders,
             dataStack,
             transform: escape,
           }),
@@ -231,13 +231,13 @@ function renderPropsForString(
     }
   }
 
-  const dataContext = dataContextContainer?.dataContext;
+  const placeholders = dataContextContainer?.placeholders;
   const dataStack = dataContextContainer?.dataStack;
 
   return (
     customChildren ?? {
       children: replacePlaceholdersWithData(field.get(), {
-        dataContext,
+        placeholders,
         dataStack,
       }),
     }

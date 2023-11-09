@@ -1,14 +1,10 @@
 import { XMLHttpRequest } from 'w3c-xmlhttprequest';
-import { setApiKeyAuthorizationProviderClass } from 'scrivito_sdk/app_support/configure';
 import { setOriginProvider } from 'scrivito_sdk/app_support/current_origin';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setHtmlToTextConverter } from 'scrivito_sdk/app_support/extract_text/remove_html_tags';
 import { initialContentFor } from 'scrivito_sdk/app_support/initialize_content';
-import {
-  disableLoginRedirect,
-  useDefaultPriority,
-  useXmlHttpRequest,
-} from 'scrivito_sdk/client';
+import { setNodeAdapter } from 'scrivito_sdk/app_support/node_adapter';
+import { useDefaultPriority, useXmlHttpRequest } from 'scrivito_sdk/client';
 import {
   ObjBackendReplication,
   useReplicationStrategy,
@@ -26,6 +22,7 @@ export function initializeSdk() {
   useXmlHttpRequest(XMLHttpRequest);
   useDefaultPriority('background');
   setInitialContentFor(initialContentFor);
-  setApiKeyAuthorizationProviderClass(ApiKeyAuthorizationProvider);
-  disableLoginRedirect();
+  setNodeAdapter({
+    ApiKeyAuthorizationProvider,
+  });
 }

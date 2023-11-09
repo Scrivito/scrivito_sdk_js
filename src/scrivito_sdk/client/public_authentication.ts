@@ -1,8 +1,4 @@
-import {
-  AuthorizationProvider,
-  RawResponse,
-  RequestFailedError,
-} from 'scrivito_sdk/client';
+import { AuthorizationProvider, RequestFailedError } from 'scrivito_sdk/client';
 import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
 import {
   Verification,
@@ -10,7 +6,11 @@ import {
   Verificator,
   fetch as fetchVerificatorFunction,
 } from 'scrivito_sdk/client/verificator_functions';
-import { ScrivitoPromise, promiseAndFinally } from 'scrivito_sdk/common';
+import {
+  ScrivitoPromise,
+  promiseAndFinally,
+  registerAsyncTask,
+} from 'scrivito_sdk/common';
 
 export const ERROR_CODE_CLIENT_VERIFICATION_REQUIRED =
   'client_verification_required';
@@ -30,12 +30,17 @@ let verification: Verification | undefined;
 
 export const PublicAuthentication: AuthorizationProvider = {
   async authorize(
-    request: (authorization: string | undefined) => Promise<RawResponse>
-  ): Promise<RawResponse> {
+    request: (authorization: string | undefined) => Promise<Response>
+  ): Promise<Response> {
     const response = await request(currentAuthorization());
 
-    if (response.httpStatus === 401) {
-      const { details, code } = parseErrorResponse(response.responseText);
+    if (response.status === 401) {
+      // response.text is a macrotask in firefox.
+      // it needs to be registered explicitly, to work with flushPromises.
+      const responseText = await registerAsyncTask(() =>
+        response.clone().text()
+      );
+      const { details, code } = parseErrorResponse(responseText);
 
       if (code === ERROR_CODE_CLIENT_VERIFICATION_REQUIRED) {
         if (!isChallenge(details)) throw new RequestFailedError();
