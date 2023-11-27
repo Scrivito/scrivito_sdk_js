@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { importFrom } from 'scrivito_sdk/import_from';
-import { connect } from 'scrivito_sdk/react/connect';
+import { connect } from 'scrivito_sdk/react_connect';
 
 type WidgetTagProps = React.HTMLAttributes<HTMLElement> & {
   tag?: string;

@@ -21,8 +21,8 @@ import { importFrom } from 'scrivito_sdk/import_from';
 import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
-import { connect } from 'scrivito_sdk/react/connect';
 import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
+import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
 export interface ContentTagProps<

@@ -1,9 +1,9 @@
 import isEmpty from 'lodash-es/isEmpty';
-
-import { ObjSpaceId, getWorkspaceId } from 'scrivito_sdk/client';
 import {
   ObjJson,
+  ObjSpaceId,
   cmsRestApi,
+  getWorkspaceId,
   isUnavailableObjJson,
   retrieveObj,
 } from 'scrivito_sdk/client';

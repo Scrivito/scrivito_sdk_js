@@ -1,13 +1,13 @@
-import * as React from 'react';
+import { ReactNode, isValidElement } from 'react';
 
 type ElementType = string | React.ComponentType;
 
-export interface ForwardElementTypeProps {
+interface ForwardElementTypeProps {
   __scrivitoForwardElementType?: ElementType;
 }
 
-export function getElementType(node: React.ReactNode): ElementType | undefined {
-  if (React.isValidElement(node)) {
+export function getElementType(node: ReactNode): ElementType | undefined {
+  if (isValidElement(node)) {
     const forwardedType = (node.props as ForwardElementTypeProps)
       .__scrivitoForwardElementType;
 
@@ -16,7 +16,7 @@ export function getElementType(node: React.ReactNode): ElementType | undefined {
 }
 
 export function forwardElementTypeProps(
-  node: React.ReactNode
+  node: ReactNode
 ): ForwardElementTypeProps {
   return { __scrivitoForwardElementType: getElementType(node) };
 }

@@ -4,11 +4,14 @@ import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { registerComponentForAppClass } from 'scrivito_sdk/react/component_registry';
 import { WidgetComponentProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
-import { connect, isClassComponent } from 'scrivito_sdk/react/connect';
-import { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_component';
 import { PageComponentProps } from 'scrivito_sdk/react/get_component_for_page_class';
-import { getElementType } from 'scrivito_sdk/react/get_element_type';
 import { memo } from 'scrivito_sdk/react/memo';
+import {
+  connect,
+  displayNameFromComponent,
+  getElementType,
+  isClassComponent,
+} from 'scrivito_sdk/react_connect';
 import {
   AttributeDefinitions,
   ObjClass,

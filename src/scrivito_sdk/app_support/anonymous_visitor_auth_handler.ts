@@ -14,6 +14,14 @@ export const anonymousVisitorAuthHandler: AuthHandler = {
   ensureUserIsLoggedIn() {
     ensureUserIsLoggedInAsync();
   },
+
+  iamAuthProvider() {
+    return undefined;
+  },
+
+  loginHandler() {
+    return 'redirect';
+  },
 };
 
 async function ensureUserIsLoggedInAsync() {

@@ -6,8 +6,8 @@ import {
   ChildItem,
   RenderChild,
 } from 'scrivito_sdk/react/components/child_list_tag/child_item';
-import { connect } from 'scrivito_sdk/react/connect';
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
+import { connect } from 'scrivito_sdk/react_connect';
 import { Obj } from 'scrivito_sdk/realm';
 
 type ChildListTagProps = React.HTMLAttributes<HTMLElement> & {

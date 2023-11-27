@@ -1,5 +1,6 @@
 import { RequestFailedError } from 'scrivito_sdk/client';
 import { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
+import { logError } from 'scrivito_sdk/common';
 
 export async function requestWithRateLimitRetry(
   request: () => Promise<Response>
@@ -38,6 +39,8 @@ export async function retryOnRequestFailed<T>(
     } catch (error) {
       if (!(error instanceof RequestFailedError)) throw error;
       if (limitedRetries && backoff.numberOfRetries() > 5) throw error;
+
+      logError(`"${String(error)}". Retrying the request...`);
 
       await backoff.nextDelay();
     }

@@ -103,6 +103,9 @@ export type CustomAttributeJsonMapping = {
 export type HtmlAttributeJson = CustomAttributeJsonMapping['html'];
 export type LinkAttributeJson = CustomAttributeJsonMapping['link'];
 export type LinklistAttributeJson = CustomAttributeJsonMapping['linklist'];
+export type ReferenceAttributeJson = CustomAttributeJsonMapping['reference'];
+export type ReferencelistAttributeJson =
+  CustomAttributeJsonMapping['referencelist'];
 type WidgetAttributeJson = CustomAttributeJsonMapping['widget'];
 type WidgetlistAttributeJson = CustomAttributeJsonMapping['widgetlist'];
 

@@ -1,6 +1,5 @@
 import { getConstraintsValidationCallback } from 'scrivito_sdk/app_support/constraints_validation_callback';
-import { tcomb as t } from 'scrivito_sdk/common';
-import { ValidationSeverityLevel } from 'scrivito_sdk/editing_support';
+import { ValidationSeverityLevel, tcomb as t } from 'scrivito_sdk/common';
 import { AttributeValue, Obj, Widget } from 'scrivito_sdk/realm';
 
 export const VALIDATION_SEVERITY_LEVELS: ValidationSeverityLevel[] = [

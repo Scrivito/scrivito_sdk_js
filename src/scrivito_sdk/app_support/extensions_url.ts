@@ -1,4 +1,4 @@
-import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
+import { currentOrigin } from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
 
 const extensionsUrl = createStateContainer<string>();

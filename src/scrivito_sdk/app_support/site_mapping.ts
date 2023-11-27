@@ -1,11 +1,11 @@
 import * as URI from 'urijs';
 
-import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
 import { withForbiddenSiteContext } from 'scrivito_sdk/app_support/current_page';
 import { SiteData } from 'scrivito_sdk/app_support/current_page_data';
 import {
   ArgumentError,
   ScrivitoError,
+  currentOrigin,
   docUrl,
   prettyPrint,
   throwNextTick,

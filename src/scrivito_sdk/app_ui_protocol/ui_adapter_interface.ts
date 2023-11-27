@@ -1,21 +1,28 @@
-import { UiContext } from 'scrivito_sdk/app_support/ui_context';
-import { UserData } from 'scrivito_sdk/app_support/user';
-import { AdapterConnection, GET, SEND, STREAM } from 'scrivito_sdk/bridge';
-import { CmsRetrieval, ComparisonRange, ObjSpaceId } from 'scrivito_sdk/client';
-import { Position } from 'scrivito_sdk/common';
-import {
+import type { UiContext } from 'scrivito_sdk/app_support/ui_context';
+import type { UserData } from 'scrivito_sdk/app_support/user';
+import { GET, SEND, STREAM } from 'scrivito_sdk/bridge';
+import type {
+  CmsRetrieval,
+  ComparisonRange,
+  ObjSpaceId,
+} from 'scrivito_sdk/client';
+import type { Position } from 'scrivito_sdk/common';
+import type {
   ContentUpdateHandler,
   ObjStreamReplicationEndpoint,
 } from 'scrivito_sdk/data';
-import { ContentBrowserResult, TeamData } from 'scrivito_sdk/editing_support';
-import { ResolvedUrl } from 'scrivito_sdk/link_resolution';
-import {
+import type {
+  ContentBrowserResult,
+  TeamData,
+} from 'scrivito_sdk/editing_support';
+import type { ResolvedUrl } from 'scrivito_sdk/link_resolution';
+import type {
   BinaryHandler,
   CopyObjHandler,
   ObjSearchParams,
 } from 'scrivito_sdk/models';
-import { WorkspaceData } from 'scrivito_sdk/models/workspace';
-import { OptionMarkerPosition } from 'scrivito_sdk/react_editing/option_marker';
+import type { WorkspaceData } from 'scrivito_sdk/models/workspace';
+import type { OptionMarkerPosition } from 'scrivito_sdk/react_editing/option_marker';
 
 export const uiAdapterDescription = {
   canEdit: GET,
@@ -72,11 +79,6 @@ export const uiAdapterDescription = {
   dragTo: SEND,
   drop: SEND,
 };
-
-export type UiAdapterConnection = AdapterConnection<
-  UiAdapterInterface,
-  typeof uiAdapterDescription
->;
 
 export interface UiAdapterInterface
   extends CmsRetrieval,
@@ -147,4 +149,4 @@ export interface UiAdapterOpenContentBrowserOptions {
   validObjClasses?: readonly string[];
 }
 
-export type Locale = 'de' | 'en';
+export type Locale = 'de' | 'fr' | 'en';

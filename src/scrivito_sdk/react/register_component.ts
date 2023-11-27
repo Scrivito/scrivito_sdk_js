@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { registerComponentForId } from 'scrivito_sdk/react/component_registry';
-import { connect } from 'scrivito_sdk/react/connect';
+import { connect } from 'scrivito_sdk/react_connect';
 import { Obj, Widget } from 'scrivito_sdk/realm';
 
 /** @public */

@@ -5,7 +5,7 @@ export class ClientError extends ScrivitoError {
   constructor(
     readonly message: string,
     readonly code: string | undefined,
-    readonly details: unknown
+    readonly details: object
   ) {
     super(message);
   }

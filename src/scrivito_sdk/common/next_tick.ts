@@ -1,4 +1,7 @@
 // @rewire
+
+import { setTimeout } from 'scrivito_sdk/common';
+
 type DelayedFunction = () => void;
 
 let nextTickScheduler = setTimeoutScheduler;

@@ -1,8 +1,8 @@
 import * as URI from 'urijs';
-
-import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
-import { getCurrentRoute } from 'scrivito_sdk/app_support/current_page_data';
-import { SiteData } from 'scrivito_sdk/app_support/current_page_data';
+import {
+  SiteData,
+  getCurrentRoute,
+} from 'scrivito_sdk/app_support/current_page_data';
 import {
   CrossSiteDestination,
   DestinationUnavailable,
@@ -22,7 +22,11 @@ import {
   initSiteMapping,
   recognizeSiteAndPath,
 } from 'scrivito_sdk/app_support/site_mapping';
-import { QueryParameters, ScrivitoError } from 'scrivito_sdk/common';
+import {
+  QueryParameters,
+  ScrivitoError,
+  currentOrigin,
+} from 'scrivito_sdk/common';
 import { BasicObj } from 'scrivito_sdk/models';
 
 export type Hash = string | null;

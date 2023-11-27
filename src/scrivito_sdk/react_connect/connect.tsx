@@ -1,13 +1,11 @@
 import * as React from 'react';
 
-import { registerLoadingActivity } from 'scrivito_sdk/app_support/loading_monitor';
 import {
   ArgumentError,
   InternalError,
   Streamable,
   Subscription,
 } from 'scrivito_sdk/common';
-
 import { runWithPerformanceConstraint } from 'scrivito_sdk/data';
 import {
   CaptureReport,
@@ -16,9 +14,11 @@ import {
   isCurrentlyCapturing,
   runAndCatchErrorsWhileLoading,
 } from 'scrivito_sdk/loadable';
-import { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_component';
-import { forwardElementTypeProps } from 'scrivito_sdk/react/get_element_type';
-import { useForceUpdate } from 'scrivito_sdk/react/hooks/use_force_update';
+import { displayNameFromComponent } from 'scrivito_sdk/react_connect/display_name_from_component';
+import { forwardElementTypeProps } from 'scrivito_sdk/react_connect/get_element_type';
+import { useForceUpdate } from 'scrivito_sdk/react_connect/hooks/use_force_update';
+import { isClassComponent } from 'scrivito_sdk/react_connect/is_class_component';
+import { registerLoadingActivity } from 'scrivito_sdk/react_connect/loading_monitor';
 import {
   StateAccessReport,
   StateSubscriber,
@@ -67,9 +67,9 @@ interface ConnectedComponent {
   _isScrivitoConnectedComponent: boolean;
 }
 
-export type ConnectedComponentClass<Props> = ConnectedComponent &
+type ConnectedComponentClass<Props> = ConnectedComponent &
   React.ComponentClass<Props>;
-export type ConnectedFunctionComponent<Props> = ConnectedComponent &
+type ConnectedFunctionComponent<Props> = ConnectedComponent &
   React.FunctionComponent<Props>;
 
 function connectClassComponent<Props>(
@@ -146,16 +146,6 @@ function useConnectedRender(
   }, []);
 
   return connector.render(originalRender);
-}
-
-export function isClassComponent<Props>(
-  component: React.ComponentType<Props>
-): component is React.ComponentClass<Props> {
-  return (
-    typeof component === 'function' &&
-    component.prototype &&
-    component.prototype.isReactComponent
-  );
 }
 
 function isConnectedComponent<Props>(

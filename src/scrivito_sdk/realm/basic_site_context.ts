@@ -246,7 +246,9 @@ function assertValidCreateAttributes(attributes: { [key: string]: unknown }) {
   if (attributes._objClass) {
     throw new ArgumentError(
       'Invalid attribute "_objClass". ' +
-        `"${attributes._objClass}.create" will automatically set the CMS object class ` +
+        `"${String(
+          attributes._objClass
+        )}.create" will automatically set the CMS object class ` +
         'correctly.'
     );
   }

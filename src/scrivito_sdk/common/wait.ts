@@ -1,5 +1,5 @@
 // @rewire
-import { ScrivitoPromise } from 'scrivito_sdk/common';
+import { ScrivitoPromise, setTimeout } from 'scrivito_sdk/common';
 export function wait(seconds: number): Promise<void> {
   return waitMs(seconds * 1000);
 }

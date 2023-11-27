@@ -2,6 +2,7 @@ import { anonymousVisitorAuthHandler } from 'scrivito_sdk/app_support/anonymous_
 import { insideUiAuthHandler } from 'scrivito_sdk/app_support/inside_ui_auth_handler';
 import { isInLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
 import { loggedInVisitorAuthHandler } from 'scrivito_sdk/app_support/logged_in_visitor_auth_handler';
+import { nodeAdapter } from 'scrivito_sdk/app_support/node_adapter';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { User } from 'scrivito_sdk/app_support/user';
 import { getJrRestApiUrl } from 'scrivito_sdk/client';
@@ -24,6 +25,14 @@ export function ensureUserIsLoggedIn(): void {
   return authHandler().ensureUserIsLoggedIn();
 }
 
+export function getIamAuthProvider() {
+  return authHandler().iamAuthProvider();
+}
+
+export function getLoginHandler() {
+  return authHandler().loginHandler();
+}
+
 /** @public */
 export function logout(): void {
   logoutAsync();
@@ -34,6 +43,7 @@ async function logoutAsync() {
 }
 
 function authHandler() {
+  if (nodeAdapter) return nodeAdapter.nodeAuthHandler;
   if (uiAdapter) return insideUiAuthHandler;
   if (isInLoggedInState()) return loggedInVisitorAuthHandler;
 

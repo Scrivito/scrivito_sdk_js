@@ -1,12 +1,13 @@
 // @rewire
 
 import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
-import { BearerTokenAuthorizationProvider } from 'scrivito_sdk/app_support/bearer_token_authorization_provider';
-import { cdnAssetUrlBase } from 'scrivito_sdk/app_support/cdn_asset_url_base';
 import { skipContentTagsForEmptyAttributes } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
-import { currentEditor } from 'scrivito_sdk/app_support/current_editor';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
+import {
+  getIamAuthProvider,
+  getLoginHandler,
+} from 'scrivito_sdk/app_support/current_user';
 import {
   getDefaultCmsEndpoint,
   getJrRestApiDefaultEndpoint,
@@ -38,16 +39,17 @@ import { linkViaPort } from 'scrivito_sdk/bridge';
 import {
   Priority,
   PublicAuthentication,
+  clientConfig,
   cmsRestApi,
-  loginRedirectAuthorizationProvider,
-  setJrRestApiAuthProvider,
-  setJrRestApiEndpoint,
 } from 'scrivito_sdk/client';
 import {
   Deferred,
   ScrivitoError,
+  cdnAssetUrlBase,
   checkArgumentsFor,
   logError,
+  setConfiguredTenant,
+  setTimeout,
   tcomb as t,
   throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
@@ -70,7 +72,6 @@ import {
   unwrapAppClass,
 } from 'scrivito_sdk/realm';
 import type { ForcedEditorLanguage } from 'scrivito_sdk/ui_interface/app_adapter';
-import { setConfiguredTenant } from './configured_tenant';
 import {
   ConstraintsValidationCallback,
   setConstraintsValidationCallback,
@@ -217,9 +218,12 @@ export function configure(
       unofficialConfiguration?.assetUrlBase ?? cdnAssetUrlBase()
     );
 
-    setJrRestApiEndpoint(
-      configuration.jrRestApiEndpoint || getJrRestApiDefaultEndpoint()
-    );
+    clientConfig.set({
+      jrApiLocation:
+        configuration.jrRestApiEndpoint || getJrRestApiDefaultEndpoint(),
+      iamAuthProvider: getIamAuthProvider(),
+      loginHandler: getLoginHandler(),
+    });
 
     const treatLocalhostLike = configuration.treatLocalhostLike;
     if (treatLocalhostLike) setTreatLocalhostLike(treatLocalhostLike);
@@ -262,15 +266,10 @@ export function setConfiguration(configuration: Configuration): void {
 // For test purpose only
 export function resetConfiguration(): void {
   configDeferred = new Deferred();
+  clientConfig.reset();
 }
 
 function configureWithUi(tenant: string, uiAdapterClient: UiAdapterClient) {
-  setJrRestApiAuthProvider(
-    new BearerTokenAuthorizationProvider(() =>
-      load(() => currentEditor()?.authToken())
-    )
-  );
-
   uiAdapterClient.configureTenant({
     tenant,
   });
@@ -321,12 +320,6 @@ function configureCmsRestApi({
     apiBaseUrl: `${endpoint}/tenants/${tenant}`,
     authProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
   });
-
-  const jrAuthProvider = getJrRestApiAuthProvider(apiKey);
-
-  if (jrAuthProvider) {
-    setJrRestApiAuthProvider(jrAuthProvider);
-  }
 }
 
 function getCmsAuthProvider(
@@ -341,20 +334,6 @@ function getCmsAuthProvider(
     getVisitorAuthenticationProvider(visitorAuthentication) ||
     PublicAuthentication
   );
-}
-
-function getJrRestApiAuthProvider(apiKey?: string | IamApiKey) {
-  if (!nodeAdapter) {
-    // only inside the browser
-    return loginRedirectAuthorizationProvider;
-  }
-
-  if (apiKey) {
-    // JrRestApi can't use legacy string API keys, only IamApiKeys
-    if (typeof apiKey === 'string') return undefined;
-
-    return new nodeAdapter.ApiKeyAuthorizationProvider(apiKey);
-  }
 }
 
 function getCheckedRoutingConfiguration({

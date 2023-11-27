@@ -2,9 +2,9 @@ import * as React from 'react';
 
 import { EmptyDataScope } from 'scrivito_sdk/data_integration';
 import { BasicObj, BasicWidget } from 'scrivito_sdk/models';
-import { connect } from 'scrivito_sdk/react/connect';
 import { PushOntoDataStack } from 'scrivito_sdk/react/data_context_container';
-import { useDataLocator } from 'scrivito_sdk/react/use_data_locator';
+import { useDataLocator } from 'scrivito_sdk/react/hooks/use_data_locator';
+import { connect } from 'scrivito_sdk/react_connect';
 
 export const AutomaticDataContext = connect(function AutomaticDataContext({
   content,

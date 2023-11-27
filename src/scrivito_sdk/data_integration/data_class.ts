@@ -118,7 +118,9 @@ export function assertNoAttributeFilterConflicts(
 
       if (attributeValue !== filterValue) {
         throw new ArgumentError(
-          `Tried to create ${attributeName}: ${attributeValue} in a context of ${attributeName}: ${filterValue}`
+          `Tried to create ${attributeName}: ${String(
+            attributeValue
+          )} in a context of ${attributeName}: ${filterValue}`
         );
       }
     }

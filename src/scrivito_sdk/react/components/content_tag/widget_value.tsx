@@ -12,8 +12,8 @@ import {
   WidgetContent,
   WidgetProps,
 } from 'scrivito_sdk/react/components/content_tag/widget_content';
-import { connect } from 'scrivito_sdk/react/connect';
-import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/use_layout_aware_in_place_editing';
+import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/hooks/use_layout_aware_in_place_editing';
+import { connect } from 'scrivito_sdk/react_connect';
 
 export const WidgetValue = connect(function WidgetValue({
   field,

@@ -1,5 +1,4 @@
-import { InternalError } from 'scrivito_sdk/common';
-import { pruneString } from 'scrivito_sdk/common';
+import { InternalError, pruneString } from 'scrivito_sdk/common';
 
 let htmlToText: undefined | ((html: string) => string);
 

@@ -1,51 +1,18 @@
 // @rewire
 
-import {
-  AuthorizationProvider,
-  fetchWithTimeout,
-  requestApiIdempotent,
-  requestApiNonIdempotent,
-} from 'scrivito_sdk/client';
+import { clientConfig } from 'scrivito_sdk/client';
 import {
   ApiClient,
-  FetchData,
   FetchOptions,
   FetchParams,
 } from 'scrivito_sdk/client/api_client';
-import { Deferred } from 'scrivito_sdk/common';
-
-let authProvider: AuthorizationProvider | undefined;
-
-export function setJrRestApiAuthProvider(
-  provider: AuthorizationProvider
-): void {
-  authProvider = provider;
-}
-
-// For test purpose only
-export function getJrRestApiAuthProvider(): AuthorizationProvider | undefined {
-  return authProvider;
-}
-
-let endpointDeferred = new Deferred<string>();
-
-export function getJrRestApiEndpoint(): Promise<string> {
-  return endpointDeferred.promise;
-}
-
-export function setJrRestApiEndpoint(endpoint: string): void {
-  endpointDeferred.resolve(endpoint);
-}
+import { fetchJson } from 'scrivito_sdk/client/fetch_json';
+import { withLoginHandler } from 'scrivito_sdk/client/login_handler';
+import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
 
 export async function getJrRestApiUrl(path: string): Promise<string> {
   const sanitizedPath = path.replace(/^\//, '');
-  return `${await getJrRestApiEndpoint()}/${sanitizedPath}`;
-}
-
-// For test purpose only.
-export function resetJrRestApi(): void {
-  authProvider = undefined;
-  endpointDeferred = new Deferred();
+  return `${(await clientConfig.fetch()).jrApiLocation}/${sanitizedPath}`;
 }
 
 /** @public */
@@ -53,25 +20,21 @@ export const JrRestApi = new ApiClient(fetch);
 
 async function fetch(path: string, options?: FetchOptions) {
   const method = options?.method?.toUpperCase() ?? 'GET';
+  const config = await clientConfig.fetch();
 
-  const plainRequest = async (authorization?: string) =>
-    fetchWithTimeout(
-      await calculateRequestUrl(path, options?.params),
-      calculateOptions(method, options?.data, authorization)
-    );
+  const url = await calculateRequestUrl(path, options?.params);
 
-  const currentAuthProvider = authProvider;
+  const loginHandler =
+    options?.loginHandler ??
+    (config.loginHandler === 'redirect' ? loginRedirectHandler : undefined);
 
-  const withAuth = options?.withAuth ?? true;
-
-  const sendRequest =
-    currentAuthProvider && withAuth
-      ? () => currentAuthProvider.authorize(plainRequest)
-      : plainRequest;
-
-  return method === 'POST'
-    ? requestApiNonIdempotent(sendRequest)
-    : requestApiIdempotent(sendRequest);
+  return withLoginHandler(loginHandler, () =>
+    fetchJson(url, {
+      data: options?.data,
+      authProvider: config.iamAuthProvider,
+      method,
+    })
+  );
 }
 
 async function calculateRequestUrl(path: string, params?: FetchParams) {
@@ -86,27 +49,4 @@ async function calculateRequestUrl(path: string, params?: FetchParams) {
   }
 
   return apiUrl.toString();
-}
-
-function calculateOptions(
-  method: string,
-  data?: FetchData,
-  authorization?: string
-): RequestInit {
-  const headers: Record<string, string> = {};
-
-  if (data) {
-    headers['Content-Type'] = 'application/json; charset=utf-8';
-  }
-
-  if (authorization) {
-    headers.Authorization = authorization;
-  }
-
-  return {
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: 'include',
-    headers,
-    method,
-  };
 }

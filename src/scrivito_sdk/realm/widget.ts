@@ -145,7 +145,9 @@ function assertValidAttributes(attributes: { [name: string]: unknown }) {
   if (attributes._objClass) {
     throw new ArgumentError(
       'Invalid attribute "_objClass". ' +
-        `"new ${attributes._objClass}" will automatically set the CMS object class correctly.`
+        `"new ${String(
+          attributes._objClass
+        )}" will automatically set the CMS object class correctly.`
     );
   }
 }

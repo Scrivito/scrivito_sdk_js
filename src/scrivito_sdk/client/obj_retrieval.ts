@@ -5,7 +5,11 @@ import {
 } from 'scrivito_sdk/client/cms_rest_api';
 import { ObjJson, buildNonexistentObjJson } from 'scrivito_sdk/client/obj_json';
 import { ObjSpaceId, isEmptySpaceId } from 'scrivito_sdk/client/obj_space_id';
-import { BatchRetrieval, computeCacheKey } from 'scrivito_sdk/common';
+import {
+  BatchRetrieval,
+  assumePresence,
+  computeCacheKey,
+} from 'scrivito_sdk/common';
 
 // export for test purposes
 export interface ObjMgetJson {
@@ -54,7 +58,7 @@ function getBatchRetrieval(objSpaceId: ObjSpaceId): ObjBatchRetrieval {
 
 function buildBatchRetrieval(objSpaceId: ObjSpaceId): ObjBatchRetrieval {
   const [spaceType, spaceId] = objSpaceId;
-  const endpoint = `${spaceType}s/${spaceId}/objs/mget`;
+  const endpoint = `${spaceType}s/${assumePresence(spaceId)}/objs/mget`;
   const includeDeleted = spaceType === 'workspace' || undefined;
   return new BatchRetrieval(
     async (keys) => {

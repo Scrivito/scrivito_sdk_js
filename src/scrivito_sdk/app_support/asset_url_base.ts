@@ -1,36 +1,25 @@
-import { Deferred, InternalError } from 'scrivito_sdk/common';
+import { ConfigStore } from 'scrivito_sdk/common';
 
 declare global {
   let __webpack_public_path__: string;
 }
 
-let current: string | undefined;
-const deferred = new Deferred();
+const config = new ConfigStore<string>();
 
 export function getAssetUrlBase(): string {
-  // asset url base accessed before configured?
-  if (!current) throw new InternalError();
-
-  return current;
+  return config.get();
 }
 
-export function assetLoadingReady(): Promise<void> {
-  return deferred.promise;
+export async function assetLoadingReady(): Promise<void> {
+  await config.fetch();
 }
 
 export function configureAssetUrlBase(assetUrlBase: string): void {
-  // asset url base configured twice?
-  if (current) throw new InternalError();
-
-  current = assetUrlBase;
-  __webpack_public_path__ = `${current}/`;
-
-  deferred.resolve();
+  config.set(assetUrlBase);
+  __webpack_public_path__ = `${assetUrlBase}/`;
 }
 
 export function initializeAssetUrlBase() {
-  current = undefined;
-
   // No dynamic import should happen, before configureAssetUrlBase has been
   // called (via Scrivito.configure), since the SDK does not know the
   // ASSET_URL_BASE until then.
@@ -41,5 +30,6 @@ export function initializeAssetUrlBase() {
 
 // For test purpose only
 export function resetAssetUrlBase(): void {
+  config.reset();
   initializeAssetUrlBase();
 }

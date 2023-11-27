@@ -4,10 +4,10 @@ import { getEditingConfigFor } from 'scrivito_sdk/app_support/editing_config_sto
 import { presentUiAdapter } from 'scrivito_sdk/app_support/present_ui_adapter';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj, BasicWidget, currentObjSpaceId } from 'scrivito_sdk/models';
-import { schemaFromBasicObjOrWidget } from 'scrivito_sdk/realm';
 import {
   AttributeValue,
   Widget,
+  schemaFromBasicObjOrWidget,
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm';

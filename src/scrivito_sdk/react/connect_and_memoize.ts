@@ -1,6 +1,9 @@
-import { connect, isClassComponent } from 'scrivito_sdk/react/connect';
-import { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_component';
 import { memo } from 'scrivito_sdk/react/memo';
+import {
+  connect,
+  displayNameFromComponent,
+  isClassComponent,
+} from 'scrivito_sdk/react_connect';
 
 export function connectAndMemoize<P extends object>(
   component: React.ComponentType<P>

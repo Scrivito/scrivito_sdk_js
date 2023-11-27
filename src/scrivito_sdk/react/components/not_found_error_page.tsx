@@ -3,7 +3,7 @@ import * as React from 'react';
 import { isCurrentHistoryState } from 'scrivito_sdk/app_support/browser_location';
 import { getNotFoundErrorPageState } from 'scrivito_sdk/app_support/current_page_data';
 import { PageScroll } from 'scrivito_sdk/react/components/page_scroll';
-import { connect } from 'scrivito_sdk/react/connect';
+import { connect } from 'scrivito_sdk/react_connect';
 
 interface NotFoundErrorPageProps {
   children?: React.ReactNode;

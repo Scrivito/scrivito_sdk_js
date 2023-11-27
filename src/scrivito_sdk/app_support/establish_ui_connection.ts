@@ -1,6 +1,6 @@
 import { checkIfTrustedOrigin } from 'scrivito_sdk/app_support/trusted_ui_origins';
 import { UiAdapterClient } from 'scrivito_sdk/app_support/ui_adapter';
-import { uiAdapterDescription } from 'scrivito_sdk/app_support/ui_adapter_interface';
+import { uiAdapterDescription } from 'scrivito_sdk/app_ui_protocol';
 import {
   AdapterDescription,
   anticipatedMessageLink,

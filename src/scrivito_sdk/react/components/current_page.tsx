@@ -6,9 +6,9 @@ import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { BasicObj } from 'scrivito_sdk/models';
 import { AutomaticDataContext } from 'scrivito_sdk/react/components/automatic_data_context';
 import { PageScroll } from 'scrivito_sdk/react/components/page_scroll';
-import { connect } from 'scrivito_sdk/react/connect';
 import { getComponentForPageClass } from 'scrivito_sdk/react/get_component_for_page_class';
 import { IsInsideLayoutContext } from 'scrivito_sdk/react/is_inside_layout_context';
+import { connect } from 'scrivito_sdk/react_connect';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
 
 import { DetailsPageDataContext } from './current_page/details_page_data_context';

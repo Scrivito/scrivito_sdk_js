@@ -31,7 +31,6 @@ export {
 export {
   BackgroundImageTag,
   ChildListTag,
-  connect,
   ContentTag,
   CurrentPage,
   Extensions,
@@ -49,6 +48,8 @@ export {
   useDataLocator,
   useDataScope,
   useUrlFor,
+  useResolvedStringValue,
+  useResolvedHtmlValue,
 } from 'scrivito_sdk/react';
 
 export type {
@@ -57,6 +58,8 @@ export type {
   PageComponentProps,
   WidgetComponentProps,
 } from 'scrivito_sdk/react';
+
+export { finishLoading, connect } from 'scrivito_sdk/react_connect';
 
 // App support
 export { canEdit } from 'scrivito_sdk/app_support/can_edit';
@@ -82,7 +85,6 @@ export { currentWorkspace } from 'scrivito_sdk/app_support/current_workspace';
 export { currentWorkspaceId } from 'scrivito_sdk/models/current_workspace_id';
 export { extendMenu } from 'scrivito_sdk/app_support/extend_menu';
 export { extractText } from 'scrivito_sdk/app_support/extract_text';
-export { finishLoading } from 'scrivito_sdk/app_support/loading_monitor';
 export { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
 export { isEditorLoggedIn } from 'scrivito_sdk/app_support/is_editor_logged_in';
 export { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
@@ -117,10 +119,3 @@ export { isOnCurrentPath } from 'scrivito_sdk/app_support/is_on_current_path';
 
 /** @internal */
 export { unstable_selectSiteId } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
-
-import * as _internal from 'scrivito_sdk/infopark_integration_test_support';
-/**
- * public for tests
- * @internal
- */
-export { _internal };

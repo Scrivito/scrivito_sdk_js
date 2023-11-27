@@ -4,8 +4,8 @@ import { ErrorResponse, isErrorResponse } from './is_error_response';
 
 interface BackendError {
   message: string;
-  code: string;
-  details: Object;
+  code?: string;
+  details: object;
 }
 
 /** parses the standard JR backend error response format
@@ -21,7 +21,7 @@ export function parseErrorResponse(responseText: string): BackendError {
 
     return {
       message: error,
-      code: code || '',
+      code,
       details: details || {},
     };
   }

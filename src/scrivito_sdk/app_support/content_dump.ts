@@ -41,7 +41,7 @@ export function loadContentDump(contentDump: string): void {
   if (!isContentDumpFromThisVersion(parsed)) {
     logError(
       'could not preload: ' +
-        `dump is from version ${parsed.version}` +
+        `dump is from version ${String(parsed.version)}` +
         `, this is version ${getScrivitoVersion()}`
     );
     return;

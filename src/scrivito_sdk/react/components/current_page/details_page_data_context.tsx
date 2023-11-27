@@ -3,9 +3,9 @@ import * as React from 'react';
 import { QueryParameters } from 'scrivito_sdk/common';
 import { dataContextFromQueryParams } from 'scrivito_sdk/data_integration';
 import { BasicObj } from 'scrivito_sdk/models';
-import { connect } from 'scrivito_sdk/react';
 import { getDataErrorComponent } from 'scrivito_sdk/react/component_registry';
 import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
+import { connect } from 'scrivito_sdk/react_connect';
 
 export const DetailsPageDataContext = connect(function DetailsPageDataContext({
   page,

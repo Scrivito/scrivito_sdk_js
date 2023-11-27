@@ -1,7 +1,8 @@
-import { getUserInfoPath } from 'scrivito_sdk/app_support/userinfo';
+import { getUserInfoPath } from 'scrivito_sdk/app_support/user_info';
 import { JrRestApi } from 'scrivito_sdk/client';
+import { setInterval } from 'scrivito_sdk/common';
 
-let userLoggedInStatusInterval: NodeJS.Timeout | undefined;
+let userLoggedInStatusInterval: number | undefined;
 
 export function startPollingLoggedUser(): void {
   if (userLoggedInStatusInterval) return;

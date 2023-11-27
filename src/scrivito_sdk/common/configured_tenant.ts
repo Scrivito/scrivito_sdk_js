@@ -1,13 +1,27 @@
-import { Deferred } from 'scrivito_sdk/common';
+import { Deferred, InternalError } from 'scrivito_sdk/common';
 
 let configuredTenant: string | undefined;
 let deferredConfiguredTenant = new Deferred<string | undefined>();
 
-export function getConfiguredTenant(): string | undefined {
+export function tryGetConfiguredTenant(): string | undefined {
   return configuredTenant;
 }
 
-export async function ensureConfiguredTenant(): Promise<string | undefined> {
+export function getConfiguredTenant(): string {
+  if (!configuredTenant) throw new InternalError();
+
+  return configuredTenant;
+}
+
+export async function fetchConfiguredTenant(): Promise<string> {
+  const resolvedTenant = await deferredConfiguredTenant;
+  if (!resolvedTenant) throw new InternalError();
+
+  return resolvedTenant;
+}
+
+/** Prefer to use `fetchConfiguredTenant` if possible. */
+export async function fetchMaybeTenant(): Promise<string | undefined> {
   return deferredConfiguredTenant;
 }
 

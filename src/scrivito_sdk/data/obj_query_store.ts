@@ -14,8 +14,12 @@ import {
   isPresent,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
-import { DataQuery, ObjData, getObjData } from 'scrivito_sdk/data';
-import { getContentStateId } from 'scrivito_sdk/data';
+import {
+  DataQuery,
+  ObjData,
+  getContentStateId,
+  getObjData,
+} from 'scrivito_sdk/data';
 import { IdBatchCollection } from 'scrivito_sdk/data/id_batch';
 import { IdBatchQuery } from 'scrivito_sdk/data/id_batch_query';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data/in_memory_tenant';

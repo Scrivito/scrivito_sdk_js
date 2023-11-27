@@ -466,7 +466,9 @@ function assertValidFacetOptions(
   if (invalidOptions.length) {
     throw new ArgumentError(
       'Invalid facet options: ' +
-        `${prettyPrint(invalidOptions)}. Valid options: ${VALID_FACET_OPTIONS}`
+        `${prettyPrint(
+          invalidOptions
+        )}. Valid options: ${VALID_FACET_OPTIONS.join()}`
     );
   }
   return options;

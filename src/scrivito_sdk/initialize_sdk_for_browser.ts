@@ -1,6 +1,5 @@
 import { initializeAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import * as CanonicalUrl from 'scrivito_sdk/app_support/canonical_url';
-import { setOriginProvider } from 'scrivito_sdk/app_support/current_origin';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setNavigationStateProvider } from 'scrivito_sdk/app_support/current_page_data';
 import { observeDocumentTitle } from 'scrivito_sdk/app_support/document_title';
@@ -19,7 +18,7 @@ import {
   setupRegisterVerificator,
   useXmlHttpRequest,
 } from 'scrivito_sdk/client';
-import { windowLocationOrigin } from 'scrivito_sdk/common';
+import { setOriginProvider, windowLocationOrigin } from 'scrivito_sdk/common';
 import {
   ObjBackendReplication,
   ObjStreamReplication,

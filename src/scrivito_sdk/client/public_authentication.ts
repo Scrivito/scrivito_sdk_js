@@ -61,7 +61,9 @@ export const PublicAuthentication: AuthorizationProvider = {
 
     if (computation) {
       const challenge = computation.challenge;
-      return `Pending computation: ${challenge.verificator.id} with ${challenge.data}`;
+      return `Pending computation: ${challenge.verificator.id} with ${String(
+        challenge.data
+      )}`;
     }
 
     return null;

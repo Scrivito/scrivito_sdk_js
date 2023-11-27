@@ -1,4 +1,11 @@
-import { CustomAttributeJsonMapping } from 'scrivito_sdk/client';
+import {
+  CustomAttributeJsonMapping,
+  HtmlAttributeJson,
+  LinkAttributeJson,
+  LinklistAttributeJson,
+  ReferenceAttributeJson,
+  ReferencelistAttributeJson,
+} from 'scrivito_sdk/client';
 import { createStateContainer } from 'scrivito_sdk/state';
 
 const autoConvertAttributes = createStateContainer<boolean>();
@@ -9,6 +16,63 @@ export function setWantsAutoAttributeConversion(value: boolean): void {
 
 export function wantsAutoAttributeConversion(): boolean {
   return !!autoConvertAttributes.get();
+}
+
+export function autoConvertToReference(value: unknown): unknown {
+  if (!wantsAutoAttributeConversion()) return value;
+
+  const singleValue = autoConvertToSingle(value);
+  if (backendValueType(singleValue) !== 'link') return singleValue;
+
+  const objId = (singleValue as LinkAttributeJson)[1].obj_id;
+  if (!objId) return singleValue;
+
+  return ['reference', objId];
+}
+
+export function autoConvertToReferencelist(value: unknown): unknown {
+  if (!wantsAutoAttributeConversion()) return value;
+
+  const listValue = autoConvertToList(value);
+  if (backendValueType(listValue) !== 'linklist') return listValue;
+
+  const objIds = (listValue as LinklistAttributeJson)[1]
+    .map(({ obj_id }) => obj_id)
+    .filter((id) => !!id);
+
+  return ['referencelist', objIds];
+}
+
+export function autoConvertToLink(value: unknown): unknown {
+  if (!wantsAutoAttributeConversion()) return value;
+
+  const singleValue = autoConvertToSingle(value);
+  if (backendValueType(singleValue) !== 'reference') return singleValue;
+
+  return ['link', linkForReference((singleValue as ReferenceAttributeJson)[1])];
+}
+
+export function autoConvertToLinklist(value: unknown): unknown {
+  if (!wantsAutoAttributeConversion()) return value;
+
+  const listValue = autoConvertToList(value);
+  if (backendValueType(listValue) !== 'referencelist') return listValue;
+
+  return [
+    'linklist',
+    (listValue as ReferencelistAttributeJson)[1].map(linkForReference),
+  ];
+}
+
+function linkForReference(objId: string) {
+  return {
+    fragment: null,
+    obj_id: objId,
+    query: null,
+    target: null,
+    title: null,
+    url: null,
+  };
 }
 
 const SINGLE_TYPE_FOR = {
@@ -23,7 +87,7 @@ export function autoConvertToSingle(value: unknown): unknown {
   const type = wantsAutoAttributeConversion() && backendValueType(value);
 
   if (type === 'html') {
-    return ['string', (value as CustomAttributeJsonMapping['html'])[1]];
+    return ['string', (value as HtmlAttributeJson)[1]];
   }
 
   const targetType = type && SINGLE_TYPE_FOR[type as ValidListType];

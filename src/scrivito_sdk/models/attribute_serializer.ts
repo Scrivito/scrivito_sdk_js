@@ -3,8 +3,7 @@ import isDate from 'lodash-es/isDate';
 import isEmpty from 'lodash-es/isEmpty';
 import isObject from 'lodash-es/isObject';
 
-import { AttributeJson } from 'scrivito_sdk/client';
-import { LinkJson } from 'scrivito_sdk/client';
+import { AttributeJson, LinkJson } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   formatDateToString,
@@ -179,7 +178,7 @@ function serializeEnumAttributeValue(
 ) {
   if (values.includes(value as string)) return value as string;
 
-  const e = `Valid attribute values are contained in its "values" array [${values}].`;
+  const e = `Valid attribute values are contained in its "values" array [${values.join()}].`;
 
   throwInvalidAttributeValue(value, name, e);
 }

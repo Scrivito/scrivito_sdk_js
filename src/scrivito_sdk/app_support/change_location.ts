@@ -1,9 +1,13 @@
 // @rewire
 import * as URI from 'urijs';
 
-import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
-import { InternalError, openWindow, redirectTo } from 'scrivito_sdk/common';
+import {
+  InternalError,
+  currentOrigin,
+  openWindow,
+  redirectTo,
+} from 'scrivito_sdk/common';
 import { isLocalUri } from './routing';
 
 export function changeLocation(url: string): void {

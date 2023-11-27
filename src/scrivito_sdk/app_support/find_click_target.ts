@@ -2,8 +2,8 @@
 import { MouseEvent } from 'react';
 import * as URI from 'urijs';
 
-import { isModifierClick } from 'scrivito_sdk/app_support/is_modifier_click';
 import { isLocalUri } from 'scrivito_sdk/app_support/routing';
+import { isModifierClick } from 'scrivito_sdk/common';
 
 export type LinkTarget = OpenInCurrentWindow | OpenInNewWindow | null;
 

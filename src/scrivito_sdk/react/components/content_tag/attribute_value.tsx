@@ -21,12 +21,12 @@ import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
 import { WidgetlistValue } from 'scrivito_sdk/react/components/content_tag/widgetlist_value';
-import { connect } from 'scrivito_sdk/react/connect';
 import {
   DataContextContainer,
   useDataContextContainer,
 } from 'scrivito_sdk/react/data_context_container';
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
+import { connect } from 'scrivito_sdk/react_connect';
 
 export interface AttributeValueProps<Type extends AttributeType> {
   customProps: {

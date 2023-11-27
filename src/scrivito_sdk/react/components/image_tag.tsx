@@ -11,8 +11,8 @@ import {
   ContentTag,
   ContentTagWithElementCallback,
 } from 'scrivito_sdk/react/components/content_tag';
-import { connect } from 'scrivito_sdk/react/connect';
 import { imagePlaceholder } from 'scrivito_sdk/react/image_placeholder';
+import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
 type Width = React.ImgHTMLAttributes<HTMLImageElement>['width'];

@@ -99,6 +99,7 @@ export type { Subscription, Subscriber } from 'scrivito_sdk/common/streamable';
 export { anticipatedStream } from 'scrivito_sdk/common/anticipated_stream';
 export { Subject, BehaviorSubject } from 'scrivito_sdk/common/subject';
 export { extractTitleAndDescription } from 'scrivito_sdk/common/extract_title_and_description';
+export { ConfigStore } from 'scrivito_sdk/common/config_store';
 export { never } from 'scrivito_sdk/common/never';
 export { pruneString } from 'scrivito_sdk/common/prune_string';
 export {
@@ -128,3 +129,35 @@ export {
   setRegisterAsyncTaskHandler,
 } from 'scrivito_sdk/common/register_async_task';
 export { scrollElementIntoView } from 'scrivito_sdk/common/scroll_element_into_view';
+export { setTimeout, setInterval } from 'scrivito_sdk/common/timeout';
+export {
+  clearLocalStorage,
+  getFromLocalStorage,
+  setInLocalStorage,
+  removeFromLocalStorage,
+} from 'scrivito_sdk/common/local_storage';
+export { cdnAssetUrlBase } from 'scrivito_sdk/common/cdn_asset_url_base';
+export { isModifierClick } from 'scrivito_sdk/common/is_modifier_click';
+export {
+  hasTenantConfigurationBeenSet,
+  setConfiguredTenant,
+  isConfiguredWithoutTenant,
+  fetchMaybeTenant,
+  tryGetConfiguredTenant,
+  getConfiguredTenant,
+  fetchConfiguredTenant,
+  resetConfiguredTenant,
+} from 'scrivito_sdk/common/configured_tenant';
+export {
+  setOriginProvider,
+  currentOrigin,
+} from 'scrivito_sdk/common/current_origin';
+export type {
+  ValidationReport,
+  ValidationReportEntry,
+  ValidationSeverityLevel,
+  WidgetValidationReport,
+  AttributeValidationReportEntry,
+} from 'scrivito_sdk/common/validation_result_types';
+export { isAttributeValidationReportEntry } from 'scrivito_sdk/common/validation_result_types';
+export { propsAreEqual } from 'scrivito_sdk/common/props_are_equal';

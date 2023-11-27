@@ -16,12 +16,7 @@ export {
   replaceCmsRetrieval,
 } from 'scrivito_sdk/client/cms_retrieval';
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
-export {
-  setJrRestApiAuthProvider,
-  setJrRestApiEndpoint,
-  getJrRestApiUrl,
-  JrRestApi,
-} from 'scrivito_sdk/client/jr_rest_api';
+export { getJrRestApiUrl, JrRestApi } from 'scrivito_sdk/client/jr_rest_api';
 export { ClientError } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
 export type {
@@ -29,13 +24,12 @@ export type {
   BackendFacetQueryResponse,
   BackendRequestFacet,
 } from 'scrivito_sdk/client/facet_query_retrieval';
-export { fetchWithTimeout } from 'scrivito_sdk/client/fetch_with_timeout';
 export type {
   BackendSuggestParams,
   BackendSuggestResponse,
 } from 'scrivito_sdk/client/suggest_retrieval';
+export { clientConfig } from 'scrivito_sdk/client/config';
 export {
-  isFetchingActive,
   useDefaultPriority,
   useXmlHttpRequest,
 } from 'scrivito_sdk/client/fetch';
@@ -47,7 +41,8 @@ export {
   isWorkspaceObjSpaceId,
   isObjSpaceId,
 } from 'scrivito_sdk/client/obj_space_id';
-export { loginRedirectAuthorizationProvider } from 'scrivito_sdk/client/login_redirect_authorization_provider';
+export type { LoginHandler } from 'scrivito_sdk/client/login_handler';
+export { setLoggedInIndicatorParam } from 'scrivito_sdk/client/login_redirect_handler';
 export type {
   ObjSpaceId,
   WorkspaceObjSpaceId,
@@ -75,6 +70,8 @@ export type {
   HtmlAttributeJson,
   LinkAttributeJson,
   LinklistAttributeJson,
+  ReferenceAttributeJson,
+  ReferencelistAttributeJson,
   // Custom attribute (value only)
   LinkJson,
   DataLocatorJson,
@@ -86,6 +83,7 @@ export type {
   OrderByItem,
   OrderDirection,
 } from 'scrivito_sdk/client/obj_json';
+export { fetchJson } from 'scrivito_sdk/client/fetch_json';
 export type {
   BackendQueryRetrievalParams,
   BackendSearchOperator,
@@ -115,13 +113,5 @@ export type {
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
 export * from 'scrivito_sdk/client/session_data';
 export { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
-export {
-  requestApiIdempotent,
-  requestApiNonIdempotent,
-} from 'scrivito_sdk/client/request_api';
-export {
-  disableUserIsLoggedInParam,
-  USER_IS_LOGGED_IN_PARAM_NAME,
-} from 'scrivito_sdk/client/authentication_url';
 export { retryOnRequestFailed } from 'scrivito_sdk/client/retry';
 export { TokenAuthorizationProvider } from 'scrivito_sdk/client/token_authorization_provider';

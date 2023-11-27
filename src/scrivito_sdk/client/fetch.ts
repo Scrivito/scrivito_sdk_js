@@ -6,18 +6,10 @@ import { ScrivitoPromise } from 'scrivito_sdk/common';
 export interface FetchOptions {
   params?: unknown;
   authorization?: string;
-  forceVerification?: boolean;
   priority?: Priority;
 }
 
 export type Priority = 'foreground' | 'background';
-
-let connectionCounter = 0;
-
-// For test purpose only
-export function isFetchingActive(): boolean {
-  return connectionCounter > 0;
-}
 
 let xmlHttpRequest: undefined | typeof XMLHttpRequest;
 
@@ -34,7 +26,7 @@ export function useDefaultPriority(priority: Priority) {
 export function fetch(
   method: string,
   url: string,
-  { params, authorization, priority, forceVerification }: FetchOptions
+  { params, authorization, priority }: FetchOptions
 ): Promise<XMLHttpRequest> {
   if (xmlHttpRequest === undefined) {
     return ScrivitoPromise.resolve({
@@ -42,8 +34,6 @@ export function fetch(
       responseText: JSON.stringify({ error: 'Missing XmlHttpRequest' }),
     } as XMLHttpRequest);
   }
-
-  connectionCounter += 1;
 
   return new ScrivitoPromise(
     (
@@ -56,10 +46,6 @@ export function fetch(
       }
 
       request.setRequestHeader('Scrivito-Client', getClientVersion());
-
-      if (forceVerification) {
-        request.setRequestHeader('Scrivito-Force-Verification', 'true');
-      }
 
       const priorityWithFallback = priority || fallbackPriority;
       if (priorityWithFallback === 'background') {
@@ -106,8 +92,6 @@ function onAjaxLoad(
   resolve: (v: XMLHttpRequest) => void,
   reject: (e: Error) => void
 ) {
-  connectionCounter -= 1;
-
   const status = request.status;
   if (!status || typeof status !== 'number') {
     const message =
@@ -120,7 +104,5 @@ function onAjaxLoad(
 }
 
 function onAjaxError(error: Error, reject: (e: Error) => void) {
-  connectionCounter -= 1;
-
   reject(error);
 }

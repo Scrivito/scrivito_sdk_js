@@ -1,6 +1,3 @@
-export { connect } from 'scrivito_sdk/react/connect';
-export { Hibernation } from 'scrivito_sdk/react/hibernation';
-export { displayNameFromComponent } from 'scrivito_sdk/react/display_name_from_component';
 export { provideComponent } from 'scrivito_sdk/react/provide_component';
 export { provideLayoutComponent } from 'scrivito_sdk/react/provide_layout_component';
 export { provideDataErrorComponent } from 'scrivito_sdk/react/provide_data_error_component';
@@ -25,14 +22,16 @@ export {
 export { LinkTag } from 'scrivito_sdk/react/components/link_tag';
 export { NotFoundErrorPage } from 'scrivito_sdk/react/components/not_found_error_page';
 export { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
-export { alwaysShowOptionMarkers } from 'scrivito_sdk/react/always_show_option_markers';
-export { useForceUpdate } from 'scrivito_sdk/react/hooks/use_force_update';
 export { WidgetContent } from 'scrivito_sdk/react/components/content_tag/widget_content';
-export { memo, propsAreEqual } from 'scrivito_sdk/react/memo';
-export { useDataItem } from 'scrivito_sdk/react/use_data_item';
-export { useDataLocator } from 'scrivito_sdk/react/use_data_locator';
-export { useDataScope } from 'scrivito_sdk/react/use_data_scope';
-export { useUrlFor } from 'scrivito_sdk/react/use_url_for';
+export { memo } from 'scrivito_sdk/react/memo';
+export { useDataItem } from 'scrivito_sdk/react/hooks/use_data_item';
+export { useDataLocator } from 'scrivito_sdk/react/hooks/use_data_locator';
+export { useDataScope } from 'scrivito_sdk/react/hooks/use_data_scope';
+export { useUrlFor } from 'scrivito_sdk/react/hooks/use_url_for';
+export {
+  useResolvedHtmlValue,
+  useResolvedStringValue,
+} from 'scrivito_sdk/react/hooks/use_resolved_value';
 export type {
   CustomPageComponentProps,
   CustomWidgetComponentProps,

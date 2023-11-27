@@ -1,9 +1,11 @@
-import {
-  RequestFailedError,
-  loginRedirectAuthorizationProvider,
-} from 'scrivito_sdk/client';
+import { RequestFailedError } from 'scrivito_sdk/client';
 import { ClientError } from 'scrivito_sdk/client/client_error';
 import { FetchOptions, Priority, fetch } from 'scrivito_sdk/client/fetch';
+import {
+  LoginHandler,
+  withLoginHandler,
+} from 'scrivito_sdk/client/login_handler';
+import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
 import {
   requestApiIdempotent,
   requestApiNonIdempotent,
@@ -76,7 +78,6 @@ class CmsRestApi {
   priority?: Priority;
 
   private authHeaderValueProvider?: AuthorizationProvider;
-  private forceVerification?: true;
   private initDeferred: Deferred;
 
   constructor() {
@@ -141,13 +142,14 @@ class CmsRestApi {
 
   async requestBuiltInUserSession(
     sessionId: string,
-    requestParams?: { idp: string }
+    idp?: string
   ): Promise<SessionData> {
     const response = await this.request({
       method: 'PUT',
       path: `sessions/${sessionId}`,
-      requestParams,
-      providedAuthorization: loginRedirectAuthorizationProvider,
+      requestParams: idp ? { idp, type: 'iam' } : { type: 'iam' },
+      loginHandler: loginRedirectHandler,
+      providedAuthorization: null,
     });
 
     return response as SessionData;
@@ -166,15 +168,10 @@ class CmsRestApi {
   }
 
   // For test purpose only.
-  enableForceVerification(): void {
-    this.forceVerification = true;
-  }
-
-  // For test purpose only.
   currentPublicAuthorizationState(): string {
     if (this.authHeaderValueProvider) {
       if (this.authHeaderValueProvider.currentState) {
-        return `[API] ${this.authHeaderValueProvider.currentState()}`;
+        return `[API] ${this.authHeaderValueProvider.currentState() ?? 'null'}`;
       }
       return '[API]: authorization provider without currentState()';
     }
@@ -209,17 +206,21 @@ class CmsRestApi {
     path,
     requestParams,
     providedAuthorization,
+    loginHandler,
   }: {
     method: string;
     path: string;
     requestParams?: ParamsType;
-    providedAuthorization?: string | AuthorizationProvider;
+    providedAuthorization?: string | null;
+    loginHandler?: LoginHandler;
   }): Promise<BackendResponse> {
     await this.ensureEnabledAndInitialized();
 
     const sendRequest = () =>
       this.requestWithAuthorization(
-        providedAuthorization ?? this.getAuthHeaderValueProvider(),
+        providedAuthorization === undefined
+          ? this.getAuthHeaderValueProvider()
+          : providedAuthorization,
         (authorization) =>
           this.requestAndConvertToRawResponse({
             method,
@@ -230,9 +231,11 @@ class CmsRestApi {
       );
 
     try {
-      return await (method === 'POST'
-        ? requestApiNonIdempotent(sendRequest)
-        : requestApiIdempotent(sendRequest));
+      return await withLoginHandler(loginHandler, () =>
+        method === 'POST'
+          ? requestApiNonIdempotent(sendRequest)
+          : requestApiIdempotent(sendRequest)
+      );
     } catch (error) {
       throw error instanceof ClientError &&
         error.code === 'precondition_not_met.workspace_not_found'
@@ -261,9 +264,11 @@ class CmsRestApi {
   }
 
   private async requestWithAuthorization(
-    providedAuthorization: string | AuthorizationProvider,
+    providedAuthorization: null | string | AuthorizationProvider,
     request: (authorization?: string) => Promise<Response>
   ) {
+    if (providedAuthorization === null) return request();
+
     return typeof providedAuthorization === 'string'
       ? request(providedAuthorization)
       : providedAuthorization.authorize(request);
@@ -282,7 +287,6 @@ class CmsRestApi {
   }): Promise<Response> {
     const options: FetchOptions = {
       authorization,
-      forceVerification: this.forceVerification,
       params: {
         path,
         verb: method,
@@ -324,7 +328,7 @@ export function resetCmsRestApi(): void {
 
 export async function requestBuiltInUserSession(
   sessionId: string,
-  requestParams?: { idp: string }
+  idp?: string
 ): Promise<SessionData> {
-  return cmsRestApi.requestBuiltInUserSession(sessionId, requestParams);
+  return cmsRestApi.requestBuiltInUserSession(sessionId, idp);
 }

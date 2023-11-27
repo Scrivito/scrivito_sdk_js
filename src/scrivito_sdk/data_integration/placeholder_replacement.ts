@@ -26,22 +26,35 @@ export function replacePlaceholdersWithData(
   } = {}
 ): string {
   return text.replace(PLACEHOLDERS, (placeholder, identifier) => {
-    if (identifier.includes('.')) {
-      const [className, attributeName] = identifier.split('.');
-
-      return replaceQualifiedPlaceholder(
-        className,
-        attributeName,
-        placeholder,
-        dataStack
-      );
-    }
-
-    const rawValue = getDataContextValue(identifier, placeholders || {});
-    if (rawValue === undefined) return placeholder;
+    const rawValue = replacePlaceholder(
+      identifier,
+      placeholder,
+      placeholders,
+      dataStack
+    );
 
     return transform ? transform(rawValue) : rawValue;
   });
+}
+
+function replacePlaceholder(
+  identifier: string,
+  placeholder: string,
+  placeholders?: DataContext,
+  dataStack?: DataStack
+) {
+  if (identifier.includes('.')) {
+    const [className, attributeName] = identifier.split('.');
+
+    return replaceQualifiedPlaceholder(
+      className,
+      attributeName,
+      placeholder,
+      dataStack
+    );
+  }
+
+  return replaceLegacyPlaceholder(identifier, placeholder, placeholders);
 }
 
 function replaceQualifiedPlaceholder(
@@ -66,4 +79,13 @@ function replaceQualifiedPlaceholder(
   if (typeof attributeValue !== 'string') return placeholder;
 
   return attributeValue;
+}
+
+function replaceLegacyPlaceholder(
+  identifier: string,
+  placeholder: string,
+  placeholders?: DataContext
+) {
+  const rawValue = getDataContextValue(identifier, placeholders || {});
+  return rawValue === undefined ? placeholder : rawValue;
 }

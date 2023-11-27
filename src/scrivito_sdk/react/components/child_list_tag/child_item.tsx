@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { BasicObj } from 'scrivito_sdk/models';
 import { LinkTag } from 'scrivito_sdk/react/components/link_tag';
-import { connect } from 'scrivito_sdk/react/connect';
+import { connect } from 'scrivito_sdk/react_connect';
 import { Obj, wrapInAppClass } from 'scrivito_sdk/realm';
 
 export type RenderChild = (child: Obj) => React.ReactElement<{ child: Obj }>;

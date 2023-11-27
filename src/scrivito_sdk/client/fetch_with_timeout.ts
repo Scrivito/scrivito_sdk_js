@@ -1,4 +1,5 @@
 import { RequestFailedError } from 'scrivito_sdk/client';
+import { setTimeout } from 'scrivito_sdk/common';
 
 /**
  * Does a [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/fetch) request with the

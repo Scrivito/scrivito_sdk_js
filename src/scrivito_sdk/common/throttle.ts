@@ -1,5 +1,4 @@
-import { type ThrottleSettings } from 'lodash-es/throttle';
-import doThrottle from 'lodash-es/throttle';
+import doThrottle, { ThrottleSettings } from 'lodash-es/throttle';
 
 let shouldBypassThrottle: boolean = false;
 

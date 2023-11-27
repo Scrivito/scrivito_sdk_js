@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { connect } from 'scrivito_sdk/react/connect';
+import { connect } from 'scrivito_sdk/react_connect';
 
 export function createConnectedContext<T>(value: T): ConnectedContext<T> {
   const { Provider, Consumer } = React.createContext(value);

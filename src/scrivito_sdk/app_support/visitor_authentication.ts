@@ -5,6 +5,7 @@ import {
   ScrivitoError,
   checkArgumentsFor,
   docUrl,
+  setTimeout,
   tcomb as t,
 } from 'scrivito_sdk/common';
 

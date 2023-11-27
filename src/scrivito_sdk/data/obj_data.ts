@@ -1,13 +1,19 @@
-import { ObjSpaceId, isExistentObjJson } from 'scrivito_sdk/client';
 import {
   ExistentObjJson,
   ObjJson,
+  ObjSpaceId,
   WidgetJson,
   WidgetPoolJson,
+  isExistentObjJson,
   retrieveObj,
 } from 'scrivito_sdk/client';
-import { equals, isPresent, isSystemAttribute } from 'scrivito_sdk/common';
-import { InternalError, never } from 'scrivito_sdk/common';
+import {
+  InternalError,
+  equals,
+  isPresent,
+  isSystemAttribute,
+  never,
+} from 'scrivito_sdk/common';
 import { ObjJsonPatch, patchObjJson } from 'scrivito_sdk/data/obj_patch';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
 import { failIfPerformanceConstraint } from 'scrivito_sdk/data/performance_constraint';

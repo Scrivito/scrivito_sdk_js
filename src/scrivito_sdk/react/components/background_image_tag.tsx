@@ -1,16 +1,19 @@
 // @rewire
 import isObject from 'lodash-es/isObject';
-
 import * as React from 'react';
+
 import { BackgroundImageDecoder } from 'scrivito_sdk/app_support/background_image_decoder';
 import { scaleDownBinary } from 'scrivito_sdk/app_support/scale_down_binary';
-import { ArgumentError, docUrl, throwNextTick } from 'scrivito_sdk/common';
-import { tcomb as t } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  docUrl,
+  tcomb as t,
+  throwNextTick,
+} from 'scrivito_sdk/common';
 import { Binary, BinaryType, ObjType } from 'scrivito_sdk/models';
-import { connect } from 'scrivito_sdk/react/connect';
 import { propTypes } from 'scrivito_sdk/react/tcomb';
-import { isBinaryBasicObj } from 'scrivito_sdk/realm';
-import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
+import { connect } from 'scrivito_sdk/react_connect';
+import { Obj, isBinaryBasicObj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 interface BackgroundImageTagProps {
   tag?: string;

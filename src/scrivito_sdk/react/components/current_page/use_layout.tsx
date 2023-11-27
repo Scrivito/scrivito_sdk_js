@@ -9,7 +9,7 @@ import {
   getLayoutComponentForAppClass,
 } from 'scrivito_sdk/react/component_registry';
 import { CurrentPage } from 'scrivito_sdk/react/components/current_page';
-import { connect } from 'scrivito_sdk/react/connect';
+import { connect } from 'scrivito_sdk/react_connect';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
 
 import { DetailsPageDataContext } from './details_page_data_context';

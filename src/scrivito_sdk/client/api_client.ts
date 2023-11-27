@@ -1,3 +1,5 @@
+import { LoginHandler } from 'scrivito_sdk/client';
+
 export interface FetchParams {
   [name: string]: string | null | undefined;
 }
@@ -23,7 +25,7 @@ export interface FetchOptions {
   data?: FetchData;
   method?: Method;
   // note: only for internal use, will be removed in the future
-  withAuth?: boolean;
+  loginHandler?: LoginHandler;
 }
 
 type Fetch = (path: string, options?: FetchOptions) => Promise<unknown>;
@@ -39,8 +41,12 @@ export class ApiClient {
   }
 
   // note: only for internal use. will be remove in the future.
-  getWithoutAuth(path: string, options?: FetchOptions): Promise<unknown> {
-    return this.fetch(path, { ...options, withAuth: false });
+  getWithoutLogin(path: string, options?: FetchOptions): Promise<unknown> {
+    return this.fetch(path, {
+      ...options,
+      // return null if a request fails due to missing login
+      loginHandler: async () => null,
+    });
   }
 
   post(path: string, options?: FetchOptions): Promise<unknown> {

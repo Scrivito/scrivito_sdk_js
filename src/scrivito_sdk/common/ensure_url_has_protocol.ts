@@ -14,8 +14,24 @@ export function ensureUrlHasProtocol(url: string): string {
   }
 
   if (!(uri.protocol() || url.startsWith('/')) && url.includes('.')) {
-    return `https://${url}`;
+    const hostname = getHostname(url);
+
+    if (hostname && !hostname.includes('_')) {
+      return `https://${url}`;
+    }
   }
 
   return url;
+}
+
+function getHostname(urlString: string) {
+  let url: URL;
+
+  try {
+    url = new URL(`https://${urlString}`);
+  } catch {
+    return;
+  }
+
+  return url.hostname;
 }

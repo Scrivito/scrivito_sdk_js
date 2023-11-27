@@ -1,8 +1,8 @@
 import * as URI from 'urijs';
 
-import { currentOrigin } from 'scrivito_sdk/app_support/current_origin';
 import { isUserLoggedIn } from 'scrivito_sdk/app_support/current_user';
 import { isRunningInBrowser } from 'scrivito_sdk/app_support/node_adapter';
+import { currentOrigin } from 'scrivito_sdk/common';
 
 export const DEFAULT_CMS_ENDPOINT = 'api.scrivito.com';
 

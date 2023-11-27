@@ -1,6 +1,7 @@
 import * as URI from 'urijs';
+
 import { getConfiguration } from 'scrivito_sdk/app_support/configure';
-import { ScrivitoPromise } from 'scrivito_sdk/common';
+import { ScrivitoPromise, getFromLocalStorage } from 'scrivito_sdk/common';
 
 export function checkIfTrustedOrigin(origin: string): Promise<boolean> {
   if (origin === window.location.origin) return ScrivitoPromise.resolve(true);
@@ -45,15 +46,9 @@ function hostMatches(host: string, hostPattern: string) {
 }
 
 function getLocalOrigins() {
-  try {
-    // use this to make your local browser trust certain UI origins.
-    // intended for debugging purposes.
-    // note: you may have to allow 3rd party cookies in your browser
-    // for this to work!
-    return (
-      localStorage.getItem('SCRIVITO_TRUSTED_UI_ORIGINS')?.split(' ') ?? []
-    );
-  } catch (anyError) {
-    return [];
-  }
+  // use this to make your local browser trust certain UI origins.
+  // intended for debugging purposes.
+  // note: you may have to allow 3rd party cookies in your browser
+  // for this to work!
+  return getFromLocalStorage('SCRIVITO_TRUSTED_UI_ORIGINS')?.split(' ') ?? [];
 }

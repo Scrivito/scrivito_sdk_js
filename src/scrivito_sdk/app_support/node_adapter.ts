@@ -1,12 +1,14 @@
 import type { ApiKeyAuthorizationProvider } from 'scrivito_sdk/node_support/api_key_authorization_provider';
+import type { nodeAuthHandler } from 'scrivito_sdk/node_support/node_auth_handler';
 
 export let nodeAdapter: NodeAdapter | undefined;
 
-interface NodeAdapter {
+export interface NodeAdapter {
   ApiKeyAuthorizationProvider: typeof ApiKeyAuthorizationProvider;
+  nodeAuthHandler: typeof nodeAuthHandler;
 }
 
-export function setNodeAdapter(adapter: NodeAdapter) {
+export function setNodeAdapter(adapter: NodeAdapter | undefined) {
   nodeAdapter = adapter;
 }
 

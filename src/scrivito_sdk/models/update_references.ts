@@ -1,7 +1,12 @@
 import {
   AttributeJson,
   CustomAttributeJsonMapping,
+  HtmlAttributeJson,
+  LinkAttributeJson,
+  LinklistAttributeJson,
   ObjJson,
+  ReferenceAttributeJson,
+  ReferencelistAttributeJson,
   withEachAttributeJson,
 } from 'scrivito_sdk/client';
 import {
@@ -34,7 +39,9 @@ export function updateReferences(
       if (typeof newId !== 'string') {
         throwNextTick(
           new ScrivitoError(
-            `Unexpected result from mapping function passed to updateReferences (must be string or undefined): ${newId}`
+            `Unexpected result from mapping function passed to updateReferences (must be string or undefined): ${String(
+              newId
+            )}`
           )
         );
       } else if (!newId.match(/^[a-f0-9]{16}$/)) {
@@ -108,12 +115,6 @@ function getConversion(
 ): Conversion<AttributeJson> | undefined {
   return CONVERSIONS[json[0]];
 }
-
-type HtmlAttributeJson = CustomAttributeJsonMapping['html'];
-type LinkAttributeJson = CustomAttributeJsonMapping['link'];
-type LinklistAttributeJson = CustomAttributeJsonMapping['linklist'];
-type ReferenceAttributeJson = CustomAttributeJsonMapping['reference'];
-type ReferencelistAttributeJson = CustomAttributeJsonMapping['referencelist'];
 
 const CONVERSIONS: Partial<{
   [key in keyof CustomAttributeJsonMapping]: Conversion<

@@ -123,11 +123,11 @@ export class BasicLink {
   }
 
   toPrettyPrint(): string {
-    if (this.isInternal()) {
-      return `[object Link objId="${this.objId()}"]`;
-    }
+    const objId = this.objId();
 
-    return `[object Link url="${this.url()}"]`;
+    return objId
+      ? `[object Link objId="${objId}"]`
+      : `[object Link url="${this.url() ?? '<empty>'}"]`;
   }
 }
 
