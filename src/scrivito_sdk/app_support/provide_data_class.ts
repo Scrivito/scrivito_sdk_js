@@ -3,26 +3,35 @@ import {
   DataConnection,
   ExternalDataClass,
   assertValidDataIdentifier,
+  buildDataConnection,
   setExternalDataConnection,
 } from 'scrivito_sdk/data_integration';
-import { checkProvideDataClass } from 'scrivito_sdk/realm';
+
+/** @beta */
+export function provideDataClass(
+  name: string,
+  params: { apiPath: string }
+): DataClass;
 
 /** @public */
 export function provideDataClass(
   name: string,
-  dataClass: { connection: DataConnection }
+  params: { connection: DataConnection }
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  dataClass: { connection: DataConnection },
-  ...excessArgs: never[]
+  params: { connection: DataConnection } | { apiPath: string }
 ): DataClass {
-  checkProvideDataClass(name, dataClass, ...excessArgs);
   assertValidDataIdentifier(name);
 
-  setExternalDataConnection(name, dataClass.connection);
+  const connection =
+    'apiPath' in params
+      ? buildDataConnection(params.apiPath)
+      : params.connection;
+
+  setExternalDataConnection(name, connection);
 
   return new ExternalDataClass(name);
 }

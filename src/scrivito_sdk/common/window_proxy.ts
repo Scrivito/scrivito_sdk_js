@@ -35,8 +35,12 @@ export function renameTo(newName: string): void {
   window.name = newName;
 }
 
-export function redirectTo(newLocation: string): void {
+export function assignLocation(newLocation: string): void {
   windowLocation().assign(newLocation);
+}
+
+export function replaceLocation(newLocation: string): void {
+  windowLocation().replace(newLocation);
 }
 
 export function replaceHistoryState(
@@ -77,7 +81,7 @@ export function getScrollHeight(): number {
 
 /** For stubWindowProxyLocation only. Use this if you need to stub a location.
  * See currentHref and currentOrigin to access location data.
- * Use redirectTo and reload for location changes.
+ * Use assignLocation, replaceLocation, and reload for location changes.
  */
 export function windowLocation(): Location {
   return window.location;

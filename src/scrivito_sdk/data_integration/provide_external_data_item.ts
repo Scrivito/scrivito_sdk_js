@@ -1,6 +1,8 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import { DataItem } from 'scrivito_sdk/data_integration/data_class';
-import { ExternalDataClass } from 'scrivito_sdk/data_integration/external_data_class';
+import {
+  ExternalDataClass,
+  ExternalDataItem,
+} from 'scrivito_sdk/data_integration/external_data_class';
 import { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 import { provideGlobalData } from 'scrivito_sdk/data_integration/global_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
@@ -22,7 +24,7 @@ const SINGLE_ID = '0';
 export function provideExternalDataItem(
   name: string,
   connection: ExternalDataItemConnection
-): DataItem {
+): ExternalDataItem {
   const dataClass = new ExternalDataClass(name);
 
   const updateCallback = connection.update;

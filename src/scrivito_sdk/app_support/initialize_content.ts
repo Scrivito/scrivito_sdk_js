@@ -101,7 +101,7 @@ function initializeContentFor(basicContent: BasicObj | BasicWidget): void {
     if (isEmpty(currentValue)) {
       const initialValue = initialContentFor(objClassName, attributeName);
 
-      if (initialValue) {
+      if (initialValue !== undefined) {
         initialAttributes[attributeName] = initialValue;
       }
     }

@@ -20,7 +20,9 @@ export async function withLoginHandler(
   }
 }
 
-function isAuthMissingClientError(error: unknown): error is AuthMissingError {
+export function isAuthMissingClientError(
+  error: unknown
+): error is AuthMissingError {
   return (
     error instanceof ClientError &&
     error.code === 'auth_missing' &&

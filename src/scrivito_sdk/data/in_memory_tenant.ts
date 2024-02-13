@@ -1,4 +1,4 @@
-import { ScrivitoError } from 'scrivito_sdk/common';
+import { ScrivitoError, onTestReset } from 'scrivito_sdk/common';
 
 export const IN_MEMORY_TENANT = 'inMemory';
 
@@ -20,10 +20,9 @@ export function assertNotUsingInMemoryTenant(
   }
 }
 
-// For test purpose only.
-export function resetInMemoryTenant(): void {
+onTestReset(() => {
   inMemoryTenant = false;
-}
+});
 
 export class InMemoryTenantUnsupportedOperationError extends ScrivitoError {
   constructor(description: string) {

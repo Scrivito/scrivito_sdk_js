@@ -1,7 +1,6 @@
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
 import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import { DataContext } from 'scrivito_sdk/data_integration/data_context';
-import { getExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { ExternalDataItem } from 'scrivito_sdk/data_integration/external_data_class';
 import { externalDataToDataContext } from 'scrivito_sdk/data_integration/external_data_to_data_context';
 import { ObjDataItem } from 'scrivito_sdk/data_integration/obj_data_class';
@@ -38,7 +37,7 @@ function objDataItemToDataContext(dataItem: ObjDataItem) {
 function externalDataItemToDataContext(dataItem: ExternalDataItem) {
   const _class = dataItem.dataClass().name();
   const _id = dataItem.id();
-  const externalData = getExternalData(_class, _id);
+  const externalData = dataItem.getExternalData();
 
   return externalData
     ? externalDataToDataContext(externalData, _class, _id)

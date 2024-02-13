@@ -3,7 +3,7 @@ import {
   HistoryState,
   getHistoryState,
 } from 'scrivito_sdk/app_support/browser_location';
-import { changeLocation } from 'scrivito_sdk/app_support/change_location';
+import { redirectToUrl } from 'scrivito_sdk/app_support/change_location';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { SiteData } from 'scrivito_sdk/app_support/current_page_data';
 import {
@@ -65,7 +65,7 @@ function handleRedirectToBinary(
   maybeBinaryUrl: NavigationState | string
 ): maybeBinaryUrl is NavigationState {
   if (typeof maybeBinaryUrl === 'string') {
-    changeLocation(maybeBinaryUrl);
+    redirectToUrl(maybeBinaryUrl);
 
     return false;
   }

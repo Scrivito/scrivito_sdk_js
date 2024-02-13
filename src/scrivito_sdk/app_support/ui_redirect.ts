@@ -4,7 +4,7 @@ import {
   getConfiguration,
 } from 'scrivito_sdk/app_support/configure';
 import { forceNavigationStateNotResponsible } from 'scrivito_sdk/app_support/navigation_state';
-import { redirectToCloudUi } from 'scrivito_sdk/app_support/redirect_to_cloud_ui';
+import { assignLocationCloudUi } from 'scrivito_sdk/app_support/redirect_to_cloud_ui';
 
 export async function initializeUiRedirect(): Promise<void> {
   const configuration = await getConfiguration();
@@ -19,7 +19,7 @@ function handleAdoptUi(configuration: Configuration) {
     if (appUrlForUi) {
       const cloudUiUrl =
         adoptUi === true ? 'https://edit.scrivito.com' : adoptUi;
-      redirectToCloudUi(cloudUiUrl, tenant, appUrlForUi);
+      assignLocationCloudUi(cloudUiUrl, tenant, appUrlForUi);
       forceNavigationStateNotResponsible();
     }
   }

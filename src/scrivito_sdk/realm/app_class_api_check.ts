@@ -2,7 +2,6 @@ import {
   PositiveInteger,
   checkArgumentsFor,
   classify,
-  nodeEnv,
   tcomb as t,
   underscore,
 } from 'scrivito_sdk/common';
@@ -22,10 +21,9 @@ export const {
   checkProvideDataErrorComponent,
   checkProvideObjClass,
   checkProvideWidgetClass,
-  checkProvideDataClass,
   checkProvideDataItem,
 } = (() => {
-  if (nodeEnv !== 'development') {
+  if (process.env.NODE_ENV !== 'development') {
     return {
       checkCreateWidgetClass: noop,
       checkCreateObjClass: noop,
@@ -34,7 +32,6 @@ export const {
       checkProvideDataErrorComponent: noop,
       checkProvideObjClass: noop,
       checkProvideWidgetClass: noop,
-      checkProvideDataClass: noop,
       checkProvideDataItem: noop,
     };
   }
@@ -177,28 +174,6 @@ export const {
         args
       );
     },
-
-    checkProvideDataClass: checkArgumentsFor(
-      'provideDataClass',
-      [
-        ['name', t.String],
-        [
-          'dataClass',
-          t.interface({
-            connection: t.interface({
-              get: t.Function,
-              create: t.maybe(t.Function),
-              index: t.maybe(t.Function),
-              update: t.maybe(t.Function),
-              delete: t.maybe(t.Function),
-            }),
-          }),
-        ],
-      ],
-      {
-        docPermalink: 'js-sdk/provideDataClass',
-      }
-    ),
 
     checkProvideDataItem: checkArgumentsFor(
       'provideDataItem',

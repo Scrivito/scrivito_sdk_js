@@ -84,6 +84,29 @@ function connectClassComponent<Props>(
       super(props);
 
       this._scrivitoPrivateConnector = new ComponentConnector(this);
+
+      const { componentDidMount, componentWillUnmount } = this;
+
+      const hasComponentDidMountBeenTampered =
+        componentDidMount !== connectedComponent.prototype.componentDidMount;
+
+      if (hasComponentDidMountBeenTampered) {
+        this.componentDidMount = () => {
+          connectedComponent.prototype.componentDidMount.call(this);
+          componentDidMount.call(this);
+        };
+      }
+
+      const hasComponentWillUnmountBeenTampered =
+        componentWillUnmount !==
+        connectedComponent.prototype.componentWillUnmount;
+
+      if (hasComponentWillUnmountBeenTampered) {
+        this.componentWillUnmount = () => {
+          connectedComponent.prototype.componentWillUnmount.call(this);
+          componentWillUnmount.call(this);
+        };
+      }
     }
 
     componentDidMount() {

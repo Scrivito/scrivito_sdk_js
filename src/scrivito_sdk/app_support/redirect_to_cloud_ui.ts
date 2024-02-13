@@ -1,6 +1,6 @@
 // @rewire
 /** redirects from a Packaged UI location to the equivalent Cloud UI location */
-export function redirectToCloudUi(
+export function assignLocationCloudUi(
   cloudUiOrigin: string,
   tenant: string,
   url: string

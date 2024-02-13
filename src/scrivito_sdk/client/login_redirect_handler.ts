@@ -1,9 +1,9 @@
 import { clientConfig } from 'scrivito_sdk/client';
-import { currentHref, never, redirectTo } from 'scrivito_sdk/common';
+import { assignLocation, currentHref, never } from 'scrivito_sdk/common';
 
 /** a LoginHander which redirects the browser to the login url */
 export async function loginRedirectHandler(visit: string): Promise<void> {
-  redirectTo(await authenticationUrl(visit));
+  assignLocation(await authenticationUrl(visit));
 
   return never();
 }

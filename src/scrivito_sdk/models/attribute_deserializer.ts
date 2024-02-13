@@ -12,12 +12,12 @@ import {
   deserializeAsInteger,
   isValidFloat,
 } from 'scrivito_sdk/common';
-import { DataLocator } from 'scrivito_sdk/data_integration';
 import {
   AttributeType,
   BasicLink,
   BasicLinkAttributes,
   Binary,
+  DataLocator,
   getObjIncludingUnavailableFrom,
 } from 'scrivito_sdk/models';
 import {

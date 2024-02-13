@@ -13,9 +13,33 @@ export type ObjEditingConfig<
 > = SharedEditingConfig<Obj<AttrDefs>> & ObjOnlyEditingConfig<AttrDefs>;
 
 /** @public */
+export type ObjEditingConfigAttributes =
+  Required<ObjEditingConfig>['attributes'];
+
+/** @public */
+export type ObjEditingConfigInitialContent =
+  Required<ObjEditingConfig>['initialContent'];
+
+/** @public */
+export type ObjEditingConfigValidations =
+  Required<ObjEditingConfig>['validations'];
+
+/** @public */
 export type WidgetEditingConfig<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > = SharedEditingConfig<Widget<AttrDefs>>;
+
+/** @public */
+export type WidgetEditingConfigAttributes =
+  Required<WidgetEditingConfig>['attributes'];
+
+/** @public */
+export type WidgetEditingConfigInitialContent =
+  Required<WidgetEditingConfig>['initialContent'];
+
+/** @public */
+export type WidgetEditingConfigValidations =
+  Required<WidgetEditingConfig>['validations'];
 
 /** @public */
 export interface DataClassEditingConfig {

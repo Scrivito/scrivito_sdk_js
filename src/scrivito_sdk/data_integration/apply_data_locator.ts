@@ -10,10 +10,6 @@ import {
   findScopeInDataStackAndGlobalData,
 } from 'scrivito_sdk/data_integration/data_context';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
-import {
-  DataLocator,
-  isDataLocatorValueFilter,
-} from 'scrivito_sdk/data_integration/data_locator';
 import { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
 import {
   DataStack,
@@ -25,6 +21,7 @@ import {
 } from 'scrivito_sdk/data_integration/deserialization';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
+import { DataLocator, isDataLocatorValueFilter } from 'scrivito_sdk/models';
 
 export function applyDataLocator(
   dataStack: DataStack | undefined,

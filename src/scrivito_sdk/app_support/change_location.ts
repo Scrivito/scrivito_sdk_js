@@ -4,18 +4,24 @@ import * as URI from 'urijs';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import {
   InternalError,
+  assignLocation,
   currentOrigin,
   openWindow,
-  redirectTo,
+  replaceLocation,
 } from 'scrivito_sdk/common';
 import { isLocalUri } from './routing';
+
+export function redirectToUrl(url: string): void {
+  if (uiAdapter) changeLocation(url);
+  else replaceLocation(url);
+}
 
 export function changeLocation(url: string): void {
   if (uiAdapter) {
     // change the location of the parent, to avoid CSP errors.
     uiAdapter.navigateToExternalUrl(url);
   } else {
-    redirectTo(url);
+    assignLocation(url);
   }
 }
 

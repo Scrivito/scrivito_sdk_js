@@ -103,3 +103,10 @@ export {
   wantsAutoAttributeConversion,
   setWantsAutoAttributeConversion,
 } from 'scrivito_sdk/models/auto_convert';
+export { getDetailsPageForDataParam } from 'scrivito_sdk/models/get_details_page_for_data_param';
+export {
+  isDataLocatorValueFilter,
+  isDataLocatorValueVia,
+  isDataLocatorValueViaFilter,
+  DataLocator,
+} from 'scrivito_sdk/models/data_locator';

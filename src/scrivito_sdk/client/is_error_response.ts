@@ -19,6 +19,6 @@ export function isErrorResponse(
   return (
     errorType === 'string' &&
     (codeType === 'string' || codeType === 'undefined') &&
-    (isObject(details) || typeof details === 'undefined')
+    (isObject(details) || details === undefined)
   );
 }

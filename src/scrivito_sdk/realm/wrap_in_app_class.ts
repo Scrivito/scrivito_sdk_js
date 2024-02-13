@@ -1,7 +1,6 @@
 import mapValues from 'lodash-es/mapValues';
 
 import { ArgumentError, isSystemAttribute } from 'scrivito_sdk/common';
-import { DataLocator } from 'scrivito_sdk/data_integration';
 import {
   AttributeType,
   BasicAttributeValue,
@@ -11,6 +10,7 @@ import {
   BasicTypeInfo,
   BasicWidget,
   Binary,
+  DataLocator,
   ObjUnavailable,
 } from 'scrivito_sdk/models';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';

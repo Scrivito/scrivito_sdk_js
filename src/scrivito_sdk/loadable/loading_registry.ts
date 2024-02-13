@@ -1,3 +1,5 @@
+import { onTestReset } from 'scrivito_sdk/common';
+
 export interface LoaderProcess {
   notifyDataRequired(): void;
   notifyDataNoLongerRequired(): void;
@@ -18,10 +20,10 @@ interface LoadingSubscriptions {
 
 let loadingSubscriptions: LoadingSubscriptions = {};
 
-export function reset() {
+onTestReset(() => {
   processIndex = {};
   loadingSubscriptions = {};
-}
+});
 
 // for test purposes
 export function subscriberCountForLoading(dataId: string): number {

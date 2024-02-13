@@ -3,8 +3,9 @@ import {
   findItemInDataStackAndGlobalData,
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
-import { DataStack } from 'scrivito_sdk/data_integration/data_stack';
+import type { DataStack } from 'scrivito_sdk/data_integration/data_stack';
 import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
+import { loadableWithDefault } from 'scrivito_sdk/loadable';
 
 const PLACEHOLDERS = /__([a-z](?:[a-z0-9]|\.[a-z]|_(?!_)){0,100})__/gi;
 const SINGLE_PLACEHOLDER = /^__([a-z](?:[a-z0-9]|\.[a-z]|_(?!_)){0,100})__$/i;
@@ -26,66 +27,79 @@ export function replacePlaceholdersWithData(
   } = {}
 ): string {
   return text.replace(PLACEHOLDERS, (placeholder, identifier) => {
-    const rawValue = replacePlaceholder(
+    const rawValue = replacePlaceholder({
       identifier,
       placeholder,
       placeholders,
-      dataStack
-    );
+      dataStack,
+    });
 
     return transform ? transform(rawValue) : rawValue;
   });
 }
 
-function replacePlaceholder(
-  identifier: string,
-  placeholder: string,
-  placeholders?: DataContext,
-  dataStack?: DataStack
-) {
+function replacePlaceholder({
+  identifier,
+  placeholder,
+  placeholders,
+  dataStack,
+}: {
+  identifier: string;
+  placeholder: string;
+  placeholders?: DataContext;
+  dataStack?: DataStack;
+}) {
   if (identifier.includes('.')) {
-    const [className, attributeName] = identifier.split('.');
+    const [dataClassName, attributeName] = identifier.split('.');
 
-    return replaceQualifiedPlaceholder(
-      className,
+    return replaceQualifiedPlaceholder({
+      dataClassName,
       attributeName,
       placeholder,
-      dataStack
-    );
+      dataStack: dataStack || [],
+    });
   }
 
-  return replaceLegacyPlaceholder(identifier, placeholder, placeholders);
+  return replaceLegacyPlaceholder({ identifier, placeholder, placeholders });
 }
 
-function replaceQualifiedPlaceholder(
-  dataClassName: string,
-  attributeName: string,
-  placeholder: string,
-  dataStack: DataStack = []
-) {
-  const itemElement = findItemInDataStackAndGlobalData(
-    dataClassName,
-    dataStack
-  );
-  if (!itemElement) return '';
-
-  const dataClass = getDataClass(dataClassName);
-  if (!dataClass) return placeholder;
-
-  const dataItem = dataClass.get(itemElement._id);
-  if (!dataItem) return '';
+function replaceQualifiedPlaceholder({
+  dataClassName,
+  attributeName,
+  placeholder,
+  dataStack,
+}: {
+  dataClassName: string;
+  attributeName: string;
+  placeholder: string;
+  dataStack: DataStack;
+}) {
+  const dataItem = getDataItem(dataClassName, dataStack);
+  if (dataItem === 'loading') return '';
+  if (!dataItem) return placeholder;
 
   const attributeValue = dataItem.get(attributeName);
-  if (typeof attributeValue !== 'string') return placeholder;
+  if (typeof attributeValue !== 'string') return '';
 
   return attributeValue;
 }
 
-function replaceLegacyPlaceholder(
-  identifier: string,
-  placeholder: string,
-  placeholders?: DataContext
-) {
+function getDataItem(dataClassName: string, dataStack: DataStack) {
+  return loadableWithDefault('loading', () => {
+    const item = findItemInDataStackAndGlobalData(dataClassName, dataStack);
+    if (item) return getDataClass(dataClassName)?.get(item._id);
+  });
+}
+
+function replaceLegacyPlaceholder({
+  identifier,
+  placeholder,
+  placeholders,
+}: {
+  identifier: string;
+  placeholder: string;
+  placeholders?: DataContext;
+}) {
   const rawValue = getDataContextValue(identifier, placeholders || {});
   return rawValue === undefined ? placeholder : rawValue;
 }

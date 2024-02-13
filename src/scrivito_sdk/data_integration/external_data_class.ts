@@ -19,6 +19,7 @@ import {
   combineSearches,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
+  ExternalData,
   getExternalData,
   setExternalData,
 } from 'scrivito_sdk/data_integration/external_data';
@@ -58,7 +59,7 @@ export class ExternalDataClass extends DataClass {
       : null;
   }
 
-  getUnchecked(id: string): DataItem {
+  getUnchecked(id: string): ExternalDataItem {
     return new ExternalDataItem(this, id);
   }
 }
@@ -246,11 +247,12 @@ export class ExternalDataItem extends DataItem {
     }
 
     const updateCallback = this.getUpdateCallback();
-    await updateCallback(this._dataId, attributes);
+    const response = await updateCallback(this._dataId, attributes);
 
     setExternalData(this._dataClass.name(), this._dataId, {
       ...externalData,
       ...attributes,
+      ...(response || {}),
     });
 
     this.notifyWrite();
@@ -265,7 +267,8 @@ export class ExternalDataItem extends DataItem {
     this.notifyWrite();
   }
 
-  private getExternalData() {
+  /** @internal */
+  getExternalData(): ExternalData | null | undefined {
     return getExternalData(this.dataClassName(), this._dataId);
   }
 

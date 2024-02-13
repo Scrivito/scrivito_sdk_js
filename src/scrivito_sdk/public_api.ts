@@ -8,8 +8,8 @@
 // Client
 export { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
 export { load } from 'scrivito_sdk/loadable';
-export { Binary, FutureBinary } from 'scrivito_sdk/models';
-export { DataLocator, DataLocatorError } from 'scrivito_sdk/data_integration';
+export { Binary, FutureBinary, DataLocator } from 'scrivito_sdk/models';
+export { DataLocatorError } from 'scrivito_sdk/data_integration';
 export {
   ClientError,
   JrRestApi as unstable_JrRestApi,
@@ -97,6 +97,7 @@ export { setVisitorIdToken } from 'scrivito_sdk/app_support/visitor_authenticati
 export { updateContent } from 'scrivito_sdk/app_support/update_content';
 export { updateMenuExtensions } from 'scrivito_sdk/app_support/menu';
 export { urlFor } from 'scrivito_sdk/app_support/url_for';
+export { urlForDataItem } from 'scrivito_sdk/app_support/url_for_data_item';
 export { useHistory } from 'scrivito_sdk/app_support/browser_location';
 export { validationResultsFor } from 'scrivito_sdk/app_support/validation_results_stub';
 export { uiContext } from 'scrivito_sdk/app_support/ui_context';
@@ -113,9 +114,16 @@ export type {
 export { provideEditingConfig } from 'scrivito_sdk/app_support/provide_editing_config';
 export type {
   ObjEditingConfig,
+  ObjEditingConfigAttributes,
+  ObjEditingConfigInitialContent,
+  ObjEditingConfigValidations,
   WidgetEditingConfig,
+  WidgetEditingConfigAttributes,
+  WidgetEditingConfigInitialContent,
+  WidgetEditingConfigValidations,
 } from 'scrivito_sdk/app_support/editing_config';
 export { isOnCurrentPath } from 'scrivito_sdk/app_support/is_on_current_path';
+export { getInstanceId } from 'scrivito_sdk/app_support/get_instance_id';
 
 /** @internal */
 export { unstable_selectSiteId } from 'scrivito_sdk/app_support/unstable_multi_site_mode';

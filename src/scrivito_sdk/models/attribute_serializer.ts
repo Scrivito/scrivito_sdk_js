@@ -18,13 +18,13 @@ import {
   underscore,
 } from 'scrivito_sdk/common';
 import { ObjJsonPatch } from 'scrivito_sdk/data';
-import { DataLocator } from 'scrivito_sdk/data_integration';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';
 import { AttributeType } from 'scrivito_sdk/models/basic_attribute_types';
 import { BasicLink } from 'scrivito_sdk/models/basic_link';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
+import { DataLocator } from 'scrivito_sdk/models/data_locator';
 import { ObjUnavailable } from 'scrivito_sdk/models/obj_unavailable';
 import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 

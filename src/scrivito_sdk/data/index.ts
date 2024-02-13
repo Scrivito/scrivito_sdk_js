@@ -21,7 +21,6 @@ export {
   useInMemoryTenant,
   assertNotUsingInMemoryTenant,
   isUsingInMemoryTenant,
-  resetInMemoryTenant,
 } from 'scrivito_sdk/data/in_memory_tenant';
 export { ObjBackendReplication } from 'scrivito_sdk/data/obj_backend_replication';
 export { disableObjReplication } from 'scrivito_sdk/data/disable_obj_replication';

@@ -1,18 +1,15 @@
 // @rewire
 
 import { clientConfig } from 'scrivito_sdk/client';
-import {
-  ApiClient,
-  FetchOptions,
-  FetchParams,
-} from 'scrivito_sdk/client/api_client';
+import { ApiClient, FetchOptions } from 'scrivito_sdk/client/api_client';
+import { getBrowserTokenProvider } from 'scrivito_sdk/client/browser_token';
 import { fetchJson } from 'scrivito_sdk/client/fetch_json';
+import { joinPaths } from 'scrivito_sdk/client/join_paths';
 import { withLoginHandler } from 'scrivito_sdk/client/login_handler';
 import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
 
 export async function getJrRestApiUrl(path: string): Promise<string> {
-  const sanitizedPath = path.replace(/^\//, '');
-  return `${(await clientConfig.fetch()).jrApiLocation}/${sanitizedPath}`;
+  return joinPaths((await clientConfig.fetch()).jrApiLocation, path);
 }
 
 /** @public */
@@ -22,7 +19,7 @@ async function fetch(path: string, options?: FetchOptions) {
   const method = options?.method?.toUpperCase() ?? 'GET';
   const config = await clientConfig.fetch();
 
-  const url = await calculateRequestUrl(path, options?.params);
+  const url = await getJrRestApiUrl(path);
 
   const loginHandler =
     options?.loginHandler ??
@@ -31,22 +28,11 @@ async function fetch(path: string, options?: FetchOptions) {
   return withLoginHandler(loginHandler, () =>
     fetchJson(url, {
       data: options?.data,
-      authProvider: config.iamAuthProvider,
+      authProvider: options?.unstable_forceCookie
+        ? undefined
+        : config.iamAuthProvider ?? getBrowserTokenProvider(),
+      params: options?.params,
       method,
     })
   );
-}
-
-async function calculateRequestUrl(path: string, params?: FetchParams) {
-  const apiUrl = new URL(await getJrRestApiUrl(path));
-
-  if (params) {
-    for (const [name, value] of Object.entries(params)) {
-      if (typeof value === 'string') {
-        apiUrl.searchParams.append(name, value);
-      }
-    }
-  }
-
-  return apiUrl.toString();
 }

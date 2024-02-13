@@ -186,7 +186,9 @@ export class BasicWidget implements ContentValueProvider {
     failIfPerformanceConstraint(
       'for performance reasons, avoid this method when rendering'
     );
-    return this.containingField().getContainer();
+
+    const containingField = this.containingField();
+    return containingField ? containingField.getContainer() : this.obj();
   }
 
   update(attributes: BasicWidgetAttributes): void {
@@ -275,8 +277,11 @@ export class BasicWidget implements ContentValueProvider {
     );
   }
 
-  containingField(): BasicField<'widget'> | BasicField<'widgetlist'> {
-    return this.obj().fieldContainingWidget(this)!;
+  containingField():
+    | BasicField<'widget'>
+    | BasicField<'widgetlist'>
+    | undefined {
+    return this.obj().fieldContainingWidget(this);
   }
 
   toPrettyPrint(): string {

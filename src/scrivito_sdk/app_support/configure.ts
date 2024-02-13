@@ -36,12 +36,7 @@ import {
 } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
 import { getVisitorAuthenticationProvider } from 'scrivito_sdk/app_support/visitor_authentication';
 import { linkViaPort } from 'scrivito_sdk/bridge';
-import {
-  Priority,
-  PublicAuthentication,
-  clientConfig,
-  cmsRestApi,
-} from 'scrivito_sdk/client';
+import { Priority, clientConfig, cmsRestApi } from 'scrivito_sdk/client';
 import {
   Deferred,
   ScrivitoError,
@@ -318,7 +313,7 @@ function configureCmsRestApi({
   if (priority) cmsRestApi.setPriority(priority);
   cmsRestApi.init({
     apiBaseUrl: `${endpoint}/tenants/${tenant}`,
-    authProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
+    authorizationProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
   });
 }
 
@@ -330,10 +325,7 @@ function getCmsAuthProvider(
     return new nodeAdapter.ApiKeyAuthorizationProvider(apiKey);
   }
 
-  return (
-    getVisitorAuthenticationProvider(visitorAuthentication) ||
-    PublicAuthentication
-  );
+  return getVisitorAuthenticationProvider(visitorAuthentication);
 }
 
 function getCheckedRoutingConfiguration({

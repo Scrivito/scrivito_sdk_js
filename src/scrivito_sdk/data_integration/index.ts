@@ -4,6 +4,7 @@ export {
   DataItem,
   DataScope,
 } from 'scrivito_sdk/data_integration/data_class';
+export { buildDataConnection } from 'scrivito_sdk/data_integration/build_data_connection';
 export { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 export { ObjDataScope } from 'scrivito_sdk/data_integration/obj_data_class';
 export type { DataContext } from 'scrivito_sdk/data_integration/data_context';
@@ -35,12 +36,6 @@ export {
   isDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_stack';
 export { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
-export {
-  isDataLocatorValueFilter,
-  isDataLocatorValueVia,
-  isDataLocatorValueViaFilter,
-  DataLocator,
-} from 'scrivito_sdk/data_integration/data_locator';
 export { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
 export { applyDataLocator } from 'scrivito_sdk/data_integration/apply_data_locator';
 export type { ExternalDataItemConnection } from 'scrivito_sdk/data_integration/provide_external_data_item';

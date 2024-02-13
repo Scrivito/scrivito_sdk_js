@@ -2,8 +2,10 @@ export type { BackendBinaryData } from 'scrivito_sdk/client/binary_urls_retrieva
 export type { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
 export {
   MissingWorkspaceError,
+  type Priority,
   cmsRestApi,
   requestBuiltInUserSession,
+  useDefaultPriority,
 } from 'scrivito_sdk/client/cms_rest_api';
 export type {
   AuthorizationProvider,
@@ -30,16 +32,12 @@ export type {
 } from 'scrivito_sdk/client/suggest_retrieval';
 export { clientConfig } from 'scrivito_sdk/client/config';
 export {
-  useDefaultPriority,
-  useXmlHttpRequest,
-} from 'scrivito_sdk/client/fetch';
-export type { Priority } from 'scrivito_sdk/client/fetch';
-export {
   PUBLISHED_SPACE,
   getWorkspaceId,
   isEmptySpaceId,
   isWorkspaceObjSpaceId,
   isObjSpaceId,
+  objSpaceIdsEqual,
 } from 'scrivito_sdk/client/obj_space_id';
 export type { LoginHandler } from 'scrivito_sdk/client/login_handler';
 export { setLoggedInIndicatorParam } from 'scrivito_sdk/client/login_redirect_handler';
@@ -57,6 +55,10 @@ export {
   isWidgetAttributeJson,
   isWidgetlistAttributeJson,
 } from 'scrivito_sdk/client/obj_json';
+export {
+  injectBrowserToken,
+  fetchBrowserToken,
+} from 'scrivito_sdk/client/browser_token';
 export type {
   ObjJson,
   ExistentObjJson,
@@ -112,6 +114,4 @@ export type {
 } from 'scrivito_sdk/client/workspace_json';
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
 export * from 'scrivito_sdk/client/session_data';
-export { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
-export { retryOnRequestFailed } from 'scrivito_sdk/client/retry';
 export { TokenAuthorizationProvider } from 'scrivito_sdk/client/token_authorization_provider';

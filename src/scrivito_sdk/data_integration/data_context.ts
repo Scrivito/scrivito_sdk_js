@@ -3,8 +3,8 @@ import * as URI from 'urijs';
 import {
   ArgumentError,
   QueryParameters,
+  parameterizeDataClass,
   throwNextTick,
-  underscore,
 } from 'scrivito_sdk/common';
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
 import {
@@ -254,10 +254,6 @@ function getBasicObjFrom(objClassName: string, objId: string) {
     objSpaceScope(currentObjSpaceId()).and(restrictToObjClass(objClassName)),
     objId
   );
-}
-
-function parameterizeDataClass(dataClass: string): string {
-  return `${underscore(dataClass)}_id`;
 }
 
 function getObj(objOrLink: BasicObj | BasicLink) {

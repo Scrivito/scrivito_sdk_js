@@ -1,10 +1,10 @@
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration';
-import { DataItem } from 'scrivito_sdk/data_integration/data_class';
+import { ExternalDataItem } from 'scrivito_sdk/data_integration/external_data_class';
 import { createStateContainer } from 'scrivito_sdk/state';
 
 const globalContextState = createStateContainer<Record<string, string>>();
 
-export function provideGlobalData(dataItem: DataItem): void {
+export function provideGlobalData(dataItem: ExternalDataItem): void {
   const dataClassName = dataItem.dataClass().name();
   const dataItemId = dataItem.id();
 
@@ -14,7 +14,7 @@ export function provideGlobalData(dataItem: DataItem): void {
   });
 }
 
-export function getGlobalDataItems(): DataItem[] {
+export function getGlobalDataItems(): ExternalDataItem[] {
   const globalContext = globalContextState.get();
 
   return globalContext
@@ -22,7 +22,9 @@ export function getGlobalDataItems(): DataItem[] {
         .map(([dataClassName, dataId]) =>
           getDataClassOrThrow(dataClassName).get(dataId)
         )
-        .filter((maybeDataItem): maybeDataItem is DataItem => !!maybeDataItem)
+        .filter(
+          (maybeDataItem): maybeDataItem is ExternalDataItem => !!maybeDataItem
+        )
     : [];
 }
 

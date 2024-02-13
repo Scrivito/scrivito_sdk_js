@@ -1,5 +1,3 @@
-import isObject from 'lodash-es/isObject';
-
 import {
   ArgumentError,
   EmptyContinueIterable,
@@ -7,6 +5,7 @@ import {
 } from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
 import {
+  DEFAULT_LIMIT,
   DataItemFilters,
   OrderSpec,
   PresentDataScopePojo,
@@ -18,9 +17,10 @@ import {
   setExternalData,
 } from 'scrivito_sdk/data_integration/external_data';
 import {
-  IndexResult,
   ResultItem,
   ResultItemData,
+  assertValidIndexResultWithUnknownEntries,
+  assertValidNumericId,
   assertValidResultItem,
   autocorrectResultItemId,
   getExternalDataConnectionOrThrow,
@@ -32,7 +32,8 @@ import { StateContainer, createStateContainer } from 'scrivito_sdk/state';
 const writeCounterStates: WriteCounterStates = {};
 type WriteCounterStates = Record<string, StateContainer<number>>;
 
-const batchCollection = new IdBatchCollection({
+// exported for test purposes only
+export const batchCollection = new IdBatchCollection({
   recordedAs: 'externaldataquery',
   loadBatch,
   invalidation: ([dataClass]) =>
@@ -46,13 +47,16 @@ export function getExternalDataQuery({
   filters,
   search,
   order,
+  limit,
 }: PresentDataScopePojo): DataQuery<DataId> {
   if (isExternalDataLoadingDisabled()) return new EmptyContinueIterable();
+
+  const batchSize = limit ?? DEFAULT_LIMIT;
 
   const idQuery = new IdBatchQuery((batchNumber) =>
     batchCollection.getBatch(
       [dataClass, filters, search, order],
-      -1, // Dummy value for the batch size, since it's ignored anyways
+      batchSize,
       batchNumber
     )
   );
@@ -80,52 +84,32 @@ async function loadBatch(
     string | undefined,
     OrderSpec | undefined
   ],
-  continuation: string | undefined
+  continuation: string | undefined,
+  batchSize: number
 ) {
   const indexCallback = getIndexCallback(dataClass);
 
   const result = await indexCallback(
-    new IndexParams(continuation, { filters, search, order })
+    new IndexParams(continuation, { filters, search, order, limit: batchSize })
   );
 
-  assertValidIndexResult(result);
+  assertValidIndexResultWithUnknownEntries(result);
 
   const dataIds = handleResults(result.results, dataClass);
 
   return {
-    continuation: result.continuation,
+    continuation: result.continuation ?? undefined,
     results: dataIds,
   };
 }
 
-function assertValidIndexResult(result: unknown) {
-  if (!isObject(result)) {
-    throw new ArgumentError('An index result must be an object');
-  }
-
-  const { results, continuation } = result as IndexResult;
-
-  if (!Array.isArray(results)) {
-    throw new ArgumentError('Results of an index result must be an array');
-  }
-
-  if (continuation !== undefined) {
-    if (typeof continuation !== 'string') {
-      throw new ArgumentError(
-        'Continuation of an index result must be a string or undefined'
-      );
-    }
-
-    if (continuation.length === 0) {
-      throw new ArgumentError(
-        'Continuation of an index result must be a non-empty string or undefined'
-      );
-    }
-  }
-}
-
 function handleResults(results: unknown[], dataClass: string) {
   return results.map((idOrItem) => {
+    if (typeof idOrItem === 'number') {
+      assertValidNumericId(idOrItem);
+      return handleDataId(dataClass, idOrItem.toString());
+    }
+
     if (typeof idOrItem === 'string') {
       assertValidDataId(idOrItem);
       return handleDataId(dataClass, idOrItem);

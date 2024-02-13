@@ -1,15 +1,12 @@
-import { RequestFailedError } from 'scrivito_sdk/client';
+import { RequestFailedError, fetchJson } from 'scrivito_sdk/client';
 import { ClientError } from 'scrivito_sdk/client/client_error';
-import { FetchOptions, Priority, fetch } from 'scrivito_sdk/client/fetch';
+import { getClientVersion } from 'scrivito_sdk/client/get_client_version';
 import {
   LoginHandler,
   withLoginHandler,
 } from 'scrivito_sdk/client/login_handler';
 import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
-import {
-  requestApiIdempotent,
-  requestApiNonIdempotent,
-} from 'scrivito_sdk/client/request_api';
+import { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
 import { SessionData } from 'scrivito_sdk/client/session_data';
 import {
   Deferred,
@@ -71,13 +68,20 @@ export interface VisitorSession {
 
 let requestsAreDisabled: true | undefined;
 
+export type Priority = 'foreground' | 'background';
+
+let fallbackPriority: undefined | Priority;
+
+export function useDefaultPriority(priority: Priority) {
+  fallbackPriority = priority;
+}
 class CmsRestApi {
   // only public for test purposes
   url!: string;
   // only public for test purposes
   priority?: Priority;
 
-  private authHeaderValueProvider?: AuthorizationProvider;
+  private authorizationProvider?: AuthorizationProvider;
   private initDeferred: Deferred;
 
   constructor() {
@@ -86,13 +90,13 @@ class CmsRestApi {
 
   init({
     apiBaseUrl,
-    authProvider,
+    authorizationProvider,
   }: {
     apiBaseUrl: string;
-    authProvider: AuthorizationProvider;
+    authorizationProvider?: AuthorizationProvider;
   }): void {
     this.url = `${apiBaseUrl}/perform`;
-    this.authHeaderValueProvider = authProvider;
+    this.authorizationProvider = authorizationProvider ?? PublicAuthentication;
     this.initDeferred.resolve();
   }
 
@@ -149,7 +153,7 @@ class CmsRestApi {
       path: `sessions/${sessionId}`,
       requestParams: idp ? { idp, type: 'iam' } : { type: 'iam' },
       loginHandler: loginRedirectHandler,
-      providedAuthorization: null,
+      authorizationProvider: null,
     });
 
     return response as SessionData;
@@ -163,15 +167,19 @@ class CmsRestApi {
       method: 'PUT',
       path: `sessions/${sessionId}`,
       requestParams: undefined,
-      providedAuthorization: `id_token ${token}`,
+      authorizationProvider: {
+        authorize(request) {
+          return request(`id_token ${token}`);
+        },
+      },
     }) as Promise<VisitorSession>;
   }
 
   // For test purpose only.
   currentPublicAuthorizationState(): string {
-    if (this.authHeaderValueProvider) {
-      if (this.authHeaderValueProvider.currentState) {
-        return `[API] ${this.authHeaderValueProvider.currentState() ?? 'null'}`;
+    if (this.authorizationProvider) {
+      if (this.authorizationProvider.currentState) {
+        return `[API] ${this.authorizationProvider.currentState() ?? 'null'}`;
       }
       return '[API]: authorization provider without currentState()';
     }
@@ -205,36 +213,30 @@ class CmsRestApi {
     method,
     path,
     requestParams,
-    providedAuthorization,
+    authorizationProvider,
     loginHandler,
   }: {
     method: string;
     path: string;
     requestParams?: ParamsType;
-    providedAuthorization?: string | null;
+    authorizationProvider?: AuthorizationProvider | null;
     loginHandler?: LoginHandler;
   }): Promise<BackendResponse> {
     await this.ensureEnabledAndInitialized();
 
-    const sendRequest = () =>
-      this.requestWithAuthorization(
-        providedAuthorization === undefined
-          ? this.getAuthHeaderValueProvider()
-          : providedAuthorization,
-        (authorization) =>
-          this.requestAndConvertToRawResponse({
-            method,
-            path,
-            requestParams,
-            authorization,
-          })
-      );
-
     try {
-      return await withLoginHandler(loginHandler, () =>
-        method === 'POST'
-          ? requestApiNonIdempotent(sendRequest)
-          : requestApiIdempotent(sendRequest)
+      return await withLoginHandler(
+        loginHandler,
+        () =>
+          fetchJson(this.url, {
+            method: method === 'POST' ? 'POST' : 'PUT',
+            headers: this.getHeaders(),
+            data: { path, verb: method, params: requestParams },
+            authProvider: this.getAuthorizationProviderForRequest(
+              authorizationProvider
+            ),
+            credentials: 'include',
+          }) as Promise<Response>
       );
     } catch (error) {
       throw error instanceof ClientError &&
@@ -242,6 +244,23 @@ class CmsRestApi {
         ? new MissingWorkspaceError()
         : error;
     }
+  }
+
+  private getHeaders() {
+    let headers: Record<string, string> = {
+      'Scrivito-Client': getClientVersion(),
+    };
+
+    const priorityWithFallback = this.priority || fallbackPriority;
+
+    if (priorityWithFallback === 'background') {
+      headers = {
+        ...headers,
+        'Scrivito-Priority': priorityWithFallback,
+      };
+    }
+
+    return headers;
   }
 
   private async handleTask(task: TaskData): Promise<BackendResponse> {
@@ -263,50 +282,17 @@ class CmsRestApi {
     }
   }
 
-  private async requestWithAuthorization(
-    providedAuthorization: null | string | AuthorizationProvider,
-    request: (authorization?: string) => Promise<Response>
+  private getAuthorizationProviderForRequest(
+    authorizationProvider: AuthorizationProvider | null | undefined
   ) {
-    if (providedAuthorization === null) return request();
+    if (authorizationProvider === undefined) {
+      if (!this.authorizationProvider) throw new InternalError();
+      return this.authorizationProvider;
+    }
 
-    return typeof providedAuthorization === 'string'
-      ? request(providedAuthorization)
-      : providedAuthorization.authorize(request);
-  }
+    if (authorizationProvider === null) return undefined;
 
-  private async requestAndConvertToRawResponse({
-    method,
-    path,
-    requestParams,
-    authorization,
-  }: {
-    method: string;
-    path: string;
-    requestParams?: ParamsType;
-    authorization: string | undefined;
-  }): Promise<Response> {
-    const options: FetchOptions = {
-      authorization,
-      params: {
-        path,
-        verb: method,
-        params: requestParams || {},
-      },
-    };
-
-    if (this.priority) options.priority = this.priority;
-
-    const fetchResponse = await fetch(method, this.url, options);
-
-    const { responseText, status } = fetchResponse;
-
-    return new Response(responseText, { status });
-  }
-
-  private getAuthHeaderValueProvider() {
-    if (!this.authHeaderValueProvider) throw new InternalError();
-
-    return this.authHeaderValueProvider;
+    return authorizationProvider;
   }
 }
 

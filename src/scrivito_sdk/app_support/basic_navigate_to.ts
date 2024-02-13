@@ -15,7 +15,7 @@ import {
   generateDestinationForId,
   isLocalUri,
 } from 'scrivito_sdk/app_support/routing';
-import { QueryParameters, logError, redirectTo } from 'scrivito_sdk/common';
+import { QueryParameters, assignLocation, logError } from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
 import { isBinaryBasicObj } from 'scrivito_sdk/realm';
@@ -125,6 +125,6 @@ function navigateCrossSiteTo(url: string) {
   if (isLocalUri(uri)) {
     navigateToResource(uri.resource());
   } else {
-    redirectTo(url);
+    assignLocation(url);
   }
 }

@@ -7,7 +7,6 @@ import { uiAdapterCompatibleValue } from 'scrivito_sdk/app_support/ui_adapter_co
 import {
   ArgumentError,
   checkArgumentsFor,
-  nodeEnv,
   tcomb as t,
 } from 'scrivito_sdk/common';
 import { OPERATORS, ObjSearchType } from 'scrivito_sdk/models';
@@ -110,7 +109,7 @@ function removeUnionSubTypeIndexesFromKey(message: string): string {
 }
 
 const checkConfigure = (() => {
-  if (nodeEnv !== 'development') return () => {};
+  if (process.env.NODE_ENV !== 'development') return () => {};
 
   const SearchFieldType = t.union([t.String, t.list(t.String)]);
   const SearchOperatorType = t.enums.of(

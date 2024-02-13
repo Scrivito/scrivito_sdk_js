@@ -1,8 +1,8 @@
-import { DataLocator } from 'scrivito_sdk/data_integration';
 import { BasicLink } from 'scrivito_sdk/models/basic_link';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
+import { DataLocator } from 'scrivito_sdk/models/data_locator';
 import { ObjUnavailable } from 'scrivito_sdk/models/obj_unavailable';
 import { TypeInfo } from 'scrivito_sdk/models/type_info';
 

@@ -1,6 +1,6 @@
 import flatten from 'lodash-es/flatten';
 
-import { docUrl, nodeEnv } from 'scrivito_sdk/common';
+import { docUrl } from 'scrivito_sdk/common';
 import { logError } from 'scrivito_sdk/common/error_logging';
 import { ArgumentError } from 'scrivito_sdk/common/errors';
 import { throwNextTick } from 'scrivito_sdk/common/next_tick';
@@ -13,12 +13,19 @@ export type TypeCheck = (...givenArguments: unknown[]) => void;
 
 function noop(): void {}
 
+let skipCheckArguments = false;
+
+/** For test purposes only */
+export function setSkipCheckArguments(value: boolean) {
+  skipCheckArguments = value;
+}
+
 export function checkArgumentsFor(
   functionName: string,
   argumentsDefinitions: ArgumentDefinition[],
   options: { docPermalink: string; severity?: 'warning' }
 ): TypeCheck {
-  if (nodeEnv !== 'development') return noop;
+  if (process.env.NODE_ENV !== 'development' || skipCheckArguments) return noop;
 
   return (...givenArguments: unknown[]) => {
     let errorMessage;

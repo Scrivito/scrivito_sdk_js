@@ -1,14 +1,19 @@
 import { AuthorizationProvider } from 'scrivito_sdk/client';
-import { FetchData } from 'scrivito_sdk/client/api_client';
+import { FetchData, FetchParams } from 'scrivito_sdk/client/api_client';
 import { fetchWithTimeout } from 'scrivito_sdk/client/fetch_with_timeout';
 import {
-  requestApiIdempotent,
-  requestApiNonIdempotent,
-} from 'scrivito_sdk/client/request_api';
+  parseResponse,
+  throwOnError,
+} from 'scrivito_sdk/client/parse_response';
+import {
+  requestWithRateLimitRetry,
+  retryOnRequestFailed,
+} from 'scrivito_sdk/client/retry';
 
 interface FetchApiOptions extends RequestInit {
   authProvider?: AuthorizationProvider;
   data?: FetchData;
+  params?: FetchParams;
   isIdempotent?: boolean;
 }
 
@@ -38,6 +43,15 @@ export async function fetchJson(
     });
   }
 
+  const params = options?.params;
+  if (params) {
+    return fetchJson(encodeParameters(url, params), {
+      ...options,
+
+      params: undefined,
+    });
+  }
+
   const plainRequest = (authorization?: string) =>
     fetchWithTimeout(
       url,
@@ -46,7 +60,7 @@ export async function fetchJson(
             ...options,
 
             headers: { ...options?.headers, Authorization: authorization },
-            credentials: 'omit',
+            credentials: options?.credentials ?? 'omit',
           }
         : { ...options, credentials: 'include' }
     );
@@ -57,8 +71,22 @@ export async function fetchJson(
     : plainRequest;
 
   const isIdempotent = options?.isIdempotent ?? options?.method !== 'POST';
+  const nonIdempotentRequest = async () =>
+    parseResponse(
+      await throwOnError(await requestWithRateLimitRetry(authorizedRequest))
+    );
 
   return isIdempotent
-    ? requestApiIdempotent(authorizedRequest)
-    : requestApiNonIdempotent(authorizedRequest);
+    ? retryOnRequestFailed(nonIdempotentRequest)
+    : nonIdempotentRequest();
+}
+
+function encodeParameters(url: string, params: FetchParams) {
+  const apiUrl = new URL(url);
+
+  for (const [name, value] of Object.entries(params)) {
+    if (typeof value === 'string') apiUrl.searchParams.append(name, value);
+  }
+
+  return apiUrl.toString();
 }

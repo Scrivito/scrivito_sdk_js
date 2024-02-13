@@ -34,7 +34,6 @@ export {
   checkProvideComponent,
   checkProvideLayoutComponent,
   checkProvideDataErrorComponent,
-  checkProvideDataClass,
   checkProvideDataItem,
 } from 'scrivito_sdk/realm/app_class_api_check';
 export { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';

@@ -4,11 +4,15 @@ import {
   OrderSpec,
 } from 'scrivito_sdk/data_integration/data_class';
 
+interface Params extends DataScopeParams {
+  limit: number;
+}
+
 /** @public */
 export class IndexParams {
   constructor(
     private readonly _continuation: string | undefined,
-    private readonly _params: DataScopeParams
+    private readonly _params: Params
   ) {}
 
   continuation(): string | undefined {
@@ -33,5 +37,9 @@ export class IndexParams {
     return (this._params.order || []).filter(
       ([attributeName]) => !!attributeName
     );
+  }
+
+  limit(): number {
+    return this._params.limit;
   }
 }

@@ -22,7 +22,6 @@ export {
   nextTick,
   setNextTickScheduler,
 } from 'scrivito_sdk/common/next_tick';
-export { nodeEnv } from 'scrivito_sdk/common/node_env';
 export { prettyPrint } from 'scrivito_sdk/common/pretty_print';
 export { tcomb } from 'scrivito_sdk/common/tcomb';
 export {
@@ -70,6 +69,10 @@ export {
   enableUniqueErrors,
   uniqueErrorMessage,
 } from 'scrivito_sdk/common/unique_error_message';
+export {
+  runResetCallbacks,
+  onTestReset,
+} from 'scrivito_sdk/common/reset_callbacks';
 export { throttle, bypassThrottle } from 'scrivito_sdk/common/throttle';
 export {
   parseStringToDate,
@@ -103,6 +106,7 @@ export { ConfigStore } from 'scrivito_sdk/common/config_store';
 export { never } from 'scrivito_sdk/common/never';
 export { pruneString } from 'scrivito_sdk/common/prune_string';
 export {
+  assignLocation,
   currentHash,
   currentHref,
   devicePixelRatio,
@@ -112,10 +116,10 @@ export {
   openWindow,
   pageXOffset,
   pageYOffset,
-  redirectTo,
   reload,
   renameTo,
   replaceHistoryState,
+  replaceLocation,
   screen,
   scrollTo,
   windowLocationOrigin,
@@ -161,3 +165,4 @@ export type {
 } from 'scrivito_sdk/common/validation_result_types';
 export { isAttributeValidationReportEntry } from 'scrivito_sdk/common/validation_result_types';
 export { propsAreEqual } from 'scrivito_sdk/common/props_are_equal';
+export { parameterizeDataClass } from 'scrivito_sdk/common/parameterize_data_class';

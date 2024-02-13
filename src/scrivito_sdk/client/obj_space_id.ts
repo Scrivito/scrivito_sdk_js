@@ -41,3 +41,10 @@ export function isObjSpaceId(
 export function asBackendObjSpaceId(objSpaceId: ObjSpaceId): string {
   return objSpaceId.join(':');
 }
+
+export function objSpaceIdsEqual(
+  objSpaceId1: ObjSpaceId,
+  objSpaceId2: ObjSpaceId
+): boolean {
+  return objSpaceId1[0] === objSpaceId2[0] && objSpaceId1[1] === objSpaceId2[1];
+}

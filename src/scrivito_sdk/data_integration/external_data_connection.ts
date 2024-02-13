@@ -32,25 +32,50 @@ export type UpdateCallback = (
 export type DeleteCallback = (id: string) => Promise<unknown>;
 
 /** @public */
-export interface IndexResult {
-  results: Array<DataId | ResultItem>;
-  continuation?: string;
+export interface IndexResult extends IndexResultWithUnknownEntries {
+  results: Array<DataId | number | ResultItem>;
+}
+
+interface IndexResultWithUnknownEntries {
+  results: unknown[];
+  continuation?: string | null;
 }
 
 /** @public */
-export type ResultItem = ResultItemConvenienceId | ResultItemWithId;
+export type ResultItem =
+  | ResultItemConvenienceNumericId
+  | ResultItemNumericId
+  | ResultItemConvenienceId
+  | ResultItemId;
+
+interface ResultItemConvenienceNumericId extends ResultItemData {
+  _id?: undefined;
+  id: number;
+}
+
+interface ResultItemNumericId extends ResultItemData {
+  _id: number;
+}
 
 interface ResultItemConvenienceId extends ResultItemData {
   _id?: undefined;
   id: DataId;
 }
 
-interface ResultItemWithId extends ResultItemData {
+interface ResultItemId extends ResultItemData {
   _id: DataId;
 }
 
 export interface ResultItemData {
   [key: string]: unknown;
+}
+
+export function assertValidNumericId(id: number) {
+  if (id < 0 || !Number.isSafeInteger(id)) {
+    throw new ArgumentError(
+      `Numeric IDs must be a non-negative "safe" integer: ${id.toString()}`
+    );
+  }
 }
 
 export function assertValidResultItem(
@@ -63,14 +88,54 @@ export function assertValidResultItem(
   const { _id: id } = autocorrectResultItemId(resultItem as ResultItem);
 
   if (!isValidDataId(id)) {
-    throw new ArgumentError('"_id" key must be numeric or hex');
+    throw new ArgumentError(
+      '"_id" key missing or invalid (must be numeric or hex)'
+    );
   }
 }
 
-export function autocorrectResultItemId(
-  resultItem: ResultItem
-): ResultItemWithId {
+export function assertValidIndexResultWithUnknownEntries(
+  result: unknown
+): asserts result is IndexResultWithUnknownEntries {
+  if (!isObject(result)) {
+    throw new ArgumentError('An index result must be an object');
+  }
+
+  const { results, continuation } = result as IndexResult;
+
+  if (!Array.isArray(results)) {
+    throw new ArgumentError('Results of an index result must be an array');
+  }
+
+  if (continuation === null || continuation === undefined) return;
+
+  if (typeof continuation === 'string') {
+    if (continuation.length === 0) {
+      throw new ArgumentError(
+        'Continuation of an index result must be a non-empty string, null or undefined'
+      );
+    }
+  } else {
+    throw new ArgumentError(
+      'Continuation of an index result must be a string, null or undefined'
+    );
+  }
+}
+
+export function autocorrectResultItemId(resultItem: ResultItem): ResultItemId {
   if (isResultItemWithId(resultItem)) return resultItem;
+
+  if (isResultItemWithNumericId(resultItem)) {
+    const { _id, ...rest } = resultItem;
+    assertValidNumericId(_id);
+    return { _id: _id.toString(), ...rest };
+  }
+
+  if (isResultItemConvenienceNumericId(resultItem)) {
+    const { id, ...rest } = resultItem;
+    assertValidNumericId(id);
+    return { _id: id.toString(), ...rest };
+  }
 
   const { id, ...rest } = resultItem;
   return { _id: id, ...rest };
@@ -78,8 +143,20 @@ export function autocorrectResultItemId(
 
 function isResultItemWithId(
   resultItem: ResultItem
-): resultItem is ResultItemWithId {
+): resultItem is ResultItemId {
   return typeof resultItem._id === 'string';
+}
+
+function isResultItemWithNumericId(
+  resultItem: ResultItem
+): resultItem is ResultItemNumericId {
+  return typeof resultItem._id === 'number';
+}
+
+function isResultItemConvenienceNumericId(
+  resultItem: ResultItem
+): resultItem is ResultItemConvenienceNumericId {
+  return typeof resultItem.id === 'number';
 }
 
 const connectionsState = createStateContainer<Record<string, DataConnection>>();

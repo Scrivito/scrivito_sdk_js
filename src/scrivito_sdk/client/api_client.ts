@@ -26,6 +26,8 @@ export interface FetchOptions {
   method?: Method;
   // note: only for internal use, will be removed in the future
   loginHandler?: LoginHandler;
+  // special "escape hatch" only meant for console.justrelate.com
+  unstable_forceCookie?: true;
 }
 
 type Fetch = (path: string, options?: FetchOptions) => Promise<unknown>;

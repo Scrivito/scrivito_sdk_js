@@ -2,19 +2,19 @@ import { Deferred, InternalError } from 'scrivito_sdk/common';
 
 export class ConfigStore<T> {
   private configDeferred = new Deferred<T>();
-  private storedConfig: T | undefined;
+  private storedConfig: { config: T } | undefined;
 
   set(config: T): void {
-    if (!this.configDeferred.isPending()) throw new InternalError();
+    if (this.storedConfig !== undefined) throw new InternalError();
 
     this.configDeferred.resolve(config);
-    this.storedConfig = config;
+    this.storedConfig = { config };
   }
 
   get(): T {
     if (this.storedConfig === undefined) throw new InternalError();
 
-    return this.storedConfig;
+    return this.storedConfig.config;
   }
 
   fetch(): PromiseLike<T> {
@@ -22,7 +22,7 @@ export class ConfigStore<T> {
   }
 
   hasBeenSet(): boolean {
-    return !this.configDeferred.isPending();
+    return this.storedConfig !== undefined;
   }
 
   // For test purpose only.

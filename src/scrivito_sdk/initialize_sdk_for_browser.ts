@@ -16,7 +16,6 @@ import {
   cmsRestApi,
   replaceCmsRetrieval,
   setupRegisterVerificator,
-  useXmlHttpRequest,
 } from 'scrivito_sdk/client';
 import { setOriginProvider, windowLocationOrigin } from 'scrivito_sdk/common';
 import {
@@ -43,7 +42,6 @@ export function initializeSdk() {
   setCurrentSiteIdHandler(currentSiteId);
   setNavigationStateProvider(getCurrentNavigationState);
   setHtmlToTextConverter(htmlToTextForBrowser);
-  useXmlHttpRequest(XMLHttpRequest);
   initializeUiRedirect();
 
   const parentWindow = window.parent;

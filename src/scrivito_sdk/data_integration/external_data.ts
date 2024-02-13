@@ -46,7 +46,9 @@ const loadableCollection = new LoadableCollection<
       try {
         unknownValue = await connection.get(dataId);
       } catch (error) {
-        if (error instanceof ClientError && error.code === '404') return null;
+        if (error instanceof ClientError && error.httpStatus === 404) {
+          return null;
+        }
 
         throw error;
       }
