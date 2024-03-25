@@ -1,14 +1,44 @@
-const resetCallbacks: Array<() => void> = [];
+const isProductionBuild = process.env.NODE_ENV !== 'development';
+
+const resetCallbacksBeforeAll: Array<() => void> = [];
+const resetCallbacksBeforeEach: Array<() => void> = [];
+const resetCallbacksAfterEach: Array<() => void> = [];
 
 /** for test purposes */
-export function onTestReset(callback: () => void): void {
+export function onTestResetBeforeAll(callback: () => void): void {
   // enable code removal in production build
-  if (process.env.NODE_ENV !== 'development') return;
+  if (isProductionBuild) return;
 
-  resetCallbacks.push(callback);
+  resetCallbacksBeforeAll.push(callback);
 }
 
 /** for test purposes */
-export function runResetCallbacks(): void {
-  resetCallbacks.forEach((callback) => callback());
+export function onTestResetBeforeEach(callback: () => void): void {
+  // enable code removal in production build
+  if (isProductionBuild) return;
+
+  resetCallbacksBeforeEach.push(callback);
+}
+
+/** for test purposes */
+export function onTestResetAfterEach(callback: () => void): void {
+  // enable code removal in production build
+  if (isProductionBuild) return;
+
+  resetCallbacksAfterEach.push(callback);
+}
+
+/** for test purposes */
+export function runResetCallbacksBeforeAll(): void {
+  resetCallbacksBeforeAll.forEach((callback) => callback());
+}
+
+/** for test purposes */
+export function runResetCallbacksBeforeEach(): void {
+  resetCallbacksBeforeEach.forEach((callback) => callback());
+}
+
+/** for test purposes */
+export function runResetCallbacksAfterEach(): void {
+  resetCallbacksAfterEach.forEach((callback) => callback());
 }

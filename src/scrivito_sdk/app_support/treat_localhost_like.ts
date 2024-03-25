@@ -1,3 +1,5 @@
+import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+
 let treatLocalhostLike: string | undefined;
 
 export function setTreatLocalhostLike(url: string): void {
@@ -8,7 +10,4 @@ export function getTreatLocalhostLike(): string | undefined {
   return treatLocalhostLike;
 }
 
-// For test purposes only
-export function resetTreatLocalhostLike(): void {
-  treatLocalhostLike = undefined;
-}
+onTestResetBeforeEach(() => (treatLocalhostLike = undefined));

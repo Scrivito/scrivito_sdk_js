@@ -29,10 +29,7 @@ export {
   NonNegativeInteger,
 } from 'scrivito_sdk/common/tcomb_refinements';
 export { runAndCatchException } from 'scrivito_sdk/common/run_and_catch_exception';
-export {
-  logError,
-  disableConsoleError,
-} from 'scrivito_sdk/common/error_logging';
+export { logError } from 'scrivito_sdk/common/error_logging';
 export { getScrivitoVersion } from 'scrivito_sdk/common/get_scrivito_version';
 export { loadCss, loadJs } from 'scrivito_sdk/common/asset_loading';
 export { isPresent } from 'scrivito_sdk/common/is_present';
@@ -70,10 +67,14 @@ export {
   uniqueErrorMessage,
 } from 'scrivito_sdk/common/unique_error_message';
 export {
-  runResetCallbacks,
-  onTestReset,
+  onTestResetAfterEach,
+  onTestResetBeforeAll,
+  onTestResetBeforeEach,
+  runResetCallbacksAfterEach,
+  runResetCallbacksBeforeAll,
+  runResetCallbacksBeforeEach,
 } from 'scrivito_sdk/common/reset_callbacks';
-export { throttle, bypassThrottle } from 'scrivito_sdk/common/throttle';
+export { throttle } from 'scrivito_sdk/common/throttle';
 export {
   parseStringToDate,
   deserializeAsDate,
@@ -135,7 +136,6 @@ export {
 export { scrollElementIntoView } from 'scrivito_sdk/common/scroll_element_into_view';
 export { setTimeout, setInterval } from 'scrivito_sdk/common/timeout';
 export {
-  clearLocalStorage,
   getFromLocalStorage,
   setInLocalStorage,
   removeFromLocalStorage,

@@ -1,4 +1,4 @@
-import { ScrivitoError, onTestReset } from 'scrivito_sdk/common';
+import { ScrivitoError, onTestResetBeforeEach } from 'scrivito_sdk/common';
 
 export const IN_MEMORY_TENANT = 'inMemory';
 
@@ -20,12 +20,10 @@ export function assertNotUsingInMemoryTenant(
   }
 }
 
-onTestReset(() => {
-  inMemoryTenant = false;
-});
-
 export class InMemoryTenantUnsupportedOperationError extends ScrivitoError {
   constructor(description: string) {
     super(`${description} is not supported when using the in-memory tenant`);
   }
 }
+
+onTestResetBeforeEach(() => (inMemoryTenant = false));

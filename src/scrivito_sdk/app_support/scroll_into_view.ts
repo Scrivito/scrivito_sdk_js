@@ -1,6 +1,6 @@
 // @rewire
 import {
-  onTestReset,
+  onTestResetBeforeEach,
   randomHex,
   scrollElementIntoView,
 } from 'scrivito_sdk/common';
@@ -85,7 +85,7 @@ let scrollTargetRegistry: {
 
 let requestedTargetId: string;
 
-onTestReset(() => {
+onTestResetBeforeEach(() => {
   scrollTargetRegistry = {};
   requestedTargetId = '';
 });

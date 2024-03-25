@@ -7,11 +7,8 @@ import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import {
   getIamAuthProvider,
   getLoginHandler,
+  isUserLoggedIn,
 } from 'scrivito_sdk/app_support/current_user';
-import {
-  getDefaultCmsEndpoint,
-  getJrRestApiDefaultEndpoint,
-} from 'scrivito_sdk/app_support/default_cms_endpoint';
 import { setExtensionsUrl } from 'scrivito_sdk/app_support/extensions_url';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
 import { enableLayoutEditing } from 'scrivito_sdk/app_support/layout_editing';
@@ -36,12 +33,18 @@ import {
 } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
 import { getVisitorAuthenticationProvider } from 'scrivito_sdk/app_support/visitor_authentication';
 import { linkViaPort } from 'scrivito_sdk/bridge';
-import { Priority, clientConfig, cmsRestApi } from 'scrivito_sdk/client';
+import {
+  Priority,
+  clientConfig,
+  cmsRestApi,
+  getBrowserTokenProvider,
+} from 'scrivito_sdk/client';
 import {
   Deferred,
   ScrivitoError,
   cdnAssetUrlBase,
   checkArgumentsFor,
+  currentOrigin,
   logError,
   setConfiguredTenant,
   setTimeout,
@@ -96,7 +99,7 @@ export interface Configuration {
   strictSearchOperators?: boolean;
   optimizedWidgetLoading?: boolean;
   contentTagsForEmptyAttributes?: boolean;
-  jrRestApiEndpoint?: string;
+  iamAuthLocation?: string;
   treatLocalhostLike?: string;
 
   /** @internal */
@@ -147,7 +150,7 @@ const AllowedConfiguration = t.interface({
   strictSearchOperators: t.maybe(t.Boolean),
   optimizedWidgetLoading: t.maybe(t.Boolean),
   contentTagsForEmptyAttributes: t.maybe(t.Boolean),
-  jrRestApiEndpoint: t.maybe(t.String),
+  iamAuthLocation: t.maybe(t.String),
   treatLocalhostLike: t.maybe(t.String),
 });
 
@@ -199,23 +202,12 @@ export function configure(
 
     if (isRunningInBrowser()) initializeLoggedInState();
 
-    const {
-      jrRestApiEndpoint: configuredJrRestApiEndpoint,
-      endpoint: configuredEndpoint,
-    } = configuration;
-
-    const defaultEndpoint = getDefaultCmsEndpoint({
-      configuredJrRestApiEndpoint,
-      configuredEndpoint,
-    });
-
     configureAssetUrlBase(
       unofficialConfiguration?.assetUrlBase ?? cdnAssetUrlBase()
     );
 
     clientConfig.set({
-      jrApiLocation:
-        configuration.jrRestApiEndpoint || getJrRestApiDefaultEndpoint(),
+      iamAuthLocation: getIamAuthLocation(configuration.iamAuthLocation),
       iamAuthProvider: getIamAuthProvider(),
       loginHandler: getLoginHandler(),
     });
@@ -226,7 +218,7 @@ export function configure(
     if (uiAdapter) {
       configureWithUi(tenant, uiAdapter);
     } else {
-      configureWithoutUi(defaultEndpoint, tenant, configuration);
+      configureWithoutUi(configuration);
     }
   }
 
@@ -276,16 +268,14 @@ function configureWithUi(tenant: string, uiAdapterClient: UiAdapterClient) {
   loadEditingAssets();
 }
 
-function configureWithoutUi(
-  endpoint: string,
-  tenant: string,
-  {
-    optimizedWidgetLoading,
-    visitorAuthentication,
-    priority,
-    apiKey,
-  }: Configuration
-) {
+function configureWithoutUi({
+  endpoint,
+  tenant,
+  optimizedWidgetLoading,
+  visitorAuthentication,
+  priority,
+  apiKey,
+}: Configuration) {
   if (optimizedWidgetLoading) configureForLazyWidgets(true);
 
   configureCmsRestApi({
@@ -298,21 +288,26 @@ function configureWithoutUi(
 }
 
 function configureCmsRestApi({
-  endpoint,
+  endpoint: configuredEndpoint,
   tenant,
   visitorAuthentication,
   priority,
   apiKey,
 }: {
-  endpoint: string;
+  endpoint?: string;
   tenant: string;
   visitorAuthentication?: boolean;
   priority?: Priority;
   apiKey?: string | IamApiKey;
 }) {
   if (priority) cmsRestApi.setPriority(priority);
+
+  const endpoint = configuredEndpoint || 'api.scrivito.com';
+
   cmsRestApi.init({
-    apiBaseUrl: `${endpoint}/tenants/${tenant}`,
+    apiBaseUrl: `${
+      endpoint.startsWith('http') ? endpoint : `https://${endpoint}`
+    }/tenants/${tenant}`,
     authorizationProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
   });
 }
@@ -321,8 +316,12 @@ function getCmsAuthProvider(
   apiKey?: string | IamApiKey,
   visitorAuthentication?: boolean
 ) {
-  if (apiKey && nodeAdapter) {
+  if (nodeAdapter && apiKey) {
     return new nodeAdapter.ApiKeyAuthorizationProvider(apiKey);
+  }
+
+  if (isRunningInBrowser() && isUserLoggedIn()) {
+    return getBrowserTokenProvider('https://api.justrelate.com');
   }
 
   return getVisitorAuthenticationProvider(visitorAuthentication);
@@ -415,4 +414,12 @@ function warnIfNoSiteIdSelection() {
   );
 
   load(getUnstableSelectedSiteId).then(() => clearTimeout(timeout));
+}
+
+function getIamAuthLocation(iamAuthLocation: string | undefined) {
+  if (typeof iamAuthLocation === 'string') return iamAuthLocation;
+
+  const origin = currentOrigin();
+
+  return origin ? `${origin}/auth` : undefined;
 }

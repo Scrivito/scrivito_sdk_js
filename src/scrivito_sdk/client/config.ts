@@ -2,7 +2,7 @@ import { AuthorizationProvider } from 'scrivito_sdk/client';
 import { ConfigStore } from 'scrivito_sdk/common';
 
 interface ClientConfig {
-  jrApiLocation: string;
+  iamAuthLocation?: string;
   iamAuthProvider?: AuthorizationProvider;
   loginHandler?: 'redirect' | 'error';
 }

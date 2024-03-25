@@ -2,7 +2,7 @@ import { AuthHandler } from 'scrivito_sdk/app_support/auth_handler';
 import { changeLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
 import { getUserInfo } from 'scrivito_sdk/app_support/user_info';
 import { startPollingLoggedUser } from 'scrivito_sdk/app_support/user_logged_in_status';
-import { ScrivitoPromise, wait } from 'scrivito_sdk/common';
+import { wait } from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 
 export const loggedInVisitorAuthHandler: AuthHandler = {
@@ -36,7 +36,7 @@ export const loggedInVisitorAuthHandler: AuthHandler = {
 };
 
 async function verifyUserIsLoggedIn() {
-  const user = await ScrivitoPromise.race([
+  const user = await Promise.race([
     load(loggedInVisitorAuthHandler.getUserData),
     wait(30),
   ]);

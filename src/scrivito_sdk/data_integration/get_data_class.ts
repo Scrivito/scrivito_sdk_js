@@ -1,5 +1,5 @@
+import { ArgumentError } from 'scrivito_sdk/common';
 import { DataClass } from 'scrivito_sdk/data_integration/data_class';
-import { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
 import {
   ExternalDataClass,
   isExternalDataClassProvided,
@@ -17,7 +17,7 @@ export function getDataClassOrThrow(dataClassName: string): DataClass {
   const dataClass = getDataClass(dataClassName);
   if (dataClass) return dataClass;
 
-  throw new DataLocatorError(`No "${dataClassName}" found`);
+  throw new ArgumentError(`No "${dataClassName}" found`);
 }
 
 function getExternalDataClass(dataClassName: string) {

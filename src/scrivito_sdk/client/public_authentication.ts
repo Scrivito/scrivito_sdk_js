@@ -7,7 +7,7 @@ import {
   fetch as fetchVerificatorFunction,
 } from 'scrivito_sdk/client/verificator_functions';
 import {
-  ScrivitoPromise,
+  onTestResetBeforeEach,
   promiseAndFinally,
   registerAsyncTask,
 } from 'scrivito_sdk/common';
@@ -81,7 +81,7 @@ async function computeVerification(
       verificator.url
     ).then(
       (compute: VerificationForChallenge) =>
-        new ScrivitoPromise<Verification>((resolve) => {
+        new Promise<Verification>((resolve) => {
           compute(data, (result: Verification) => resolve(result));
         })
     );
@@ -94,11 +94,6 @@ async function computeVerification(
     };
   }
   return computation.promise;
-}
-
-export function resetPublicAuthentication(): void {
-  computation = undefined;
-  verification = undefined;
 }
 
 function isChallenge(maybeChallenge: Object): maybeChallenge is Challenge {
@@ -114,3 +109,8 @@ function currentAuthorization(): string | undefined {
   }
   return verification.authorization;
 }
+
+onTestResetBeforeEach(() => {
+  computation = undefined;
+  verification = undefined;
+});

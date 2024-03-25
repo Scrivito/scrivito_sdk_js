@@ -13,6 +13,7 @@ import {
 interface FetchApiOptions extends RequestInit {
   authProvider?: AuthorizationProvider;
   data?: FetchData;
+  headers?: Record<string, string>;
   params?: FetchParams;
   isIdempotent?: boolean;
 }

@@ -55,10 +55,12 @@ async function readAndFilterItem(
   if (!dataItem) return { results: [] };
 
   const filters = params.filters();
-  const doesMatch = Object.keys(filters).every((attributeName) => {
+  const doesMatch = Object.keys(filters).every((name) => {
+    const value = filters[name];
+
     return (
-      attributeName === '_id' ||
-      consideredEqual(dataItem.get(attributeName), filters[attributeName])
+      name === '_id' ||
+      (typeof value === 'string' && consideredEqual(dataItem.get(name), value))
     );
   });
 

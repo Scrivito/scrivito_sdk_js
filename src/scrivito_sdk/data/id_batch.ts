@@ -8,7 +8,7 @@ export interface QueryData {
 
 const FALLBACK_RESPONSE: QueryData = {
   results: [],
-  total: 0,
+  total: undefined,
 };
 
 type LoadBatch<Params> = (
@@ -50,7 +50,7 @@ export class IdBatchCollection<Params> {
     });
   }
 
-  getQueryCount(params: Params): number {
+  getQueryCount(params: Params): number | undefined {
     return this.getBatch(params, 0, 0).count();
   }
 
@@ -113,8 +113,8 @@ class IdBatch {
     return this.response().results;
   }
 
-  count() {
-    return this.response().total || 0;
+  count(): number | undefined {
+    return this.response().total;
   }
 
   hasNextBatch(): boolean {

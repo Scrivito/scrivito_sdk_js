@@ -227,7 +227,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
   }
 
   count(): number {
-    return getObjQueryCount(this.objSpaceId(), this.queryParams());
+    return getObjQueryCount(this.objSpaceId(), this.queryParams()) || 0;
   }
 
   first(): BasicObj | null {

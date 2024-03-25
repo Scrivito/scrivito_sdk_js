@@ -89,6 +89,7 @@ export interface UiAdapterInterface
   canEdit(workspaceId: string, objId: string): boolean;
   canWrite(workspaceId: string): boolean;
   getEditorAuthToken(options?: {
+    audience?: string;
     treatLocalhostLike?: string;
   }): { token: string } | { error: string } | undefined;
   comparisonBase(): ObjSpaceId;

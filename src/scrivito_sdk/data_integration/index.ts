@@ -36,7 +36,6 @@ export {
   isDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_stack';
 export { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
-export { DataLocatorError } from 'scrivito_sdk/data_integration/data_locator_error';
 export { applyDataLocator } from 'scrivito_sdk/data_integration/apply_data_locator';
 export type { ExternalDataItemConnection } from 'scrivito_sdk/data_integration/provide_external_data_item';
 export { provideExternalDataItem } from 'scrivito_sdk/data_integration/provide_external_data_item';

@@ -9,6 +9,7 @@ import {
   BatchRetrieval,
   assumePresence,
   computeCacheKey,
+  onTestResetBeforeEach,
 } from 'scrivito_sdk/common';
 
 // export for test purposes
@@ -81,6 +82,4 @@ function buildBatchRetrieval(objSpaceId: ObjSpaceId): ObjBatchRetrieval {
   );
 }
 
-export function reset() {
-  batchRetrievals = {};
-}
+onTestResetBeforeEach(() => (batchRetrievals = {}));

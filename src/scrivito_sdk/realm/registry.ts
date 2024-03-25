@@ -1,4 +1,5 @@
 import pickBy from 'lodash-es/pickBy';
+import { onTestResetBeforeEach } from 'scrivito_sdk/common';
 
 import { AppClass, ObjClass, WidgetClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
@@ -35,11 +36,6 @@ function appClassFor(name: string, baseClass: AppClass): AppClass {
   return appClass && baseClass.isPrototypeOf(appClass) ? appClass : baseClass;
 }
 
-// For test purpose only
-export function resetRegistry(): void {
-  mapping = {};
-}
-
 export function allObjClasses(): ObjClassesByName {
   return pickBy(mapping as ObjClassesByName, (modelClass) =>
     Obj.isPrototypeOf(modelClass)
@@ -59,3 +55,5 @@ export function objClassFor(name: string): AppClass {
 export function widgetClassFor(name: string): AppClass {
   return appClassFor(name, Widget);
 }
+
+onTestResetBeforeEach(() => (mapping = {}));

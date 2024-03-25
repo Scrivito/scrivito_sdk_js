@@ -7,6 +7,7 @@ import { uiAdapterCompatibleValue } from 'scrivito_sdk/app_support/ui_adapter_co
 import {
   ArgumentError,
   checkArgumentsFor,
+  onTestResetAfterEach,
   tcomb as t,
 } from 'scrivito_sdk/common';
 import { OPERATORS, ObjSearchType } from 'scrivito_sdk/models';
@@ -95,12 +96,6 @@ function isFilterBuilder(
   maybeFilterBuilder: ContentBrowserFilters | FilterBuilder | undefined
 ): maybeFilterBuilder is FilterBuilder {
   return typeof maybeFilterBuilder === 'function';
-}
-
-// For test purpose only.
-export function resetContentBrowserConfiguration(): void {
-  filters = undefined;
-  filtersBuilder = undefined;
 }
 
 function removeUnionSubTypeIndexesFromKey(message: string): string {
@@ -240,3 +235,8 @@ function copyWithAbsoluteUrls(
     return item;
   });
 }
+
+onTestResetAfterEach(() => {
+  filters = undefined;
+  filtersBuilder = undefined;
+});

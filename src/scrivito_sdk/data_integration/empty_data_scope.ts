@@ -3,11 +3,16 @@ import {
   DataItem,
   DataItemAttributes,
   DataScope,
+  DataScopeError,
   DataScopeParams,
   EmptyDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
 
 export class EmptyDataScope extends DataScope {
+  constructor(private readonly _error?: DataScopeError) {
+    super();
+  }
+
   dataClass(): null {
     return null;
   }
@@ -38,6 +43,14 @@ export class EmptyDataScope extends DataScope {
 
   objSearch(): undefined {
     return;
+  }
+
+  count(): number | null {
+    return null;
+  }
+
+  getError(): DataScopeError | undefined {
+    return this._error;
   }
 
   /** @internal */

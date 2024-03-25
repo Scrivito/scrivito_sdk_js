@@ -1,18 +1,28 @@
 import isObject from 'lodash-es/isObject';
 
-import { JrRestApi } from 'scrivito_sdk/client';
+import { ApiClient, createApiClient } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
-  type DataConnection,
-  type IndexResult,
-  type ResultItem,
+  DataItemFilters,
+  OrderSpec,
+} from 'scrivito_sdk/data_integration/data_class';
+import {
+  DataConnection,
+  IndexResult,
+  ResultItem,
   assertValidIndexResultWithUnknownEntries,
 } from 'scrivito_sdk/data_integration/external_data_connection';
+import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 
-export function buildDataConnection(apiPath: string): DataConnection {
+export function buildDataConnection(
+  restApi: string | ApiClient
+): DataConnection {
+  const apiClient =
+    restApi instanceof ApiClient ? restApi : createApiClient(restApi);
+
   return {
     create: async (data) => {
-      const response = await JrRestApi.fetch(apiPath, {
+      const response = await apiClient.fetch('/', {
         method: 'post',
         data,
       });
@@ -21,32 +31,23 @@ export function buildDataConnection(apiPath: string): DataConnection {
     },
 
     index: async (params) => {
-      const response = await JrRestApi.fetch(apiPath, {
-        params: {
-          ...params.filters(),
-          _continuation: params.continuation(),
-          _order: params.order().length
-            ? params
-                .order()
-                .map((o) => o.join('.'))
-                .join(',')
-            : undefined,
-          _limit: params.limit().toString(),
-          _search: params.search() || undefined,
-        },
+      const response = await apiClient.fetch('/', {
+        params: toClientParams(params),
       });
+
       assertIndexResponseResultsDoNotContainObjectValues(response);
+
       return response;
     },
 
     get: async (id) => {
-      const response = await JrRestApi.fetch(`${apiPath}/${id}`);
+      const response = await apiClient.fetch(id);
       if (response !== null) assertResultDoesNotContainObjectValues(response);
       return response;
     },
 
     update: async (id, data) => {
-      const response = await JrRestApi.fetch(`${apiPath}/${id}`, {
+      const response = await apiClient.fetch(id, {
         method: 'patch',
         data,
       });
@@ -54,7 +55,7 @@ export function buildDataConnection(apiPath: string): DataConnection {
       return response;
     },
 
-    delete: (id) => JrRestApi.fetch(`${apiPath}/${id}`, { method: 'delete' }),
+    delete: (id) => apiClient.fetch(id, { method: 'delete' }),
   };
 }
 
@@ -97,4 +98,44 @@ function isSimpleValue(value: unknown): value is SimpleValue {
     value === null ||
     value === undefined
   );
+}
+
+function toClientParams(params: IndexParams) {
+  return {
+    ...toClientFilterParam(params.filters()),
+    _continuation: params.continuation(),
+    _order: toClientOrderParam(params.order()),
+    _limit: params.limit().toString(),
+    _search: params.search() || undefined,
+    _count: params.includeCount()
+      ? params.includeCount().toString()
+      : undefined,
+  };
+}
+
+interface ClientFilterParams {
+  [name: string]: string;
+}
+
+function toClientFilterParam(filters: DataItemFilters): ClientFilterParams {
+  const params: ClientFilterParams = {};
+
+  Object.keys(filters).forEach((name) => {
+    const valueOrSpec = filters[name];
+
+    if (typeof valueOrSpec === 'string') {
+      params[name] = valueOrSpec;
+    } else {
+      const { operator, value } = valueOrSpec;
+      params[[name, operator].join('.')] = value;
+    }
+  });
+
+  return params;
+}
+
+function toClientOrderParam(orderSpec: OrderSpec) {
+  if (orderSpec.length) {
+    return orderSpec.map((order) => order.join('.')).join(',');
+  }
 }

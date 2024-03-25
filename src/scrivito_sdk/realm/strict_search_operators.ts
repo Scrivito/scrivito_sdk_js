@@ -1,3 +1,5 @@
+import { onTestResetAfterEach } from 'scrivito_sdk/common';
+
 let strictSearchOperators = false;
 
 export function enableStrictSearchOperators(): void {
@@ -8,7 +10,4 @@ export function areStrictSearchOperatorsEnabled(): boolean {
   return strictSearchOperators;
 }
 
-// For test purposes only
-export function resetStrictSearchOperators(): void {
-  strictSearchOperators = false;
-}
+onTestResetAfterEach(() => (strictSearchOperators = false));

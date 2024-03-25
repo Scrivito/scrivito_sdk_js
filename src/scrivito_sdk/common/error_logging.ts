@@ -1,5 +1,7 @@
 // @rewire
 
+import { onTestResetBeforeEach } from './reset_callbacks';
+
 let consoleErrorIsDisabled = false;
 
 export function logError(...args: unknown[]): void {
@@ -9,6 +11,4 @@ export function logError(...args: unknown[]): void {
   }
 }
 
-export function disableConsoleError(): void {
-  consoleErrorIsDisabled = true;
-}
+onTestResetBeforeEach(() => (consoleErrorIsDisabled = true));

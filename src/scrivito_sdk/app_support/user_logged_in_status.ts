@@ -1,6 +1,6 @@
 import { getUserInfoPath } from 'scrivito_sdk/app_support/user_info';
 import { JrRestApi } from 'scrivito_sdk/client';
-import { setInterval } from 'scrivito_sdk/common';
+import { onTestResetBeforeEach, setInterval } from 'scrivito_sdk/common';
 
 let userLoggedInStatusInterval: number | undefined;
 
@@ -14,8 +14,7 @@ export async function fetchLoggedUser(): Promise<void> {
   await JrRestApi.get(await getUserInfoPath());
 }
 
-// For test purposes only
-export function stopPollingLoggedUser(): void {
+onTestResetBeforeEach(() => {
   if (userLoggedInStatusInterval) clearInterval(userLoggedInStatusInterval);
   userLoggedInStatusInterval = undefined;
-}
+});

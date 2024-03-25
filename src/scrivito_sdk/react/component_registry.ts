@@ -1,3 +1,4 @@
+import { onTestResetBeforeEach } from 'scrivito_sdk/common';
 import { Obj } from 'scrivito_sdk/realm';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -94,8 +95,7 @@ function getLayoutChangesCounterState(className: string) {
   return layoutsChangesCounterState.subState(className);
 }
 
-// For test purpose only.
-export function clearComponentRegistry(): void {
+onTestResetBeforeEach(() => {
   registry.clear();
   layoutRegistry.clear();
-}
+});

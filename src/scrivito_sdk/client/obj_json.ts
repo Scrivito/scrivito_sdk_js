@@ -147,8 +147,15 @@ export interface DataLocatorReference {
 export type DataLocatorQuery = DataLocatorFilter[];
 
 export type DataLocatorFilter =
+  | DataLocatorOperatorFilter
   | DataLocatorValueFilter
   | DataLocatorValueViaFilter;
+
+export interface DataLocatorOperatorFilter {
+  field: string;
+  operator: FilterOperator;
+  value: string;
+}
 
 export interface DataLocatorValueFilter {
   field: string;
@@ -159,6 +166,8 @@ export interface DataLocatorValueViaFilter {
   field: string;
   value_via: DataLocatorValueVia;
 }
+
+export type FilterOperator = 'notEqual';
 
 export interface DataLocatorValueVia {
   class: string;

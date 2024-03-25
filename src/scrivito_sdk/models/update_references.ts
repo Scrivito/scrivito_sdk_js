@@ -9,12 +9,7 @@ import {
   ReferencelistAttributeJson,
   withEachAttributeJson,
 } from 'scrivito_sdk/client';
-import {
-  ScrivitoError,
-  ScrivitoPromise,
-  equals,
-  throwNextTick,
-} from 'scrivito_sdk/common';
+import { ScrivitoError, equals, throwNextTick } from 'scrivito_sdk/common';
 import { OBJ_ID_PATTERN } from 'scrivito_sdk/link_resolution';
 import { load, loadableWithDefault } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
@@ -69,7 +64,7 @@ async function updateReferencesWithSafeMapping(
   const workers = getWorkers(objJson, obj, mapping);
   if (!workers.length) return;
 
-  await ScrivitoPromise.all(workers);
+  await Promise.all(workers);
 }
 
 function getWorkers(

@@ -1,33 +1,35 @@
 import {
   ClientError,
   TokenAuthorizationProvider,
-  getJrRestApiUrl,
+  getIamAuthUrl,
 } from 'scrivito_sdk/client';
 import { fetchJson } from 'scrivito_sdk/client/fetch_json';
 import { isAuthMissingClientError } from 'scrivito_sdk/client/login_handler';
 import {
   InternalError,
   fetchConfiguredTenant,
-  onTestReset,
+  onTestResetBeforeEach,
 } from 'scrivito_sdk/common';
 
-let cachedProvider: TokenAuthorizationProvider | undefined;
+let providerCache: Record<string, TokenAuthorizationProvider | undefined> = {};
 
-onTestReset(() => {
-  cachedProvider = undefined;
-});
+export function getBrowserTokenProvider(
+  audience: string
+): TokenAuthorizationProvider {
+  return providerCache[audience] || initStoredAuthProvider(audience);
+}
 
-export function getBrowserTokenProvider(): TokenAuthorizationProvider {
-  cachedProvider ||= new TokenAuthorizationProvider(() =>
-    fetchBrowserToken({ audience: 'https://api.justrelate.com' })
+function initStoredAuthProvider(audience: string) {
+  providerCache[audience] = new TokenAuthorizationProvider(() =>
+    fetchBrowserToken({ audience })
   );
 
-  return cachedProvider;
+  return getBrowserTokenProvider(audience);
 }
 
 /** for test purposes */
-export function injectBrowserToken(token: string): void {
-  getBrowserTokenProvider().injectToken(token);
+export function injectBrowserToken(audience: string, token: string): void {
+  getBrowserTokenProvider(audience).injectToken(token);
 }
 
 interface RegularBrowserTokenParams {
@@ -47,7 +49,7 @@ export async function fetchBrowserToken({
   origin,
 }: BrowserTokenParams): Promise<string> {
   const instanceId = await fetchConfiguredTenant();
-  const authLocation = await getJrRestApiUrl('/iam/auth');
+  const authLocation = await getIamAuthUrl();
 
   try {
     const response = await fetchJson(
@@ -88,3 +90,5 @@ function assertTokenResponse(
 
   throw new InternalError();
 }
+
+onTestResetBeforeEach(() => (providerCache = {}));

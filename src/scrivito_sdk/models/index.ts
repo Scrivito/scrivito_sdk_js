@@ -106,6 +106,7 @@ export {
 export { getDetailsPageForDataParam } from 'scrivito_sdk/models/get_details_page_for_data_param';
 export {
   isDataLocatorValueFilter,
+  isDataLocatorOperatorFilter,
   isDataLocatorValueVia,
   isDataLocatorValueViaFilter,
   DataLocator,

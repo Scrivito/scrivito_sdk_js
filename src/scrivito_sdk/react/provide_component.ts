@@ -19,34 +19,43 @@ import {
   checkProvideComponent,
 } from 'scrivito_sdk/realm';
 
+interface ProvidedComponentOptions {
+  loading?: React.ComponentType;
+}
+
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   objClass: ObjClass<AttrDefs>,
-  component: React.ComponentType<PageComponentProps<AttrDefs>>
+  component: React.ComponentType<PageComponentProps<AttrDefs>>,
+  options?: ProvidedComponentOptions
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrObjClass: string | ObjClass,
-  component: React.ComponentType<Partial<PageComponentProps>>
+  component: React.ComponentType<Partial<PageComponentProps>>,
+  options?: ProvidedComponentOptions
 ): void;
 
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   widgetClass: WidgetClass<AttrDefs>,
-  component: React.ComponentType<WidgetComponentProps<AttrDefs>>
+  component: React.ComponentType<WidgetComponentProps<AttrDefs>>,
+  options?: ProvidedComponentOptions
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrWidgetClass: string | WidgetClass,
-  component: React.ComponentType<Partial<WidgetComponentProps>>
+  component: React.ComponentType<Partial<WidgetComponentProps>>,
+  options?: ProvidedComponentOptions
 ): void;
 
 /** @internal */
 export function provideComponent(
   classNameOrClass: string | ObjClass | WidgetClass,
   component: React.ComponentType,
+  options?: ProvidedComponentOptions,
   ...excessArgs: never[]
 ): void {
   checkProvideComponent(classNameOrClass, component, ...excessArgs);
@@ -56,7 +65,7 @@ export function provideComponent(
     component.displayName = className;
   }
 
-  const connectedComponent = connect(component);
+  const connectedComponent = connect(component, options);
   const wrappedComponent = wrapComponent(connectedComponent);
 
   registerComponentForAppClass(className, wrappedComponent);

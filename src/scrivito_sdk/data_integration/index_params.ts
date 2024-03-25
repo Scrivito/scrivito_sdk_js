@@ -6,6 +6,7 @@ import {
 
 interface Params extends DataScopeParams {
   limit: number;
+  count: boolean;
 }
 
 /** @public */
@@ -21,10 +22,8 @@ export class IndexParams {
 
   filters(): DataItemFilters {
     return Object.entries(this._params.filters || {}).reduce(
-      (nextFilters, [attributeName, attributeValue]) =>
-        attributeName
-          ? { ...nextFilters, [attributeName]: attributeValue }
-          : nextFilters,
+      (filters, [name, value]) =>
+        name ? { ...filters, [name]: value } : filters,
       {}
     );
   }
@@ -41,5 +40,9 @@ export class IndexParams {
 
   limit(): number {
     return this._params.limit;
+  }
+
+  includeCount(): boolean {
+    return this._params.count;
   }
 }

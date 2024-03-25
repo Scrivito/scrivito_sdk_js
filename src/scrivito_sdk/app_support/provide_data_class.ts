@@ -1,3 +1,4 @@
+import type { ApiClient } from 'scrivito_sdk/client';
 import {
   DataClass,
   DataConnection,
@@ -10,7 +11,7 @@ import {
 /** @beta */
 export function provideDataClass(
   name: string,
-  params: { apiPath: string }
+  params: { restApi: string | ApiClient }
 ): DataClass;
 
 /** @public */
@@ -22,16 +23,17 @@ export function provideDataClass(
 /** @internal */
 export function provideDataClass(
   name: string,
-  params: { connection: DataConnection } | { apiPath: string }
+  params: { connection: DataConnection } | { restApi: string | ApiClient }
 ): DataClass {
   assertValidDataIdentifier(name);
 
-  const connection =
-    'apiPath' in params
-      ? buildDataConnection(params.apiPath)
-      : params.connection;
+  if ('restApi' in params) {
+    return provideDataClass(name, {
+      connection: buildDataConnection(params.restApi),
+    });
+  }
 
-  setExternalDataConnection(name, connection);
+  setExternalDataConnection(name, params.connection);
 
   return new ExternalDataClass(name);
 }

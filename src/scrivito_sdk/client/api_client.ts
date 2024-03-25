@@ -21,6 +21,8 @@ type Method =
   | 'PUT';
 
 export interface FetchOptions {
+  audience?: string;
+  headers?: Record<string, string>;
   params?: FetchParams;
   data?: FetchData;
   method?: Method;
@@ -30,13 +32,29 @@ export interface FetchOptions {
   unstable_forceCookie?: true;
 }
 
-type Fetch = (path: string, options?: FetchOptions) => Promise<unknown>;
+// exported for test purposes only
+export type Fetch = (path: string, options?: FetchOptions) => Promise<unknown>;
+
+/** @public */
+export interface ApiClientOptions {
+  audience?: string;
+}
 
 /** given a 'fetch' method, construct an ApiClient which offers convenience
  * methods for getting, putting etc.
  */
 export class ApiClient {
-  constructor(public fetch: Fetch) {}
+  constructor(
+    private readonly fetchCallback: Fetch,
+    private readonly options?: ApiClientOptions
+  ) {}
+
+  fetch(path: string, options?: FetchOptions) {
+    return this.fetchCallback(path, {
+      ...this.options,
+      ...options,
+    });
+  }
 
   get(path: string, options?: FetchOptions): Promise<unknown> {
     return this.fetch(path, { ...options, method: 'GET' });

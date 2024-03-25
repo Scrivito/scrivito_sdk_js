@@ -1,5 +1,11 @@
 import { clientConfig } from 'scrivito_sdk/client';
-import { assignLocation, currentHref, never } from 'scrivito_sdk/common';
+import {
+  InternalError,
+  assignLocation,
+  currentHref,
+  never,
+  onTestResetAfterEach,
+} from 'scrivito_sdk/common';
 
 /** a LoginHander which redirects the browser to the login url */
 export async function loginRedirectHandler(visit: string): Promise<void> {
@@ -8,17 +14,10 @@ export async function loginRedirectHandler(visit: string): Promise<void> {
   return never();
 }
 
-const JR_API_LOCATION_PLACEHOLDER = '$JR_API_LOCATION';
-
 let loggedInParamName: string | undefined;
 
 export function setLoggedInIndicatorParam(paramName: string): void {
   loggedInParamName = paramName;
-}
-
-// For test purpose only
-export function resetUserIsLoggedInParam(): void {
-  loggedInParamName = undefined;
 }
 
 async function authenticationUrl(visit: string): Promise<string> {
@@ -27,14 +26,10 @@ async function authenticationUrl(visit: string): Promise<string> {
     encodeURIComponent(returnToUrl())
   );
 
-  if (authUrl.includes(JR_API_LOCATION_PLACEHOLDER)) {
-    return authUrl.replace(
-      JR_API_LOCATION_PLACEHOLDER,
-      (await clientConfig.fetch()).jrApiLocation
-    );
-  }
+  const iamAuthLocation = (await clientConfig.fetch()).iamAuthLocation;
+  if (!iamAuthLocation) throw new InternalError();
 
-  return authUrl;
+  return authUrl.replace('$JR_API_LOCATION/iam/auth', iamAuthLocation);
 }
 
 function returnToUrl() {
@@ -44,3 +39,5 @@ function returnToUrl() {
 
   return url.toString();
 }
+
+onTestResetAfterEach(() => (loggedInParamName = undefined));

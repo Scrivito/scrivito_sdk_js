@@ -1,6 +1,7 @@
 import {
   ArgumentError,
   EmptyContinueIterable,
+  isValidInteger,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
@@ -17,6 +18,7 @@ import {
   setExternalData,
 } from 'scrivito_sdk/data_integration/external_data';
 import {
+  IndexResultCount,
   ResultItem,
   ResultItemData,
   assertValidIndexResultWithUnknownEntries,
@@ -42,6 +44,22 @@ export const batchCollection = new IdBatchCollection({
     ) || '',
 });
 
+export function countExternalData(
+  dataClass: string,
+  filters: DataItemFilters | undefined,
+  search: string | undefined
+): number | null {
+  return (
+    batchCollection.getQueryCount([
+      dataClass,
+      filters,
+      search,
+      undefined,
+      true,
+    ]) ?? null
+  );
+}
+
 export function getExternalDataQuery({
   _class: dataClass,
   filters,
@@ -55,7 +73,13 @@ export function getExternalDataQuery({
 
   const idQuery = new IdBatchQuery((batchNumber) =>
     batchCollection.getBatch(
-      [dataClass, filters, search, order],
+      [
+        dataClass,
+        filters,
+        search,
+        order,
+        false, // Never ask the backend about total count when fetching actual result data
+      ],
       batchSize,
       batchNumber
     )
@@ -78,11 +102,12 @@ export function notifyExternalDataWrite(dataClass: string): void {
 }
 
 async function loadBatch(
-  [dataClass, filters, search, order]: [
+  [dataClass, filters, search, order, count]: [
     string,
     DataItemFilters | undefined,
     string | undefined,
-    OrderSpec | undefined
+    OrderSpec | undefined,
+    boolean | undefined
   ],
   continuation: string | undefined,
   batchSize: number
@@ -90,7 +115,13 @@ async function loadBatch(
   const indexCallback = getIndexCallback(dataClass);
 
   const result = await indexCallback(
-    new IndexParams(continuation, { filters, search, order, limit: batchSize })
+    new IndexParams(continuation, {
+      filters,
+      search,
+      order,
+      limit: batchSize,
+      count: !!count,
+    })
   );
 
   assertValidIndexResultWithUnknownEntries(result);
@@ -100,6 +131,7 @@ async function loadBatch(
   return {
     continuation: result.continuation ?? undefined,
     results: dataIds,
+    total: autocorrectAndValidateCount(result.count),
   };
 }
 
@@ -189,4 +221,17 @@ function toDataResult(
 
   const { _id: id, ...data } = autocorrectResultItemId(idOrItem);
   return { id, data };
+}
+
+function autocorrectAndValidateCount(
+  resultCount: IndexResultCount | undefined
+): number | undefined {
+  if (resultCount === undefined || resultCount === null) return;
+
+  const count = Number(resultCount);
+  if (count >= 0 && isValidInteger(count)) return count;
+
+  throw new ArgumentError(
+    'Count of an index result must be a non-negative integer'
+  );
 }

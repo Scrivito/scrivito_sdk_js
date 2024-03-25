@@ -30,6 +30,7 @@ import {
   getExternalDataConnectionNames,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
+  countExternalData,
   getExternalDataQuery,
   notifyExternalDataWrite,
 } from 'scrivito_sdk/data_integration/external_data_query';
@@ -157,6 +158,11 @@ export class ExternalDataScope extends DataScope {
     return;
   }
 
+  count(): number | null {
+    const { filters, search } = this._params;
+    return countExternalData(this.dataClassName(), filters, search);
+  }
+
   /** @internal */
   toPojo(): PresentDataScopePojo {
     return {
@@ -202,10 +208,11 @@ export class ExternalDataScope extends DataScope {
 
   private getScopeId() {
     const { filters, search } = this._params;
+    const id = filters?._id;
     const hasOnlyIdFilter =
-      filters && Object.keys(filters).length === 1 && filters._id;
+      filters && Object.keys(filters).length === 1 && typeof id === 'string';
 
-    return !search && hasOnlyIdFilter && filters._id;
+    if (!search && hasOnlyIdFilter) return id;
   }
 }
 

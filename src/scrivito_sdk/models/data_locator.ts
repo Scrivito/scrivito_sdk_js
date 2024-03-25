@@ -2,6 +2,7 @@ import isObject from 'lodash-es/isObject';
 
 import {
   DataLocatorJson,
+  DataLocatorOperatorFilter,
   DataLocatorQuery,
   DataLocatorValueFilter,
   DataLocatorValueVia,
@@ -94,6 +95,17 @@ export class DataLocator {
       size: this._size,
     };
   }
+}
+
+export function isDataLocatorOperatorFilter(
+  filter: unknown
+): filter is DataLocatorOperatorFilter {
+  return (
+    isObject(filter) &&
+    typeof (filter as DataLocatorOperatorFilter).field === 'string' &&
+    (filter as DataLocatorOperatorFilter).operator === 'notEqual' &&
+    typeof (filter as DataLocatorOperatorFilter).value === 'string'
+  );
 }
 
 export function isDataLocatorValueFilter(

@@ -1,6 +1,6 @@
 // @rewire
 import * as ReactDOM from 'react-dom';
-import { getDocument } from 'scrivito_sdk/common';
+import { getDocument, onTestResetBeforeEach } from 'scrivito_sdk/common';
 
 let legacyExtensionElement: HTMLElement | undefined;
 
@@ -35,7 +35,4 @@ export function unmountLegacyExtension() {
   }
 }
 
-// For test purpose only.
-export function resetExtension(): void {
-  legacyExtensionElement = undefined;
-}
+onTestResetBeforeEach(() => (legacyExtensionElement = undefined));

@@ -62,10 +62,13 @@ export const usesFakeObjIdQuery =
 export const storeObjIdQueryBatch =
   batchCollection.storeBatch.bind(batchCollection);
 
-export function getObjQueryCount(objSpaceId: ObjSpaceId, params: QueryParams) {
+export function getObjQueryCount(
+  objSpaceId: ObjSpaceId,
+  params: QueryParams
+): number {
   if (isEmptySpaceId(objSpaceId)) return 0;
 
-  return batchCollection.getQueryCount([objSpaceId, params]);
+  return batchCollection.getQueryCount([objSpaceId, params]) ?? 0;
 }
 
 export function getObjQuery(

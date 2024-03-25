@@ -6,6 +6,7 @@ import {
   DataItemAttributes,
   DataScope,
   DataScopeParams,
+  OperatorSpec,
   PresentDataScopePojo,
   assertNoAttributeFilterConflicts,
   combineFilters,
@@ -14,6 +15,7 @@ import {
 import {
   BasicObj,
   BasicObjAttributes,
+  BasicObjSearch,
   createObjIn,
   currentObjSpaceId,
   excludeDeletedObjs,
@@ -112,6 +114,10 @@ export class ObjDataScope extends DataScope {
       .map((obj) => this.wrapInDataItem(obj));
   }
 
+  count(): number {
+    return this.getSearch().count();
+  }
+
   transform({ filters, search, order, limit }: DataScopeParams): DataScope {
     return new ObjDataScope(this._dataClass, {
       filters: combineFilters(this._params.filters, filters),
@@ -136,10 +142,10 @@ export class ObjDataScope extends DataScope {
   private getSearch() {
     let initialSearch = this.objClassScope().and(excludeDeletedObjs).search();
 
-    const { filters, search, order: givenOrder } = this._params;
+    const { filters, search: searchTerm, order: givenOrder } = this._params;
 
-    if (search) {
-      initialSearch = initialSearch.and('*', 'matches', search);
+    if (searchTerm) {
+      initialSearch = initialSearch.and('*', 'matches', searchTerm);
     }
 
     if (givenOrder) {
@@ -149,13 +155,30 @@ export class ObjDataScope extends DataScope {
 
     if (!filters) return initialSearch;
 
-    return Object.keys(filters).reduce(
-      (finalSearch, attributeName) =>
-        attributeName
-          ? finalSearch.and(attributeName, 'equals', filters[attributeName])
-          : finalSearch,
-      initialSearch
-    );
+    return Object.keys(filters)
+      .filter((name) => !!name)
+      .reduce(
+        (search, name) => this.applyFilter(search, name, filters[name]),
+        initialSearch
+      );
+  }
+
+  private applyFilter(
+    search: BasicObjSearch,
+    name: string,
+    valueOrSpec: string | OperatorSpec
+  ) {
+    if (typeof valueOrSpec === 'string') {
+      return search.and(name, 'equals', valueOrSpec);
+    }
+
+    const { operator, value } = valueOrSpec;
+
+    if (operator === 'notEqual') {
+      return search.andNot(name, 'equals', value);
+    }
+
+    throw new ArgumentError(`Unknown filter operator "${operator}"`);
   }
 
   private objClassScope() {

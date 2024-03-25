@@ -28,24 +28,32 @@ import {
   withUnfrozenState,
 } from 'scrivito_sdk/state';
 
+interface ConnectOptions {
+  loading?: React.ComponentType;
+}
+
 /** @public */
 export function connect<Props>(
-  component: React.FunctionComponent<Props>
+  component: React.FunctionComponent<Props>,
+  options?: ConnectOptions
 ): React.FunctionComponent<Props>;
 
 /** @public */
 export function connect<Props>(
-  component: React.ComponentClass<Props>
+  component: React.ComponentClass<Props>,
+  options?: ConnectOptions
 ): React.ComponentClass<Props>;
 
 /** @public */
 export function connect<Props>(
-  component: React.ComponentType<Props>
+  component: React.ComponentType<Props>,
+  options?: ConnectOptions
 ): React.ComponentType<Props>;
 
 /** @internal */
 export function connect<Props>(
-  component: React.ComponentType<Props>
+  component: React.ComponentType<Props>,
+  options?: ConnectOptions
 ): React.FunctionComponent<Props> | React.ComponentClass<Props> {
   if (typeof component !== 'function') {
     throw new ArgumentError(
@@ -58,8 +66,8 @@ export function connect<Props>(
   }
 
   return isClassComponent(component)
-    ? connectClassComponent(component)
-    : connectFunctionComponent(component);
+    ? connectClassComponent(component, options)
+    : connectFunctionComponent(component, options);
 }
 
 interface ConnectedComponent {
@@ -73,17 +81,28 @@ type ConnectedFunctionComponent<Props> = ConnectedComponent &
   React.FunctionComponent<Props>;
 
 function connectClassComponent<Props>(
-  classComponent: React.ComponentClass<Props>
+  classComponent: React.ComponentClass<Props>,
+  options?: ConnectOptions
 ): ConnectedComponentClass<Props> {
   const connectedComponent = class extends classComponent {
     static _isScrivitoConnectedComponent: boolean = true;
 
     private _scrivitoPrivateConnector: ComponentConnector;
 
+    private _scrivitoRenderWhileLoading: React.ReactNode;
+
     constructor(props: Props) {
       super(props);
 
-      this._scrivitoPrivateConnector = new ComponentConnector(this);
+      const loaderComponent = options?.loading;
+
+      const _scrivitoRenderWhileLoading = loaderComponent
+        ? () => React.createElement(loaderComponent)
+        : this._scrivitoRenderWhileLoading;
+
+      this._scrivitoPrivateConnector = new ComponentConnector(
+        Object.assign(this, { _scrivitoRenderWhileLoading })
+      );
 
       const { componentDidMount, componentWillUnmount } = this;
 
@@ -136,11 +155,12 @@ function connectClassComponent<Props>(
 }
 
 function connectFunctionComponent<Props>(
-  functionalComponent: React.FunctionComponent<Props>
+  functionalComponent: React.FunctionComponent<Props>,
+  options?: ConnectOptions
 ): ConnectedFunctionComponent<Props> {
   const connectedComponent = (props: Props) =>
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    useConnectedRender(() => functionalComponent(props));
+    useConnectedRender(() => functionalComponent(props), options);
 
   connectedComponent._isScrivitoConnectedComponent = true;
   connectedComponent.displayName =
@@ -150,13 +170,23 @@ function connectFunctionComponent<Props>(
 }
 
 function useConnectedRender(
-  originalRender: () => React.ReactNode
+  originalRender: () => React.ReactNode,
+  options?: ConnectOptions
 ): React.ReactElement {
   const forceUpdate = useForceUpdate();
 
   const connectorRef = React.useRef<ComponentConnector | undefined>();
   if (!connectorRef.current) {
-    connectorRef.current = new ComponentConnector({ forceUpdate });
+    const loaderComponent = options?.loading;
+
+    const _scrivitoRenderWhileLoading = loaderComponent
+      ? () => React.createElement(loaderComponent)
+      : undefined;
+
+    connectorRef.current = new ComponentConnector({
+      forceUpdate,
+      _scrivitoRenderWhileLoading,
+    });
   }
 
   const connector = connectorRef.current;
@@ -324,8 +354,6 @@ class ComponentConnector {
 
 interface ConnectorComponentInferface {
   forceUpdate(): void;
-
-  // this is only used by the Scrivito UI. Not a public API!
   _scrivitoRenderWhileLoading?: () => React.ReactNode;
 }
 

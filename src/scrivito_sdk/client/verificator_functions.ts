@@ -1,5 +1,5 @@
 // @rewire
-import { Deferred, loadJs } from 'scrivito_sdk/common';
+import { Deferred, loadJs, onTestResetBeforeEach } from 'scrivito_sdk/common';
 
 export type VerificationForChallenge = (
   data: unknown,
@@ -20,11 +20,7 @@ type VerificationCapture = (computedVerification: Verification) => void;
 
 let registry: {
   [key: string]: Deferred<VerificationForChallenge>;
-};
-
-export function reset() {
-  registry = {};
-}
+} = {};
 
 export function fetch(
   verificatorId: string,
@@ -42,8 +38,6 @@ export function fetch(
   return deferred.promise;
 }
 
-reset();
-
 export function setupRegisterVerificator() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any)._scrivitoRegisterVerificator = (
@@ -51,3 +45,5 @@ export function setupRegisterVerificator() {
     verificatorFunction: VerificationForChallenge
   ) => registry[verificatorId].resolve(verificatorFunction);
 }
+
+onTestResetBeforeEach(() => (registry = {}));

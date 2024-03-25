@@ -1,5 +1,7 @@
 /** Failsafe wrapper for `localStorage` */
 
+import { onTestResetBeforeEach } from './reset_callbacks';
+
 export function getFromLocalStorage(key: string): string | null {
   try {
     // eslint-disable-next-line no-restricted-globals
@@ -27,11 +29,11 @@ export function removeFromLocalStorage(key: string): void {
   }
 }
 
-export function clearLocalStorage(): void {
+onTestResetBeforeEach(() => {
   try {
     // eslint-disable-next-line no-restricted-globals
     localStorage.clear();
   } catch {
     // NOOP
   }
-}
+});

@@ -1,3 +1,5 @@
+import { onTestResetBeforeEach } from './reset_callbacks';
+
 let enabled: boolean = false;
 
 export function enableUniqueErrors() {
@@ -18,7 +20,4 @@ export function cleanUniqueErrorMessage(message: string): string {
   return detectUniqueErrorMessage(message) ?? message;
 }
 
-// For test purposes only
-export function resetUniqueErrors(): void {
-  enabled = false;
-}
+onTestResetBeforeEach(() => (enabled = false));

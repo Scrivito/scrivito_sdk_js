@@ -1,6 +1,6 @@
 import { RequestFailedError } from 'scrivito_sdk/client';
 import { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
-import { logError } from 'scrivito_sdk/common';
+import { logError, onTestResetBeforeEach } from 'scrivito_sdk/common';
 
 export async function requestWithRateLimitRetry(
   request: () => Promise<Response>
@@ -51,12 +51,9 @@ let limitedRetries: true | undefined;
 let retriesAreDisabled: true | undefined;
 
 // For test purpose only.
-export function disableRetries() {
-  retriesAreDisabled = true;
-}
-
-// For test purpose only.
 export function limitRetries() {
   retriesAreDisabled = undefined;
   limitedRetries = true;
 }
+
+onTestResetBeforeEach(() => (retriesAreDisabled = true));

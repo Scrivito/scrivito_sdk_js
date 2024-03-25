@@ -5,6 +5,7 @@ import {
   currentHref,
   getConfiguredTenant,
   getFromLocalStorage,
+  onTestResetAfterEach,
   reload,
   removeFromLocalStorage,
   replaceHistoryState,
@@ -42,11 +43,6 @@ export function isInLoggedInState() {
   return loggedInState;
 }
 
-// for test purposes
-export function resetLoggedInState() {
-  loggedInState = undefined;
-}
-
 export function changeLoggedInState(state: boolean): void {
   if (state) {
     setFlagInLocalStorage();
@@ -65,3 +61,5 @@ function setFlagInLocalStorage() {
 function isUserLoggedInStorageKey() {
   return `SCRIVITO.${getConfiguredTenant()}.IS_USER_LOGGED_IN`;
 }
+
+onTestResetAfterEach(() => (loggedInState = undefined));

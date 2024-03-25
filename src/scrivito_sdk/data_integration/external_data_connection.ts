@@ -1,6 +1,6 @@
 import isObject from 'lodash-es/isObject';
 
-import { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
+import { ArgumentError } from 'scrivito_sdk/common';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
@@ -39,16 +39,19 @@ export interface IndexResult extends IndexResultWithUnknownEntries {
 interface IndexResultWithUnknownEntries {
   results: unknown[];
   continuation?: string | null;
+  count?: IndexResultCount;
 }
+
+export type IndexResultCount = number | string | null;
 
 /** @public */
 export type ResultItem =
-  | ResultItemConvenienceNumericId
+  | ResultItemNumericConvenienceId
   | ResultItemNumericId
   | ResultItemConvenienceId
   | ResultItemId;
 
-interface ResultItemConvenienceNumericId extends ResultItemData {
+interface ResultItemNumericConvenienceId extends ResultItemData {
   _id?: undefined;
   id: number;
 }
@@ -101,13 +104,11 @@ export function assertValidIndexResultWithUnknownEntries(
     throw new ArgumentError('An index result must be an object');
   }
 
-  const { results, continuation } = result as IndexResult;
+  const { results, continuation, count } = result as IndexResult;
 
   if (!Array.isArray(results)) {
     throw new ArgumentError('Results of an index result must be an array');
   }
-
-  if (continuation === null || continuation === undefined) return;
 
   if (typeof continuation === 'string') {
     if (continuation.length === 0) {
@@ -115,9 +116,20 @@ export function assertValidIndexResultWithUnknownEntries(
         'Continuation of an index result must be a non-empty string, null or undefined'
       );
     }
-  } else {
+  } else if (continuation !== null && continuation !== undefined) {
     throw new ArgumentError(
       'Continuation of an index result must be a string, null or undefined'
+    );
+  }
+
+  if (
+    typeof count !== 'number' &&
+    typeof count !== 'string' &&
+    count !== null &&
+    count !== undefined
+  ) {
+    throw new ArgumentError(
+      'Count of an index result must be a non-negative integer, null or undefined'
     );
   }
 }
@@ -155,7 +167,7 @@ function isResultItemWithNumericId(
 
 function isResultItemConvenienceNumericId(
   resultItem: ResultItem
-): resultItem is ResultItemConvenienceNumericId {
+): resultItem is ResultItemNumericConvenienceId {
   return typeof resultItem.id === 'number';
 }
 
@@ -187,7 +199,7 @@ export function getExternalDataConnectionOrThrow(name: string): DataConnection {
   const connection = getExternalDataConnection(name);
 
   if (!connection) {
-    throw new ScrivitoError(`Missing data class with name ${name}`);
+    throw new ArgumentError(`Missing data class with name ${name}`);
   }
 
   return connection;

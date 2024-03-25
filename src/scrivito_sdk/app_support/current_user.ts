@@ -5,7 +5,7 @@ import { loggedInVisitorAuthHandler } from 'scrivito_sdk/app_support/logged_in_v
 import { nodeAdapter } from 'scrivito_sdk/app_support/node_adapter';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { User } from 'scrivito_sdk/app_support/user';
-import { getJrRestApiUrl } from 'scrivito_sdk/client';
+import { getIamAuthUrl } from 'scrivito_sdk/client';
 import { assignLocation } from 'scrivito_sdk/common';
 
 /** @public */
@@ -39,7 +39,7 @@ export function logout(): void {
 }
 
 async function logoutAsync() {
-  assignLocation(await getJrRestApiUrl('iam/auth/logout'));
+  assignLocation(await getIamAuthUrl('logout'));
 }
 
 function authHandler() {

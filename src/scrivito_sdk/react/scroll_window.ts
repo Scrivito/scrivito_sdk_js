@@ -4,7 +4,7 @@ import {
   isNotResponsibleRoute,
   isObjNotFoundRoute,
 } from 'scrivito_sdk/app_support/routing';
-import { scrollTo } from 'scrivito_sdk/common';
+import { onTestResetBeforeEach, scrollTo } from 'scrivito_sdk/common';
 
 let previousNavigationState: NavigationState | undefined;
 
@@ -37,7 +37,4 @@ function shouldScroll(currentNavigationState: NavigationState): boolean {
   );
 }
 
-// For test purpose only
-export function reset() {
-  previousNavigationState = undefined;
-}
+onTestResetBeforeEach(() => (previousNavigationState = undefined));

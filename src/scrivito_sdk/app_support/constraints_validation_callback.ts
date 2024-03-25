@@ -1,5 +1,5 @@
 import { AttributeValidationCallback } from 'scrivito_sdk/app_support/validations_config';
-import { ScrivitoError, onTestReset } from 'scrivito_sdk/common';
+import { ScrivitoError, onTestResetBeforeEach } from 'scrivito_sdk/common';
 import { Obj, Widget } from 'scrivito_sdk/realm';
 
 export type ConstraintsValidationCallback = (
@@ -25,6 +25,4 @@ export function getConstraintsValidationCallback(): ConstraintsValidationCallbac
   );
 }
 
-onTestReset(() => {
-  constraintsValidationCallback = undefined;
-});
+onTestResetBeforeEach(() => (constraintsValidationCallback = undefined));

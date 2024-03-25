@@ -3,6 +3,7 @@ import uniqBy from 'lodash-es/uniqBy';
 import {
   ArgumentError,
   checkArgumentsFor,
+  isValidInteger,
   tcomb as t,
 } from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
@@ -35,7 +36,7 @@ function validatePreviewSizeWidth(previewSize: PreviewSize) {
   const width = previewSize?.width;
   if (!width) return true;
 
-  return width % 1 === 0 && width > 0;
+  return isValidInteger(width) && width > 0;
 }
 
 export function getPreviewSizes(): PreviewSize[] | undefined {

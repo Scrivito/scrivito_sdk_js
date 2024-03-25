@@ -1,6 +1,7 @@
 import isObject from 'lodash-es/isObject';
 
-import { ArgumentError } from 'scrivito_sdk/common';
+import { FilterOperator } from 'scrivito_sdk/client';
+import { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
 import { isValidDataIdentifier } from 'scrivito_sdk/data_integration/data_identifier';
 import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
 
@@ -34,6 +35,8 @@ export abstract class DataScope {
   abstract transform(params: DataScopeParams): DataScope;
   /** @public */
   abstract objSearch(): ObjSearch | undefined;
+  /** @public */
+  abstract count(): number | null;
 
   /** @public */
   isEmpty(): boolean {
@@ -45,6 +48,11 @@ export abstract class DataScope {
     return !this.isEmpty();
   }
 
+  /** @public */
+  getError(): DataScopeError | undefined {
+    return;
+  }
+
   /** @internal */
   abstract toPojo(): DataScopePojo;
 }
@@ -53,7 +61,7 @@ export abstract class DataScope {
 export type DataItemAttributes = Record<string, unknown>;
 
 /** @public */
-export type DataItemFilters = Record<string, string>;
+export type DataItemFilters = Record<string, string | OperatorSpec>;
 
 /** @public */
 export interface DataScopeParams {
@@ -64,6 +72,12 @@ export interface DataScopeParams {
 }
 
 export const DEFAULT_LIMIT = 20;
+
+/** @public */
+export interface OperatorSpec {
+  operator: FilterOperator;
+  value: string;
+}
 
 /** @public */
 export type OrderSpec = Array<[string, 'asc' | 'desc']>;
@@ -93,6 +107,14 @@ export abstract class DataItem {
   abstract delete(): Promise<void>;
 }
 
+/** @public */
+export class DataScopeError extends ScrivitoError {
+  /** @internal */
+  constructor(readonly message: string) {
+    super(message);
+  }
+}
+
 export function assertValidDataItemAttributes(
   attributes: unknown
 ): asserts attributes is DataItemAttributes {
@@ -120,7 +142,7 @@ export function assertNoAttributeFilterConflicts(
         throw new ArgumentError(
           `Tried to create ${attributeName}: ${String(
             attributeValue
-          )} in a context of ${attributeName}: ${filterValue}`
+          )} in a context of ${attributeName}: ${JSON.stringify(filterValue)}`
         );
       }
     }

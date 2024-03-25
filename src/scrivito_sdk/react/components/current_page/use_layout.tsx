@@ -1,9 +1,13 @@
 import * as React from 'react';
 
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
-import { QueryParameters, computeAncestorPaths } from 'scrivito_sdk/common';
+import {
+  InternalError,
+  QueryParameters,
+  computeAncestorPaths,
+} from 'scrivito_sdk/common';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
-import { BasicObj, getObjByPath } from 'scrivito_sdk/models';
+import { BasicObj, getObjByPath, restrictToSite } from 'scrivito_sdk/models';
 import {
   areLayoutComponentsStored,
   getLayoutComponentForAppClass,
@@ -44,14 +48,21 @@ function getNextPage(page: BasicObj, layoutIndex: number) {
     if (layoutIndex >= ancestorPaths.length) return;
 
     const ancestorPath = ancestorPaths[layoutIndex];
-    const ancestor = loadWithDefault('loading', () =>
-      getObjByPath(currentAppSpace(), ancestorPath)
-    );
+    if (ancestorPath === path) return page;
 
-    return ancestorPath === path ? page : ancestor;
+    return getAncestorOf(page, ancestorPath);
   }
 
   if (layoutIndex === 0) return page;
+}
+
+function getAncestorOf(page: BasicObj, ancestorPath: string) {
+  const siteId = page.siteId();
+  if (!siteId) throw new InternalError();
+
+  return loadWithDefault('loading', () =>
+    getObjByPath(currentAppSpace().and(restrictToSite(siteId)), ancestorPath)
+  );
 }
 
 const PageLayout = connect(function PageLayout({

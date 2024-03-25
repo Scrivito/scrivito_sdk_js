@@ -1,3 +1,6 @@
+export { createApiClient } from 'scrivito_sdk/client/create_api_client';
+export { ApiClient } from 'scrivito_sdk/client/api_client';
+export type { ApiClientOptions } from 'scrivito_sdk/client/api_client';
 export type { BackendBinaryData } from 'scrivito_sdk/client/binary_urls_retrieval';
 export type { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
 export {
@@ -18,7 +21,7 @@ export {
   replaceCmsRetrieval,
 } from 'scrivito_sdk/client/cms_retrieval';
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
-export { getJrRestApiUrl, JrRestApi } from 'scrivito_sdk/client/jr_rest_api';
+export { getIamAuthUrl, JrRestApi } from 'scrivito_sdk/client/jr_rest_api';
 export { ClientError } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
 export type {
@@ -56,6 +59,7 @@ export {
   isWidgetlistAttributeJson,
 } from 'scrivito_sdk/client/obj_json';
 export {
+  getBrowserTokenProvider,
   injectBrowserToken,
   fetchBrowserToken,
 } from 'scrivito_sdk/client/browser_token';
@@ -79,9 +83,11 @@ export type {
   DataLocatorJson,
   DataLocatorQuery,
   DataLocatorFilter,
+  DataLocatorOperatorFilter,
   DataLocatorValueFilter,
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
+  FilterOperator,
   OrderByItem,
   OrderDirection,
 } from 'scrivito_sdk/client/obj_json';

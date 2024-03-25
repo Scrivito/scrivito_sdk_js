@@ -1,7 +1,5 @@
 import { InternalError } from 'scrivito_sdk/common';
 
-const INTEGER_RANGE_START = -9007199254740991;
-const INTEGER_RANGE_END = 9007199254740991;
 const BACKEND_FORMAT_REGEXP = /^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/;
 
 export function deserializeAsInteger(value: unknown): number | null {
@@ -13,11 +11,7 @@ export function deserializeAsInteger(value: unknown): number | null {
 }
 
 export function isValidInteger(value: unknown): value is number {
-  return (
-    isInteger(value) &&
-    INTEGER_RANGE_START <= value &&
-    value <= INTEGER_RANGE_END
-  );
+  return isValidFloat(value) && Number.isSafeInteger(value);
 }
 
 export function isValidFloat(value: unknown): value is number {
@@ -77,10 +71,6 @@ export function isValidDateString(dateString: unknown): dateString is string {
 
 function pad(num: number): string | number {
   return num < 10 ? `0${num}` : num;
-}
-
-function isInteger(value: unknown): value is number {
-  return isValidFloat(value) && Math.floor(value) === value;
 }
 
 function convertToInteger(valueFromBackend: number | string): number | null {
