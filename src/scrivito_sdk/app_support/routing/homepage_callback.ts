@@ -1,4 +1,5 @@
 import { withDefaultSiteContext } from 'scrivito_sdk/app_support/current_page';
+import { onReset } from 'scrivito_sdk/common';
 import { BasicObj } from 'scrivito_sdk/models';
 
 type HomepageCallback = () => BasicObj | null;
@@ -17,3 +18,5 @@ export function homepageFromCallback(): BasicObj | null {
   // Otherwise this would result in a circular call.
   return withDefaultSiteContext(homepageCallback);
 }
+
+onReset(() => (homepageCallback = undefined));

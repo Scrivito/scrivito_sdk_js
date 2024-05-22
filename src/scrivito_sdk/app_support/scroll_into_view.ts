@@ -1,9 +1,5 @@
 // @rewire
-import {
-  onTestResetBeforeEach,
-  randomHex,
-  scrollElementIntoView,
-} from 'scrivito_sdk/common';
+import { onReset, randomHex, scrollElementIntoView } from 'scrivito_sdk/common';
 import { getCurrentPageId } from './get_current_page_id';
 
 export type ScrollTarget = ObjFieldScrollTarget | WidgetScrollTarget;
@@ -85,7 +81,7 @@ let scrollTargetRegistry: {
 
 let requestedTargetId: string;
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   scrollTargetRegistry = {};
   requestedTargetId = '';
 });

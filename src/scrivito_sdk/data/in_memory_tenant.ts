@@ -1,4 +1,4 @@
-import { ScrivitoError, onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { ScrivitoError, onReset } from 'scrivito_sdk/common';
 
 export const IN_MEMORY_TENANT = 'inMemory';
 
@@ -26,4 +26,4 @@ export class InMemoryTenantUnsupportedOperationError extends ScrivitoError {
   }
 }
 
-onTestResetBeforeEach(() => (inMemoryTenant = false));
+onReset(() => (inMemoryTenant = false));

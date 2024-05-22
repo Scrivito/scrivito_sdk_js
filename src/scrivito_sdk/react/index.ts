@@ -24,6 +24,7 @@ export { NotFoundErrorPage } from 'scrivito_sdk/react/components/not_found_error
 export { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';
 export { WidgetContent } from 'scrivito_sdk/react/components/content_tag/widget_content';
 export { memo } from 'scrivito_sdk/react/memo';
+export { useData } from 'scrivito_sdk/react/hooks/use_data';
 export { useDataItem } from 'scrivito_sdk/react/hooks/use_data_item';
 export { useDataLocator } from 'scrivito_sdk/react/hooks/use_data_locator';
 export { useDataScope } from 'scrivito_sdk/react/hooks/use_data_scope';

@@ -65,6 +65,7 @@ export {
 } from 'scrivito_sdk/client/browser_token';
 export type {
   ObjJson,
+  OpCode,
   ExistentObjJson,
   UnavailableObjJson,
   ObjSystemAttributeJson,
@@ -87,9 +88,9 @@ export type {
   DataLocatorValueFilter,
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
-  FilterOperator,
   OrderByItem,
   OrderDirection,
+  ViaRef,
 } from 'scrivito_sdk/client/obj_json';
 export { fetchJson } from 'scrivito_sdk/client/fetch_json';
 export type {

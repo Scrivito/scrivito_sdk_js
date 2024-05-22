@@ -66,14 +66,7 @@ export {
   enableUniqueErrors,
   uniqueErrorMessage,
 } from 'scrivito_sdk/common/unique_error_message';
-export {
-  onTestResetAfterEach,
-  onTestResetBeforeAll,
-  onTestResetBeforeEach,
-  runResetCallbacksAfterEach,
-  runResetCallbacksBeforeAll,
-  runResetCallbacksBeforeEach,
-} from 'scrivito_sdk/common/reset_callbacks';
+export { onReset } from 'scrivito_sdk/common/reset_callbacks';
 export { throttle } from 'scrivito_sdk/common/throttle';
 export {
   parseStringToDate,

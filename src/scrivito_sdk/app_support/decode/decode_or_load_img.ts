@@ -1,6 +1,4 @@
 // @rewire
-import { ScrivitoPromise } from 'scrivito_sdk/common';
-
 export function decodeOrLoadImg(imageUrl: string): Promise<HTMLImageElement> {
   const img = new Image();
   return hasDecodeImg(img) ? decodeImg(img, imageUrl) : loadImg(img, imageUrl);
@@ -33,7 +31,7 @@ export function loadImg(
   img: HTMLImageElement,
   imageUrl: string
 ): Promise<HTMLImageElement> {
-  return new ScrivitoPromise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     img.onload = () => resolve(img);
     img.onerror = (event) => reject(event);
     img.src = imageUrl;

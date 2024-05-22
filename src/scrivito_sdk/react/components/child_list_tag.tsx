@@ -18,7 +18,7 @@ type ChildListTagProps = React.HTMLAttributes<HTMLElement> & {
 
 /** @public */
 export const ChildListTag: React.ComponentType<ChildListTagProps> = connect(
-  withDisplayName('Scrivito.ChildListTag', (props) => {
+  withDisplayName('Scrivito.ChildListTag', (props: ChildListTagProps) => {
     const {
       parent = currentPage(),
       tag: Tag = 'ul',

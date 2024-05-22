@@ -10,7 +10,6 @@ import {
 import {
   Deferred,
   InternalError,
-  ScrivitoPromise,
   nextTick,
   throttle,
 } from 'scrivito_sdk/common';
@@ -96,7 +95,7 @@ export class ObjBackendReplication implements ObjReplication {
     }
   }
 
-  finishSaving(): Promise<void> {
+  async finishSaving(): Promise<void> {
     let finishSavingPromise;
 
     if (this.nextRequestDeferred) {
@@ -104,10 +103,10 @@ export class ObjBackendReplication implements ObjReplication {
     } else if (this.currentRequestDeferred) {
       finishSavingPromise = this.currentRequestDeferred.promise;
     } else {
-      return ScrivitoPromise.resolve();
+      return;
     }
 
-    return finishSavingPromise.catch(() => ScrivitoPromise.reject());
+    return finishSavingPromise.catch(() => Promise.reject());
   }
 
   finishReplicating(): never {
@@ -174,14 +173,16 @@ export class ObjBackendReplication implements ObjReplication {
     );
   }
 
-  private replicateLocalStateToBackend(localState: ObjJson): Promise<ObjJson> {
+  private async replicateLocalStateToBackend(
+    localState: ObjJson
+  ): Promise<ObjJson> {
     const patch = diffObjJson(this.backendState, localState);
 
     return isEmpty(patch)
       ? // bang:
         // given the localState is not blank, the diff may be empty only if the
         // backendState is similar (equal?) to the localState, i.e. not blank
-        ScrivitoPromise.resolve(this.backendState!)
+        Promise.resolve(this.backendState!)
       : this.replicatePatchToBackend(patch);
   }
 

@@ -1,15 +1,8 @@
-import {
-  DataScope,
-  dataScopeFromPojo,
-  isDataScopePojo,
-} from 'scrivito_sdk/data_integration';
-import { useLastDataStackElement } from 'scrivito_sdk/react/data_context_container';
+import { DataScope } from 'scrivito_sdk/data_integration';
+import { useData } from 'scrivito_sdk/react/hooks/use_data';
 
 /** @beta */
 export function useDataScope(): DataScope | undefined {
-  const element = useLastDataStackElement();
-
-  if (element && isDataScopePojo(element)) {
-    return dataScopeFromPojo(element);
-  }
+  const data = useData();
+  return data.isDataItem() ? undefined : data;
 }

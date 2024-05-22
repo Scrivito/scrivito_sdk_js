@@ -3,6 +3,7 @@ import isObject from 'lodash-es/isObject';
 import { ArgumentError } from 'scrivito_sdk/common';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
+import { DataConnectionError } from 'scrivito_sdk/data_integration/external_data_query';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -16,7 +17,10 @@ export interface DataConnection {
 }
 
 /** @public */
-export type IndexCallback = (params: IndexParams) => Promise<IndexResult>;
+export type IndexCallback = (
+  params: IndexParams
+) => Promise<IndexResult | DataConnectionError>;
+
 /** @public */
 export type GetCallback = (id: string) => Promise<unknown | null>;
 /** @public */

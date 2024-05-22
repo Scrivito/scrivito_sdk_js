@@ -7,6 +7,7 @@ import {
   ScrivitoError,
   currentOrigin,
   docUrl,
+  onReset,
   prettyPrint,
   throwNextTick,
 } from 'scrivito_sdk/common';
@@ -218,3 +219,5 @@ function isSiteForUrlResult(
 const SEE_CONFIGURE = `Visit ${docUrl(
   'js-sdk/configure'
 )} for more information.`;
+
+onReset(reset);

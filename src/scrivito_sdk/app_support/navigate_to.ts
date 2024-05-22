@@ -1,5 +1,6 @@
 // @rewire
 import isEmpty from 'lodash-es/isEmpty';
+import * as URI from 'urijs';
 
 import {
   RoutingTarget,
@@ -8,20 +9,19 @@ import {
   isLatestNavigateToCallId,
 } from 'scrivito_sdk/app_support/basic_navigate_to';
 import { Hash } from 'scrivito_sdk/app_support/routing';
+import { urlForDataItem } from 'scrivito_sdk/app_support/url_for_data_item';
 import {
   ArgumentError,
   QueryParameters,
-  checkArgumentsFor,
-  nextTick,
-  tcomb as t,
   throwNextTick,
 } from 'scrivito_sdk/common';
+import { DataItem } from 'scrivito_sdk/data_integration';
 import { load } from 'scrivito_sdk/loadable';
-import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
+import { BasicLink, BasicObj } from 'scrivito_sdk/models';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 import { failIfFrozen } from 'scrivito_sdk/state';
 
-type Target = Obj | Link | null;
+type Target = Obj | Link | DataItem | null;
 
 type TargetFunction = () => Target;
 
@@ -42,67 +42,106 @@ export function navigateTo(
 
 /** @internal */
 export function navigateTo(
-  target: Target | TargetFunction,
-  options?: Options,
-  ...excessArgs: never[]
+  target: Target | TargetFunction | DataItem,
+  options?: Options
 ): void {
   const callId = getNextNavigateToCallId();
 
   failIfFrozen('navigateTo');
 
-  if (target === null) {
-    nextTick(() => checkNavigateTo(target, options, ...excessArgs));
-    return;
+  if (target === null) return;
+
+  const navigateToOptions = getNavigateToOptions(options);
+
+  if (target instanceof DataItem) {
+    navigateToDataItem(target, navigateToOptions, callId);
+  } else {
+    navigateToTarget(target, callId, navigateToOptions);
   }
+}
 
-  checkNavigateTo(target, options, ...excessArgs);
+async function navigateToTarget(
+  target: Target | TargetFunction | DataItem,
+  callId: number,
+  options: { queryParameters?: QueryParameters; hash: Hash }
+) {
+  try {
+    const evaluatedTarget = await load(() =>
+      typeof target === 'function' ? target() : target
+    );
 
-  let queryParameters: QueryParameters | undefined;
-  let hash: Hash = null;
+    const basicTarget = unwrapAppClass(evaluatedTarget);
+    if (!isBasicTarget(basicTarget)) return;
 
-  if (options) {
-    const {
-      hash: optionsHash,
-      params: optionsParams,
-      ...convenienceParams
-    } = options;
-
-    checkNavigateToConvenience(target, convenienceParams);
-
-    queryParameters = { ...convenienceParams, ...optionsParams };
-
-    hash = optionsHash || null;
+    return basicNavigateTo(
+      await getRoutingTarget(basicTarget, options),
+      callId
+    );
+  } catch (e) {
+    if (isLatestNavigateToCallId(callId)) throwNextTick(e);
   }
+}
 
-  const providesTarget = () =>
-    typeof target === 'function' ? target() : target;
-  load(providesTarget)
-    .then((evaluatedTarget: unknown) => {
-      checkEvaluatedTarget(evaluatedTarget);
+function navigateToDataItem(
+  dataItem: DataItem,
+  options: { queryParameters?: QueryParameters; hash: Hash },
+  callId: number
+) {
+  const url = urlForDataItem(dataItem);
+  if (!url) return;
 
-      const basicTarget = unwrapAppClass(evaluatedTarget);
-      if (
-        !(basicTarget instanceof BasicObj) &&
-        !(basicTarget instanceof BasicLink)
-      ) {
-        return;
+  const uri = URI(url);
+
+  const { queryParameters } = options;
+
+  if (queryParameters) {
+    const params = new URLSearchParams(uri.query());
+
+    Object.entries(queryParameters).forEach(([key, value]) => {
+      if (params.get(key) === value) {
+        throw new ArgumentError(
+          'The data ID is the same as the URL query param'
+        );
       }
-
-      return load(() =>
-        extractRoutingTarget(basicTarget, queryParameters, hash)
-      ).then((routingTarget) => {
-        if (!routingTarget) {
-          throw new ArgumentError(
-            'The link provided to navigateTo has no destination.'
-          );
-        }
-
-        return basicNavigateTo(routingTarget, callId);
-      });
-    })
-    .catch((e: Error) => {
-      if (isLatestNavigateToCallId(callId)) throwNextTick(e);
     });
+
+    uri.addQuery(queryParameters);
+  }
+
+  if (options.hash) uri.hash(options.hash);
+  return basicNavigateTo({ url: uri.resource() }, callId);
+}
+
+async function getRoutingTarget(
+  basicTarget: BasicObj | BasicLink,
+  options: { queryParameters?: QueryParameters; hash: Hash }
+) {
+  const routingTarget = await load(() =>
+    extractRoutingTarget(basicTarget, options.queryParameters, options.hash)
+  );
+
+  if (!routingTarget) {
+    throw new ArgumentError(
+      'The link provided to navigateTo has no destination.'
+    );
+  }
+
+  return routingTarget;
+}
+
+function isBasicTarget(target: unknown): target is BasicObj | BasicLink {
+  return target instanceof BasicObj || target instanceof BasicLink;
+}
+
+function getNavigateToOptions(options: Options | undefined) {
+  if (!options) return { hash: null, queryParameters: undefined };
+
+  const { hash, params, ...convenienceParams } = options;
+
+  return {
+    hash: hash || null,
+    queryParameters: { ...convenienceParams, ...params },
+  };
 }
 
 function extractRoutingTarget(
@@ -134,53 +173,3 @@ function extractRoutingTargetForLink(
   const objId = linkObj instanceof BasicObj ? linkObj.id() : link.objId();
   return objId ? { objId, query, hash } : undefined;
 }
-
-const EvaluatedTargetType = t.union([ObjType, LinkType]);
-
-const TargetType = t.union([t.Function, EvaluatedTargetType]);
-
-const ParamsValueType = t.dict(
-  t.String,
-  t.maybe(t.union([t.String, t.list(t.String), t.Nil]))
-);
-
-const checkNavigateTo = checkArgumentsFor(
-  'navigateTo',
-  [
-    ['target', TargetType],
-    [
-      'options',
-      t.maybe(
-        t.interface(
-          {
-            hash: t.maybe(t.String),
-            params: t.maybe(ParamsValueType),
-          },
-          { strict: false }
-        )
-      ),
-    ],
-  ],
-  {
-    docPermalink: 'js-sdk/navigateTo',
-  }
-);
-
-const checkNavigateToConvenience = checkArgumentsFor(
-  'navigateTo',
-  [
-    ['target', TargetType],
-    ['options', t.maybe(ParamsValueType)],
-  ],
-  {
-    docPermalink: 'js-sdk/navigateTo',
-  }
-);
-
-const checkEvaluatedTarget = checkArgumentsFor(
-  'navigateTo',
-  [['target', EvaluatedTargetType]],
-  {
-    docPermalink: 'js-sdk/navigateTo',
-  }
-);

@@ -1,4 +1,4 @@
-import { ScrivitoError, ScrivitoPromise } from 'scrivito_sdk/common';
+import { ScrivitoError } from 'scrivito_sdk/common';
 
 type UnsubscribeFunction = () => void;
 
@@ -88,7 +88,7 @@ export class Streamable<T> {
    * the Promise resolves with undefined.
    */
   toPromise(): Promise<T | undefined> {
-    return new ScrivitoPromise((resolve) => {
+    return new Promise((resolve) => {
       let lastValue: T | undefined;
 
       this.subscribe({
@@ -128,7 +128,7 @@ export class Streamable<T> {
    * The Promise rejects, if the stream completes before any value is emitted.
    */
   waitForFirst(): Promise<T> {
-    return new ScrivitoPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let resolved = false;
       this.takeOne().subscribe({
         next(value) {

@@ -1,5 +1,5 @@
 import pickBy from 'lodash-es/pickBy';
-import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { onReset } from 'scrivito_sdk/common';
 
 import { AppClass, ObjClass, WidgetClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
@@ -56,4 +56,4 @@ export function widgetClassFor(name: string): AppClass {
   return appClassFor(name, Widget);
 }
 
-onTestResetBeforeEach(() => (mapping = {}));
+onReset(() => (mapping = {}));

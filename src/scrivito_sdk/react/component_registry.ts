@@ -1,4 +1,4 @@
-import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { onReset } from 'scrivito_sdk/common';
 import { Obj } from 'scrivito_sdk/realm';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -95,7 +95,7 @@ function getLayoutChangesCounterState(className: string) {
   return layoutsChangesCounterState.subState(className);
 }
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   registry.clear();
   layoutRegistry.clear();
 });

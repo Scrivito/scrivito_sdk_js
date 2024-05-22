@@ -1,4 +1,4 @@
-import { onTestResetBeforeEach } from './reset_callbacks';
+import { onReset } from 'scrivito_sdk/common/reset_callbacks';
 
 let enabled: boolean = false;
 
@@ -20,4 +20,4 @@ export function cleanUniqueErrorMessage(message: string): string {
   return detectUniqueErrorMessage(message) ?? message;
 }
 
-onTestResetBeforeEach(() => (enabled = false));
+onReset(() => (enabled = false));

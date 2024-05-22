@@ -4,7 +4,7 @@ import {
   DataConnection,
   ExternalDataClass,
   assertValidDataIdentifier,
-  buildDataConnection,
+  createStandardApiConnection,
   setExternalDataConnection,
 } from 'scrivito_sdk/data_integration';
 
@@ -29,7 +29,7 @@ export function provideDataClass(
 
   if ('restApi' in params) {
     return provideDataClass(name, {
-      connection: buildDataConnection(params.restApi),
+      connection: createStandardApiConnection(params.restApi),
     });
   }
 

@@ -1,3 +1,4 @@
+import { onReset } from 'scrivito_sdk/common';
 import type { ApiKeyAuthorizationProvider } from 'scrivito_sdk/node_support/api_key_authorization_provider';
 import type { nodeAuthHandler } from 'scrivito_sdk/node_support/node_auth_handler';
 
@@ -15,3 +16,5 @@ export function setNodeAdapter(adapter: NodeAdapter | undefined) {
 export function isRunningInBrowser() {
   return nodeAdapter === undefined;
 }
+
+onReset(() => (nodeAdapter = undefined));

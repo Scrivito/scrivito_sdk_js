@@ -1,6 +1,6 @@
 /** Failsafe wrapper for `localStorage` */
 
-import { onTestResetBeforeEach } from './reset_callbacks';
+import { onReset } from 'scrivito_sdk/common/reset_callbacks';
 
 export function getFromLocalStorage(key: string): string | null {
   try {
@@ -29,7 +29,7 @@ export function removeFromLocalStorage(key: string): void {
   }
 }
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   try {
     // eslint-disable-next-line no-restricted-globals
     localStorage.clear();

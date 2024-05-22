@@ -11,7 +11,7 @@ import {
   isDestinationUnavailableRecognized,
   recognize,
 } from 'scrivito_sdk/app_support/routing';
-import { InternalError, onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { InternalError, onReset } from 'scrivito_sdk/common';
 import {
   LoadableData,
   LoadableState,
@@ -179,4 +179,7 @@ export function resetRecognizedSiteId(): void {
   navigationState.clear();
 }
 
-onTestResetBeforeEach(() => (forceNotResponsible = false));
+onReset(() => {
+  forceNotResponsible = false;
+  resetRecognizedSiteId();
+});

@@ -1,4 +1,5 @@
 import { PUBLISHED_SPACE, WorkspaceObjSpaceId } from 'scrivito_sdk/client';
+import { onReset } from 'scrivito_sdk/common';
 
 let objSpaceId: WorkspaceObjSpaceId = PUBLISHED_SPACE;
 
@@ -23,3 +24,5 @@ export function setCurrentWorkspaceId(id: string): void {
 export function resetCurrentWorkspaceId() {
   objSpaceId = PUBLISHED_SPACE;
 }
+
+onReset(resetCurrentWorkspaceId);

@@ -20,7 +20,7 @@ export function urlForDataItem(dataItem: DataItem): string | null {
 }
 
 function getDetailsPageUrl(dataItem: DataItem, siteId: string | null) {
-  const dataClassName = dataItem.dataClass().name();
+  const dataClassName = dataItem.dataClassName();
   const detailsPage = getDetailsPageForDataParam(dataClassName, siteId);
 
   if (!detailsPage) return null;

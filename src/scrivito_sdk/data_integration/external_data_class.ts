@@ -1,5 +1,6 @@
 import isEmpty from 'lodash-es/isEmpty';
 
+import { ClientError } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   extractFromIterator,
@@ -11,12 +12,14 @@ import {
   DataItem,
   DataItemAttributes,
   DataScope,
+  DataScopeError,
   DataScopeParams,
   PresentDataScopePojo,
   assertNoAttributeFilterConflicts,
   assertValidDataItemAttributes,
   combineFilters,
   combineSearches,
+  itemIdFromFilters,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
   ExternalData,
@@ -30,6 +33,7 @@ import {
   getExternalDataConnectionNames,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
+  DataConnectionError,
   countExternalData,
   getExternalDataQuery,
   notifyExternalDataWrite,
@@ -63,6 +67,11 @@ export class ExternalDataClass extends DataClass {
   getUnchecked(id: string): ExternalDataItem {
     return new ExternalDataItem(this, id);
   }
+
+  /** @internal */
+  forAttribute(attributeName: string): DataScope {
+    return new ExternalDataScope(this, attributeName);
+  }
 }
 
 export function isExternalDataClassProvided(name: string): boolean {
@@ -77,8 +86,11 @@ export function allExternalDataClasses(): ExternalDataClass[] {
 
 /** @beta */
 export class ExternalDataScope extends DataScope {
+  private _error?: DataScopeError;
+
   constructor(
     private readonly _dataClass: DataClass,
+    private readonly _attributeName?: string,
     private readonly _params: DataScopeParams = {}
   ) {
     super();
@@ -86,6 +98,10 @@ export class ExternalDataScope extends DataScope {
 
   dataClass(): DataClass {
     return this._dataClass;
+  }
+
+  dataClassName(): string {
+    return this._dataClass.name();
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
@@ -102,51 +118,63 @@ export class ExternalDataScope extends DataScope {
     const resultItem = await createCallback(dataForCallback);
     assertValidResultItem(resultItem);
 
-    const dataClassName = this.dataClassName();
+    const className = this.dataClassName();
     const { _id: id, ...dataFromCallback } =
       autocorrectResultItemId(resultItem);
 
     setExternalData(
-      dataClassName,
+      className,
       id,
       (!isEmpty(dataFromCallback) && dataFromCallback) || dataForCallback
     );
 
-    notifyExternalDataWrite(dataClassName);
+    notifyExternalDataWrite(className);
 
     return new ExternalDataItem(this._dataClass, id);
   }
 
   get(id: string): DataItem | null {
     const { filters, search } = this._params;
-
     if (!search && !filters) return this._dataClass.get(id);
 
-    const scopeId = this.getScopeId();
-
-    if (scopeId) {
-      return scopeId === id ? this._dataClass.get(id) : null;
+    const idFromFilters = this.itemIdFromFilters();
+    if (idFromFilters && this.hasSingleFilter()) {
+      return idFromFilters === id ? this._dataClass.get(id) : null;
     }
 
-    return this.transform({ filters: { _id: id }, limit: 1 }).take()[0];
+    return this.transform({ filters: { _id: id }, limit: 1 }).take()[0] || null;
+  }
+
+  dataItem(): DataItem | null {
+    const id = this.itemIdFromFilters();
+    return id ? this.get(id) : null;
+  }
+
+  isDataItem(): boolean {
+    return !!this.itemIdFromFilters();
+  }
+
+  attributeName(): string | null {
+    return this._attributeName || null;
   }
 
   take(): DataItem[] {
-    const scopeId = this.getScopeId();
-
-    if (scopeId) {
-      const item = this.get(scopeId);
+    const id = this.itemIdFromFilters();
+    if (id && this.hasSingleFilter()) {
+      const item = this.get(id);
       return item ? [item] : [];
     }
 
-    return extractFromIterator(
-      this.getIterator(),
-      this._params.limit ?? DEFAULT_LIMIT
+    return this.handleErrors(() =>
+      extractFromIterator(
+        this.getIterator(),
+        this._params.limit ?? DEFAULT_LIMIT
+      )
     );
   }
 
   transform({ filters, search, order, limit }: DataScopeParams): DataScope {
-    return new ExternalDataScope(this._dataClass, {
+    return new ExternalDataScope(this._dataClass, this._attributeName, {
       filters: combineFilters(this._params.filters, filters),
       search: combineSearches(this._params.search, search),
       order: order || this._params.order,
@@ -156,6 +184,10 @@ export class ExternalDataScope extends DataScope {
 
   objSearch(): undefined {
     return;
+  }
+
+  getError(): DataScopeError | undefined {
+    return this._error;
   }
 
   count(): number | null {
@@ -171,17 +203,13 @@ export class ExternalDataScope extends DataScope {
     };
   }
 
-  private dataClassName() {
-    return this._dataClass.name();
-  }
-
   private getCreateCallback() {
-    const dataClassName = this.dataClassName();
-    const createCallback = getConnection(dataClassName).create;
+    const className = this.dataClassName();
+    const createCallback = getConnection(className).create;
 
     if (!createCallback) {
       throw new ArgumentError(
-        `No create callback defined for data class "${dataClassName}"`
+        `No create callback defined for data class "${className}"`
       );
     }
 
@@ -206,13 +234,29 @@ export class ExternalDataScope extends DataScope {
     }
   }
 
-  private getScopeId() {
-    const { filters, search } = this._params;
-    const id = filters?._id;
-    const hasOnlyIdFilter =
-      filters && Object.keys(filters).length === 1 && typeof id === 'string';
+  private itemIdFromFilters() {
+    return itemIdFromFilters(this._params.filters);
+  }
 
-    if (!search && hasOnlyIdFilter) return id;
+  private hasSingleFilter() {
+    const { filters, search } = this._params;
+    return filters && Object.keys(filters).length === 1 && !search;
+  }
+
+  private handleErrors(fn: () => DataItem[]) {
+    try {
+      return fn();
+    } catch (error) {
+      if (
+        error instanceof ClientError ||
+        error instanceof DataConnectionError
+      ) {
+        this._error = new DataScopeError(error.message);
+        return [];
+      }
+
+      throw error;
+    }
   }
 }
 
@@ -231,6 +275,10 @@ export class ExternalDataItem extends DataItem {
 
   dataClass(): DataClass {
     return this._dataClass;
+  }
+
+  dataClassName(): string {
+    return this._dataClass.name();
   }
 
   obj(): undefined {
@@ -305,10 +353,6 @@ export class ExternalDataItem extends DataItem {
 
   private getConnection() {
     return getConnection(this.dataClassName());
-  }
-
-  private dataClassName() {
-    return this._dataClass.name();
   }
 
   private notifyWrite() {

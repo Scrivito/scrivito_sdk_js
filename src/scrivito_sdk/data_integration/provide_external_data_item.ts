@@ -6,6 +6,7 @@ import {
 import { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 import { provideGlobalData } from 'scrivito_sdk/data_integration/global_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
+import { registerSingletonDataClass } from 'scrivito_sdk/data_integration/singleton_data_classes';
 import { load } from 'scrivito_sdk/loadable';
 
 import { ExternalData } from './external_data';
@@ -37,6 +38,8 @@ export function provideExternalDataItem(
     }),
   });
 
+  registerSingletonDataClass(name);
+
   const dataItem = dataClass.getUnchecked(SINGLE_ID);
   provideGlobalData(dataItem);
 
@@ -56,7 +59,7 @@ async function readAndFilterItem(
 
   const filters = params.filters();
   const doesMatch = Object.keys(filters).every((name) => {
-    const value = filters[name];
+    const { value } = filters[name];
 
     return (
       name === '_id' ||

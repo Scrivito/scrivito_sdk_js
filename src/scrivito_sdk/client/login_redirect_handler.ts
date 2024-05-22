@@ -4,7 +4,7 @@ import {
   assignLocation,
   currentHref,
   never,
-  onTestResetAfterEach,
+  onReset,
 } from 'scrivito_sdk/common';
 
 /** a LoginHander which redirects the browser to the login url */
@@ -40,4 +40,4 @@ function returnToUrl() {
   return url.toString();
 }
 
-onTestResetAfterEach(() => (loggedInParamName = undefined));
+onReset(() => (loggedInParamName = undefined));

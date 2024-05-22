@@ -1,4 +1,4 @@
-import { ConfigStore } from 'scrivito_sdk/common';
+import { ConfigStore, onReset } from 'scrivito_sdk/common';
 
 declare global {
   let __webpack_public_path__: string;
@@ -33,3 +33,5 @@ export function resetAssetUrlBase(): void {
   config.reset();
   initializeAssetUrlBase();
 }
+
+onReset(resetAssetUrlBase);

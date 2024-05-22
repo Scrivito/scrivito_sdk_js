@@ -19,43 +19,43 @@ import {
   checkProvideComponent,
 } from 'scrivito_sdk/realm';
 
-interface ProvidedComponentOptions {
-  loading?: React.ComponentType;
+interface ProvidedComponentOptions<Props> {
+  loading?: React.ComponentType<Props>;
 }
 
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   objClass: ObjClass<AttrDefs>,
   component: React.ComponentType<PageComponentProps<AttrDefs>>,
-  options?: ProvidedComponentOptions
+  options?: ProvidedComponentOptions<PageComponentProps<AttrDefs>>
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrObjClass: string | ObjClass,
   component: React.ComponentType<Partial<PageComponentProps>>,
-  options?: ProvidedComponentOptions
+  options?: ProvidedComponentOptions<Partial<PageComponentProps>>
 ): void;
 
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   widgetClass: WidgetClass<AttrDefs>,
   component: React.ComponentType<WidgetComponentProps<AttrDefs>>,
-  options?: ProvidedComponentOptions
+  options?: ProvidedComponentOptions<WidgetComponentProps<AttrDefs>>
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrWidgetClass: string | WidgetClass,
   component: React.ComponentType<Partial<WidgetComponentProps>>,
-  options?: ProvidedComponentOptions
+  options?: ProvidedComponentOptions<Partial<WidgetComponentProps>>
 ): void;
 
 /** @internal */
 export function provideComponent(
   classNameOrClass: string | ObjClass | WidgetClass,
   component: React.ComponentType,
-  options?: ProvidedComponentOptions,
+  options?: { loading?: typeof component },
   ...excessArgs: never[]
 ): void {
   checkProvideComponent(classNameOrClass, component, ...excessArgs);
@@ -81,7 +81,7 @@ function wrapComponent(component: React.ComponentType) {
   return wrappedComponent;
 }
 
-function wrapFunctionComponent<Props extends object>(
+function wrapFunctionComponent<Props extends {}>(
   functionComponent: React.FunctionComponent<Props>
 ): React.FunctionComponent<Props> {
   return memo((props: Props) => {

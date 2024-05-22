@@ -1,5 +1,5 @@
 // @rewire
-import { Deferred, loadJs, onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { Deferred, loadJs, onReset } from 'scrivito_sdk/common';
 
 export type VerificationForChallenge = (
   data: unknown,
@@ -46,4 +46,4 @@ export function setupRegisterVerificator() {
   ) => registry[verificatorId].resolve(verificatorFunction);
 }
 
-onTestResetBeforeEach(() => (registry = {}));
+onReset(() => (registry = {}));

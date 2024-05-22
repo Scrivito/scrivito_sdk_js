@@ -66,7 +66,7 @@ const ValidScrivitoBackground = t.interface({
   clip: t.maybe(t.enums.of(['border-box'])),
   color: t.maybe(t.enums.of(['transparent'])),
   origin: t.maybe(t.enums.of(['padding-box'])),
-  position: t.maybe(t.enums.of(['center', 'left', 'right', 'top', 'bottom'])),
+  position: t.maybe(t.String),
   repeat: t.maybe(t.enums.of(['no-repeat'])),
   size: t.maybe(t.enums.of(['contain', 'cover'])),
 });

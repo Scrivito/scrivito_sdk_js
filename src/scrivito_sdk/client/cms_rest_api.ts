@@ -12,6 +12,7 @@ import {
   Deferred,
   InternalError,
   ScrivitoError,
+  onReset,
   wait,
 } from 'scrivito_sdk/common';
 
@@ -91,21 +92,20 @@ class CmsRestApi {
   init({
     apiBaseUrl,
     authorizationProvider,
+    priority,
   }: {
     apiBaseUrl: string;
     authorizationProvider?: AuthorizationProvider;
+    priority?: Priority;
   }): void {
     this.url = `${apiBaseUrl}/perform`;
     this.authorizationProvider = authorizationProvider ?? PublicAuthentication;
+    this.priority = priority;
     this.initDeferred.resolve();
   }
 
   rejectRequests(): void {
     requestsAreDisabled = true;
-  }
-
-  setPriority(priority: Priority): void {
-    this.priority = priority;
   }
 
   async get(
@@ -318,3 +318,5 @@ export async function requestBuiltInUserSession(
 ): Promise<SessionData> {
   return cmsRestApi.requestBuiltInUserSession(sessionId, idp);
 }
+
+onReset(resetCmsRestApi);

@@ -9,11 +9,7 @@
 export { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
 export { load } from 'scrivito_sdk/loadable';
 export { Binary, FutureBinary, DataLocator } from 'scrivito_sdk/models';
-export {
-  ClientError,
-  JrRestApi as unstable_JrRestApi,
-  createApiClient as unstable_createApiClient,
-} from 'scrivito_sdk/client';
+export { ClientError, createApiClient } from 'scrivito_sdk/client';
 export type { ApiClientOptions } from 'scrivito_sdk/client';
 
 export {
@@ -45,6 +41,7 @@ export {
   registerComponent,
   RestoreInPlaceEditing,
   WidgetTag,
+  useData,
   useDataItem,
   useDataLocator,
   useDataScope,
@@ -59,6 +56,14 @@ export type {
   PageComponentProps,
   WidgetComponentProps,
 } from 'scrivito_sdk/react';
+
+export { DataConnectionError } from 'scrivito_sdk/data_integration';
+
+export type {
+  DataClass,
+  DataItem,
+  DataScope,
+} from 'scrivito_sdk/data_integration';
 
 export { finishLoading, connect } from 'scrivito_sdk/react_connect';
 
@@ -106,11 +111,6 @@ export { editorLanguage } from 'scrivito_sdk/app_support/editor_language';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
 export { provideDataClass } from 'scrivito_sdk/app_support/provide_data_class';
 export { provideDataItem } from 'scrivito_sdk/app_support/provide_data_item';
-export type {
-  DataClass,
-  DataItem,
-  DataScope,
-} from 'scrivito_sdk/data_integration/data_class';
 
 export { provideEditingConfig } from 'scrivito_sdk/app_support/provide_editing_config';
 export type {

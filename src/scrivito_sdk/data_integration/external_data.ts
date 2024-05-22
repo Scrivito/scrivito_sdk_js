@@ -19,7 +19,9 @@ export function setExternalData(
   dataId: string,
   data: unknown
 ): void {
-  loadableCollection.get([dataClass, dataId]).set(handleExternalData(data));
+  loadableCollection
+    .get([dataClass, dataId])
+    .set(handleExternalData(data, dataId));
 }
 
 export function getExternalData(
@@ -53,14 +55,15 @@ const loadableCollection = new LoadableCollection<
         throw error;
       }
 
-      return handleExternalData(unknownValue);
+      return handleExternalData(unknownValue, dataId);
     },
   }),
 });
 
-function handleExternalData(data: unknown) {
+function handleExternalData(data: unknown, _id: string) {
   if (data === null) return null;
-  if (isExternalData(data)) return filterValidDataIdentifiers(data);
+
+  if (isExternalData(data)) return filterValidDataIdentifiers({ _id, ...data });
 
   throw new ArgumentError('External data must be an object or null');
 }

@@ -111,3 +111,4 @@ export {
   isDataLocatorValueViaFilter,
   DataLocator,
 } from 'scrivito_sdk/models/data_locator';
+export type { ConvenienceOperatorFilter } from 'scrivito_sdk/models/data_locator';

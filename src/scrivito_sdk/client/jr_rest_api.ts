@@ -12,5 +12,4 @@ export async function getIamAuthUrl(path = ''): Promise<string> {
   return joinPaths(iamAuthLocation, path);
 }
 
-/** @public */
 export const JrRestApi = createApiClient('https://api.justrelate.com');

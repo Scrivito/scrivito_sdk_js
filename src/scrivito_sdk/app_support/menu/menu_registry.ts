@@ -1,4 +1,4 @@
-import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { onReset } from 'scrivito_sdk/common';
 import { MenuBuilder } from 'scrivito_sdk/ui_interface';
 
 export type MenuCallback = (menu: MenuBuilder) => void;
@@ -13,4 +13,4 @@ export function getMenuCallbacks(): MenuCallback[] {
   return menuCallbacks;
 }
 
-onTestResetBeforeEach(() => (menuCallbacks = []));
+onReset(() => (menuCallbacks = []));

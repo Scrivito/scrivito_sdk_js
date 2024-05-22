@@ -7,7 +7,7 @@ import { uiAdapterCompatibleValue } from 'scrivito_sdk/app_support/ui_adapter_co
 import {
   ArgumentError,
   checkArgumentsFor,
-  onTestResetAfterEach,
+  onReset,
   tcomb as t,
 } from 'scrivito_sdk/common';
 import { OPERATORS, ObjSearchType } from 'scrivito_sdk/models';
@@ -236,7 +236,7 @@ function copyWithAbsoluteUrls(
   });
 }
 
-onTestResetAfterEach(() => {
+onReset(() => {
   filters = undefined;
   filtersBuilder = undefined;
 });

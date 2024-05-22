@@ -128,21 +128,26 @@ export type OrderDirection = 'asc' | 'desc';
 
 export type DataLocatorJson = DataLocatorDefinition | DataLocatorReference;
 
-export interface DataLocatorDefinition {
-  class: string;
+export interface DataLocatorDefinition extends DataLocatorBase {
   via_ref?: undefined;
   query?: DataLocatorQuery;
   order_by?: OrderByItem[];
   size?: number;
 }
 
-export interface DataLocatorReference {
-  class: string;
-  via_ref: true;
+export interface DataLocatorReference extends DataLocatorBase {
+  via_ref: ViaRef;
   query?: undefined;
   order_by?: undefined;
   size?: undefined;
 }
+
+interface DataLocatorBase {
+  class: string;
+  field?: string;
+}
+
+export type ViaRef = 'single' | 'multi';
 
 export type DataLocatorQuery = DataLocatorFilter[];
 
@@ -151,9 +156,13 @@ export type DataLocatorFilter =
   | DataLocatorValueFilter
   | DataLocatorValueViaFilter;
 
+type NeqOpCode = 'neq';
+type EqOpCode = 'eq';
+export type OpCode = NeqOpCode | EqOpCode;
+
 export interface DataLocatorOperatorFilter {
   field: string;
-  operator: FilterOperator;
+  operator: NeqOpCode;
   value: string;
 }
 
@@ -166,8 +175,6 @@ export interface DataLocatorValueViaFilter {
   field: string;
   value_via: DataLocatorValueVia;
 }
-
-export type FilterOperator = 'notEqual';
 
 export interface DataLocatorValueVia {
   class: string;

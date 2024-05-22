@@ -13,6 +13,7 @@ import {
   isPresent,
   isSystemAttribute,
   never,
+  onReset,
 } from 'scrivito_sdk/common';
 import { ObjJsonPatch, patchObjJson } from 'scrivito_sdk/data/obj_patch';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
@@ -375,3 +376,5 @@ function isWidgetKey<Key extends keyof ObjJson & string>(
       (value[0] === 'widget' || value[0] === 'widgetlist'))
   );
 }
+
+onReset(() => (configuredForLazyWidgets = false));

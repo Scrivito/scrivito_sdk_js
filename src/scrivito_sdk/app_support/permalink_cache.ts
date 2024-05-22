@@ -1,4 +1,9 @@
-import { ContextContainer, InternalError, equals } from 'scrivito_sdk/common';
+import {
+  ContextContainer,
+  InternalError,
+  equals,
+  onReset,
+} from 'scrivito_sdk/common';
 import { getContentStateId } from 'scrivito_sdk/data';
 import { loadableWithDefault } from 'scrivito_sdk/loadable';
 import { BasicObj, currentObjSpaceId } from 'scrivito_sdk/models';
@@ -64,3 +69,5 @@ function clearIfOutdated(): void {
     cacheContentStateId = worldContentStateId;
   }
 }
+
+onReset(clearPermalinkCache);

@@ -1,4 +1,4 @@
-import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { onReset } from 'scrivito_sdk/common';
 
 export interface LoaderProcess {
   notifyDataRequired(): void;
@@ -89,7 +89,7 @@ export function notifyDataWasSet(dataId: string) {
   }
 }
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   processIndex = {};
   loadingSubscriptions = {};
 });

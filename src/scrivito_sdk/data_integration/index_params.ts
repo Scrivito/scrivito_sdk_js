@@ -1,6 +1,7 @@
+import { OpCode } from 'scrivito_sdk/client';
 import {
-  DataItemFilters,
   DataScopeParams,
+  FilterOperator,
   OrderSpec,
 } from 'scrivito_sdk/data_integration/data_class';
 
@@ -8,6 +9,15 @@ interface Params extends DataScopeParams {
   limit: number;
   count: boolean;
 }
+
+export type IndexParamsFilters = Record<
+  string,
+  {
+    operator: FilterOperator;
+    opCode: OpCode;
+    value: string;
+  }
+>;
 
 /** @public */
 export class IndexParams {
@@ -20,10 +30,30 @@ export class IndexParams {
     return this._continuation;
   }
 
-  filters(): DataItemFilters {
+  filters(): IndexParamsFilters {
     return Object.entries(this._params.filters || {}).reduce(
-      (filters, [name, value]) =>
-        name ? { ...filters, [name]: value } : filters,
+      (filters, [name, valueOrSpec]) => {
+        if (!name) return filters;
+
+        if (typeof valueOrSpec === 'string') {
+          return {
+            ...filters,
+            [name]: {
+              operator: 'equals',
+              opCode: 'eq',
+              value: valueOrSpec,
+            },
+          };
+        }
+
+        return {
+          ...filters,
+          [name]: {
+            ...valueOrSpec,
+            opCode: valueOrSpec.operator === 'notEquals' ? 'neq' : 'eq',
+          },
+        };
+      },
       {}
     );
   }

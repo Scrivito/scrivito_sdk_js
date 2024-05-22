@@ -37,10 +37,10 @@ export function useLastDataStackElement(): DataStackElement | undefined {
 }
 
 export function PushOntoDataStack({
-  item,
+  data,
   children,
 }: {
-  item:
+  data:
     | DataItem
     | DataScope
     // Shortcut for tests only
@@ -58,14 +58,14 @@ export function PushOntoDataStack({
   );
 
   function computeStackElement() {
-    if (item instanceof DataItem) {
+    if (data instanceof DataItem) {
       return {
-        _class: item.dataClass().name(),
-        _id: item.id(),
+        _class: data.dataClassName(),
+        _id: data.id(),
       };
     }
 
-    return item instanceof DataScope ? item.toPojo() : item;
+    return data instanceof DataScope ? data.toPojo() : data;
   }
 }
 

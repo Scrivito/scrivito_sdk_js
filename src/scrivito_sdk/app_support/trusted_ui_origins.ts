@@ -1,28 +1,27 @@
 import * as URI from 'urijs';
 
 import { getConfiguration } from 'scrivito_sdk/app_support/configure';
-import { ScrivitoPromise, getFromLocalStorage } from 'scrivito_sdk/common';
+import { getFromLocalStorage } from 'scrivito_sdk/common';
 
-export function checkIfTrustedOrigin(origin: string): Promise<boolean> {
-  if (origin === window.location.origin) return ScrivitoPromise.resolve(true);
-  if (originMatches(origin, 'https://*.scrivito.com')) {
-    return ScrivitoPromise.resolve(true);
+export async function checkIfTrustedOrigin(origin: string): Promise<boolean> {
+  if (
+    origin === window.location.origin ||
+    originMatches(origin, 'https://*.scrivito.com')
+  ) {
+    return true;
   }
 
-  return getConfiguration().then((configuration) => {
-    const adoptUi = configuration.adoptUi;
-    if (typeof adoptUi === 'string' && originMatches(origin, adoptUi)) {
-      return true;
-    }
+  const configuration = await getConfiguration();
+  const adoptUi = configuration.adoptUi;
+  if (typeof adoptUi === 'string' && originMatches(origin, adoptUi)) {
+    return true;
+  }
 
-    const unstableOrigins = configuration.unstable?.trustedUiOrigins ?? [];
+  const unstableOrigins = configuration.unstable?.trustedUiOrigins ?? [];
 
-    const origins = [...unstableOrigins, ...getLocalOrigins()];
+  const origins = [...unstableOrigins, ...getLocalOrigins()];
 
-    return origins.some((trustedOrigin) =>
-      originMatches(origin, trustedOrigin)
-    );
-  });
+  return origins.some((trustedOrigin) => originMatches(origin, trustedOrigin));
 }
 
 function originMatches(origin: string, pattern: string): boolean {

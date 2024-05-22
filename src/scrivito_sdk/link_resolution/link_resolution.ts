@@ -1,6 +1,6 @@
 // @rewire
 import { ObjSpaceId, withEachAttributeJson } from 'scrivito_sdk/client';
-import { InternalError, ScrivitoPromise } from 'scrivito_sdk/common';
+import { InternalError, onReset } from 'scrivito_sdk/common';
 import { ObjData, getObjData } from 'scrivito_sdk/data';
 import {
   isAnyLinkResolutionAttributeJson,
@@ -60,22 +60,25 @@ class LinkResolution {
 
   constructor(private readonly objSpaceId: ObjSpaceId) {}
 
-  start(objId: string): void {
-    const promise = load(() => getObjData(this.objSpaceId, objId)).then(
-      performResolution
-    );
-
+  async start(objId: string): Promise<void> {
+    const promise = this.getDataAndPerformResolution(objId);
     const priorPromise = this.cache[objId];
     const combinedPromise = priorPromise
-      ? ScrivitoPromise.all([priorPromise, promise]).then(() => undefined)
+      ? Promise.all([priorPromise, promise]).then(() => undefined)
       : promise;
     this.cache[objId] = combinedPromise;
 
     notifyLinkResolutionIsActive(combinedPromise);
   }
 
-  finish(objId: string): Promise<void> {
-    return this.cache[objId] || ScrivitoPromise.resolve();
+  async finish(objId: string): Promise<void> {
+    return this.cache[objId];
+  }
+
+  private async getDataAndPerformResolution(objId: string) {
+    await performResolution(
+      await load(() => getObjData(this.objSpaceId, objId))
+    );
   }
 }
 
@@ -88,7 +91,7 @@ function notifyLinkResolutionIsActive(promise: Promise<void>) {
   notifyWriteMonitor(promise);
 }
 
-function performResolution(objData: ObjData | undefined) {
+async function performResolution(objData: ObjData | undefined) {
   if (!objData) return;
 
   const objJson = objData.get();
@@ -101,10 +104,7 @@ function performResolution(objData: ObjData | undefined) {
     workers.push(runWorker(attributeJson, objData, attributeName, widgetId));
   });
 
-  if (!workers.length) return;
-
-  const resolution = ScrivitoPromise.all(workers);
-
-  // don't resolve with Array
-  return resolution.then(() => undefined);
+  if (workers.length) await Promise.all(workers);
 }
+
+onReset(reset);

@@ -11,6 +11,7 @@ import {
 } from 'scrivito_sdk/app_support/current_user';
 import { setExtensionsUrl } from 'scrivito_sdk/app_support/extensions_url';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
+import { setInitialContentDumpUrl } from 'scrivito_sdk/app_support/initial_content_dump_url';
 import { enableLayoutEditing } from 'scrivito_sdk/app_support/layout_editing';
 import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
 import { initializeLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
@@ -46,6 +47,7 @@ import {
   checkArgumentsFor,
   currentOrigin,
   logError,
+  onReset,
   setConfiguredTenant,
   setTimeout,
   tcomb as t,
@@ -109,6 +111,7 @@ export interface Configuration {
     useRailsAuth?: boolean;
     trustedUiOrigins?: string[];
     layoutEditing?: true;
+    initialContentDumpUrl?: string;
   };
 }
 
@@ -235,6 +238,10 @@ export function configure(
   setExtensionsUrl(configuration.extensionsUrl || undefined);
 
   if (unofficialConfiguration?.layoutEditing) enableLayoutEditing();
+
+  if (unofficialConfiguration?.initialContentDumpUrl) {
+    setInitialContentDumpUrl(unofficialConfiguration.initialContentDumpUrl);
+  }
 }
 
 export function getConfiguration(): Promise<Configuration> {
@@ -300,8 +307,6 @@ function configureCmsRestApi({
   priority?: Priority;
   apiKey?: string | IamApiKey;
 }) {
-  if (priority) cmsRestApi.setPriority(priority);
-
   const endpoint = configuredEndpoint || 'api.scrivito.com';
 
   cmsRestApi.init({
@@ -309,6 +314,7 @@ function configureCmsRestApi({
       endpoint.startsWith('http') ? endpoint : `https://${endpoint}`
     }/tenants/${tenant}`,
     authorizationProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
+    priority,
   });
 }
 
@@ -423,3 +429,5 @@ function getIamAuthLocation(iamAuthLocation: string | undefined) {
 
   return origin ? `${origin}/auth` : undefined;
 }
+
+onReset(resetConfiguration);

@@ -21,7 +21,8 @@ export function createApiClient(
   );
 }
 
-async function fetch(
+// exported for test purposes only
+export async function fetch(
   url: string,
   {
     audience,

@@ -28,32 +28,32 @@ import {
   withUnfrozenState,
 } from 'scrivito_sdk/state';
 
-interface ConnectOptions {
-  loading?: React.ComponentType;
+interface ConnectOptions<LoadingProps> {
+  loading?: React.ComponentType<LoadingProps>;
 }
 
 /** @public */
-export function connect<Props>(
+export function connect<Props extends LoadingProps, LoadingProps>(
   component: React.FunctionComponent<Props>,
-  options?: ConnectOptions
+  options?: ConnectOptions<LoadingProps>
 ): React.FunctionComponent<Props>;
 
 /** @public */
-export function connect<Props>(
+export function connect<Props extends LoadingProps, LoadingProps>(
   component: React.ComponentClass<Props>,
-  options?: ConnectOptions
+  options?: ConnectOptions<LoadingProps>
 ): React.ComponentClass<Props>;
 
 /** @public */
-export function connect<Props>(
+export function connect<Props extends LoadingProps, LoadingProps>(
   component: React.ComponentType<Props>,
-  options?: ConnectOptions
+  options?: ConnectOptions<LoadingProps>
 ): React.ComponentType<Props>;
 
 /** @internal */
-export function connect<Props>(
+export function connect<Props extends LoadingProps, LoadingProps extends {}>(
   component: React.ComponentType<Props>,
-  options?: ConnectOptions
+  options?: ConnectOptions<LoadingProps>
 ): React.FunctionComponent<Props> | React.ComponentClass<Props> {
   if (typeof component !== 'function') {
     throw new ArgumentError(
@@ -80,9 +80,12 @@ type ConnectedComponentClass<Props> = ConnectedComponent &
 type ConnectedFunctionComponent<Props> = ConnectedComponent &
   React.FunctionComponent<Props>;
 
-function connectClassComponent<Props>(
+function connectClassComponent<
+  Props extends LoadingProps,
+  LoadingProps extends {}
+>(
   classComponent: React.ComponentClass<Props>,
-  options?: ConnectOptions
+  options?: ConnectOptions<LoadingProps>
 ): ConnectedComponentClass<Props> {
   const connectedComponent = class extends classComponent {
     static _isScrivitoConnectedComponent: boolean = true;
@@ -97,7 +100,7 @@ function connectClassComponent<Props>(
       const loaderComponent = options?.loading;
 
       const _scrivitoRenderWhileLoading = loaderComponent
-        ? () => React.createElement(loaderComponent)
+        ? () => React.createElement(loaderComponent, props)
         : this._scrivitoRenderWhileLoading;
 
       this._scrivitoPrivateConnector = new ComponentConnector(
@@ -154,13 +157,23 @@ function connectClassComponent<Props>(
   return connectedComponent as ConnectedComponentClass<Props>;
 }
 
-function connectFunctionComponent<Props>(
+function connectFunctionComponent<
+  Props extends LoadingProps,
+  LoadingProps extends {}
+>(
   functionalComponent: React.FunctionComponent<Props>,
-  options?: ConnectOptions
+  options?: ConnectOptions<LoadingProps>
 ): ConnectedFunctionComponent<Props> {
+  const loaderComponent = options?.loading;
+
   const connectedComponent = (props: Props) =>
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    useConnectedRender(() => functionalComponent(props), options);
+    useConnectedRender(
+      () => functionalComponent(props),
+      loaderComponent
+        ? () => React.createElement(loaderComponent, props)
+        : undefined
+    );
 
   connectedComponent._isScrivitoConnectedComponent = true;
   connectedComponent.displayName =
@@ -171,21 +184,15 @@ function connectFunctionComponent<Props>(
 
 function useConnectedRender(
   originalRender: () => React.ReactNode,
-  options?: ConnectOptions
+  loaderComponent?: () => React.ReactNode
 ): React.ReactElement {
   const forceUpdate = useForceUpdate();
 
   const connectorRef = React.useRef<ComponentConnector | undefined>();
   if (!connectorRef.current) {
-    const loaderComponent = options?.loading;
-
-    const _scrivitoRenderWhileLoading = loaderComponent
-      ? () => React.createElement(loaderComponent)
-      : undefined;
-
     connectorRef.current = new ComponentConnector({
       forceUpdate,
-      _scrivitoRenderWhileLoading,
+      _scrivitoRenderWhileLoading: loaderComponent,
     });
   }
 

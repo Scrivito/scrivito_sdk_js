@@ -7,7 +7,7 @@ import {
   fetch as fetchVerificatorFunction,
 } from 'scrivito_sdk/client/verificator_functions';
 import {
-  onTestResetBeforeEach,
+  onReset,
   promiseAndFinally,
   registerAsyncTask,
 } from 'scrivito_sdk/common';
@@ -110,7 +110,7 @@ function currentAuthorization(): string | undefined {
   return verification.authorization;
 }
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   computation = undefined;
   verification = undefined;
 });

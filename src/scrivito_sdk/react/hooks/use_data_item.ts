@@ -1,15 +1,7 @@
-import {
-  DataItem,
-  dataItemFromPojo,
-  isDataItemPojo,
-} from 'scrivito_sdk/data_integration';
-import { useLastDataStackElement } from 'scrivito_sdk/react/data_context_container';
+import { DataItem } from 'scrivito_sdk/data_integration';
+import { useData } from 'scrivito_sdk/react/hooks/use_data';
 
 /** @public */
 export function useDataItem(): DataItem | undefined {
-  const element = useLastDataStackElement();
-
-  if (element && isDataItemPojo(element)) {
-    return dataItemFromPojo(element);
-  }
+  return useData().dataItem() || undefined;
 }

@@ -1,4 +1,4 @@
-import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { onReset } from 'scrivito_sdk/common';
 import { setCurrentWorkspaceId } from 'scrivito_sdk/models';
 
 let inPlaceEditingActive = false;
@@ -68,7 +68,7 @@ export function setIsComparisonActive(isActive: boolean) {
   comparisonActive = isActive;
 }
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   inPlaceEditingActive = false;
   comparisonActive = false;
 });

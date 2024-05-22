@@ -1,3 +1,4 @@
+import { onReset } from 'scrivito_sdk/common';
 import { StateContainer } from 'scrivito_sdk/state';
 import { StateTree } from 'scrivito_sdk/state/state_tree';
 import { resetSubscribers } from 'scrivito_sdk/state/subscribers';
@@ -16,3 +17,5 @@ export function resetGlobalState(): void {
   resetSubscribers();
   stateTree.clear();
 }
+
+onReset(resetGlobalState);

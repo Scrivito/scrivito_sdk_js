@@ -13,6 +13,7 @@ export function assertValidDataIdentifier(
 
 export function isValidDataIdentifier(key: string): key is DataIdentifier {
   return (
-    !!key.match(/^[a-z]([a-z0-9]|_(?!_)){0,49}$/i) && key.slice(-1) !== '_'
+    (key === '_id' || !!key.match(/^[a-z]([a-z0-9]|_(?!_)){0,49}$/i)) &&
+    key.slice(-1) !== '_'
   );
 }

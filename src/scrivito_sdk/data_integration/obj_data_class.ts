@@ -1,16 +1,20 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
+  ConvenienceDataScopeFilters,
+  ConvenienceDataScopeParams,
+  ConvenienceOperatorSpec,
   DEFAULT_LIMIT,
   DataClass,
   DataItem,
   DataItemAttributes,
   DataScope,
+  DataScopeFilters,
   DataScopeParams,
-  OperatorSpec,
   PresentDataScopePojo,
   assertNoAttributeFilterConflicts,
   combineFilters,
   combineSearches,
+  itemIdFromFilters,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
   BasicObj,
@@ -66,6 +70,11 @@ export class ObjDataClass extends DataClass {
   getUnchecked(id: string): DataItem {
     return new ObjDataItem(this, id);
   }
+
+  /** @internal */
+  forAttribute(attributeName: string): DataScope {
+    return new ObjDataScope(this, attributeName);
+  }
 }
 
 function getDataObj(dataClass: DataClass, dataId: string): BasicObj | null {
@@ -75,6 +84,7 @@ function getDataObj(dataClass: DataClass, dataId: string): BasicObj | null {
 export class ObjDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
+    private readonly _attributeName?: string,
     private readonly _params: DataScopeParams = {}
   ) {
     super();
@@ -82,6 +92,10 @@ export class ObjDataScope extends DataScope {
 
   dataClass(): DataClass {
     return this._dataClass;
+  }
+
+  dataClassName(): string {
+    return this._dataClass.name();
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
@@ -114,17 +128,70 @@ export class ObjDataScope extends DataScope {
       .map((obj) => this.wrapInDataItem(obj));
   }
 
+  dataItem(): DataItem | null {
+    const id = this.itemIdFromFilters();
+    if (id) return this._dataClass.get(id);
+
+    return null;
+  }
+
+  isDataItem(): boolean {
+    return !!this.itemIdFromFilters();
+  }
+
+  attributeName(): string | null {
+    return this._attributeName || null;
+  }
+
   count(): number {
     return this.getSearch().count();
   }
 
-  transform({ filters, search, order, limit }: DataScopeParams): DataScope {
-    return new ObjDataScope(this._dataClass, {
-      filters: combineFilters(this._params.filters, filters),
+  transform({
+    filters,
+    search,
+    order,
+    limit,
+  }: ConvenienceDataScopeParams): DataScope {
+    return new ObjDataScope(this._dataClass, this._attributeName, {
+      filters: combineFilters(
+        this._params.filters,
+        this.normalizeFilters(filters)
+      ),
       search: combineSearches(this._params.search, search),
       order: order || this._params.order,
       limit: limit ?? this._params.limit,
     });
+  }
+
+  private normalizeFilters(
+    convenienceFilters?: ConvenienceDataScopeFilters
+  ): DataScopeFilters | undefined {
+    if (!convenienceFilters) return;
+
+    const filters: DataScopeFilters = {};
+
+    Object.keys(convenienceFilters).forEach((name) => {
+      const valueOrSpec = convenienceFilters[name];
+
+      if (typeof valueOrSpec === 'string') {
+        return (filters[name] = valueOrSpec);
+      }
+
+      const { operator, value } = valueOrSpec;
+
+      if (operator === 'equals') {
+        return (filters[name] = value);
+      }
+
+      if (operator === 'notEquals') {
+        return (filters[name] = { operator, value });
+      }
+
+      throw new ArgumentError(`Unknown filter operator "${operator}"`);
+    });
+
+    return filters;
   }
 
   objSearch(): ObjSearch {
@@ -166,15 +233,22 @@ export class ObjDataScope extends DataScope {
   private applyFilter(
     search: BasicObjSearch,
     name: string,
-    valueOrSpec: string | OperatorSpec
-  ) {
+    valueOrSpec: string | ConvenienceOperatorSpec
+  ): BasicObjSearch {
     if (typeof valueOrSpec === 'string') {
-      return search.and(name, 'equals', valueOrSpec);
+      return this.applyFilter(search, name, {
+        operator: 'equals',
+        value: valueOrSpec,
+      });
     }
 
     const { operator, value } = valueOrSpec;
 
-    if (operator === 'notEqual') {
+    if (operator === 'equals') {
+      return search.and(name, 'equals', value);
+    }
+
+    if (operator === 'notEquals') {
       return search.andNot(name, 'equals', value);
     }
 
@@ -196,6 +270,10 @@ export class ObjDataScope extends DataScope {
       assertNoAttributeFilterConflicts(attributes, filters);
     }
   }
+
+  private itemIdFromFilters() {
+    return itemIdFromFilters(this._params.filters);
+  }
 }
 
 export class ObjDataItem extends DataItem {
@@ -214,6 +292,10 @@ export class ObjDataItem extends DataItem {
 
   dataClass(): DataClass {
     return this._dataClass;
+  }
+
+  dataClassName(): string {
+    return this._dataClass.name();
   }
 
   obj(): Obj {
@@ -275,31 +357,27 @@ export class ObjDataItem extends DataItem {
 
     return obj;
   }
-
-  private dataClassName() {
-    return this._dataClass.name();
-  }
 }
 
-function getAttributeTypeInfo(dataClassName: string, attributeName: string) {
-  return getSchema(dataClassName).attribute(attributeName);
+function getAttributeTypeInfo(className: string, attributeName: string) {
+  return getSchema(className).attribute(attributeName);
 }
 
-export function isObjDataClassProvided(dataClassName: string): boolean {
-  return !!getClass(dataClassName);
+export function isObjDataClassProvided(className: string): boolean {
+  return !!getClass(className);
 }
 
-function getSchema(dataClassName: string) {
-  const objClass = getClass(dataClassName);
+function getSchema(className: string) {
+  const objClass = getClass(className);
 
   if (!objClass) {
-    throw new ArgumentError(`Class ${dataClassName} does not exist`);
+    throw new ArgumentError(`Class ${className} does not exist`);
   }
 
   const schema = Schema.forClass(objClass);
 
   if (!schema) {
-    throw new ArgumentError(`Class ${dataClassName} has no schema`);
+    throw new ArgumentError(`Class ${className} has no schema`);
   }
 
   return schema;
@@ -311,18 +389,15 @@ function objClassScope(dataClass: DataClass) {
   );
 }
 
-function prepareAttributes(
-  attributes: DataItemAttributes,
-  dataClassName: string
-) {
+function prepareAttributes(attributes: DataItemAttributes, className: string) {
   const preparedAttributes: BasicObjAttributes = {};
 
   Object.keys(attributes).forEach((attributeName) => {
-    const typeInfo = getAttributeTypeInfo(dataClassName, attributeName);
+    const typeInfo = getAttributeTypeInfo(className, attributeName);
 
     if (!typeInfo) {
       throw new ArgumentError(
-        `Attribute ${attributeName} of class ${dataClassName} does not exist`
+        `Attribute ${attributeName} of class ${className} does not exist`
       );
     }
 
@@ -330,7 +405,7 @@ function prepareAttributes(
 
     if (!SUPPORTED_ATTRIBUTE_TYPES.includes(attributeType)) {
       throw new ArgumentError(
-        `Attribute ${attributeName} of class ${dataClassName} has unsupported type ${attributeType}`
+        `Attribute ${attributeName} of class ${className} has unsupported type ${attributeType}`
       );
     }
 

@@ -35,7 +35,7 @@ function objDataItemToDataContext(dataItem: ObjDataItem) {
 }
 
 function externalDataItemToDataContext(dataItem: ExternalDataItem) {
-  const _class = dataItem.dataClass().name();
+  const _class = dataItem.dataClassName();
   const _id = dataItem.id();
   const externalData = dataItem.getExternalData();
 

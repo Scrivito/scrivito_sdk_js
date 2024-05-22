@@ -2,19 +2,19 @@ import isObject from 'lodash-es/isObject';
 
 import { ApiClient, createApiClient } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
-import {
-  DataItemFilters,
-  OrderSpec,
-} from 'scrivito_sdk/data_integration/data_class';
+import { OrderSpec } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataConnection,
   IndexResult,
   ResultItem,
   assertValidIndexResultWithUnknownEntries,
 } from 'scrivito_sdk/data_integration/external_data_connection';
-import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
+import {
+  IndexParams,
+  IndexParamsFilters,
+} from 'scrivito_sdk/data_integration/index_params';
 
-export function buildDataConnection(
+export function createStandardApiConnection(
   restApi: string | ApiClient
 ): DataConnection {
   const apiClient =
@@ -117,18 +117,13 @@ interface ClientFilterParams {
   [name: string]: string;
 }
 
-function toClientFilterParam(filters: DataItemFilters): ClientFilterParams {
+function toClientFilterParam(filters: IndexParamsFilters): ClientFilterParams {
   const params: ClientFilterParams = {};
 
   Object.keys(filters).forEach((name) => {
-    const valueOrSpec = filters[name];
-
-    if (typeof valueOrSpec === 'string') {
-      params[name] = valueOrSpec;
-    } else {
-      const { operator, value } = valueOrSpec;
-      params[[name, operator].join('.')] = value;
-    }
+    const { opCode, value } = filters[name];
+    const key = opCode === 'eq' ? name : [name, opCode].join('.');
+    params[key] = value;
   });
 
   return params;

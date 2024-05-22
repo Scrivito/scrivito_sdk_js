@@ -8,7 +8,7 @@ import {
 import type { History as HistoryV5 } from 'history-5';
 import * as URI from 'urijs';
 
-import { ArgumentError, docUrl } from 'scrivito_sdk/common';
+import { ArgumentError, docUrl, onReset } from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
 
 export interface HistoryState {
@@ -138,3 +138,5 @@ function isHistoryV4(
 ): historyToCheck is HistoryV4 {
   return historyToCheck.hasOwnProperty('length');
 }
+
+onReset(reset);

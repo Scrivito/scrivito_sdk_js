@@ -1,5 +1,5 @@
 import { EditingConfig } from 'scrivito_sdk/app_support/editing_config';
-import { onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { onReset } from 'scrivito_sdk/common';
 import { StateContainer, createStateContainer } from 'scrivito_sdk/state';
 
 class EditingConfigStore {
@@ -46,4 +46,4 @@ export function getEditingConfigFor(
   return editingConfigStore.get(className);
 }
 
-onTestResetBeforeEach(() => editingConfigStore.clear());
+onReset(() => editingConfigStore.clear());

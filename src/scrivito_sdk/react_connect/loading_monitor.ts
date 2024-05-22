@@ -2,7 +2,7 @@ import {
   Deferred,
   InternalError,
   nextTick,
-  onTestResetBeforeEach,
+  onReset,
 } from 'scrivito_sdk/common';
 
 type Unregister = () => void;
@@ -46,7 +46,7 @@ function updateLoadingState(): void {
   }
 }
 
-onTestResetBeforeEach(() => {
+onReset(() => {
   deferred = undefined;
   loadingCount = 0;
 });

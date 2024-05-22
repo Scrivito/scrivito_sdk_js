@@ -12,7 +12,7 @@ export function getClassName(
   }
 
   if (subject instanceof DataItem) {
-    return subject.dataClass().name();
+    return subject.dataClassName();
   }
 
   const className = Schema.forClass(subject)?.name();

@@ -1,5 +1,6 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
+  DataClass,
   DataItem,
   DataItemAttributes,
   DataScope,
@@ -9,12 +10,22 @@ import {
 } from 'scrivito_sdk/data_integration/data_class';
 
 export class EmptyDataScope extends DataScope {
-  constructor(private readonly _error?: DataScopeError) {
+  constructor(
+    private readonly params: {
+      dataClass?: DataClass;
+      error?: DataScopeError;
+      isDataItem?: boolean;
+    } = {}
+  ) {
     super();
   }
 
-  dataClass(): null {
-    return null;
+  dataClass(): DataClass | null {
+    return this.params.dataClass || null;
+  }
+
+  dataClassName(): string | null {
+    return this.dataClass()?.name() || null;
   }
 
   async create(_attributes: DataItemAttributes): Promise<DataItem> {
@@ -29,32 +40,56 @@ export class EmptyDataScope extends DataScope {
     return [];
   }
 
+  dataItem(): null {
+    return null;
+  }
+
+  isDataItem(): boolean {
+    return !!this.params.isDataItem;
+  }
+
+  attributeName(): null {
+    return null;
+  }
+
   transform(_params: DataScopeParams): DataScope {
-    return new EmptyDataScope();
+    return this.clone();
   }
 
   filter(_attributeName: string, _value: string): DataScope {
-    return new EmptyDataScope();
+    return this.clone();
   }
 
   search(_text: string): DataScope {
-    return new EmptyDataScope();
+    return this.clone();
   }
 
   objSearch(): undefined {
     return;
   }
 
-  count(): number | null {
-    return null;
+  count(): 0 {
+    return 0;
   }
 
   getError(): DataScopeError | undefined {
-    return this._error;
+    return this.params.error;
+  }
+
+  limit(): undefined {
+    return;
   }
 
   /** @internal */
   toPojo(): EmptyDataScopePojo {
-    return { _class: null };
+    return {
+      _class: this.dataClassName(),
+      isEmpty: true,
+      isDataItem: this.isDataItem(),
+    };
+  }
+
+  private clone() {
+    return new EmptyDataScope(this.params);
   }
 }

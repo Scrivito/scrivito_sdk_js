@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { legacyRenderExtension } from 'scrivito_sdk/app_support/legacy_render_extension';
-import { getDocument, onTestResetBeforeEach } from 'scrivito_sdk/common';
+import { getDocument, onReset } from 'scrivito_sdk/common';
 
 type OnShowExtension = (reactElement: React.ReactElement | null) => void;
 
@@ -40,4 +40,4 @@ export function Extensions() {
   return htmlElement ? ReactDOM.createPortal(reactElement, htmlElement) : null;
 }
 
-onTestResetBeforeEach(() => (onShowExtension = undefined));
+onReset(() => (onShowExtension = undefined));

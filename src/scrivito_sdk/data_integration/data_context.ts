@@ -1,5 +1,6 @@
 import * as URI from 'urijs';
 
+import { ViaRef } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   QueryParameters,
@@ -10,6 +11,7 @@ import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_t
 import {
   DataItemPojo,
   DataScopePojo,
+  itemPojoToScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
@@ -18,9 +20,8 @@ import {
 } from 'scrivito_sdk/data_integration/data_identifier';
 import {
   DataStack,
-  DataStackElement,
-  isDataItemPojo,
-  isDataScopePojo,
+  findItemInDataStack,
+  findScopeInDataStack,
 } from 'scrivito_sdk/data_integration/data_stack';
 import {
   ExternalData,
@@ -29,7 +30,10 @@ import {
 import { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
 import { externalDataToDataContext } from 'scrivito_sdk/data_integration/external_data_to_data_context';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
-import { getDefaultItemIdForDataClass } from 'scrivito_sdk/data_integration/global_data';
+import {
+  findItemInGlobalData,
+  findScopeInGlobalData,
+} from 'scrivito_sdk/data_integration/global_data';
 import { isObjDataClassProvided } from 'scrivito_sdk/data_integration/obj_data_class';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
 import {
@@ -123,7 +127,7 @@ function dataContextParamsForElement(
   }
 }
 
-export function findItemInDataStackAndGlobalData(
+export function findItemElementInDataStackAndGlobalData(
   dataClassName: string,
   dataStack: DataStack
 ): DataItemPojo | undefined {
@@ -133,50 +137,20 @@ export function findItemInDataStackAndGlobalData(
   );
 }
 
-export function findScopeInDataStackAndGlobalData(
-  dataClassName: string,
-  dataStack: DataStack
-): DataScopePojo | undefined {
-  return (
-    findInDataStack(dataClassName, dataStack, isDataScopePojo) ||
-    findScopeInGlobalData(dataClassName)
-  );
-}
-
-function findItemInDataStack(
-  dataClassName: string,
-  dataStack: DataStack
-): DataItemPojo | undefined {
-  return findInDataStack(dataClassName, dataStack, isDataItemPojo);
-}
-
-function findInDataStack<T extends DataStackElement>(
+export function findScopeElementInDataStackAndGlobalData(
   dataClassName: string,
   dataStack: DataStack,
-  matcher: (element: DataStackElement) => element is T
-) {
-  const itemElements = dataStack.filter(matcher);
-  return itemElements.find((element) => element._class === dataClassName);
-}
-
-function findItemInGlobalData(dataClassName: string) {
-  const defaultItemId = getDefaultItemIdForDataClass(dataClassName);
-
-  if (defaultItemId) {
-    return {
-      _class: dataClassName,
-      _id: defaultItemId,
-    };
+  viaRef: ViaRef
+): DataScopePojo | undefined {
+  if (viaRef === 'multi') {
+    const scopePojo = findScopeInDataStack(dataClassName, dataStack);
+    if (scopePojo) return scopePojo;
   }
-}
 
-function findScopeInGlobalData(dataClassName: string) {
-  const item = findItemInGlobalData(dataClassName);
+  const itemPojo = findItemInDataStack(dataClassName, dataStack);
+  if (itemPojo) return itemPojoToScopePojo(itemPojo);
 
-  if (item) {
-    const { _class, _id } = item;
-    return { _class, filters: { _id } };
-  }
+  return findScopeInGlobalData(dataClassName);
 }
 
 export function dataContextFromQueryParams(

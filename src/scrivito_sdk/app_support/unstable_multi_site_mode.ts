@@ -1,4 +1,9 @@
-import { InternalError, ScrivitoError, never } from 'scrivito_sdk/common';
+import {
+  InternalError,
+  ScrivitoError,
+  never,
+  onReset,
+} from 'scrivito_sdk/common';
 import { LoadableCollection, loadableWithDefault } from 'scrivito_sdk/loadable';
 import { BasicObj, ObjScope, getAllObjsByValueFrom } from 'scrivito_sdk/models';
 import { Obj, wrapInAppClass } from 'scrivito_sdk/realm';
@@ -130,3 +135,5 @@ function getSiteIdAssumingSelected(): string | null {
 
   return siteId;
 }
+
+onReset(resetUnstableMultiSiteMode);

@@ -8,7 +8,7 @@ import { isAuthMissingClientError } from 'scrivito_sdk/client/login_handler';
 import {
   InternalError,
   fetchConfiguredTenant,
-  onTestResetBeforeEach,
+  onReset,
 } from 'scrivito_sdk/common';
 
 let providerCache: Record<string, TokenAuthorizationProvider | undefined> = {};
@@ -91,4 +91,4 @@ function assertTokenResponse(
   throw new InternalError();
 }
 
-onTestResetBeforeEach(() => (providerCache = {}));
+onReset(() => (providerCache = {}));

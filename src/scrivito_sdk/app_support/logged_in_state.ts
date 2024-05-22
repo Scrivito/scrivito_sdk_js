@@ -5,7 +5,7 @@ import {
   currentHref,
   getConfiguredTenant,
   getFromLocalStorage,
-  onTestResetAfterEach,
+  onReset,
   reload,
   removeFromLocalStorage,
   replaceHistoryState,
@@ -62,4 +62,4 @@ function isUserLoggedInStorageKey() {
   return `SCRIVITO.${getConfiguredTenant()}.IS_USER_LOGGED_IN`;
 }
 
-onTestResetAfterEach(() => (loggedInState = undefined));
+onReset(() => (loggedInState = undefined));

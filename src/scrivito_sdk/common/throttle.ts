@@ -1,16 +1,16 @@
 import doThrottle, { ThrottleSettings } from 'lodash-es/throttle';
-import { onTestResetBeforeEach } from './reset_callbacks';
 
-let shouldBypassThrottle: boolean = false;
+let throttleDisabled = false;
 
 export function throttle<T extends (...args: unknown[]) => void>(
   fn: T,
   ms: number,
   options?: ThrottleSettings
 ): T {
-  return shouldBypassThrottle
-    ? fn
-    : (doThrottle(fn, ms, options) as unknown as T);
+  return throttleDisabled ? fn : (doThrottle(fn, ms, options) as unknown as T);
 }
 
-onTestResetBeforeEach(() => (shouldBypassThrottle = true));
+// For test purpose only
+export function disableThrottle(): void {
+  throttleDisabled = true;
+}

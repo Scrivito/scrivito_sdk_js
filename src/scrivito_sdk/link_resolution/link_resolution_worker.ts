@@ -7,7 +7,6 @@ import type {
   LinkAttributeJson,
   LinklistAttributeJson,
 } from 'scrivito_sdk/client';
-import { ScrivitoPromise } from 'scrivito_sdk/common';
 import { ObjData } from 'scrivito_sdk/data';
 import {
   convertHtml,
@@ -27,7 +26,7 @@ export function isAnyLinkResolutionAttributeJson(
   return ['html', 'link', 'linklist'].includes(attributeData[0]);
 }
 
-export function runWorker(
+export async function runWorker(
   attributeDataToConvert: AnyLinkResolutionAttributeJson,
   objData: ObjData,
   attributeName: string,
@@ -43,7 +42,7 @@ export function runWorker(
       update(objData, attributeName, widgetId, convertedDataWithoutLoading);
     }
 
-    return ScrivitoPromise.resolve();
+    return;
   }
 
   return load(convertValue).then((convertedData) => {

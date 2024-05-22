@@ -1,14 +1,15 @@
 import {
   DataContext,
-  findItemInDataStackAndGlobalData,
+  findItemElementInDataStackAndGlobalData,
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
 import type { DataStack } from 'scrivito_sdk/data_integration/data_stack';
 import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 import { loadableWithDefault } from 'scrivito_sdk/loadable';
 
-const PLACEHOLDERS = /__([a-z](?:[a-z0-9]|\.[a-z]|_(?!_)){0,100})__/gi;
-const SINGLE_PLACEHOLDER = /^__([a-z](?:[a-z0-9]|\.[a-z]|_(?!_)){0,100})__$/i;
+const PLACEHOLDERS = /__([a-z](?:[a-z0-9]|\.[a-z]|(\._id)|_(?!_)){0,100})__/gi;
+const SINGLE_PLACEHOLDER =
+  /^__([a-z](?:[a-z0-9]|\.[a-z]|(\._id)|_(?!_)){0,100})__$/i;
 
 export function isSinglePlaceholder(text: string): boolean {
   return !!text.match(SINGLE_PLACEHOLDER);
@@ -86,8 +87,12 @@ function replaceQualifiedPlaceholder({
 
 function getDataItem(dataClassName: string, dataStack: DataStack) {
   return loadableWithDefault('loading', () => {
-    const item = findItemInDataStackAndGlobalData(dataClassName, dataStack);
-    if (item) return getDataClass(dataClassName)?.get(item._id);
+    const element = findItemElementInDataStackAndGlobalData(
+      dataClassName,
+      dataStack
+    );
+
+    if (element) return getDataClass(dataClassName)?.get(element._id);
   });
 }
 

@@ -1,13 +1,14 @@
 import {
   ArgumentError,
   EmptyContinueIterable,
+  ScrivitoError,
   isValidInteger,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
 import {
   DEFAULT_LIMIT,
-  DataItemFilters,
+  DataScopeFilters,
   OrderSpec,
   PresentDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
@@ -46,7 +47,7 @@ export const batchCollection = new IdBatchCollection({
 
 export function countExternalData(
   dataClass: string,
-  filters: DataItemFilters | undefined,
+  filters: DataScopeFilters | undefined,
   search: string | undefined
 ): number | null {
   return (
@@ -101,10 +102,17 @@ export function notifyExternalDataWrite(dataClass: string): void {
   counterState.set(counter + 1);
 }
 
+/** @public */
+export class DataConnectionError extends ScrivitoError {
+  constructor(readonly message: string) {
+    super(message);
+  }
+}
+
 async function loadBatch(
   [dataClass, filters, search, order, count]: [
     string,
-    DataItemFilters | undefined,
+    DataScopeFilters | undefined,
     string | undefined,
     OrderSpec | undefined,
     boolean | undefined
@@ -123,6 +131,8 @@ async function loadBatch(
       count: !!count,
     })
   );
+
+  if (result instanceof DataConnectionError) throw result;
 
   assertValidIndexResultWithUnknownEntries(result);
 

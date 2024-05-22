@@ -5,6 +5,7 @@ import {
   ScrivitoError,
   checkArgumentsFor,
   docUrl,
+  onReset,
   setTimeout,
   tcomb as t,
 } from 'scrivito_sdk/common';
@@ -81,3 +82,5 @@ export function resetVisitorAuthentication() {
   cancelAndForgetMissingTokenNotification();
   provider = undefined;
 }
+
+onReset(resetVisitorAuthentication);

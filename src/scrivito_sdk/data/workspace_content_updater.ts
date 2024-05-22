@@ -3,11 +3,7 @@ import {
   getWorkspaceChanges,
   isUnavailableObjJson,
 } from 'scrivito_sdk/client';
-import {
-  InternalError,
-  ScrivitoPromise,
-  promiseAndFinally,
-} from 'scrivito_sdk/common';
+import { InternalError, promiseAndFinally } from 'scrivito_sdk/common';
 import { objReplicationPool } from 'scrivito_sdk/data';
 import { invalidateAllLoadedObjsIn } from 'scrivito_sdk/data/obj_data';
 import { StateContainer } from 'scrivito_sdk/state';
@@ -37,12 +33,11 @@ export class WorkspaceContentUpdater {
     return this.initialization;
   }
 
-  updateContent(): Promise<void> {
+  async updateContent(): Promise<void> {
     if (this.updating) return this.updating;
 
     const from = this.getContentStateId();
-
-    if (!from) return ScrivitoPromise.resolve();
+    if (!from) return;
 
     this.updating = promiseAndFinally(
       getWorkspaceChanges(this.workspaceId, from).then(
@@ -77,12 +72,11 @@ export class WorkspaceContentUpdater {
     });
   }
 
-  private initializeContentStateId(): Promise<void> {
-    if (this.getContentStateId()) return ScrivitoPromise.resolve();
+  private async initializeContentStateId(): Promise<void> {
+    if (this.getContentStateId()) return;
 
-    return getWorkspaceChanges(this.workspaceId).then((response) => {
-      this.setContentStateId(response.current);
-    });
+    const response = await getWorkspaceChanges(this.workspaceId);
+    this.setContentStateId(response.current);
   }
 
   private getContentStateId() {

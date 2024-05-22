@@ -1,5 +1,5 @@
 import { ObjSpaceId } from 'scrivito_sdk/client';
-import { InternalError } from 'scrivito_sdk/common';
+import { InternalError, onReset } from 'scrivito_sdk/common';
 import { ObjReplication } from 'scrivito_sdk/data/obj_replication';
 import { ReplicationCache } from 'scrivito_sdk/data/replication_cache';
 
@@ -76,3 +76,8 @@ type ObjReplicationStrategy = new (
 export function useReplicationStrategy(Strategy: ObjReplicationStrategy) {
   objReplicationPool.setReplicationStrategy(Strategy);
 }
+
+onReset(() => {
+  objReplicationPool.clearCache();
+  objReplicationPool.clearWriteCallbacks();
+});
