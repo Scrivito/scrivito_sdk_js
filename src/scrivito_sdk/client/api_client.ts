@@ -38,6 +38,7 @@ export type Fetch = (path: string, options?: FetchOptions) => Promise<unknown>;
 /** @public */
 export interface ApiClientOptions {
   audience?: string;
+  headers?: Record<string, string>;
 }
 
 /** given a 'fetch' method, construct an ApiClient which offers convenience

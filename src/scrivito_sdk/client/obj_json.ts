@@ -1,3 +1,5 @@
+import isObject from 'lodash-es/isObject';
+
 export type ObjJson = ExistentObjJson | UnavailableObjJsonWithIndex;
 
 /* This type exists only to access `ObjJson` values in a generic way.
@@ -157,13 +159,34 @@ export type DataLocatorFilter =
   | DataLocatorValueViaFilter;
 
 type NeqOpCode = 'neq';
-type EqOpCode = 'eq';
+export type EqOpCode = 'eq';
 export type OpCode = NeqOpCode | EqOpCode;
+type OperatorFilterOpCode = Exclude<OpCode, EqOpCode>;
+
+export const OP_CODES: OpCode[] = ['eq', 'neq'];
+const OPERATOR_FILTER_OP_CODES: OperatorFilterOpCode[] = ['neq'];
 
 export interface DataLocatorOperatorFilter {
   field: string;
-  operator: NeqOpCode;
+  operator: OperatorFilterOpCode;
   value: string;
+}
+
+export function isDataLocatorOperatorFilter(
+  filter: unknown
+): filter is DataLocatorOperatorFilter {
+  return (
+    isObject(filter) &&
+    'field' in filter &&
+    typeof filter.field === 'string' &&
+    'operator' in filter &&
+    typeof filter.operator === 'string' &&
+    OPERATOR_FILTER_OP_CODES.includes(
+      filter.operator as OperatorFilterOpCode
+    ) &&
+    'value' in filter &&
+    typeof filter.value === 'string'
+  );
 }
 
 export interface DataLocatorValueFilter {

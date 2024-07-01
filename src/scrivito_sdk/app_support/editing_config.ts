@@ -134,7 +134,7 @@ export type GroupProperty = GroupPropertyWithConfig | string;
 export interface RegisteredComponentGroupDescription {
   title: string;
   component: string;
-  properties?: readonly string[];
+  properties?: readonly GroupProperty[];
   enabled?: boolean;
   // the "key" is optional because of backward compatibility reasons
   key?: string;
@@ -166,13 +166,11 @@ type ToolbarButton =
 
 // This covers loadable components as well, see
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/loadable__component/index.d.ts
-type PropertiesGroupComponent = React.ComponentType<
-  | {
-      obj: Obj;
-    }
-  | { page: Obj }
-  | { widget: Widget }
->;
+type PropertiesGroupComponent =
+  | React.ComponentType<{ obj: Obj }>
+  | React.ComponentType<{ page: Obj }>
+  | React.ComponentType<{ widget: Widget }>
+  | React.ComponentType<{ obj: Obj } | { page: Obj } | { widget: Widget }>;
 
 interface InitialContent {
   [attributeName: string]: AttributeValue | AttributeValueFunction;
@@ -196,7 +194,7 @@ interface SharedEditingConfig<T extends Obj | Widget> {
   hideInSelectionDialogs?: boolean;
   initialContent?: InitialContent;
   initializeCopy?: InitializeCallback<T>;
-  properties?: readonly string[] | PropertiesCallback<T>;
+  properties?: readonly GroupProperty[] | PropertiesCallback<T>;
   propertiesGroups?: readonly PropertyGroup[] | PropertiesGroupsCallback<T>;
   thumbnail?: string;
   title?: string;

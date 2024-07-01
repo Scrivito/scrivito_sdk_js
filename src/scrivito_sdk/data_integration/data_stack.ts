@@ -2,6 +2,7 @@ import {
   DataItem,
   DataItemPojo,
   DataScope,
+  DataScopeError,
   DataScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
@@ -55,14 +56,23 @@ function deserializeDataScope(
     const dataClass = getDataClassOrThrow(dataClassName);
 
     if ('isEmpty' in dataScopeParams) {
+      const error = dataScopeParams._error
+        ? new DataScopeError(dataScopeParams._error)
+        : undefined;
+
       return new EmptyDataScope({
         dataClass,
+        error,
         isDataItem: dataScopeParams.isDataItem,
       });
     }
 
-    const dataScope = attributeName
-      ? dataClass.forAttribute(attributeName)
+    const forAttribute =
+      attributeName ||
+      ('_attribute' in dataScopeParams && dataScopeParams._attribute);
+
+    const dataScope = forAttribute
+      ? dataClass.forAttribute(forAttribute)
       : dataClass.all();
 
     return dataScope.transform(dataScopeParams);

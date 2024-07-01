@@ -106,9 +106,11 @@ export {
 export { getDetailsPageForDataParam } from 'scrivito_sdk/models/get_details_page_for_data_param';
 export {
   isDataLocatorValueFilter,
-  isDataLocatorOperatorFilter,
   isDataLocatorValueVia,
   isDataLocatorValueViaFilter,
   DataLocator,
 } from 'scrivito_sdk/models/data_locator';
-export type { ConvenienceOperatorFilter } from 'scrivito_sdk/models/data_locator';
+export type {
+  DataLocatorTransformFilter,
+  DataLocatorEqFilter,
+} from 'scrivito_sdk/models/data_locator';

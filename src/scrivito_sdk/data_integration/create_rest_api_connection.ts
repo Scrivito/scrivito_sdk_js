@@ -1,6 +1,6 @@
 import isObject from 'lodash-es/isObject';
 
-import { ApiClient, createApiClient } from 'scrivito_sdk/client';
+import { ApiClient, createRestApiClient } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
 import { OrderSpec } from 'scrivito_sdk/data_integration/data_class';
 import {
@@ -14,11 +14,11 @@ import {
   IndexParamsFilters,
 } from 'scrivito_sdk/data_integration/index_params';
 
-export function createStandardApiConnection(
+export function createRestApiConnection(
   restApi: string | ApiClient
 ): DataConnection {
   const apiClient =
-    restApi instanceof ApiClient ? restApi : createApiClient(restApi);
+    restApi instanceof ApiClient ? restApi : createRestApiClient(restApi);
 
   return {
     create: async (data) => {
@@ -26,7 +26,9 @@ export function createStandardApiConnection(
         method: 'post',
         data,
       });
+
       assertResultDoesNotContainObjectValues(response);
+
       return response as ResultItem;
     },
 
@@ -51,7 +53,9 @@ export function createStandardApiConnection(
         method: 'patch',
         data,
       });
+
       assertResultDoesNotContainObjectValues(response);
+
       return response;
     },
 

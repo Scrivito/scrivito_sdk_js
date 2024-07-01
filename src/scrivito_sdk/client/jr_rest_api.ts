@@ -1,7 +1,7 @@
 // @rewire
 
 import { clientConfig } from 'scrivito_sdk/client';
-import { createApiClient } from 'scrivito_sdk/client/create_api_client';
+import { createRestApiClient } from 'scrivito_sdk/client/create_rest_api_client';
 import { joinPaths } from 'scrivito_sdk/client/join_paths';
 import { InternalError } from 'scrivito_sdk/common';
 
@@ -12,4 +12,4 @@ export async function getIamAuthUrl(path = ''): Promise<string> {
   return joinPaths(iamAuthLocation, path);
 }
 
-export const JrRestApi = createApiClient('https://api.justrelate.com');
+export const JrRestApi = createRestApiClient('https://api.justrelate.com');

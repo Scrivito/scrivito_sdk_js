@@ -1,13 +1,9 @@
 import { RequestFailedError, fetchJson } from 'scrivito_sdk/client';
 import { ClientError } from 'scrivito_sdk/client/client_error';
 import { getClientVersion } from 'scrivito_sdk/client/get_client_version';
-import {
-  LoginHandler,
-  withLoginHandler,
-} from 'scrivito_sdk/client/login_handler';
+import { withLoginHandler } from 'scrivito_sdk/client/login_handler';
 import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
 import { PublicAuthentication } from 'scrivito_sdk/client/public_authentication';
-import { SessionData } from 'scrivito_sdk/client/session_data';
 import {
   Deferred,
   InternalError,
@@ -76,6 +72,17 @@ let fallbackPriority: undefined | Priority;
 export function useDefaultPriority(priority: Priority) {
   fallbackPriority = priority;
 }
+
+export type AnalyticsData =
+  | {
+      loadId: number;
+      urlPath: string;
+      nav: number;
+    }
+  | { loadId: number };
+
+type AnalyticsProvider = () => AnalyticsData;
+
 class CmsRestApi {
   // only public for test purposes
   url!: string;
@@ -84,6 +91,8 @@ class CmsRestApi {
 
   private authorizationProvider?: AuthorizationProvider;
   private initDeferred: Deferred;
+  private accessAsEditor?: boolean;
+  private analyticsProvider?: AnalyticsProvider;
 
   constructor() {
     this.initDeferred = new Deferred();
@@ -93,14 +102,20 @@ class CmsRestApi {
     apiBaseUrl,
     authorizationProvider,
     priority,
+    accessAsEditor,
+    analyticsProvider,
   }: {
     apiBaseUrl: string;
     authorizationProvider?: AuthorizationProvider;
     priority?: Priority;
+    accessAsEditor?: boolean;
+    analyticsProvider?: AnalyticsProvider;
   }): void {
     this.url = `${apiBaseUrl}/perform`;
     this.authorizationProvider = authorizationProvider ?? PublicAuthentication;
     this.priority = priority;
+    this.accessAsEditor = accessAsEditor;
+    this.analyticsProvider = analyticsProvider;
     this.initDeferred.resolve();
   }
 
@@ -142,21 +157,6 @@ class CmsRestApi {
       path,
       requestParams,
     });
-  }
-
-  async requestBuiltInUserSession(
-    sessionId: string,
-    idp?: string
-  ): Promise<SessionData> {
-    const response = await this.request({
-      method: 'PUT',
-      path: `sessions/${sessionId}`,
-      requestParams: idp ? { idp, type: 'iam' } : { type: 'iam' },
-      loginHandler: loginRedirectHandler,
-      authorizationProvider: null,
-    });
-
-    return response as SessionData;
   }
 
   async requestVisitorSession(
@@ -214,28 +214,31 @@ class CmsRestApi {
     path,
     requestParams,
     authorizationProvider,
-    loginHandler,
   }: {
     method: string;
     path: string;
     requestParams?: ParamsType;
     authorizationProvider?: AuthorizationProvider | null;
-    loginHandler?: LoginHandler;
   }): Promise<BackendResponse> {
     await this.ensureEnabledAndInitialized();
 
     try {
       return await withLoginHandler(
-        loginHandler,
+        loginRedirectHandler,
         () =>
           fetchJson(this.url, {
             method: method === 'POST' ? 'POST' : 'PUT',
             headers: this.getHeaders(),
-            data: { path, verb: method, params: requestParams },
+            data: {
+              path,
+              verb: method,
+              params: requestParams,
+              ...(this.analyticsProvider && this.analyticsProvider()),
+            },
             authProvider: this.getAuthorizationProviderForRequest(
               authorizationProvider
             ),
-            credentials: 'include',
+            credentials: 'omit',
           }) as Promise<Response>
       );
     } catch (error) {
@@ -257,6 +260,13 @@ class CmsRestApi {
       headers = {
         ...headers,
         'Scrivito-Priority': priorityWithFallback,
+      };
+    }
+
+    if (this.accessAsEditor) {
+      headers = {
+        ...headers,
+        'Scrivito-Access-As': 'editor',
       };
     }
 
@@ -310,13 +320,6 @@ export let cmsRestApi = new CmsRestApi();
 export function resetCmsRestApi(): void {
   cmsRestApi = new CmsRestApi();
   requestsAreDisabled = undefined;
-}
-
-export async function requestBuiltInUserSession(
-  sessionId: string,
-  idp?: string
-): Promise<SessionData> {
-  return cmsRestApi.requestBuiltInUserSession(sessionId, idp);
 }
 
 onReset(resetCmsRestApi);

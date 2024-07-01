@@ -11,7 +11,7 @@ import { withLoginHandler } from 'scrivito_sdk/client/login_handler';
 import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
 
 /** @public */
-export function createApiClient(
+export function createRestApiClient(
   baseUrl: string,
   options?: ApiClientOptions
 ): ApiClient {
@@ -21,8 +21,7 @@ export function createApiClient(
   );
 }
 
-// exported for test purposes only
-export async function fetch(
+async function fetch(
   url: string,
   {
     audience,

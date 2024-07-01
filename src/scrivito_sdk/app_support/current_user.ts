@@ -34,12 +34,15 @@ export function getLoginHandler() {
 }
 
 /** @public */
-export function logout(): void {
-  logoutAsync();
+export function logout(returnTo?: string): void {
+  logoutAsync(returnTo);
 }
 
-async function logoutAsync() {
-  assignLocation(await getIamAuthUrl('logout'));
+async function logoutAsync(returnTo?: string) {
+  const url = await getIamAuthUrl('logout');
+  assignLocation(
+    returnTo ? `${url}?return_to=${encodeURIComponent(returnTo)}` : url
+  );
 }
 
 function authHandler() {

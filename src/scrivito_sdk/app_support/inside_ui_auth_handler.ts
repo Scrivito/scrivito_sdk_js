@@ -1,5 +1,5 @@
+import { getEditorAuthToken } from 'scrivito_sdk/app_support//get_editor_auth_token';
 import { AuthHandler } from 'scrivito_sdk/app_support/auth_handler';
-import { getTreatLocalhostLike } from 'scrivito_sdk/app_support/treat_localhost_like';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { TokenAuthorizationProvider } from 'scrivito_sdk/client';
 import { assumePresence } from 'scrivito_sdk/common';
@@ -23,16 +23,7 @@ export const insideUiAuthHandler: AuthHandler = {
 
   iamAuthProvider() {
     return new TokenAuthorizationProvider(async () =>
-      assumePresence(
-        await load(
-          () =>
-            (
-              uiAdapter?.getEditorAuthToken({
-                treatLocalhostLike: getTreatLocalhostLike(),
-              }) as { token: string }
-            )?.token
-        )
-      )
+      assumePresence(await load(getEditorAuthToken))
     );
   },
 

@@ -20,14 +20,14 @@ export function getDataClassOrThrow(dataClassName: string): DataClass {
   throw new ArgumentError(`No "${dataClassName}" found`);
 }
 
-function getExternalDataClass(dataClassName: string) {
-  if (isExternalDataClassProvided(dataClassName)) {
-    return new ExternalDataClass(dataClassName);
+export function getObjDataClass(dataClassName: string) {
+  if (isObjDataClassProvided(dataClassName)) {
+    return new ObjDataClass(dataClassName);
   }
 }
 
-function getObjDataClass(dataClassName: string) {
-  if (isObjDataClassProvided(dataClassName)) {
-    return new ObjDataClass(dataClassName);
+function getExternalDataClass(dataClassName: string) {
+  if (isExternalDataClassProvided(dataClassName)) {
+    return new ExternalDataClass(dataClassName);
   }
 }

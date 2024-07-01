@@ -1,5 +1,9 @@
 // @rewire
 
+import {
+  browserAnalyticsProvider,
+  nodeAnalyticsProvider,
+} from 'scrivito_sdk/app_support/analytics_provider';
 import { configureAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import { skipContentTagsForEmptyAttributes } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
@@ -314,6 +318,9 @@ function configureCmsRestApi({
       endpoint.startsWith('http') ? endpoint : `https://${endpoint}`
     }/tenants/${tenant}`,
     authorizationProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
+    analyticsProvider: isRunningInBrowser()
+      ? browserAnalyticsProvider
+      : nodeAnalyticsProvider,
     priority,
   });
 }

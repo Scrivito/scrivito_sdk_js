@@ -4,7 +4,7 @@ export {
   DataItem,
   DataScope,
 } from 'scrivito_sdk/data_integration/data_class';
-export { createStandardApiConnection } from 'scrivito_sdk/data_integration/create_standard_api_connection';
+export { createRestApiConnection } from 'scrivito_sdk/data_integration/create_rest_api_connection';
 export { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 export { ObjDataScope } from 'scrivito_sdk/data_integration/obj_data_class';
 export type { DataContext } from 'scrivito_sdk/data_integration/data_context';
@@ -49,3 +49,9 @@ export { disableExternalDataLoading } from 'scrivito_sdk/data_integration/disabl
 export { getGlobalDataItems } from 'scrivito_sdk/data_integration/global_data';
 export { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 export { isSingletonDataClass } from 'scrivito_sdk/data_integration/singleton_data_classes';
+export type {
+  DataClassSchema,
+  DataClassAttributes,
+  NormalizedDataAttributeDefinition,
+} from 'scrivito_sdk/data_integration/data_class_schema';
+export { registerDataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';

@@ -61,7 +61,7 @@ export function basicNavigateTo(
           navigateToResource(routingTarget.resource);
           break;
         case 'crossSite':
-          navigateCrossSiteTo(routingTarget.url);
+          assignLocation(routingTarget.url);
           break;
         case 'unavailable':
           logError(
@@ -117,14 +117,4 @@ function destinationForUrl(url: string) {
   return isLocalUri(uri)
     ? { type: 'local' as const, resource: uri.resource() }
     : { type: 'remote' as const, url };
-}
-
-function navigateCrossSiteTo(url: string) {
-  const uri = new URI(url);
-
-  if (isLocalUri(uri)) {
-    navigateToResource(uri.resource());
-  } else {
-    assignLocation(url);
-  }
 }

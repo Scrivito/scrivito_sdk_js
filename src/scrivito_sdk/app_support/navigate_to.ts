@@ -45,6 +45,14 @@ export function navigateTo(
   target: Target | TargetFunction | DataItem,
   options?: Options
 ): void {
+  navigateToAsync(target, options);
+}
+
+// Extracted and exported for test purpose only
+export async function navigateToAsync(
+  target: Target | TargetFunction | DataItem,
+  options?: Options
+) {
   const callId = getNextNavigateToCallId();
 
   failIfFrozen('navigateTo');
@@ -54,7 +62,7 @@ export function navigateTo(
   const navigateToOptions = getNavigateToOptions(options);
 
   if (target instanceof DataItem) {
-    navigateToDataItem(target, navigateToOptions, callId);
+    await navigateToDataItem(target, navigateToOptions, callId);
   } else {
     navigateToTarget(target, callId, navigateToOptions);
   }
@@ -82,12 +90,12 @@ async function navigateToTarget(
   }
 }
 
-function navigateToDataItem(
+async function navigateToDataItem(
   dataItem: DataItem,
   options: { queryParameters?: QueryParameters; hash: Hash },
   callId: number
 ) {
-  const url = urlForDataItem(dataItem);
+  const url = await load(() => urlForDataItem(dataItem));
   if (!url) return;
 
   const uri = URI(url);

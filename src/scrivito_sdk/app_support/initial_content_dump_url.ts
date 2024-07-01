@@ -4,13 +4,15 @@ import { createStateContainer } from 'scrivito_sdk/state';
 const initialContentDumpUrl = createStateContainer<string>();
 
 export function setInitialContentDumpUrl(url: string): void {
-  if (URL.canParse(url)) {
-    initialContentDumpUrl.set(url);
-  } else {
+  try {
+    new URL(url);
+  } catch {
     throw new ArgumentError(
-      "The 'initialContentDumpUrl' must be an absolute url"
+      "'initialContentDumpUrl' must be an absolute URL with protocol"
     );
   }
+
+  initialContentDumpUrl.set(url);
 }
 
 export function getInitialContentDumpUrl(): string | undefined {

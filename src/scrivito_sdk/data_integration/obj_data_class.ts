@@ -1,8 +1,5 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
-  ConvenienceDataScopeFilters,
-  ConvenienceDataScopeParams,
-  ConvenienceOperatorSpec,
   DEFAULT_LIMIT,
   DataClass,
   DataItem,
@@ -10,12 +7,14 @@ import {
   DataScope,
   DataScopeFilters,
   DataScopeParams,
+  OperatorSpec,
   PresentDataScopePojo,
   assertNoAttributeFilterConflicts,
   combineFilters,
   combineSearches,
   itemIdFromFilters,
 } from 'scrivito_sdk/data_integration/data_class';
+import { getObjDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 import {
   BasicObj,
   BasicObjAttributes,
@@ -32,6 +31,7 @@ import {
   ObjSearch,
   Schema,
   getClass,
+  unwrapAppClass,
   wrapInAppClass,
 } from 'scrivito_sdk/realm';
 
@@ -43,6 +43,7 @@ const SUPPORTED_ATTRIBUTE_TYPES = [
   'multienum',
   'string',
   'stringlist',
+  'reference',
 ];
 
 export class ObjDataClass extends DataClass {
@@ -147,12 +148,7 @@ export class ObjDataScope extends DataScope {
     return this.getSearch().count();
   }
 
-  transform({
-    filters,
-    search,
-    order,
-    limit,
-  }: ConvenienceDataScopeParams): DataScope {
+  transform({ filters, search, order, limit }: DataScopeParams): DataScope {
     return new ObjDataScope(this._dataClass, this._attributeName, {
       filters: combineFilters(
         this._params.filters,
@@ -164,8 +160,12 @@ export class ObjDataScope extends DataScope {
     });
   }
 
+  limit(): number | undefined {
+    return this._params.limit;
+  }
+
   private normalizeFilters(
-    convenienceFilters?: ConvenienceDataScopeFilters
+    convenienceFilters?: DataScopeFilters
   ): DataScopeFilters | undefined {
     if (!convenienceFilters) return;
 
@@ -201,7 +201,8 @@ export class ObjDataScope extends DataScope {
   /** @internal */
   toPojo(): PresentDataScopePojo {
     return {
-      _class: this._dataClass.name(),
+      _class: this.dataClassName(),
+      _attribute: this._attributeName,
       ...this._params,
     };
   }
@@ -233,7 +234,7 @@ export class ObjDataScope extends DataScope {
   private applyFilter(
     search: BasicObjSearch,
     name: string,
-    valueOrSpec: string | ConvenienceOperatorSpec
+    valueOrSpec: string | OperatorSpec
   ): BasicObjSearch {
     if (typeof valueOrSpec === 'string') {
       return this.applyFilter(search, name, {
@@ -318,15 +319,12 @@ export class ObjDataItem extends DataItem {
     const typeInfo = getAttributeTypeInfo(this.dataClassName(), attributeName);
     if (!typeInfo) return null;
 
-    const [attributeType] = typeInfo;
+    const [attributeType, attributeConfig] = typeInfo;
 
     if (SUPPORTED_ATTRIBUTE_TYPES.includes(attributeType)) {
-      return obj.get(attributeName, typeInfo);
-    }
-
-    if (attributeType === 'reference') {
-      const reference = obj.get(attributeName, 'reference');
-      if (reference) return reference.id();
+      return attributeType === 'reference'
+        ? getReference(obj, attributeName, attributeConfig)
+        : obj.get(attributeName, typeInfo);
     }
 
     return null;
@@ -401,7 +399,7 @@ function prepareAttributes(attributes: DataItemAttributes, className: string) {
       );
     }
 
-    const [attributeType] = typeInfo;
+    const [attributeType, attributeConfig] = typeInfo;
 
     if (!SUPPORTED_ATTRIBUTE_TYPES.includes(attributeType)) {
       throw new ArgumentError(
@@ -409,8 +407,55 @@ function prepareAttributes(attributes: DataItemAttributes, className: string) {
       );
     }
 
-    preparedAttributes[attributeName] = [attributes[attributeName], typeInfo];
+    const attributeValue = attributes[attributeName];
+
+    preparedAttributes[attributeName] = [
+      attributeType === 'reference'
+        ? prepareReferenceValue(attributeValue, attributeConfig)
+        : attributeValue,
+      typeInfo,
+    ];
   });
 
   return preparedAttributes;
+}
+
+function getReference(
+  obj: BasicObj,
+  attributeName: string,
+  attributeConfig?: { validClasses: readonly string[] }
+) {
+  if (!attributeConfig) return null;
+
+  const referenceObj = obj.get(attributeName, 'reference');
+  if (!(referenceObj instanceof BasicObj)) return null;
+
+  const referenceObjClass = referenceObj.objClass();
+  if (referenceObjClass !== getValidReferenceClass(attributeConfig)) {
+    return null;
+  }
+
+  const dataClass = getObjDataClass(referenceObjClass);
+  if (!dataClass) return null;
+
+  return dataClass.get(referenceObj.id());
+}
+
+function prepareReferenceValue(
+  attributeValue: unknown,
+  attributeConfig?: { validClasses: readonly string[] }
+) {
+  return attributeValue instanceof DataItem &&
+    attributeValue.dataClassName() === getValidReferenceClass(attributeConfig)
+    ? unwrapAppClass(attributeValue.obj())
+    : null;
+}
+
+function getValidReferenceClass(attributeConfig?: {
+  validClasses: readonly string[];
+}) {
+  if (attributeConfig) {
+    const { validClasses } = attributeConfig;
+    if (validClasses.length === 1) return validClasses[0];
+  }
 }

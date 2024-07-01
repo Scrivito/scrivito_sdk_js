@@ -84,6 +84,7 @@ export class EmptyDataScope extends DataScope {
   toPojo(): EmptyDataScopePojo {
     return {
       _class: this.dataClassName(),
+      _error: this.params.error?.message,
       isEmpty: true,
       isDataItem: this.isDataItem(),
     };

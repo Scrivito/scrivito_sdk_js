@@ -63,7 +63,7 @@ export async function fetchJson(
             headers: { ...options?.headers, Authorization: authorization },
             credentials: options?.credentials ?? 'omit',
           }
-        : { ...options, credentials: 'include' }
+        : { ...options, credentials: options?.credentials ?? 'include' }
     );
 
   const authProvider = options?.authProvider;

@@ -58,14 +58,17 @@ async function readAndFilterItem(
   if (!dataItem) return { results: [] };
 
   const filters = params.filters();
-  const doesMatch = Object.keys(filters).every((name) => {
-    const { value } = filters[name];
+  const doesMatch = await load(() =>
+    Object.keys(filters).every((name) => {
+      const { value } = filters[name];
 
-    return (
-      name === '_id' ||
-      (typeof value === 'string' && consideredEqual(dataItem.get(name), value))
-    );
-  });
+      return (
+        name === '_id' ||
+        (typeof value === 'string' &&
+          consideredEqual(dataItem.get(name), value))
+      );
+    })
+  );
 
   return { results: doesMatch ? [SINGLE_ID] : [] };
 }

@@ -8,23 +8,23 @@ import {
   DataLocatorValueFilter,
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
-  OpCode,
+  EqOpCode,
   OrderByItem,
   ViaRef,
 } from 'scrivito_sdk/client';
-import { InternalError } from 'scrivito_sdk/common';
 
 interface DataLocatorParams extends Omit<DataLocatorJson, 'class'> {
   class: string | null;
 }
 
-type DataLocatorTransformQuery = Array<
-  DataLocatorFilter | ConvenienceOperatorFilter
->;
+type DataLocatorTransformQuery = Array<DataLocatorTransformFilter>;
+export type DataLocatorTransformFilter =
+  | DataLocatorFilter
+  | DataLocatorEqFilter;
 
-export interface ConvenienceOperatorFilter {
+export interface DataLocatorEqFilter {
   field: string;
-  operator: OpCode;
+  operator: EqOpCode;
   value: string;
 }
 
@@ -90,18 +90,31 @@ export class DataLocator {
     query?: DataLocatorTransformQuery;
     order_by?: OrderByItem[];
     size?: number | null;
+    viaRef?: ViaRef | null;
   }): DataLocator {
-    if (this._viaRef) throw new InternalError();
-
     return new DataLocator({
       class: params.class === null ? null : params.class ?? this._class,
       field: params.field === null ? undefined : params.field ?? this._field,
       query: params.query
-        ? omitDefaultFilterOperator(params.query)
+        ? normalizeTransformQuery(params.query)
         : this.query(),
       order_by: params.order_by || this.orderBy(),
       size: params.size === null ? undefined : params.size ?? this._size,
+      via_ref: params.viaRef ?? this._viaRef,
     });
+  }
+
+  /** @internal */
+  isSingleItem(): boolean {
+    return (
+      this._viaRef === 'single' ||
+      !!this._query?.some(
+        (filter) =>
+          (isDataLocatorValueFilter(filter) ||
+            isDataLocatorValueViaFilter(filter)) &&
+          filter.field === '_id'
+      )
+    );
   }
 
   /** @internal */
@@ -111,6 +124,7 @@ export class DataLocator {
     if (this._viaRef) {
       return {
         class: this._class,
+        field: this._field,
         via_ref: this._viaRef,
       };
     }
@@ -125,22 +139,15 @@ export class DataLocator {
   }
 }
 
-function isDataLocatorConvenienceOperatorFilter(
-  filter: unknown
-): filter is ConvenienceOperatorFilter {
+function isDataLocatorEqFilter(filter: unknown): filter is DataLocatorEqFilter {
   return (
     isObject(filter) &&
-    typeof (filter as ConvenienceOperatorFilter).field === 'string' &&
-    (filter as ConvenienceOperatorFilter).operator &&
-    typeof (filter as ConvenienceOperatorFilter).value === 'string'
-  );
-}
-
-export function isDataLocatorOperatorFilter(
-  filter: unknown
-): filter is DataLocatorOperatorFilter {
-  return (
-    isDataLocatorConvenienceOperatorFilter(filter) && filter.operator !== 'eq'
+    'field' in filter &&
+    typeof filter.field === 'string' &&
+    'operator' in filter &&
+    filter.operator === 'eq' &&
+    'value' in filter &&
+    typeof filter.value === 'string'
   );
 }
 
@@ -175,14 +182,11 @@ export function isDataLocatorValueVia(
   );
 }
 
-function omitDefaultFilterOperator(
-  query: DataLocatorTransformQuery
+function normalizeTransformQuery(
+  transformQuery: DataLocatorTransformQuery
 ): DataLocatorQuery {
-  return query.map((filter) => {
-    if (
-      isDataLocatorConvenienceOperatorFilter(filter) &&
-      !isDataLocatorOperatorFilter(filter)
-    ) {
+  return transformQuery.map((filter) => {
+    if (isDataLocatorEqFilter(filter)) {
       const { field, value } = filter;
       return { field, value };
     }

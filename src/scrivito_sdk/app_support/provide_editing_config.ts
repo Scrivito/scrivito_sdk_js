@@ -144,7 +144,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
 
   const PropertiesGroupDescriptionType = t.interface({
     title: t.String,
-    properties: t.list(t.String),
+    properties: t.list(t.union([t.String, t.Array])),
     enabled: t.maybe(t.Boolean),
     key: t.maybe(t.String),
   });
@@ -152,7 +152,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
   const RegisteredComponentGroupDescriptionType = t.interface({
     title: t.String,
     component: t.String,
-    properties: t.maybe(t.list(t.String)),
+    properties: t.maybe(t.list(t.union([t.String, t.Array]))),
     enabled: t.maybe(t.Boolean),
     key: t.maybe(t.String),
   });
@@ -160,7 +160,7 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
   const LivingComponentGroupDescriptionType = t.interface({
     title: t.String,
     component: t.union([t.Function, t.Object]),
-    properties: t.maybe(t.list(t.String)),
+    properties: t.maybe(t.list(t.union([t.String, t.Array]))),
     enabled: t.maybe(t.Boolean),
     key: t.String,
   });
@@ -253,7 +253,9 @@ const { checkProvideEditingConfig, throwInvalidOptions } = (() => {
     initialContent: t.maybe(InitialContentType),
     initialize: t.maybe(t.Function),
     initializeCopy: t.maybe(t.Function),
-    properties: t.maybe(t.union([t.list(t.String), t.Function])),
+    properties: t.maybe(
+      t.union([t.list(t.union([t.String, t.Array])), t.Function])
+    ),
     propertiesGroups: t.maybe(t.union([PropertiesGroupsType, t.Function])),
     thumbnail: t.maybe(t.String),
     thumbnailForContent: t.maybe(t.Function),

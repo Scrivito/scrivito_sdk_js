@@ -4,6 +4,7 @@ import {
   DataLocatorValueFilter,
   DataLocatorValueViaFilter,
   ViaRef,
+  isDataLocatorOperatorFilter,
 } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
@@ -22,11 +23,7 @@ import {
 } from 'scrivito_sdk/data_integration/data_stack';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
-import {
-  DataLocator,
-  isDataLocatorOperatorFilter,
-  isDataLocatorValueViaFilter,
-} from 'scrivito_sdk/models';
+import { DataLocator, isDataLocatorValueViaFilter } from 'scrivito_sdk/models';
 
 export function applyDataLocator(
   dataStack: DataStack,

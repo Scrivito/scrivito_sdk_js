@@ -1,4 +1,5 @@
 import isEmpty from 'lodash-es/isEmpty';
+import mapValues from 'lodash-es/mapValues';
 
 import { ClientError } from 'scrivito_sdk/client';
 import {
@@ -6,6 +7,10 @@ import {
   extractFromIterator,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
+import {
+  deserializeDataAttribute,
+  serializeDataAttribute,
+} from 'scrivito_sdk/data_integration/data_attribute';
 import {
   DEFAULT_LIMIT,
   DataClass,
@@ -86,8 +91,6 @@ export function allExternalDataClasses(): ExternalDataClass[] {
 
 /** @beta */
 export class ExternalDataScope extends DataScope {
-  private _error?: DataScopeError;
-
   constructor(
     private readonly _dataClass: DataClass,
     private readonly _attributeName?: string,
@@ -113,22 +116,27 @@ export class ExternalDataScope extends DataScope {
       assertNoAttributeFilterConflicts(attributes, filters);
     }
 
+    const dataClassName = this.dataClassName();
+    const serializedAttributes = await serializeAttributes(
+      dataClassName,
+      attributes
+    );
+    const dataForCallback = { ...serializedAttributes, ...filters };
+
     const createCallback = this.getCreateCallback();
-    const dataForCallback = { ...attributes, ...filters };
     const resultItem = await createCallback(dataForCallback);
     assertValidResultItem(resultItem);
 
-    const className = this.dataClassName();
     const { _id: id, ...dataFromCallback } =
       autocorrectResultItemId(resultItem);
 
     setExternalData(
-      className,
+      dataClassName,
       id,
       (!isEmpty(dataFromCallback) && dataFromCallback) || dataForCallback
     );
 
-    notifyExternalDataWrite(className);
+    notifyExternalDataWrite(dataClassName);
 
     return new ExternalDataItem(this._dataClass, id);
   }
@@ -165,12 +173,12 @@ export class ExternalDataScope extends DataScope {
       return item ? [item] : [];
     }
 
-    return this.handleErrors(() =>
-      extractFromIterator(
-        this.getIterator(),
-        this._params.limit ?? DEFAULT_LIMIT
-      )
-    );
+    try {
+      return this.takeUnsafe();
+    } catch (error) {
+      if (isCommunicationError(error)) return [];
+      throw error;
+    }
   }
 
   transform({ filters, search, order, limit }: DataScopeParams): DataScope {
@@ -187,7 +195,11 @@ export class ExternalDataScope extends DataScope {
   }
 
   getError(): DataScopeError | undefined {
-    return this._error;
+    try {
+      this.takeUnsafe();
+    } catch (error) {
+      if (isCommunicationError(error)) return new DataScopeError(error.message);
+    }
   }
 
   count(): number | null {
@@ -195,12 +207,24 @@ export class ExternalDataScope extends DataScope {
     return countExternalData(this.dataClassName(), filters, search);
   }
 
+  limit(): number | undefined {
+    return this._params.limit;
+  }
+
   /** @internal */
   toPojo(): PresentDataScopePojo {
     return {
       _class: this.dataClassName(),
+      _attribute: this._attributeName,
       ...this._params,
     };
+  }
+
+  private takeUnsafe() {
+    return extractFromIterator(
+      this.getIterator(),
+      this._params.limit ?? DEFAULT_LIMIT
+    );
   }
 
   private getCreateCallback() {
@@ -242,22 +266,6 @@ export class ExternalDataScope extends DataScope {
     const { filters, search } = this._params;
     return filters && Object.keys(filters).length === 1 && !search;
   }
-
-  private handleErrors(fn: () => DataItem[]) {
-    try {
-      return fn();
-    } catch (error) {
-      if (
-        error instanceof ClientError ||
-        error instanceof DataConnectionError
-      ) {
-        this._error = new DataScopeError(error.message);
-        return [];
-      }
-
-      throw error;
-    }
-  }
 }
 
 /** @beta */
@@ -287,10 +295,13 @@ export class ExternalDataItem extends DataItem {
 
   get(attributeName: string): unknown {
     const externalData = this.getExternalData();
+    if (!externalData) return null;
 
-    return externalData?.hasOwnProperty(attributeName)
-      ? externalData[attributeName]
-      : null;
+    return deserializeDataAttribute(
+      this.dataClassName(),
+      attributeName,
+      externalData[attributeName]
+    );
   }
 
   async update(attributes: DataItemAttributes): Promise<void> {
@@ -301,12 +312,18 @@ export class ExternalDataItem extends DataItem {
       throw new ArgumentError(`Missing data with ID ${this._dataId}`);
     }
 
-    const updateCallback = this.getUpdateCallback();
-    const response = await updateCallback(this._dataId, attributes);
+    const dataClassName = this.dataClassName();
+    const serializedAttributes = await serializeAttributes(
+      dataClassName,
+      attributes
+    );
 
-    setExternalData(this._dataClass.name(), this._dataId, {
+    const updateCallback = this.getUpdateCallback();
+    const response = await updateCallback(this._dataId, serializedAttributes);
+
+    setExternalData(dataClassName, this._dataId, {
       ...externalData,
-      ...attributes,
+      ...serializedAttributes,
       ...(response || {}),
     });
 
@@ -370,4 +387,21 @@ function getConnection(dataClassName: string) {
   }
 
   return connection;
+}
+
+async function serializeAttributes(
+  dataClassName: string,
+  attributes: DataItemAttributes
+) {
+  return load(() =>
+    mapValues(attributes, (value, attributeName) =>
+      serializeDataAttribute(dataClassName, attributeName, value)
+    )
+  );
+}
+
+function isCommunicationError(
+  error: unknown
+): error is ClientError | DataConnectionError {
+  return error instanceof ClientError || error instanceof DataConnectionError;
 }

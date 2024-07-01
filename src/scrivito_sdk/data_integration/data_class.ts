@@ -1,6 +1,14 @@
 import isObject from 'lodash-es/isObject';
 
-import { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  ScrivitoError,
+  assumePresence,
+} from 'scrivito_sdk/common';
+import {
+  NormalizedDataClassSchema,
+  getNormalizedDataClassSchema,
+} from 'scrivito_sdk/data_integration/data_class_schema';
 import { isValidDataIdentifier } from 'scrivito_sdk/data_integration/data_identifier';
 import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
 
@@ -17,6 +25,11 @@ export abstract class DataClass {
 
   /** @public */
   abstract name(): string;
+
+  /** @public */
+  attributeDefinitions(): NormalizedDataClassSchema {
+    return getNormalizedDataClassSchema(this.name());
+  }
 
   /** @internal */
   abstract forAttribute(attributeName: string): DataScope;
@@ -36,7 +49,7 @@ export abstract class DataScope {
   /** @public */
   abstract take(): DataItem[];
   /** @public */
-  abstract transform(params: ConvenienceDataScopeParams): DataScope;
+  abstract transform(params: DataScopeParams): DataScope;
   /** @public */
   abstract objSearch(): ObjSearch | undefined;
   /** @public */
@@ -75,6 +88,9 @@ export abstract class DataScope {
   getError(): DataScopeError | undefined {
     return;
   }
+
+  /** @public */
+  abstract limit(): number | undefined;
 
   /** @internal */
   abstract toPojo(): DataScopePojo;
@@ -118,31 +134,14 @@ export type DataItemAttributes = Record<string, unknown>;
 export type DataScopeFilters = Record<string, string | OperatorSpec>;
 
 /** @public */
-export interface DataScopeParams extends DataScopeParamsBase {
+export interface DataScopeParams {
   filters?: DataScopeFilters;
-}
-
-export interface ConvenienceDataScopeParams extends DataScopeParamsBase {
-  filters?: ConvenienceDataScopeFilters;
-}
-
-interface DataScopeParamsBase {
   search?: string;
   order?: OrderSpec;
   limit?: number;
 }
 
-export type ConvenienceDataScopeFilters = Record<
-  string,
-  string | ConvenienceOperatorSpec
->;
-
 export type FilterOperator = 'equals' | 'notEquals';
-
-export interface ConvenienceOperatorSpec {
-  operator: FilterOperator;
-  value: string;
-}
 
 export const DEFAULT_LIMIT = 20;
 
@@ -157,10 +156,14 @@ export type OrderSpec = Array<[string, 'asc' | 'desc']>;
 
 export type DataScopePojo = PresentDataScopePojo | EmptyDataScopePojo;
 
-export type PresentDataScopePojo = { _class: string } & DataScopeParams;
+export type PresentDataScopePojo = {
+  _class: string;
+  _attribute?: string;
+} & DataScopeParams;
 
 export type EmptyDataScopePojo = {
   _class: null | string;
+  _error?: string;
   isEmpty: true;
   isDataItem: boolean;
 };
@@ -186,6 +189,11 @@ export abstract class DataItem {
   abstract update(attributes: DataItemAttributes): Promise<void>;
   /** @public */
   abstract delete(): Promise<void>;
+
+  /** @public */
+  attributeDefinitions(): NormalizedDataClassSchema {
+    return assumePresence(this.dataClass()).attributeDefinitions();
+  }
 }
 
 /** @public */

@@ -18,8 +18,28 @@ export async function fetchWithTimeout(
   try {
     return await fetch(resource, fetchOptions);
   } catch (error) {
-    throw new RequestFailedError(error instanceof Error ? error.message : '');
+    throw new RequestFailedError(getErrorMessage(error));
   } finally {
     clearTimeout(timer);
   }
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    if (isErrorWithCause(error)) {
+      return `${error.message}. ${String(error.cause)}`;
+    }
+
+    return error.message;
+  }
+
+  return '';
+}
+
+interface ErrorWithCause extends Error {
+  readonly cause?: Error;
+}
+
+function isErrorWithCause(error: Error): error is ErrorWithCause {
+  return 'cause' in error && error.cause instanceof Error;
 }

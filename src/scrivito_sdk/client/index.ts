@@ -1,4 +1,4 @@
-export { createApiClient } from 'scrivito_sdk/client/create_api_client';
+export { createRestApiClient } from 'scrivito_sdk/client/create_rest_api_client';
 export { ApiClient } from 'scrivito_sdk/client/api_client';
 export type { ApiClientOptions } from 'scrivito_sdk/client/api_client';
 export type { BackendBinaryData } from 'scrivito_sdk/client/binary_urls_retrieval';
@@ -7,10 +7,10 @@ export {
   MissingWorkspaceError,
   type Priority,
   cmsRestApi,
-  requestBuiltInUserSession,
   useDefaultPriority,
 } from 'scrivito_sdk/client/cms_rest_api';
 export type {
+  AnalyticsData,
   AuthorizationProvider,
   BackendResponse,
 } from 'scrivito_sdk/client/cms_rest_api';
@@ -43,7 +43,10 @@ export {
   objSpaceIdsEqual,
 } from 'scrivito_sdk/client/obj_space_id';
 export type { LoginHandler } from 'scrivito_sdk/client/login_handler';
-export { setLoggedInIndicatorParam } from 'scrivito_sdk/client/login_redirect_handler';
+export {
+  setIdentityProvider,
+  setLoggedInIndicatorParam,
+} from 'scrivito_sdk/client/login_redirect_handler';
 export type {
   ObjSpaceId,
   WorkspaceObjSpaceId,
@@ -57,6 +60,8 @@ export {
   isUnavailableObjJson,
   isWidgetAttributeJson,
   isWidgetlistAttributeJson,
+  isDataLocatorOperatorFilter,
+  OP_CODES,
 } from 'scrivito_sdk/client/obj_json';
 export {
   getBrowserTokenProvider,
@@ -66,6 +71,7 @@ export {
 export type {
   ObjJson,
   OpCode,
+  EqOpCode,
   ExistentObjJson,
   UnavailableObjJson,
   ObjSystemAttributeJson,
@@ -120,5 +126,4 @@ export type {
   WorkspacePermissionVerb,
 } from 'scrivito_sdk/client/workspace_json';
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
-export * from 'scrivito_sdk/client/session_data';
 export { TokenAuthorizationProvider } from 'scrivito_sdk/client/token_authorization_provider';

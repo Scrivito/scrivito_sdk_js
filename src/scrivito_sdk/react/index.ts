@@ -28,6 +28,7 @@ export { useData } from 'scrivito_sdk/react/hooks/use_data';
 export { useDataItem } from 'scrivito_sdk/react/hooks/use_data_item';
 export { useDataLocator } from 'scrivito_sdk/react/hooks/use_data_locator';
 export { useDataScope } from 'scrivito_sdk/react/hooks/use_data_scope';
+export { useAttributeDefinition } from 'scrivito_sdk/react/hooks/use_attribute_definition';
 export { useUrlFor } from 'scrivito_sdk/react/hooks/use_url_for';
 export {
   useResolvedHtmlValue,

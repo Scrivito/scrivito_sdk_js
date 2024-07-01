@@ -14,6 +14,17 @@ export async function loginRedirectHandler(visit: string): Promise<void> {
   return never();
 }
 
+let identityProvider: string | undefined;
+
+export function setIdentityProvider(idp?: string): void {
+  identityProvider = idp;
+}
+
+// for testing purposes only
+export function getIdentityProvider(): string | undefined {
+  return identityProvider;
+}
+
 let loggedInParamName: string | undefined;
 
 export function setLoggedInIndicatorParam(paramName: string): void {
@@ -21,15 +32,18 @@ export function setLoggedInIndicatorParam(paramName: string): void {
 }
 
 async function authenticationUrl(visit: string): Promise<string> {
-  const authUrl = visit.replace(
-    '$RETURN_TO',
-    encodeURIComponent(returnToUrl())
-  );
+  let authUrl = visit.replace('$RETURN_TO', encodeURIComponent(returnToUrl()));
 
   const iamAuthLocation = (await clientConfig.fetch()).iamAuthLocation;
   if (!iamAuthLocation) throw new InternalError();
 
-  return authUrl.replace('$JR_API_LOCATION/iam/auth', iamAuthLocation);
+  authUrl = authUrl.replace('$JR_API_LOCATION/iam/auth', iamAuthLocation);
+  if (!identityProvider) return authUrl;
+
+  const authUrlWithIdp = new URL(authUrl);
+  authUrlWithIdp.searchParams.set('idp', identityProvider);
+
+  return authUrlWithIdp.toString();
 }
 
 function returnToUrl() {

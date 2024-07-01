@@ -4,34 +4,29 @@ import {
   assertValidDataIdentifier,
   provideExternalDataItem,
 } from 'scrivito_sdk/data_integration';
-import { checkProvideDataItem } from 'scrivito_sdk/realm';
 
 /** @public */
 export function provideDataItem(
   name: string,
-  get: ExternalDataItemConnection['get'],
-  ...excessArgs: never[]
+  get: ExternalDataItemConnection['get']
 ): DataItem;
 
 /** @public */
 export function provideDataItem(
   name: string,
-  connection: ExternalDataItemConnection,
-  ...excessArgs: never[]
+  connection: ExternalDataItemConnection
 ): DataItem;
 
 export function provideDataItem(
   name: string,
   connectionOrGet:
     | ExternalDataItemConnection['get']
-    | ExternalDataItemConnection,
-  ...excessArgs: never[]
+    | ExternalDataItemConnection
 ): DataItem {
   if (typeof connectionOrGet === 'function') {
-    return provideDataItem(name, { get: connectionOrGet }, ...excessArgs);
+    return provideDataItem(name, { get: connectionOrGet });
   }
 
-  checkProvideDataItem(name, connectionOrGet, ...excessArgs);
   assertValidDataIdentifier(name);
 
   return provideExternalDataItem(name, connectionOrGet);

@@ -22,6 +22,7 @@ import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
+import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/hooks/use_layout_aware_in_place_editing';
 import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
@@ -60,6 +61,8 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
     elementCallback,
     ...customProps
   }: ContentTagWithElementCallbackProps) {
+    const isInPlaceEditingEnabled = useLayoutAwareInPlaceEditing();
+
     if (!content) return null;
 
     let field = getField(content, attribute);
@@ -74,7 +77,7 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
     }
 
     if (
-      !isInPlaceEditingActive() &&
+      (!isInPlaceEditingActive() || !isInPlaceEditingEnabled) &&
       !isComparisonActive() &&
       isEmptyValue(field.get()) &&
       shouldContentTagsForEmptyAttributesBeSkipped()
