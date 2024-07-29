@@ -47,15 +47,17 @@ export type DataAttributeConfig = DataAttributeDefinitionWithConfig[1];
 
 export function registerDataClassSchema(
   dataClassName: string,
-  attributes: DataClassAttributes
+  attributes: DataClassAttributes = {}
 ): void {
   const schemata = { ...schemataState.get() };
   schemata[dataClassName] = wrapInCallback(attributes);
   schemataState.set(schemata);
 }
 
-export function getDataClassSchema(dataClassName: string): DataClassSchema {
-  return schemataCollection.get(dataClassName).getWithDefault({});
+export function getDataClassSchema(
+  dataClassName: string
+): DataClassSchema | undefined {
+  return schemataCollection.get(dataClassName).get();
 }
 
 export function getNormalizedDataClassSchema(

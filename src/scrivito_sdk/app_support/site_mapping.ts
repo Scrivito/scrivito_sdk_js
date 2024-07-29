@@ -103,11 +103,9 @@ export function recognizeSiteAndPath(
   const result = siteForUrl(url);
   if (!result) return { sitePath: null };
 
-  const baseUrl = removeTrailingSlashes(result.baseUrl);
-
   return {
-    siteData: { siteId: result.siteId, baseUrl },
-    sitePath: determineSitePath(baseUrl, url),
+    siteData: { siteId: result.siteId, baseUrl: result.baseUrl },
+    sitePath: determineSitePath(result.baseUrl, url),
   };
 }
 

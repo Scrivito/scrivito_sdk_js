@@ -39,8 +39,7 @@ export function provideDataClass(
   }
 
   setExternalDataConnection(name, params.connection);
-
-  if (params.attributes) registerDataClassSchema(name, params.attributes);
+  registerDataClassSchema(name, params.attributes);
 
   return new ExternalDataClass(name);
 }

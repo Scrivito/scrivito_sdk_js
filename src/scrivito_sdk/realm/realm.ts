@@ -214,7 +214,7 @@ function createAppObjClass(definition: ObjClassDefinition): ObjClass {
 
   // we can only use the non-specific names `Obj` or `Widget` for AppClasses.
   // it's not possible to dynamically name a class in ES5 (or anything transpiled to ES5)
-  // compare: // https://stackoverflow.com/questions/5871040
+  // compare: see 6bcead77a18338d87faab618c8b9498f954f7f71 for a link to an explanation.
   // eslint-disable-next-line @typescript-eslint/no-shadow
   return class Obj extends baseClass {
     static get _scrivitoPrivateSchema() {

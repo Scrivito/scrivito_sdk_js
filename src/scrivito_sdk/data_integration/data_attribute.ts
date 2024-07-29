@@ -7,9 +7,9 @@ import {
   DataAttributeConfig,
   DataAttributeDefinition,
   DataAttributeDefinitionWithConfig,
+  DataClassSchema,
   EnumAttributeConfig,
   ReferenceAttributeConfig,
-  getDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
@@ -26,14 +26,12 @@ const serializers = {
 export function serializeDataAttribute(
   dataClassName: string,
   attributeName: string,
-  value: unknown
+  value: unknown,
+  schema: DataClassSchema
 ): boolean | string | number | null | unknown {
   assertNoTypedObject(dataClassName, attributeName, value);
 
-  const attributeDefinition = getAttributeDefinition(
-    dataClassName,
-    attributeName
-  );
+  const attributeDefinition = schema[attributeName];
 
   if (attributeDefinition) {
     const attributeType = getAttributeType(attributeDefinition);
@@ -48,14 +46,12 @@ export function serializeDataAttribute(
 export function deserializeDataAttribute(
   dataClassName: string,
   attributeName: string,
-  value: unknown
+  value: unknown,
+  schema: DataClassSchema
 ): boolean | number | string | Date | DataItem | null | unknown {
   assertNoTypedObject(dataClassName, attributeName, value);
 
-  const attributeDefinition = getAttributeDefinition(
-    dataClassName,
-    attributeName
-  );
+  const attributeDefinition = schema[attributeName];
 
   if (attributeDefinition) {
     const attributeType = getAttributeType(attributeDefinition);
@@ -298,10 +294,6 @@ function isISO8601(value: string) {
     isoDateTimeWithOptionalMilliseconds.test(value) &&
     !Number.isNaN(Date.parse(value))
   );
-}
-
-function getAttributeDefinition(dataClassName: string, attributeName: string) {
-  return getDataClassSchema(dataClassName)[attributeName];
 }
 
 function getEnumValues(attributeConfig?: DataAttributeConfig) {

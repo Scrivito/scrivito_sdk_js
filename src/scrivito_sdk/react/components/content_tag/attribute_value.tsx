@@ -5,6 +5,7 @@ import * as React from 'react';
 
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
+import { getCurrentRoute } from 'scrivito_sdk/app_support/current_page_data';
 import { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
 import {
   OpenInCurrentWindow,
@@ -14,12 +15,11 @@ import {
 } from 'scrivito_sdk/app_support/find_click_target';
 import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_range';
 import { replaceInternalLinks } from 'scrivito_sdk/app_support/replace_internal_links';
-import { recognize } from 'scrivito_sdk/app_support/routing';
 import { registerScrollTarget } from 'scrivito_sdk/app_support/scroll_into_view';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { assignLocation } from 'scrivito_sdk/common';
 import { replacePlaceholdersWithData } from 'scrivito_sdk/data_integration';
-import { AttributeType, BasicField, BasicObj } from 'scrivito_sdk/models';
+import { AttributeType, BasicField } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
 import { WidgetlistValue } from 'scrivito_sdk/react/components/content_tag/widgetlist_value';
@@ -195,17 +195,16 @@ function renderPropsForHtml(
     : undefined;
 
   const handleClickOnHtml = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    const obj = field.obj();
     const linkTarget = findClickTarget(e);
     if (!linkTarget) return null;
 
     if (isOpenInNewWindow(linkTarget)) {
       handleOpenInNewWindow(e, linkTarget);
     } else {
-      if (isCrossSiteTargetUrl(linkTarget.openInCurrentWindow, obj)) {
-        assignLocation(linkTarget.openInCurrentWindow);
-      } else {
+      if (isSameSite(linkTarget.openInCurrentWindow)) {
         handleOpenInCurrentWindow(e, linkTarget);
+      } else {
+        assignLocation(linkTarget.openInCurrentWindow);
       }
     }
   };
@@ -269,8 +268,13 @@ function renderPropsForNumber(field: BasicField<'integer' | 'float'>) {
   return { children: parsedValue };
 }
 
-function isCrossSiteTargetUrl(url: string, currentPage: BasicObj) {
-  return recognize(url).siteData?.siteId !== currentPage.siteId();
+function isSameSite(url: string) {
+  const baseUrl = getCurrentRoute()?.siteData?.baseUrl;
+  if (!baseUrl) return false;
+
+  const linkUrl = new URL(url, baseUrl);
+
+  return `${linkUrl.origin}${linkUrl.pathname}/`.startsWith(`${baseUrl}/`);
 }
 
 function handleOpenInNewWindow<T>(

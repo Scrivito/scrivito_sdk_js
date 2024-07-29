@@ -4,6 +4,7 @@ import mapValues from 'lodash-es/mapValues';
 import { ClientError } from 'scrivito_sdk/client';
 import {
   ArgumentError,
+  InternalError,
   extractFromIterator,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
@@ -26,6 +27,10 @@ import {
   combineSearches,
   itemIdFromFilters,
 } from 'scrivito_sdk/data_integration/data_class';
+import {
+  DataClassSchema,
+  getDataClassSchema,
+} from 'scrivito_sdk/data_integration/data_class_schema';
 import {
   ExternalData,
   getExternalData,
@@ -65,12 +70,12 @@ export class ExternalDataClass extends DataClass {
 
   get(id: string): DataItem | null {
     return getExternalData(this._name, id)
-      ? new ExternalDataItem(this, id)
+      ? ExternalDataItem.build(this, id)
       : null;
   }
 
   getUnchecked(id: string): ExternalDataItem {
-    return new ExternalDataItem(this, id);
+    return ExternalDataItem.buildUnchecked(this, id);
   }
 
   /** @internal */
@@ -117,12 +122,15 @@ export class ExternalDataScope extends DataScope {
     }
 
     const dataClassName = this.dataClassName();
-    const serializedAttributes = await serializeAttributes(
-      dataClassName,
-      attributes
-    );
-    const dataForCallback = { ...serializedAttributes, ...filters };
+    const schema = await loadExistingSchema(dataClassName);
 
+    const serializedAttributes = serializeAttributes(
+      dataClassName,
+      attributes,
+      schema
+    );
+
+    const dataForCallback = { ...serializedAttributes, ...filters };
     const createCallback = this.getCreateCallback();
     const resultItem = await createCallback(dataForCallback);
     assertValidResultItem(resultItem);
@@ -138,7 +146,7 @@ export class ExternalDataScope extends DataScope {
 
     notifyExternalDataWrite(dataClassName);
 
-    return new ExternalDataItem(this._dataClass, id);
+    return ExternalDataItem.buildWithLoadedSchema(this._dataClass, id, schema);
   }
 
   get(id: string): DataItem | null {
@@ -167,6 +175,9 @@ export class ExternalDataScope extends DataScope {
   }
 
   take(): DataItem[] {
+    const schema = getDataClassSchema(this.dataClassName());
+    if (!schema) return [];
+
     const id = this.itemIdFromFilters();
     if (id && this.hasSingleFilter()) {
       const item = this.get(id);
@@ -174,7 +185,7 @@ export class ExternalDataScope extends DataScope {
     }
 
     try {
-      return this.takeUnsafe();
+      return this.takeUnsafe(schema);
     } catch (error) {
       if (isCommunicationError(error)) return [];
       throw error;
@@ -195,8 +206,11 @@ export class ExternalDataScope extends DataScope {
   }
 
   getError(): DataScopeError | undefined {
+    const schema = getDataClassSchema(this.dataClassName());
+    if (!schema) return;
+
     try {
-      this.takeUnsafe();
+      this.takeUnsafe(schema);
     } catch (error) {
       if (isCommunicationError(error)) return new DataScopeError(error.message);
     }
@@ -220,9 +234,9 @@ export class ExternalDataScope extends DataScope {
     };
   }
 
-  private takeUnsafe() {
+  private takeUnsafe(schema: DataClassSchema) {
     return extractFromIterator(
-      this.getIterator(),
+      this.getIterator(schema),
       this._params.limit ?? DEFAULT_LIMIT
     );
   }
@@ -240,11 +254,17 @@ export class ExternalDataScope extends DataScope {
     return createCallback;
   }
 
-  private getIterator() {
+  private getIterator(schema: DataClassSchema) {
     return transformContinueIterable(
       getExternalDataQuery(this.toPojo()),
       (iterator) =>
-        iterator.map((dataId) => new ExternalDataItem(this._dataClass, dataId))
+        iterator.map((dataId) =>
+          ExternalDataItem.buildWithLoadedSchema(
+            this._dataClass,
+            dataId,
+            schema
+          )
+        )
     ).iterator();
   }
 
@@ -270,7 +290,32 @@ export class ExternalDataScope extends DataScope {
 
 /** @beta */
 export class ExternalDataItem extends DataItem {
-  constructor(
+  /** Returns an item if its schema is loaded. Returns null otherwise. */
+  /** Triggers schema loading, thus requires a loading context. */
+  static build(dataClass: DataClass, dataId: string): ExternalDataItem | null {
+    const schema = getDataClassSchema(dataClass.name());
+    return schema ? new ExternalDataItem(dataClass, dataId) : null;
+  }
+
+  /** Returns an item for an already loaded schema */
+  static buildWithLoadedSchema(
+    dataClass: DataClass,
+    dataId: string,
+    schema: DataClassSchema
+  ): ExternalDataItem {
+    if (!schema) throw new InternalError();
+    return new ExternalDataItem(dataClass, dataId);
+  }
+
+  /** Only for DataClass#getUnchecked */
+  static buildUnchecked(
+    dataClass: DataClass,
+    dataId: string
+  ): ExternalDataItem {
+    return new ExternalDataItem(dataClass, dataId);
+  }
+
+  private constructor(
     private readonly _dataClass: DataClass,
     private readonly _dataId: string
   ) {
@@ -297,11 +342,17 @@ export class ExternalDataItem extends DataItem {
     const externalData = this.getExternalData();
     if (!externalData) return null;
 
-    return deserializeDataAttribute(
-      this.dataClassName(),
-      attributeName,
-      externalData[attributeName]
-    );
+    const dataClassName = this.dataClassName();
+    const schema = getDataClassSchema(dataClassName);
+
+    return schema
+      ? deserializeDataAttribute(
+          dataClassName,
+          attributeName,
+          externalData[attributeName],
+          schema
+        )
+      : null;
   }
 
   async update(attributes: DataItemAttributes): Promise<void> {
@@ -313,9 +364,12 @@ export class ExternalDataItem extends DataItem {
     }
 
     const dataClassName = this.dataClassName();
-    const serializedAttributes = await serializeAttributes(
+    const schema = await loadExistingSchema(dataClassName);
+
+    const serializedAttributes = serializeAttributes(
       dataClassName,
-      attributes
+      attributes,
+      schema
     );
 
     const updateCallback = this.getUpdateCallback();
@@ -389,14 +443,13 @@ function getConnection(dataClassName: string) {
   return connection;
 }
 
-async function serializeAttributes(
+function serializeAttributes(
   dataClassName: string,
-  attributes: DataItemAttributes
+  attributes: DataItemAttributes,
+  schema: DataClassSchema
 ) {
-  return load(() =>
-    mapValues(attributes, (value, attributeName) =>
-      serializeDataAttribute(dataClassName, attributeName, value)
-    )
+  return mapValues(attributes, (value, attributeName) =>
+    serializeDataAttribute(dataClassName, attributeName, value, schema)
   );
 }
 
@@ -404,4 +457,13 @@ function isCommunicationError(
   error: unknown
 ): error is ClientError | DataConnectionError {
   return error instanceof ClientError || error instanceof DataConnectionError;
+}
+
+async function loadExistingSchema(dataClassName: string) {
+  const schema = await load(() => getDataClassSchema(dataClassName));
+
+  // A schema must be stored first
+  if (!schema) throw new InternalError();
+
+  return schema;
 }
