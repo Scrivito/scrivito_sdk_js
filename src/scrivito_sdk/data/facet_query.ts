@@ -13,16 +13,16 @@ import {
 import { QueryParams, getContentStateId } from 'scrivito_sdk/data';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data/in_memory_tenant';
 import {
-  LoadableCollection,
   LoadableData,
+  createLoadableCollection,
   loadableWithDefault,
 } from 'scrivito_sdk/loadable';
 
-const loadableCollection = new LoadableCollection<
+const loadableCollection = createLoadableCollection<
   BackendFacetQueryResponse,
   [ObjSpaceId, BackendRequestFacet, Query]
 >({
-  recordedAs: 'facetquery',
+  name: 'facetquery',
   loadElement: ([objSpaceId, facet, query]) => ({
     loader: () =>
       cmsRetrieval.retrieveFacetQuery(

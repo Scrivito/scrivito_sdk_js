@@ -159,3 +159,5 @@ export type {
 export { isAttributeValidationReportEntry } from 'scrivito_sdk/common/validation_result_types';
 export { propsAreEqual } from 'scrivito_sdk/common/props_are_equal';
 export { parameterizeDataClass } from 'scrivito_sdk/common/parameterize_data_class';
+export { isPromise } from 'scrivito_sdk/common/is_promise';
+export { isObject } from 'scrivito_sdk/common/is_object';

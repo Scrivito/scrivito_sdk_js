@@ -1,4 +1,4 @@
-import isObject from 'lodash-es/isObject';
+import { isObject } from 'scrivito_sdk/common';
 
 export type ObjJson = ExistentObjJson | UnavailableObjJsonWithIndex;
 
@@ -160,7 +160,7 @@ export type DataLocatorFilter =
 
 type NeqOpCode = 'neq';
 export type EqOpCode = 'eq';
-export type OpCode = NeqOpCode | EqOpCode;
+export type OpCode = NeqOpCode | EqOpCode | 'gt' | 'lt' | 'gte' | 'lte';
 type OperatorFilterOpCode = Exclude<OpCode, EqOpCode>;
 
 export const OP_CODES: OpCode[] = ['eq', 'neq'];
@@ -169,7 +169,7 @@ const OPERATOR_FILTER_OP_CODES: OperatorFilterOpCode[] = ['neq'];
 export interface DataLocatorOperatorFilter {
   field: string;
   operator: OperatorFilterOpCode;
-  value: string;
+  value: FilterValue;
 }
 
 export function isDataLocatorOperatorFilter(
@@ -189,9 +189,11 @@ export function isDataLocatorOperatorFilter(
   );
 }
 
+export type FilterValue = string | number | boolean | null;
+
 export interface DataLocatorValueFilter {
   field: string;
-  value: string;
+  value: FilterValue;
 }
 
 export interface DataLocatorValueViaFilter {

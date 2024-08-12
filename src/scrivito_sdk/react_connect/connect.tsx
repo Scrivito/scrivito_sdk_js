@@ -97,10 +97,10 @@ function connectClassComponent<
     constructor(props: Props) {
       super(props);
 
-      const loaderComponent = options?.loading;
+      const initialLoaderComponent = options?.loading;
 
-      const _scrivitoRenderWhileLoading = loaderComponent
-        ? () => React.createElement(loaderComponent, props)
+      const _scrivitoRenderWhileLoading = initialLoaderComponent
+        ? () => React.createElement(initialLoaderComponent, props)
         : this._scrivitoRenderWhileLoading;
 
       this._scrivitoPrivateConnector = new ComponentConnector(
@@ -164,14 +164,14 @@ function connectFunctionComponent<
   functionalComponent: React.FunctionComponent<Props>,
   options?: ConnectOptions<LoadingProps>
 ): ConnectedFunctionComponent<Props> {
-  const loaderComponent = options?.loading;
+  const initialLoaderComponent = options?.loading;
 
   const connectedComponent = (props: Props) =>
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useConnectedRender(
       () => functionalComponent(props),
-      loaderComponent
-        ? () => React.createElement(loaderComponent, props)
+      initialLoaderComponent
+        ? () => React.createElement(initialLoaderComponent, props)
         : undefined
     );
 
@@ -184,7 +184,7 @@ function connectFunctionComponent<
 
 function useConnectedRender(
   originalRender: () => React.ReactNode,
-  loaderComponent?: () => React.ReactNode
+  initialLoaderComponent?: () => React.ReactNode
 ): React.ReactElement {
   const forceUpdate = useForceUpdate();
 
@@ -192,7 +192,7 @@ function useConnectedRender(
   if (!connectorRef.current) {
     connectorRef.current = new ComponentConnector({
       forceUpdate,
-      _scrivitoRenderWhileLoading: loaderComponent,
+      _scrivitoRenderWhileLoading: initialLoaderComponent,
     });
   }
 
@@ -236,6 +236,7 @@ class ComponentConnector {
   private context?: ConnectContext;
   private childContext?: ConnectContext;
   private awakeSubscription?: Subscription;
+  private wasComponentShown = false;
 
   constructor(private component: ConnectorComponentInferface) {
     this.loadingSubscriber = new LoadingSubscriber();
@@ -315,7 +316,13 @@ class ComponentConnector {
 
     const { result } = captured.result;
 
-    return captured.isAllDataLoaded() ? result : this.handleLoading(result);
+    if (captured.isAllDataLoaded()) {
+      this.wasComponentShown = true;
+
+      return result;
+    }
+
+    return this.handleLoading(result);
   }
 
   private subscribeState(captured: CapturedState) {
@@ -337,7 +344,7 @@ class ComponentConnector {
   }
 
   private handleLoading(preliminaryResult: React.ReactNode) {
-    if (this.component._scrivitoRenderWhileLoading) {
+    if (this.component._scrivitoRenderWhileLoading && !this.wasComponentShown) {
       return this.component._scrivitoRenderWhileLoading();
     }
 

@@ -1,6 +1,4 @@
 import escape from 'lodash-es/escape';
-import isObject from 'lodash-es/isObject';
-
 import * as React from 'react';
 
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
@@ -17,9 +15,9 @@ import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_rang
 import { replaceInternalLinks } from 'scrivito_sdk/app_support/replace_internal_links';
 import { registerScrollTarget } from 'scrivito_sdk/app_support/scroll_into_view';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
-import { assignLocation } from 'scrivito_sdk/common';
+import { assignLocation, isObject } from 'scrivito_sdk/common';
 import { replacePlaceholdersWithData } from 'scrivito_sdk/data_integration';
-import { AttributeType, BasicField } from 'scrivito_sdk/models';
+import { BasicField, CmsAttributeType } from 'scrivito_sdk/models';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { WidgetValue } from 'scrivito_sdk/react/components/content_tag/widget_value';
 import { WidgetlistValue } from 'scrivito_sdk/react/components/content_tag/widgetlist_value';
@@ -30,7 +28,7 @@ import {
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
 import { connect } from 'scrivito_sdk/react_connect';
 
-export interface AttributeValueProps<Type extends AttributeType> {
+export interface AttributeValueProps<Type extends CmsAttributeType> {
   customProps: {
     [key: string]: unknown;
     children?: React.ReactNode;
@@ -47,7 +45,7 @@ export interface AttributeValueProps<Type extends AttributeType> {
 export const AttributeValue = connect(
   withDisplayName(
     'Scrivito.ContentTag.AttributeValue',
-    <Type extends AttributeType>(props: AttributeValueProps<Type>) => {
+    <Type extends CmsAttributeType>(props: AttributeValueProps<Type>) => {
       const dataContextContainer = useDataContextContainer();
       const element = React.useRef<HTMLElement>();
 
@@ -111,7 +109,7 @@ function isCustomInnerHtml(
 }
 
 function renderPropsForField(
-  field: BasicField<AttributeType>,
+  field: BasicField<CmsAttributeType>,
   customChildrenFromProps: React.ReactNode | undefined,
   customInnerHtml: { __html: string } | undefined,
   customOnClick: (<T>(e: React.MouseEvent<T>) => void) | undefined,

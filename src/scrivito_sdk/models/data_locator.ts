@@ -1,5 +1,3 @@
-import isObject from 'lodash-es/isObject';
-
 import {
   DataLocatorFilter,
   DataLocatorJson,
@@ -9,9 +7,13 @@ import {
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
   EqOpCode,
+  FilterValue,
   OrderByItem,
   ViaRef,
 } from 'scrivito_sdk/client';
+import { isObject } from 'scrivito_sdk/common';
+
+export const SINGLETON_DATA_ID = '0';
 
 interface DataLocatorParams extends Omit<DataLocatorJson, 'class'> {
   class: string | null;
@@ -25,7 +27,7 @@ export type DataLocatorTransformFilter =
 export interface DataLocatorEqFilter {
   field: string;
   operator: EqOpCode;
-  value: string;
+  value: FilterValue;
 }
 
 /** @public */

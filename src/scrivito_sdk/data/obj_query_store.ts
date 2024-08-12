@@ -40,7 +40,7 @@ export interface QueryParams {
 let includeObjs = true;
 
 const batchCollection = new IdBatchCollection({
-  recordedAs: 'objquery',
+  name: 'objquery',
 
   loadBatch,
 

@@ -1,6 +1,6 @@
-import isObject from 'lodash-es/isObject';
-
-import { ArgumentError } from 'scrivito_sdk/common';
+import { ArgumentError, isObject, isPromise } from 'scrivito_sdk/common';
+import { addMissingDataConnectionHandlers } from 'scrivito_sdk/data_integration/add_missing_data_connection_handlers';
+import { anticipatedDataConnection } from 'scrivito_sdk/data_integration/anticipated_data_connection';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { DataConnectionError } from 'scrivito_sdk/data_integration/external_data_query';
@@ -9,11 +9,20 @@ import { createStateContainer } from 'scrivito_sdk/state';
 
 /** @public */
 export interface DataConnection {
-  index?: IndexCallback;
+  index: IndexCallback;
   get: GetCallback;
-  create?: CreateCallback;
-  update?: UpdateCallback;
-  delete?: DeleteCallback;
+  create: CreateCallback;
+  update: UpdateCallback;
+  delete: DeleteCallback;
+}
+
+/** @internal */
+export interface UnsafeDataConnection {
+  index: UnsafeIndexCallback;
+  create: UnsafeCreateCallback;
+  get: GetCallback;
+  update: UpdateCallback;
+  delete: DeleteCallback;
 }
 
 /** @public */
@@ -21,10 +30,17 @@ export type IndexCallback = (
   params: IndexParams
 ) => Promise<IndexResult | DataConnectionError>;
 
+/** @internal */
+export type UnsafeIndexCallback = (params: IndexParams) => Promise<unknown>;
+
 /** @public */
 export type GetCallback = (id: string) => Promise<unknown | null>;
+
 /** @public */
 export type CreateCallback = (data: ExternalData) => Promise<ResultItem>;
+
+/** @internal */
+export type UnsafeCreateCallback = (data: ExternalData) => Promise<unknown>;
 
 /** @public */
 export type UpdateCallback = (
@@ -175,12 +191,19 @@ function isResultItemConvenienceNumericId(
   return typeof resultItem.id === 'number';
 }
 
-const connectionsState = createStateContainer<Record<string, DataConnection>>();
+const connectionsState =
+  createStateContainer<Record<string, UnsafeDataConnection>>();
 
 export function setExternalDataConnection(
   name: string,
-  connection: DataConnection
+  partialConnection:
+    | Partial<UnsafeDataConnection>
+    | Promise<Partial<UnsafeDataConnection>>
 ): void {
+  const connection = isPromise(partialConnection)
+    ? anticipatedDataConnection(partialConnection, name)
+    : addMissingDataConnectionHandlers(partialConnection, name);
+
   connectionsState.set({
     ...connectionsState.get(),
     [name]: connection,
@@ -189,7 +212,7 @@ export function setExternalDataConnection(
 
 export function getExternalDataConnection(
   name: string
-): DataConnection | undefined {
+): UnsafeDataConnection | undefined {
   const connections = connectionsState.get();
   if (connections) return connections[name];
 }
@@ -199,7 +222,9 @@ export function getExternalDataConnectionNames(): string[] {
   return connections ? Object.keys(connections) : [];
 }
 
-export function getExternalDataConnectionOrThrow(name: string): DataConnection {
+export function getExternalDataConnectionOrThrow(
+  name: string
+): UnsafeDataConnection {
   const connection = getExternalDataConnection(name);
 
   if (!connection) {

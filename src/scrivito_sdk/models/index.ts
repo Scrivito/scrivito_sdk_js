@@ -1,12 +1,13 @@
 export type { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 export type {
-  AttributeType,
+  CmsAttributeType,
   BasicAttributeDict,
   BasicAttributeValue,
   BasicAttributeValueForUpdate,
   SystemAttributeValue,
   SingleReferenceValue,
 } from 'scrivito_sdk/models/basic_attribute_types';
+export { CMS_ATTRIBUTE_TYPES } from 'scrivito_sdk/models/basic_attribute_types';
 export {
   normalizedRestriction,
   serializeAttributes,
@@ -109,6 +110,7 @@ export {
   isDataLocatorValueVia,
   isDataLocatorValueViaFilter,
   DataLocator,
+  SINGLETON_DATA_ID,
 } from 'scrivito_sdk/models/data_locator';
 export type {
   DataLocatorTransformFilter,

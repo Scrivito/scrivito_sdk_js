@@ -8,7 +8,7 @@ export type { LinkAttributes } from 'scrivito_sdk/realm/link';
 export { setCurrentSiteIdHandler } from 'scrivito_sdk/realm/current_site_id';
 export { enableStrictSearchOperators } from 'scrivito_sdk/realm/strict_search_operators';
 export type { AttrDict } from 'scrivito_sdk/realm/attribute_types';
-export type { AttributeType } from 'scrivito_sdk/models';
+export type { CmsAttributeType } from 'scrivito_sdk/models';
 
 export {
   createObjClass,
@@ -40,6 +40,7 @@ export { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';
 export { Schema } from 'scrivito_sdk/realm/schema';
 export type {
   AttributeDefinitions,
+  NormalizedAttributeDefinition,
   BasicAttributeDefinitions,
   ObjClassDefinition,
   WidgetClassDefinition,

@@ -39,8 +39,8 @@ import {
   serializeAttributes,
 } from 'scrivito_sdk/models/basic_attribute_content';
 import {
-  AttributeType,
   BasicAttributeValue,
+  CmsAttributeType,
 } from 'scrivito_sdk/models/basic_attribute_types';
 import { BasicField } from 'scrivito_sdk/models/basic_field';
 import {
@@ -272,7 +272,7 @@ export class BasicObj implements ContentValueProvider {
     return this.getAttributeData('_data_param') ?? null;
   }
 
-  get<Type extends AttributeType>(
+  get<Type extends CmsAttributeType>(
     attributeName: string,
     typeInfo: TypeInfo<Type>
   ): BasicAttributeValue<Type> {
@@ -591,7 +591,7 @@ export class BasicObj implements ContentValueProvider {
 
   getAttributeData<Key extends keyof ExistentObjJson & string>(
     attributeName: Key,
-    type?: AttributeType
+    type?: CmsAttributeType
   ): ExistentObjJson[Key] {
     return type === 'widget' || type === 'widgetlist'
       ? this.objData.getAttributeWithWidgetData(attributeName)

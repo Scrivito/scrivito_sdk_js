@@ -4,7 +4,10 @@ import {
   never,
   onReset,
 } from 'scrivito_sdk/common';
-import { LoadableCollection, loadableWithDefault } from 'scrivito_sdk/loadable';
+import {
+  createLoadableCollection,
+  loadableWithDefault,
+} from 'scrivito_sdk/loadable';
 import { BasicObj, ObjScope, getAllObjsByValueFrom } from 'scrivito_sdk/models';
 import { Obj, wrapInAppClass } from 'scrivito_sdk/realm';
 
@@ -85,8 +88,8 @@ export function resetUnstableMultiSiteMode(): void {
   getUnstableSiteIdForObjCallback = undefined;
 }
 
-const loadableCollection = new LoadableCollection({
-  recordedAs: 'multiSiteMode',
+const loadableCollection = createLoadableCollection({
+  name: 'multiSiteMode',
   // the site id is not actually "loaded",
   // we are just waiting for the application to set it
   loadElement: () => ({

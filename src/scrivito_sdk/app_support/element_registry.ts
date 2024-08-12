@@ -1,6 +1,6 @@
 // @rewire
 import { Streamable } from 'scrivito_sdk/common';
-import { LoadableCollection } from 'scrivito_sdk/loadable';
+import { createLoadableCollection } from 'scrivito_sdk/loadable';
 import { ElementBoundaries } from 'scrivito_sdk/ui_interface';
 
 const registry: ElementRegistry = {};
@@ -59,7 +59,7 @@ export function calculateElementBoundaries(
   };
 }
 
-const elementBoundaries = new LoadableCollection({
+const elementBoundaries = createLoadableCollection({
   loadElement: (elementId: number) => ({
     stream: new Streamable<ElementBoundaries | null>((subscriber) => {
       const updateElementBoundaries = () => {

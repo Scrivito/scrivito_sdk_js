@@ -21,8 +21,8 @@ import {
   serializeAttributes,
 } from 'scrivito_sdk/models/basic_attribute_content';
 import {
-  AttributeType,
   BasicAttributeValue,
+  CmsAttributeType,
 } from 'scrivito_sdk/models/basic_attribute_types';
 import { BasicField } from 'scrivito_sdk/models/basic_field';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
@@ -175,7 +175,7 @@ export class BasicWidget implements ContentValueProvider {
     return getWidgetModification(from, to, this.obj().id(), this.id());
   }
 
-  get<Type extends AttributeType>(
+  get<Type extends CmsAttributeType>(
     attributeName: string,
     typeInfo: TypeInfo<Type>
   ): BasicAttributeValue<Type> {
@@ -294,8 +294,8 @@ export class BasicWidget implements ContentValueProvider {
     return this.obj().getWidgetAttribute(this.id(), attributeName);
   }
 
-  getData(): WidgetJson {
-    return this.obj().getWidgetData(this.id())!;
+  getData(): WidgetJson | undefined {
+    return this.obj().getWidgetData(this.id());
   }
 
   // For test purpose only.

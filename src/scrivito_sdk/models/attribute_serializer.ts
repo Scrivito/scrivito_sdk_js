@@ -1,7 +1,6 @@
 import difference from 'lodash-es/difference';
 import isDate from 'lodash-es/isDate';
 import isEmpty from 'lodash-es/isEmpty';
-import isObject from 'lodash-es/isObject';
 
 import { AttributeJson, LinkJson } from 'scrivito_sdk/client';
 import {
@@ -9,6 +8,7 @@ import {
   formatDateToString,
   isCamelCase,
   isEmptyValue,
+  isObject,
   isStringArray,
   isSystemAttribute,
   isValidDateString,
@@ -19,7 +19,7 @@ import {
 } from 'scrivito_sdk/common';
 import { ObjJsonPatch } from 'scrivito_sdk/data';
 import { NormalizedBasicAttributesWithUnknownValues } from 'scrivito_sdk/models/basic_attribute_content';
-import { AttributeType } from 'scrivito_sdk/models/basic_attribute_types';
+import { CmsAttributeType } from 'scrivito_sdk/models/basic_attribute_types';
 import { BasicLink } from 'scrivito_sdk/models/basic_link';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
@@ -65,7 +65,7 @@ export function serialize(
   return serializedAttributes;
 }
 
-function serializeAttributeEntry<Type extends AttributeType>(
+function serializeAttributeEntry<Type extends CmsAttributeType>(
   value: unknown,
   name: string,
   typeInfo: BasicTypeInfo<Type>
@@ -79,7 +79,7 @@ function serializeAttributeEntry<Type extends AttributeType>(
   return serializedEntry;
 }
 
-function serializeEntry<Type extends AttributeType>(
+function serializeEntry<Type extends CmsAttributeType>(
   value: unknown,
   name: string,
   typeInfo: BasicTypeInfo<Type>

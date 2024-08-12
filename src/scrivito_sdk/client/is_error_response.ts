@@ -1,4 +1,4 @@
-import isObject from 'lodash-es/isObject';
+import { isObject } from 'scrivito_sdk/common';
 
 export type ErrorResponse = {
   error: string;

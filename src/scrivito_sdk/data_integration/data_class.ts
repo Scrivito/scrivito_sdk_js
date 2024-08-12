@@ -1,9 +1,12 @@
-import isObject from 'lodash-es/isObject';
+import isEqual from 'lodash-es/isEqual';
+import mapValues from 'lodash-es/mapValues';
 
+import { FilterValue } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   ScrivitoError,
   assumePresence,
+  isObject,
 } from 'scrivito_sdk/common';
 import {
   NormalizedDataClassSchema,
@@ -14,12 +17,13 @@ import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
 
 /** @public */
 export abstract class DataClass {
-  /** @beta */
+  /** @public */
   abstract create(attributes: DataItemAttributes): Promise<DataItem>;
-  /** @beta */
+  /** @public */
   abstract all(): DataScope;
-  /** @beta */
+  /** @public */
   abstract get(id: string): DataItem | null;
+
   /** @beta */
   abstract getUnchecked(id: string): DataItem;
 
@@ -85,15 +89,66 @@ export abstract class DataScope {
   }
 
   /** @public */
-  getError(): DataScopeError | undefined {
-    return;
-  }
-
-  /** @public */
   abstract limit(): number | undefined;
 
   /** @internal */
   abstract toPojo(): DataScopePojo;
+
+  /** @internal */
+  normalizeFilters(
+    filters?: DataScopeFilters
+  ): NormalizedDataScopeFilters | undefined {
+    if (!filters) return;
+
+    return mapValues(filters, (valueOrSpec, attributeName) => {
+      if (isAndOperatorSpec(valueOrSpec)) return valueOrSpec;
+
+      const isOpSpec = isOperatorSpec(valueOrSpec);
+      const actualValue = isOpSpec ? valueOrSpec.value : valueOrSpec;
+      let serializedValue = actualValue;
+
+      if (actualValue instanceof Date) {
+        serializedValue = actualValue.toISOString();
+      }
+
+      if (actualValue instanceof DataItem) {
+        serializedValue = actualValue.id();
+      }
+
+      if (
+        serializedValue === null ||
+        typeof serializedValue === 'string' ||
+        typeof serializedValue === 'number' ||
+        typeof serializedValue === 'boolean'
+      ) {
+        const operator = isOpSpec ? valueOrSpec.operator : 'equals';
+        return { operator, value: serializedValue };
+      }
+
+      throw new ArgumentError(
+        `Invalid filter value for "${attributeName}": ${JSON.stringify(
+          valueOrSpec
+        )}`
+      );
+    });
+  }
+
+  protected attributesFromFilters(filters?: NormalizedDataScopeFilters) {
+    if (!filters) return;
+
+    const initialAttributes: Record<string, unknown> = {};
+
+    return Object.keys(filters).reduce((attributes, name) => {
+      const filter = filters[name];
+      const specs = isOperatorSpec(filter) ? [filter] : filter.value;
+
+      specs.forEach((spec) => {
+        if (spec.operator === 'equals') attributes[name] = spec.value;
+      });
+
+      return attributes;
+    }, initialAttributes);
+  }
 }
 
 export class DataItemAttribute {
@@ -130,8 +185,22 @@ export class DataItemAttribute {
 /** @public */
 export type DataItemAttributes = Record<string, unknown>;
 
+export type NormalizedDataScopeFilters = Record<
+  string,
+  OperatorSpec | AndOperatorSpec
+>;
+
 /** @public */
-export type DataScopeFilters = Record<string, string | OperatorSpec>;
+export type DataScopeFilters = Record<
+  string,
+  DataScopeFilterValue | DataScopeOperatorSpec | AndOperatorSpec
+>;
+
+type DataScopeFilterValue = FilterValue | Date | DataItem;
+
+export interface NormalizedDataScopeParams extends DataScopeParams {
+  filters?: NormalizedDataScopeFilters;
+}
 
 /** @public */
 export interface DataScopeParams {
@@ -141,14 +210,29 @@ export interface DataScopeParams {
   limit?: number;
 }
 
-export type FilterOperator = 'equals' | 'notEquals';
+export type FilterOperator =
+  | 'equals'
+  | 'notEquals'
+  | 'isGreaterThan'
+  | 'isLessThan'
+  | 'isGreaterThanOrEquals'
+  | 'isLessThanOrEquals';
 
 export const DEFAULT_LIMIT = 20;
 
+export interface AndOperatorSpec {
+  operator: 'and';
+  value: OperatorSpec[];
+}
+
 /** @public */
-export interface OperatorSpec {
+export interface OperatorSpec extends DataScopeOperatorSpec {
+  value: FilterValue;
+}
+
+interface DataScopeOperatorSpec {
   operator: FilterOperator;
-  value: string;
+  value: DataScopeFilterValue;
 }
 
 /** @public */
@@ -159,7 +243,7 @@ export type DataScopePojo = PresentDataScopePojo | EmptyDataScopePojo;
 export type PresentDataScopePojo = {
   _class: string;
   _attribute?: string;
-} & DataScopeParams;
+} & NormalizedDataScopeParams;
 
 export type EmptyDataScopePojo = {
   _class: null | string;
@@ -218,37 +302,43 @@ export function assertValidDataItemAttributes(
   }
 }
 
-export function assertNoAttributeFilterConflicts(
-  attributes: DataItemAttributes,
-  filters: DataScopeFilters
-): void {
-  Object.keys(attributes).forEach((attributeName) => {
-    if (filters.hasOwnProperty(attributeName)) {
-      const attributeValue = attributes[attributeName];
-      const filterValue = filters[attributeName];
-
-      if (attributeValue !== filterValue) {
-        throw new ArgumentError(
-          `Tried to create ${attributeName}: ${String(
-            attributeValue
-          )} in a context of ${attributeName}: ${JSON.stringify(filterValue)}`
-        );
-      }
-    }
-  });
-}
-
 export function combineFilters(
-  currFilters: DataScopeFilters | undefined,
-  nextFilters: DataScopeFilters | undefined
-): DataScopeFilters | undefined {
+  currFilters: NormalizedDataScopeFilters | undefined,
+  nextFilters: NormalizedDataScopeFilters | undefined
+): NormalizedDataScopeFilters | undefined {
   if (!currFilters) return nextFilters;
+  if (!nextFilters) return currFilters;
 
-  if (nextFilters) {
-    assertNoAttributeFilterConflicts(nextFilters, currFilters);
-  }
+  let combinedFilters = { ...currFilters };
 
-  return { ...currFilters, ...nextFilters };
+  Object.keys(nextFilters).forEach((attributeName) => {
+    if (
+      attributeName in combinedFilters &&
+      !isEqual(combinedFilters[attributeName], nextFilters[attributeName])
+    ) {
+      const currentFilter = combinedFilters[attributeName];
+      const nextFilter = nextFilters[attributeName];
+
+      combinedFilters = {
+        ...combinedFilters,
+        [attributeName]: {
+          operator: 'and',
+          value: [
+            ...(isOperatorSpec(currentFilter)
+              ? [currentFilter]
+              : currentFilter.value),
+            ...(isOperatorSpec(nextFilter) ? [nextFilter] : nextFilter.value),
+          ],
+        },
+      };
+
+      return;
+    }
+
+    combinedFilters[attributeName] = nextFilters[attributeName];
+  });
+
+  return combinedFilters;
 }
 
 export function combineSearches(
@@ -264,12 +354,42 @@ export function itemPojoToScopePojo({
   _class,
   _id,
 }: DataItemPojo): DataScopePojo {
-  return { _class, filters: { _id } };
+  return { _class, filters: { _id: { operator: 'equals', value: _id } } };
 }
 
 export function itemIdFromFilters(
-  filters: DataScopeFilters | undefined
+  filters: NormalizedDataScopeFilters | undefined
 ): string | undefined {
-  const id = filters?._id;
+  const id = filters?._id?.value;
   if (typeof id === 'string') return id;
+}
+
+export function isOperatorSpec(spec: unknown): spec is OperatorSpec {
+  return (
+    isObject(spec) &&
+    'operator' in spec &&
+    typeof spec.operator === 'string' &&
+    [
+      'equals',
+      'notEquals',
+      'isGreaterThan',
+      'isLessThan',
+      'isGreaterThanOrEquals',
+      'isLessThanOrEquals',
+    ].includes(spec.operator) &&
+    'value' in spec &&
+    (spec.value === null ||
+      ['string', 'number', 'boolean'].includes(typeof spec.value))
+  );
+}
+
+function isAndOperatorSpec(spec: unknown): spec is AndOperatorSpec {
+  return (
+    isObject(spec) &&
+    'operator' in spec &&
+    spec.operator === 'and' &&
+    'value' in spec &&
+    Array.isArray(spec.value) &&
+    spec.value.every(isOperatorSpec)
+  );
 }

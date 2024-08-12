@@ -81,12 +81,12 @@ function changeSubscriptionsFor(dataId: string, amount: number) {
   return newNumber;
 }
 
-export function notifyDataWasSet(dataId: string) {
-  const process = processIndex[dataId];
-
-  if (process) {
-    process.notifyDataWasSet();
-  }
+export function notifyDataWasSet(
+  dataId: string,
+  processFactory: () => LoaderProcess
+) {
+  const processToUse = getOrCreateProcessFor(dataId, processFactory);
+  processToUse.notifyDataWasSet();
 }
 
 onReset(() => {

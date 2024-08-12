@@ -13,14 +13,12 @@ import {
 } from 'scrivito_sdk/app_support/routing';
 import { InternalError, onReset } from 'scrivito_sdk/common';
 import {
-  LoadableData,
-  LoadableState,
+  createLoadableData,
   loadAndObserve,
   loadableWithDefault,
 } from 'scrivito_sdk/loadable';
 import { getObjFrom, restrictToSiteAndGlobal } from 'scrivito_sdk/models';
 import { isBinaryBasicObj } from 'scrivito_sdk/realm';
-import { createStateContainer } from 'scrivito_sdk/state';
 
 export interface NavigationState {
   historyState: HistoryState;
@@ -93,10 +91,7 @@ function recognizeLocation(location: string) {
   return route;
 }
 
-const navigationState = createStateContainer<LoadableState<NavigationState>>();
-
-const loadableNavigationState = new LoadableData({
-  state: navigationState,
+const loadableNavigationState = createLoadableData({
   stream: loadAndObserve(calculateNavigationState)
     .filter(handleRedirectToBinary)
     .filter(handleMovedCurrentPage),
@@ -162,7 +157,7 @@ export function setRecognizedSiteId({
           version: historyChangesCount,
         };
 
-  navigationState.set({
+  loadableNavigationState.rawStateContainer().set({
     meta,
     value: {
       historyState,
@@ -176,7 +171,7 @@ export function setRecognizedSiteId({
 
 // For test purposes only
 export function resetRecognizedSiteId(): void {
-  navigationState.clear();
+  loadableNavigationState.reset();
 }
 
 onReset(() => {

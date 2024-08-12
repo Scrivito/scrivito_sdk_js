@@ -12,8 +12,8 @@ import {
   getContentStateId,
 } from 'scrivito_sdk/data';
 import {
-  LoadableCollection,
   LoadableData,
+  createLoadableCollection,
   loadableWithDefault,
 } from 'scrivito_sdk/loadable';
 
@@ -24,8 +24,8 @@ export interface SuggestOptions {
 
 type CollectionKey = [ObjSpaceId, BackendSuggestParams];
 
-const loadableCollection = new LoadableCollection({
-  recordedAs: 'suggest',
+const loadableCollection = createLoadableCollection({
+  name: 'suggest',
   loadElement: ([objSpaceId, params]: CollectionKey) => ({
     loader: () =>
       cmsRetrieval.retrieveSuggest(getWorkspaceId(objSpaceId), params),

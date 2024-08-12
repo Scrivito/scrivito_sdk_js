@@ -18,7 +18,7 @@ import {
   DataScope,
 } from 'scrivito_sdk/data_integration';
 import { importFrom } from 'scrivito_sdk/import_from';
-import { AttributeType, BasicField } from 'scrivito_sdk/models';
+import { BasicField, CmsAttributeType } from 'scrivito_sdk/models';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
@@ -142,11 +142,13 @@ function getField<AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
   return null;
 }
 
-function getFieldsForComparison<T extends AttributeType>(field: BasicField<T>) {
+function getFieldsForComparison<T extends CmsAttributeType>(
+  field: BasicField<T>
+) {
   return getComparisonRange().map((objSpace) => field.inObjSpace(objSpace));
 }
 
-function assertWidgetPropsAreAllowed<T extends AttributeType>(
+function assertWidgetPropsAreAllowed<T extends CmsAttributeType>(
   widgetProps: WidgetProps | undefined,
   field: BasicField<T>
 ) {
@@ -163,7 +165,7 @@ function assertWidgetPropsAreAllowed<T extends AttributeType>(
   }
 }
 
-function shouldComparisonBeSkipped<T extends AttributeType>(
+function shouldComparisonBeSkipped<T extends CmsAttributeType>(
   fromField: BasicField<T> | null,
   toField?: BasicField<T> | null
 ) {

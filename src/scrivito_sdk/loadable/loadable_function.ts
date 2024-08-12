@@ -1,6 +1,6 @@
 import {
-  LoadableData,
   LoadableState,
+  createLoadableData,
   isCurrentlyCapturing,
 } from 'scrivito_sdk/loadable';
 import { dejitterStateStream } from 'scrivito_sdk/loadable/dejitter_state_stream';
@@ -70,7 +70,7 @@ function createLoadableFunction<Args extends unknown[], Return>(
   return (...args: Args) => {
     if (!isCurrentlyCapturing()) return fn(...args);
 
-    const data = new LoadableData({
+    const data = createLoadableData({
       state: functionState.subState(argsToString(...args)),
       loadableStream: dejitterStateStream(observeAndLoad(() => fn(...args))),
     });

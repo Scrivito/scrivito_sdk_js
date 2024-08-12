@@ -1,6 +1,6 @@
 import { JrRestApi } from 'scrivito_sdk/client';
 import { fetchConfiguredTenant } from 'scrivito_sdk/common';
-import { LoadableData } from 'scrivito_sdk/loadable';
+import { createLoadableData } from 'scrivito_sdk/loadable';
 
 export interface UserInfo {
   sub: string;
@@ -24,7 +24,7 @@ export function setUserInfo(userinfo: UserInfo | null): void {
   loadableUserInfo.set(userinfo);
 }
 
-const loadableUserInfo = new LoadableData<UserInfo | null>({
+const loadableUserInfo = createLoadableData<UserInfo | null>({
   loader: async () =>
     JrRestApi.getWithoutLogin(await getUserInfoPath()) as Promise<UserInfo>,
 });

@@ -6,7 +6,7 @@ import {
 } from 'scrivito_sdk/models/type_info';
 import {
   AppClass,
-  AttributeType,
+  CmsAttributeType,
   Obj,
   ObjClass,
   Widget,
@@ -107,12 +107,12 @@ type AttributeDefinitionWithConfig = {
 }[keyof AttributeTypeToConfigMapping];
 
 type AttributeTypeWithoutConfig = Exclude<
-  AttributeType,
+  CmsAttributeType,
   keyof AttributeTypeToConfigMapping
 >;
 
 type AttributeTypeWithOmittedConfig = Exclude<
-  AttributeType,
+  CmsAttributeType,
   AttributeTypeWithMandatoryConfig | AttributeTypeWithoutConfig
 >;
 
@@ -128,11 +128,14 @@ type AttributeTypeToConfigMapping = {
 };
 
 export interface NormalizedAttributeDefinitions {
-  [attributeName: string]: NormalizedTypeInfo<AttributeType>;
+  [attributeName: string]: NormalizedAttributeDefinition;
 }
 
+export type NormalizedAttributeDefinition =
+  NormalizedTypeInfo<CmsAttributeType>;
+
 export interface BasicAttributeDefinitions {
-  [attributeName: string]: BasicTypeInfo<AttributeType>;
+  [attributeName: string]: BasicTypeInfo<CmsAttributeType>;
 }
 
 interface BasicObjClassDefinition {
@@ -172,7 +175,7 @@ export class Schema {
     return klass._scrivitoPrivateSchema;
   }
 
-  static basicFieldFor<T extends AttributeType>(
+  static basicFieldFor<T extends CmsAttributeType>(
     model: Obj | Widget,
     attributeName: string
   ): BasicField<T> | null {
@@ -283,7 +286,7 @@ export class Schema {
     return this.basicClassDefinition.onlyAsRoot;
   }
 
-  attribute(name: string): BasicTypeInfo<AttributeType> | undefined {
+  attribute(name: string): BasicTypeInfo<CmsAttributeType> | undefined {
     return this.attributes()[name];
   }
 
@@ -305,7 +308,7 @@ export function isAppClass(object: object): object is AppClass {
 
 function toBasicAttributeDefinition(
   attrDefinition: AttributeDefinition
-): BasicTypeInfo<AttributeType> {
+): BasicTypeInfo<CmsAttributeType> {
   if (typeof attrDefinition === 'string') return [attrDefinition];
 
   const type = attrDefinition[0];
@@ -323,8 +326,8 @@ function toBasicAttributeDefinition(
 }
 
 function toNormalizedAttributeDefinition(
-  definition: BasicTypeInfo<AttributeType>
-): NormalizedTypeInfo<AttributeType> {
+  definition: BasicTypeInfo<CmsAttributeType>
+): NormalizedTypeInfo<CmsAttributeType> {
   if (definition.length === 1) return [definition[0], {}];
 
   switch (definition[0]) {

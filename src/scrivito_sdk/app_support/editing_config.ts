@@ -77,9 +77,17 @@ export interface AttributesEditingConfig {
 export interface AttributeEditingConfig {
   title?: string;
   description?: string;
+  restrictDataTo?: RestrictDataTo;
   values?: readonly LocalizedValue[];
   options?: AttributeEditingOptions;
+  iteratesOver?: IteratesOver;
 }
+
+export type RestrictDataTo = Array<
+  'scope' | 'item' | 'scopeAttribute' | 'itemAttribute'
+>;
+
+export type IteratesOver = 'data';
 
 export interface AttributeEditingOptions {
   allowedTags?: readonly (keyof JSX.IntrinsicElements)[];
@@ -180,7 +188,7 @@ type InitializeCallback<T extends Obj | Widget> = (instance: T) => void;
 
 type PropertiesGroupsCallback<T extends Obj | Widget> = (
   content: T
-) => readonly PropertyGroup[];
+) => readonly DynamicPropertyGroup[];
 
 type PropertiesCallback<T extends Obj | Widget> = (
   content: T

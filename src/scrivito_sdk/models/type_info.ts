@@ -1,4 +1,4 @@
-import { AttributeType } from 'scrivito_sdk/models/basic_attribute_types';
+import { CmsAttributeType } from 'scrivito_sdk/models/basic_attribute_types';
 
 export type AttributeTypeWithMandatoryConfig = 'enum' | 'multienum';
 
@@ -22,10 +22,10 @@ interface NormalizedTypeConfigMapping {
   widgetlist: { only?: readonly string[]; maximum?: number };
 }
 
-export type BasicTypeInfo<Type extends AttributeType> =
+export type BasicTypeInfo<Type extends CmsAttributeType> =
   Type extends keyof TypeConfigMapping ? BasicTypeInfoWithConfig<Type> : [Type];
 
-export type NormalizedTypeInfo<Type extends AttributeType> =
+export type NormalizedTypeInfo<Type extends CmsAttributeType> =
   Type extends keyof NormalizedTypeConfigMapping
     ? [Type, NormalizedTypeConfigMapping[Type]]
     : [Type, {}];
@@ -35,6 +35,6 @@ type BasicTypeInfoWithConfig<Type extends keyof TypeConfigMapping> =
     ? [Type, TypeConfigMapping[Type]]
     : [Type, TypeConfigMapping[Type]] | [Type];
 
-export type TypeInfo<Type extends AttributeType> =
+export type TypeInfo<Type extends CmsAttributeType> =
   | BasicTypeInfo<Type>
   | Exclude<Type, AttributeTypeWithMandatoryConfig>;

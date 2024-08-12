@@ -1,61 +1,72 @@
 import { Streamable } from 'scrivito_sdk/common';
+import { LoadableData } from 'scrivito_sdk/loadable';
 import { LoadableState } from 'scrivito_sdk/loadable/loadable_state';
 import {
   InvalidationCallback,
   LoaderCallback,
   LoaderCallbackProcess,
 } from 'scrivito_sdk/loadable/loader_callback_process';
+import { applyOfflineHandling } from 'scrivito_sdk/loadable/offline_handling';
+import { StoreEntry } from 'scrivito_sdk/loadable/offline_store';
 import { StreamProcess } from 'scrivito_sdk/loadable/stream_process';
 import { StateContainer } from 'scrivito_sdk/state';
 
-export type LoaderProcessOptions<T> =
-  | OptionsWithLoader<T>
-  | OptionsWithStream<T>
-  | OptionsWithLoadableStream<T>;
+export type LoaderProcessParams<T> =
+  | ParamsWithLoader<T>
+  | ParamsWithStream<T>
+  | ParamsWithLoadableStream<T>;
 
-interface OptionsWithLoader<T> {
+export interface ParamsWithLoader<T> {
   loader: LoaderCallback<T>;
+  offlineLoader?: LoaderCallback<T>;
+  offlineEntry?: StoreEntry<T>;
   invalidation?: InvalidationCallback;
 
   loadableStream?: undefined;
   stream?: undefined;
 }
 
-interface OptionsWithStream<T> {
+interface ParamsWithStream<T> {
   stream: Streamable<T>;
 
   loadableStream?: undefined;
   loader?: undefined;
   invalidation?: undefined;
+  offlineEntry?: undefined;
 }
 
 /** package-private, only use inside 'loadable' */
-interface OptionsWithLoadableStream<T> {
+interface ParamsWithLoadableStream<T> {
   loadableStream: Streamable<LoadableState<T>>;
 
   stream?: undefined;
   loader?: undefined;
   invalidation?: undefined;
+  offlineEntry?: undefined;
 }
 
 export function createLoaderProcess<T>(
-  options: LoaderProcessOptions<T>,
+  loadable: LoadableData<T>,
+  params: LoaderProcessParams<T>,
   stateContainer: StateContainer<LoadableState<T>>
 ) {
-  if (options.stream) {
+  if (params.stream) {
     return new StreamProcess(
       stateContainer,
-      options.stream.map((value) => ({ meta: {}, value }))
+      params.stream.map((value) => ({ meta: {}, value }))
     );
   }
 
-  if (options.loadableStream) {
-    return new StreamProcess(stateContainer, options.loadableStream);
+  if (params.loadableStream) {
+    return new StreamProcess(stateContainer, params.loadableStream);
   }
+
+  const { loader, onChange } = applyOfflineHandling(loadable, params);
 
   return new LoaderCallbackProcess(
     stateContainer,
-    options.loader,
-    options.invalidation
+    loader,
+    params.invalidation,
+    onChange
   );
 }

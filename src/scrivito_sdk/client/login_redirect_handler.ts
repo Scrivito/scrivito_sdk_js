@@ -54,4 +54,7 @@ function returnToUrl() {
   return url.toString();
 }
 
-onReset(() => (loggedInParamName = undefined));
+onReset(() => {
+  identityProvider = undefined;
+  loggedInParamName = undefined;
+});

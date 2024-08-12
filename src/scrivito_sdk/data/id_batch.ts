@@ -1,4 +1,9 @@
-import { LoadableCollection, LoadableData, load } from 'scrivito_sdk/loadable';
+import {
+  LoadableCollection,
+  LoadableData,
+  createLoadableCollection,
+  load,
+} from 'scrivito_sdk/loadable';
 
 export interface QueryData {
   results: string[];
@@ -31,18 +36,18 @@ export class IdBatchCollection<Params> {
   private fakeQuery: ((params: Params) => QueryData) | undefined;
 
   constructor({
-    recordedAs,
+    name,
     loadBatch,
     invalidation,
   }: {
-    recordedAs: string;
+    name: string;
     loadBatch: LoadBatch<Params>;
     invalidation: Invalidation<Params>;
   }) {
     this.loadBatch = loadBatch;
 
-    this.loadableCollection = new LoadableCollection({
-      recordedAs,
+    this.loadableCollection = createLoadableCollection({
+      name,
       loadElement: ([params, index]: [Params, number], batchSize: number) => ({
         loader: () => this.loader(params, index, batchSize),
         invalidation: () => invalidation(params),

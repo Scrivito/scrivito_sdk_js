@@ -35,7 +35,7 @@ export function getLoginHandler() {
 
 /** @public */
 export function logout(returnTo?: string): void {
-  logoutAsync(returnTo);
+  if (!uiAdapter) logoutAsync(returnTo);
 }
 
 async function logoutAsync(returnTo?: string) {

@@ -15,8 +15,8 @@ import {
 } from 'scrivito_sdk/common';
 import * as AttributeDeserializer from 'scrivito_sdk/models/attribute_deserializer';
 import {
-  AttributeType,
   BasicAttributeValue,
+  CmsAttributeType,
 } from 'scrivito_sdk/models/basic_attribute_types';
 import {
   BasicObj,
@@ -31,8 +31,8 @@ import {
 import { BasicTypeInfo, TypeInfo } from 'scrivito_sdk/models/type_info';
 
 type CustomAttributeValueWithTypeInfo = {
-  [Type in AttributeType]: [unknown, BasicTypeInfo<Type>];
-}[AttributeType];
+  [Type in CmsAttributeType]: [unknown, BasicTypeInfo<Type>];
+}[CmsAttributeType];
 
 export interface NormalizedBasicAttributeDict {
   [attributeName: string]: NormalizedBasicAttributeValue;
@@ -45,7 +45,7 @@ export type NormalizedBasicAttributeValue =
 type SystemAttributeValue = unknown;
 
 export interface ContentValueProvider {
-  getAttributeData(name: string, type?: AttributeType): unknown;
+  getAttributeData(name: string, type?: CmsAttributeType): unknown;
   getData(): WidgetJson | ObjJson | undefined | null;
   objSpaceId(): ObjSpaceId;
   widget(widgetId: string): BasicWidget | null;
@@ -57,9 +57,9 @@ export interface NormalizedBasicAttributesWithUnknownValues {
 
 export type NormalizedUnknownAttributeValue =
   | [unknown]
-  | [unknown, BasicTypeInfo<AttributeType>];
+  | [unknown, BasicTypeInfo<CmsAttributeType>];
 
-export function getContentValue<Type extends AttributeType>(
+export function getContentValue<Type extends CmsAttributeType>(
   content: ContentValueProvider,
   attributeName: string,
   typeInfo: TypeInfo<Type>
@@ -76,7 +76,7 @@ export function getContentValue<Type extends AttributeType>(
   );
 }
 
-function getContentValueUsingInternalName<Type extends AttributeType>(
+function getContentValueUsingInternalName<Type extends CmsAttributeType>(
   content: ContentValueProvider,
   internalAttributeName: string,
   typeInfo: BasicTypeInfo<Type>

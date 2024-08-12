@@ -1,5 +1,5 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import { AttributeType, BasicTypeInfo } from 'scrivito_sdk/models';
+import { BasicTypeInfo, CmsAttributeType } from 'scrivito_sdk/models';
 import { Schema } from './schema';
 
 const ATTRIBUTE_TYPES_WHITELIST = ['string', 'html', 'widget', 'widgetlist'];
@@ -43,7 +43,7 @@ function assertValidBinaryAttribute(
 
 function assertValidExtractTextAttribute(
   attribute: string,
-  definition: BasicTypeInfo<AttributeType> | undefined
+  definition: BasicTypeInfo<CmsAttributeType> | undefined
 ): void {
   if (!definition) {
     throw new ArgumentError(

@@ -4,6 +4,7 @@ export {
   DataItem,
   DataScope,
 } from 'scrivito_sdk/data_integration/data_class';
+export type { DataItemPojo } from 'scrivito_sdk/data_integration/data_class';
 export { createRestApiConnection } from 'scrivito_sdk/data_integration/create_rest_api_connection';
 export { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 export { ObjDataScope } from 'scrivito_sdk/data_integration/obj_data_class';
@@ -27,7 +28,10 @@ export {
 } from 'scrivito_sdk/data_integration/external_data_class';
 export { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 export { DataConnectionError } from 'scrivito_sdk/data_integration/external_data_query';
-export type { DataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
+export type {
+  DataConnection,
+  UnsafeDataConnection,
+} from 'scrivito_sdk/data_integration/external_data_connection';
 export {
   assertValidDataIdentifier,
   isValidDataIdentifier,
@@ -36,6 +40,7 @@ export {
   isDataItemPojo,
   isDataScopePojo,
   deserializeDataStackElement,
+  deserializeDataItem,
 } from 'scrivito_sdk/data_integration/data_stack';
 export { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 export { applyDataLocator } from 'scrivito_sdk/data_integration/apply_data_locator';
@@ -53,5 +58,11 @@ export type {
   DataClassSchema,
   DataClassAttributes,
   NormalizedDataAttributeDefinition,
+  NormalizedDataClassSchema,
+  DataAttributeType,
 } from 'scrivito_sdk/data_integration/data_class_schema';
-export { registerDataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';
+export {
+  getNormalizedDataClassSchema,
+  isDataClassSchemaResponse,
+  registerDataClassSchema,
+} from 'scrivito_sdk/data_integration/data_class_schema';

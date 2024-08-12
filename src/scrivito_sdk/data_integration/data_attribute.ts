@@ -1,15 +1,13 @@
 import isDate from 'lodash-es/isDate';
-import isObject from 'lodash-es/isObject';
 
-import { ArgumentError, logError } from 'scrivito_sdk/common';
+import { ArgumentError, isObject, logError } from 'scrivito_sdk/common';
 import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataAttributeConfig,
   DataAttributeDefinition,
-  DataAttributeDefinitionWithConfig,
   DataClassSchema,
-  EnumAttributeConfig,
   ReferenceAttributeConfig,
+  isEnumAttributeConfig,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
@@ -23,12 +21,17 @@ const serializers = {
   string: serializeStringAttribute,
 };
 
-export function serializeDataAttribute(
-  dataClassName: string,
-  attributeName: string,
-  value: unknown,
-  schema: DataClassSchema
-): boolean | string | number | null | unknown {
+export function serializeDataAttribute({
+  dataClassName,
+  attributeName,
+  value,
+  schema,
+}: {
+  dataClassName: string;
+  attributeName: string;
+  value: unknown;
+  schema: DataClassSchema;
+}): boolean | string | number | null | unknown {
   assertNoTypedObject(dataClassName, attributeName, value);
 
   const attributeDefinition = schema[attributeName];
@@ -43,12 +46,17 @@ export function serializeDataAttribute(
   return value ?? null;
 }
 
-export function deserializeDataAttribute(
-  dataClassName: string,
-  attributeName: string,
-  value: unknown,
-  schema: DataClassSchema
-): boolean | number | string | Date | DataItem | null | unknown {
+export function deserializeDataAttribute({
+  dataClassName,
+  attributeName,
+  value,
+  schema,
+}: {
+  dataClassName: string;
+  attributeName: string;
+  value: unknown;
+  schema: DataClassSchema;
+}): boolean | number | string | Date | DataItem | null | unknown {
   assertNoTypedObject(dataClassName, attributeName, value);
 
   const attributeDefinition = schema[attributeName];
@@ -297,19 +305,15 @@ function isISO8601(value: string) {
 }
 
 function getEnumValues(attributeConfig?: DataAttributeConfig) {
-  if (attributeConfig && isEnumAttributeConfig(attributeConfig)) {
-    return attributeConfig.values;
+  if (isEnumAttributeConfig(attributeConfig)) {
+    return attributeConfig.values.map((valueOrConfig) =>
+      typeof valueOrConfig === 'string' ? valueOrConfig : valueOrConfig.value
+    );
   }
 
   throw new ArgumentError(
     'Enum attribute config is missing the "values" property'
   );
-}
-
-function isEnumAttributeConfig(
-  config: DataAttributeDefinitionWithConfig[1]
-): config is EnumAttributeConfig {
-  return 'values' in config && Array.isArray(config.values);
 }
 
 function getReferencedClassName(attributeConfig?: DataAttributeConfig) {
@@ -378,6 +382,6 @@ function typeMismatchMessage(
 ) {
   return (
     `Expected attribute "${attributeName}" of data class "${dataClassName}" ` +
-    `to be ${expected}", but got ${JSON.stringify(actual)}`
+    `to be ${expected}, but got ${JSON.stringify(actual)}`
   );
 }

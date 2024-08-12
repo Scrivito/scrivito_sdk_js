@@ -1,6 +1,6 @@
 import { ContextContainer } from 'scrivito_sdk/common';
 import {
-  LoaderProcessOptions,
+  LoaderProcessParams,
   createLoaderProcess,
 } from 'scrivito_sdk/loadable/create_loader_process';
 import * as LoadHandler from 'scrivito_sdk/loadable/load_handler';
@@ -22,15 +22,17 @@ import {
   subscriberCountForLoading,
 } from 'scrivito_sdk/loadable/loading_registry';
 import { NotLoadedError } from 'scrivito_sdk/loadable/not_loaded_error';
+import { OfflineStore } from 'scrivito_sdk/loadable/offline_store';
 import {
   StateContainer,
   StateReader,
   createStateContainer,
 } from 'scrivito_sdk/state';
 
-type LoadableDataOptions<T> = LoaderProcessOptions<T> & {
+type LoadableDataParams<T> = LoaderProcessParams<T> & {
   state?: StateContainer<LoadableState<T>>;
   affiliation?: Affiliation;
+  name?: string;
 };
 
 export interface Affiliation {
@@ -48,7 +50,17 @@ export interface Affiliation {
 // Other transitions are also valid,
 // i.e. all possible transitions may eventually occur.
 
-export class LoadableData<LoadableType> {
+export type LoadableData<T> = InstanceType<typeof LoadableDataImpl<T>>;
+
+const singletonStore = new OfflineStore('singleton');
+
+export function createLoadableData<T>(
+  params: LoadableDataParams<T>
+): LoadableData<T> {
+  return new LoadableDataImpl(params);
+}
+
+export class LoadableDataImpl<LoadableType> {
   private affiliation?: Affiliation;
   private stateContainer: StateContainer<LoadableState<LoadableType>>;
   private id: string;
@@ -56,13 +68,23 @@ export class LoadableData<LoadableType> {
   private processFactory: () => LoaderProcess;
 
   // state is the stateContainer where the LoadableData should store its state.
-  constructor(options: LoadableDataOptions<LoadableType>) {
-    this.stateContainer = options.state ?? createStateContainer();
+  constructor(params: LoadableDataParams<LoadableType>) {
+    this.stateContainer = params.state ?? createStateContainer();
     this.id = this.stateContainer.id();
-    this.affiliation = options.affiliation;
-    this.invalidation = options.invalidation;
-    this.processFactory = () =>
-      createLoaderProcess(options, this.stateContainer);
+    this.affiliation = params.affiliation;
+    this.invalidation = params.invalidation;
+
+    this.processFactory = () => {
+      const offlineEntry =
+        params.offlineEntry ??
+        (params.name ? singletonStore.getEntry(params.name) : undefined);
+
+      return createLoaderProcess(
+        this,
+        params.loader ? { ...params, offlineEntry } : params,
+        this.stateContainer
+      );
+    };
   }
 
   ensureAvailable(): boolean {
@@ -114,7 +136,7 @@ export class LoadableData<LoadableType> {
       value,
       meta: { version: this.currentVersion() },
     });
-    notifyDataWasSet(this.id);
+    notifyDataWasSet(this.id, this.processFactory);
   }
 
   // set the data to an error.
@@ -122,7 +144,7 @@ export class LoadableData<LoadableType> {
     this.stateContainer.set({
       meta: { error, version: this.currentVersion() },
     });
-    notifyDataWasSet(this.id);
+    notifyDataWasSet(this.id, this.processFactory);
   }
 
   // transition back to missing, removes any value or errors.
@@ -154,6 +176,11 @@ export class LoadableData<LoadableType> {
   // package-private: don't call from outside of 'scrivito_sdk/loadable'
   subscribeLoading(): () => void {
     return subscribeLoading(this.id, this.processFactory);
+  }
+
+  // for test purposes only
+  rawStateContainer(): StateContainer<LoadableState<LoadableType>> {
+    return this.stateContainer;
   }
 
   private getMeta() {

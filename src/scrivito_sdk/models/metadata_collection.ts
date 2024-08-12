@@ -1,5 +1,3 @@
-import isObject from 'lodash-es/isObject';
-
 import {
   BackendMetadataResponse,
   ObjSpaceId,
@@ -12,10 +10,11 @@ import {
   camelCase,
   deserializeAsDate,
   isCamelCase,
+  isObject,
   underscore,
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
-import { LoadableCollection, LoadableData } from 'scrivito_sdk/loadable';
+import { LoadableData, createLoadableCollection } from 'scrivito_sdk/loadable';
 
 export type BinaryMetadataValue = string | string[] | number | Date;
 
@@ -129,8 +128,8 @@ export function storeMetadataCollection(
   loadableCollection.get(binaryId).set(response);
 }
 
-const loadableCollection = new LoadableCollection({
-  recordedAs: 'metadata',
+const loadableCollection = createLoadableCollection({
+  name: 'metadata',
   loadElement: (id, objSpaceId: ObjSpaceId) => ({
     loader: () =>
       cmsRetrieval.retrieveBinaryMetadata(id, { accessVia: objSpaceId }),

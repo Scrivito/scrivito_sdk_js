@@ -24,7 +24,8 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
       LoadableState<LoadableType>
     >,
     private readonly loader: LoaderCallback<LoadableType>,
-    private readonly invalidation?: InvalidationCallback
+    private readonly invalidation?: InvalidationCallback,
+    private readonly onChange?: () => void
   ) {}
 
   notifyDataRequired() {
@@ -38,6 +39,9 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
   notifyDataWasSet() {
     // when data was set, discard any loading that may still be ongoing
     this.currentLoad = undefined;
+
+    const onChange = this.onChange;
+    onChange && onChange();
   }
 
   setTidyCallback() {
@@ -60,6 +64,7 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
         addBatchUpdate(() => {
           effect();
           this.currentLoad = undefined;
+          this.onChange && this.onChange();
         });
       }
     };

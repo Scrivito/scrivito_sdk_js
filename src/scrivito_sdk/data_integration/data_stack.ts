@@ -79,7 +79,7 @@ function deserializeDataScope(
   }
 }
 
-function deserializeDataItem({
+export function deserializeDataItem({
   _class: dataClass,
   _id: dataId,
 }: DataItemPojo): DataItem | undefined {

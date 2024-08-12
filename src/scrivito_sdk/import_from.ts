@@ -1,5 +1,5 @@
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
-import { LoadableCollection, LoadableData } from 'scrivito_sdk/loadable';
+import { LoadableData, createLoadableCollection } from 'scrivito_sdk/loadable';
 
 // the modules that can be loaded using importFrom
 const moduleLoaders = {
@@ -12,11 +12,11 @@ export type EditingModuleName = keyof typeof moduleLoaders;
 // a type that maps from module names to module types
 export type EditingModules = {
   [ModuleName in EditingModuleName]: AsyncReturnType<
-    typeof moduleLoaders[ModuleName]
+    (typeof moduleLoaders)[ModuleName]
   >;
 };
 
-const loadableModules = new LoadableCollection<
+const loadableModules = createLoadableCollection<
   EditingModules[EditingModuleName],
   EditingModuleName
 >({

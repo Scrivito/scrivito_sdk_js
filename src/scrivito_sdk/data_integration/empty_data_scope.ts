@@ -37,6 +37,7 @@ export class EmptyDataScope extends DataScope {
   }
 
   take(): DataItem[] {
+    this.throwErrorIfPresent();
     return [];
   }
 
@@ -69,11 +70,8 @@ export class EmptyDataScope extends DataScope {
   }
 
   count(): 0 {
+    this.throwErrorIfPresent();
     return 0;
-  }
-
-  getError(): DataScopeError | undefined {
-    return this.params.error;
   }
 
   limit(): undefined {
@@ -92,5 +90,11 @@ export class EmptyDataScope extends DataScope {
 
   private clone() {
     return new EmptyDataScope(this.params);
+  }
+
+  private throwErrorIfPresent() {
+    if (this.params.error) {
+      throw new DataScopeError(this.params.error.message);
+    }
   }
 }

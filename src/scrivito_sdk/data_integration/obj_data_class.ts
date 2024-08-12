@@ -1,19 +1,23 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import {
+  AndOperatorSpec,
   DEFAULT_LIMIT,
   DataClass,
   DataItem,
   DataItemAttributes,
   DataScope,
-  DataScopeFilters,
   DataScopeParams,
+  NormalizedDataScopeParams,
   OperatorSpec,
   PresentDataScopePojo,
-  assertNoAttributeFilterConflicts,
   combineFilters,
   combineSearches,
   itemIdFromFilters,
 } from 'scrivito_sdk/data_integration/data_class';
+import {
+  NormalizedDataAttributeDefinition,
+  NormalizedDataClassSchema,
+} from 'scrivito_sdk/data_integration/data_class_schema';
 import { getObjDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 import {
   BasicObj,
@@ -27,6 +31,7 @@ import {
   restrictToObjClass,
 } from 'scrivito_sdk/models';
 import {
+  NormalizedAttributeDefinition,
   Obj,
   ObjSearch,
   Schema,
@@ -35,15 +40,20 @@ import {
   wrapInAppClass,
 } from 'scrivito_sdk/realm';
 
-const SUPPORTED_ATTRIBUTE_TYPES = [
+const TYPES_WITH_SCHEMA_SUPPORT = [
   'boolean',
   'enum',
   'float',
   'integer',
-  'multienum',
   'string',
-  'stringlist',
   'reference',
+];
+
+const TYPES_WITH_GARBAGE_IN_GARBAGE_OUT_SUPPORT = ['multienum', 'stringlist'];
+
+const SUPPORTED_ATTRIBUTE_TYPES = [
+  ...TYPES_WITH_SCHEMA_SUPPORT,
+  ...TYPES_WITH_GARBAGE_IN_GARBAGE_OUT_SUPPORT,
 ];
 
 export class ObjDataClass extends DataClass {
@@ -72,6 +82,10 @@ export class ObjDataClass extends DataClass {
     return new ObjDataItem(this, id);
   }
 
+  attributeDefinitions(): NormalizedDataClassSchema {
+    return attributeDefinitions(this._name);
+  }
+
   /** @internal */
   forAttribute(attributeName: string): DataScope {
     return new ObjDataScope(this, attributeName);
@@ -86,7 +100,7 @@ export class ObjDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
     private readonly _attributeName?: string,
-    private readonly _params: DataScopeParams = {}
+    private readonly _params: NormalizedDataScopeParams = {}
   ) {
     super();
   }
@@ -100,12 +114,10 @@ export class ObjDataScope extends DataScope {
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
-    this.assertNoConflictsWithFilters(attributes);
-
     const obj = createObjIn(
       this.objClassScope(),
       prepareAttributes(
-        { ...attributes, ...this._params.filters },
+        { ...attributes, ...this.attributesFromFilters(this._params.filters) },
         this._dataClass.name()
       )
     );
@@ -164,36 +176,6 @@ export class ObjDataScope extends DataScope {
     return this._params.limit;
   }
 
-  private normalizeFilters(
-    convenienceFilters?: DataScopeFilters
-  ): DataScopeFilters | undefined {
-    if (!convenienceFilters) return;
-
-    const filters: DataScopeFilters = {};
-
-    Object.keys(convenienceFilters).forEach((name) => {
-      const valueOrSpec = convenienceFilters[name];
-
-      if (typeof valueOrSpec === 'string') {
-        return (filters[name] = valueOrSpec);
-      }
-
-      const { operator, value } = valueOrSpec;
-
-      if (operator === 'equals') {
-        return (filters[name] = value);
-      }
-
-      if (operator === 'notEquals') {
-        return (filters[name] = { operator, value });
-      }
-
-      throw new ArgumentError(`Unknown filter operator "${operator}"`);
-    });
-
-    return filters;
-  }
-
   objSearch(): ObjSearch {
     return new ObjSearch(this.getSearch());
   }
@@ -234,16 +216,16 @@ export class ObjDataScope extends DataScope {
   private applyFilter(
     search: BasicObjSearch,
     name: string,
-    valueOrSpec: string | OperatorSpec
+    operatorSpec: OperatorSpec | AndOperatorSpec
   ): BasicObjSearch {
-    if (typeof valueOrSpec === 'string') {
-      return this.applyFilter(search, name, {
-        operator: 'equals',
-        value: valueOrSpec,
-      });
-    }
+    const { operator, value } = operatorSpec;
 
-    const { operator, value } = valueOrSpec;
+    if (operator === 'and') {
+      return value.reduce(
+        (currentSearch, spec) => this.applyFilter(currentSearch, name, spec),
+        search
+      );
+    }
 
     if (operator === 'equals') {
       return search.and(name, 'equals', value);
@@ -251,6 +233,22 @@ export class ObjDataScope extends DataScope {
 
     if (operator === 'notEquals') {
       return search.andNot(name, 'equals', value);
+    }
+
+    if (operator === 'isGreaterThan') {
+      return search.and(name, 'isGreaterThan', value);
+    }
+
+    if (operator === 'isLessThan') {
+      return search.and(name, 'isLessThan', value);
+    }
+
+    if (operator === 'isGreaterThanOrEquals') {
+      return search.andNot(name, 'isLessThan', value);
+    }
+
+    if (operator === 'isLessThanOrEquals') {
+      return search.andNot(name, 'isGreaterThan', value);
     }
 
     throw new ArgumentError(`Unknown filter operator "${operator}"`);
@@ -262,14 +260,6 @@ export class ObjDataScope extends DataScope {
 
   private wrapInDataItem(obj: BasicObj) {
     return new ObjDataItem(this._dataClass, obj.id());
-  }
-
-  private assertNoConflictsWithFilters(attributes: DataItemAttributes) {
-    const { filters } = this._params;
-
-    if (filters) {
-      assertNoAttributeFilterConflicts(attributes, filters);
-    }
   }
 
   private itemIdFromFilters() {
@@ -300,7 +290,7 @@ export class ObjDataItem extends DataItem {
   }
 
   obj(): Obj {
-    return wrapInAppClass(this.getExistingObj());
+    return wrapInAppClass(this.getOrThrow());
   }
 
   /** @internal */
@@ -331,7 +321,7 @@ export class ObjDataItem extends DataItem {
   }
 
   update(attributes: DataItemAttributes): Promise<void> {
-    const obj = this.getExistingObj();
+    const obj = this.getOrThrow();
     obj.update(prepareAttributes(attributes, this.dataClassName()));
 
     return obj.finishSaving();
@@ -346,7 +336,7 @@ export class ObjDataItem extends DataItem {
     }
   }
 
-  private getExistingObj() {
+  private getOrThrow() {
     const obj = this.getBasicObj();
 
     if (!obj) {
@@ -458,4 +448,52 @@ function getValidReferenceClass(attributeConfig?: {
     const { validClasses } = attributeConfig;
     if (validClasses.length === 1) return validClasses[0];
   }
+}
+
+function attributeDefinitions(dataClassName: string) {
+  const dataClassSchema: NormalizedDataClassSchema = {};
+  const normalizedAttributes = getSchema(dataClassName).normalizedAttributes();
+
+  Object.keys(normalizedAttributes).forEach((attributeName) => {
+    const dataAttributeDefinition = toDataAttributeDefinition(
+      normalizedAttributes[attributeName]
+    );
+
+    if (dataAttributeDefinition) {
+      dataClassSchema[attributeName] = dataAttributeDefinition;
+    }
+  });
+
+  return dataClassSchema;
+}
+
+function toDataAttributeDefinition([
+  cmsType,
+  cmsTypeInfo,
+]: NormalizedAttributeDefinition): NormalizedDataAttributeDefinition | null {
+  if (cmsType === 'boolean' || cmsType === 'string') {
+    return [cmsType, {}];
+  }
+
+  if (cmsType === 'float' || cmsType === 'integer') {
+    return ['number', {}];
+  }
+
+  if (cmsType === 'enum') {
+    return ['enum', { values: [...cmsTypeInfo.values] }];
+  }
+
+  if (cmsType === 'reference') {
+    const { only } = cmsTypeInfo;
+
+    if (typeof only === 'string') {
+      return ['reference', { to: only }];
+    }
+
+    if (Array.isArray(only) && only.length === 1) {
+      return ['reference', { to: only[0] }];
+    }
+  }
+
+  return null;
 }

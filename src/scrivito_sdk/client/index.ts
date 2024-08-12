@@ -94,6 +94,7 @@ export type {
   DataLocatorValueFilter,
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
+  FilterValue,
   OrderByItem,
   OrderDirection,
   ViaRef,

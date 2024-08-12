@@ -20,8 +20,8 @@ import {
   DataScope,
   DataScopeError,
   DataScopeParams,
+  NormalizedDataScopeParams,
   PresentDataScopePojo,
-  assertNoAttributeFilterConflicts,
   assertValidDataItemAttributes,
   combineFilters,
   combineSearches,
@@ -99,7 +99,7 @@ export class ExternalDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
     private readonly _attributeName?: string,
-    private readonly _params: DataScopeParams = {}
+    private readonly _params: NormalizedDataScopeParams = {}
   ) {
     super();
   }
@@ -117,12 +117,8 @@ export class ExternalDataScope extends DataScope {
     assertValidDataItemAttributes(attributes);
 
     const { filters } = this._params;
-    if (filters) {
-      assertNoAttributeFilterConflicts(attributes, filters);
-    }
-
     const dataClassName = this.dataClassName();
-    const schema = await loadExistingSchema(dataClassName);
+    const schema = await loadSchemaOrThrow(dataClassName);
 
     const serializedAttributes = serializeAttributes(
       dataClassName,
@@ -130,8 +126,12 @@ export class ExternalDataScope extends DataScope {
       schema
     );
 
-    const dataForCallback = { ...serializedAttributes, ...filters };
-    const createCallback = this.getCreateCallback();
+    const dataForCallback = {
+      ...serializedAttributes,
+      ...this.attributesFromFilters(filters),
+    };
+
+    const createCallback = getConnection(dataClassName).create;
     const resultItem = await createCallback(dataForCallback);
     assertValidResultItem(resultItem);
 
@@ -184,17 +184,15 @@ export class ExternalDataScope extends DataScope {
       return item ? [item] : [];
     }
 
-    try {
-      return this.takeUnsafe(schema);
-    } catch (error) {
-      if (isCommunicationError(error)) return [];
-      throw error;
-    }
+    return handleCommunicationError(() => this.takeUnsafe(schema));
   }
 
   transform({ filters, search, order, limit }: DataScopeParams): DataScope {
     return new ExternalDataScope(this._dataClass, this._attributeName, {
-      filters: combineFilters(this._params.filters, filters),
+      filters: combineFilters(
+        this._params.filters,
+        this.normalizeFilters(filters)
+      ),
       search: combineSearches(this._params.search, search),
       order: order || this._params.order,
       limit: limit ?? this._params.limit,
@@ -205,20 +203,15 @@ export class ExternalDataScope extends DataScope {
     return;
   }
 
-  getError(): DataScopeError | undefined {
-    const schema = getDataClassSchema(this.dataClassName());
-    if (!schema) return;
-
-    try {
-      this.takeUnsafe(schema);
-    } catch (error) {
-      if (isCommunicationError(error)) return new DataScopeError(error.message);
-    }
-  }
-
   count(): number | null {
     const { filters, search } = this._params;
-    return countExternalData(this.dataClassName(), filters, search);
+    const dataClassName = this.dataClassName();
+    const schema = getDataClassSchema(dataClassName);
+    if (!schema) return null;
+
+    return handleCommunicationError(() =>
+      countExternalData(dataClassName, filters, search, schema)
+    );
   }
 
   limit(): number | undefined {
@@ -241,22 +234,9 @@ export class ExternalDataScope extends DataScope {
     );
   }
 
-  private getCreateCallback() {
-    const className = this.dataClassName();
-    const createCallback = getConnection(className).create;
-
-    if (!createCallback) {
-      throw new ArgumentError(
-        `No create callback defined for data class "${className}"`
-      );
-    }
-
-    return createCallback;
-  }
-
   private getIterator(schema: DataClassSchema) {
     return transformContinueIterable(
-      getExternalDataQuery(this.toPojo()),
+      getExternalDataQuery(this.toPojo(), schema),
       (iterator) =>
         iterator.map((dataId) =>
           ExternalDataItem.buildWithLoadedSchema(
@@ -346,12 +326,12 @@ export class ExternalDataItem extends DataItem {
     const schema = getDataClassSchema(dataClassName);
 
     return schema
-      ? deserializeDataAttribute(
+      ? deserializeDataAttribute({
           dataClassName,
           attributeName,
-          externalData[attributeName],
-          schema
-        )
+          value: externalData[attributeName],
+          schema,
+        })
       : null;
   }
 
@@ -364,7 +344,7 @@ export class ExternalDataItem extends DataItem {
     }
 
     const dataClassName = this.dataClassName();
-    const schema = await loadExistingSchema(dataClassName);
+    const schema = await loadSchemaOrThrow(dataClassName);
 
     const serializedAttributes = serializeAttributes(
       dataClassName,
@@ -372,7 +352,7 @@ export class ExternalDataItem extends DataItem {
       schema
     );
 
-    const updateCallback = this.getUpdateCallback();
+    const updateCallback = this.getConnection().update;
     const response = await updateCallback(this._dataId, serializedAttributes);
 
     setExternalData(dataClassName, this._dataId, {
@@ -385,7 +365,7 @@ export class ExternalDataItem extends DataItem {
   }
 
   async delete(): Promise<void> {
-    const deleteCallback = this.getDeleteCallback();
+    const deleteCallback = this.getConnection().delete;
     await deleteCallback(this._dataId);
 
     setExternalData(this.dataClassName(), this._dataId, null);
@@ -396,30 +376,6 @@ export class ExternalDataItem extends DataItem {
   /** @internal */
   getExternalData(): ExternalData | null | undefined {
     return getExternalData(this.dataClassName(), this._dataId);
-  }
-
-  private getUpdateCallback() {
-    const updateCallback = this.getConnection().update;
-
-    if (!updateCallback) {
-      throw new ArgumentError(
-        `No update callback defined for data class "${this.dataClassName()}"`
-      );
-    }
-
-    return updateCallback;
-  }
-
-  private getDeleteCallback() {
-    const deleteCallback = this.getConnection().delete;
-
-    if (!deleteCallback) {
-      throw new ArgumentError(
-        `No delete callback defined for data class "${this.dataClassName()}"`
-      );
-    }
-
-    return deleteCallback;
   }
 
   private getConnection() {
@@ -449,7 +405,7 @@ function serializeAttributes(
   schema: DataClassSchema
 ) {
   return mapValues(attributes, (value, attributeName) =>
-    serializeDataAttribute(dataClassName, attributeName, value, schema)
+    serializeDataAttribute({ dataClassName, attributeName, value, schema })
   );
 }
 
@@ -459,7 +415,16 @@ function isCommunicationError(
   return error instanceof ClientError || error instanceof DataConnectionError;
 }
 
-async function loadExistingSchema(dataClassName: string) {
+function handleCommunicationError<T>(request: () => T) {
+  try {
+    return request();
+  } catch (error) {
+    if (isCommunicationError(error)) throw new DataScopeError(error.message);
+    throw error;
+  }
+}
+
+async function loadSchemaOrThrow(dataClassName: string) {
   const schema = await load(() => getDataClassSchema(dataClassName));
 
   // A schema must be stored first

@@ -18,7 +18,12 @@ import {
 import { ObjJsonPatch, patchObjJson } from 'scrivito_sdk/data/obj_patch';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
 import { failIfPerformanceConstraint } from 'scrivito_sdk/data/performance_constraint';
-import { LoadableCollection, LoadableData, load } from 'scrivito_sdk/loadable';
+import {
+  LoadableCollection,
+  LoadableData,
+  createLoadableCollection,
+  load,
+} from 'scrivito_sdk/loadable';
 import { StateReader, failIfFrozen } from 'scrivito_sdk/state';
 
 type CollectionKey = [ObjSpaceId, string];
@@ -49,8 +54,8 @@ export function setupObjChangeNotification(fn: () => void): void {
 
 type WidgetObjJson = Partial<ExistentObjJson>;
 
-const widgetCollection = new LoadableCollection({
-  recordedAs: 'widgetdata',
+const widgetCollection = createLoadableCollection({
+  name: 'widgetdata',
   loadElement: ([objSpaceId, objId]: CollectionKey) => ({
     loader: () => {
       objReplicationPool.get(objSpaceId, objId).start();
@@ -61,8 +66,8 @@ const widgetCollection = new LoadableCollection({
   }),
 });
 
-const baseCollection = new LoadableCollection({
-  recordedAs: 'baseobj',
+const baseCollection = createLoadableCollection({
+  name: 'baseobj',
   loadElement: ([objSpaceId, objId]: CollectionKey) => ({
     loader: async () => {
       if (!configuredForLazyWidgets) {

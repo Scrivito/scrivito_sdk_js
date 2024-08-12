@@ -1,23 +1,28 @@
-import { OpCode } from 'scrivito_sdk/client';
+import { FilterValue, OpCode } from 'scrivito_sdk/client';
 import {
-  DataScopeParams,
   FilterOperator,
+  NormalizedDataScopeParams,
   OrderSpec,
+  isOperatorSpec,
 } from 'scrivito_sdk/data_integration/data_class';
 
-interface Params extends DataScopeParams {
+interface Params extends NormalizedDataScopeParams {
   limit: number;
   count: boolean;
 }
 
-export type IndexParamsFilters = Record<
-  string,
-  {
-    operator: FilterOperator;
-    opCode: OpCode;
-    value: string;
-  }
->;
+export interface FilterSpec {
+  operator: FilterOperator;
+  opCode: OpCode;
+  value: FilterValue;
+}
+
+interface AndFilterSpec {
+  operator: 'and';
+  value: FilterSpec[];
+}
+
+export type IndexParamsFilters = Record<string, FilterSpec | AndFilterSpec>;
 
 /** @public */
 export class IndexParams {
@@ -32,26 +37,23 @@ export class IndexParams {
 
   filters(): IndexParamsFilters {
     return Object.entries(this._params.filters || {}).reduce(
-      (filters, [name, valueOrSpec]) => {
+      (filters, [name, operatorSpec]) => {
         if (!name) return filters;
-
-        if (typeof valueOrSpec === 'string') {
-          return {
-            ...filters,
-            [name]: {
-              operator: 'equals',
-              opCode: 'eq',
-              value: valueOrSpec,
-            },
-          };
-        }
 
         return {
           ...filters,
-          [name]: {
-            ...valueOrSpec,
-            opCode: valueOrSpec.operator === 'notEquals' ? 'neq' : 'eq',
-          },
+          [name]: isOperatorSpec(operatorSpec)
+            ? {
+                ...operatorSpec,
+                opCode: operatorToOpCode[operatorSpec.operator],
+              }
+            : {
+                operator: 'and',
+                value: operatorSpec.value.map((spec) => ({
+                  ...spec,
+                  opCode: operatorToOpCode[spec.operator],
+                })),
+              },
         };
       },
       {}
@@ -76,3 +78,13 @@ export class IndexParams {
     return this._params.count;
   }
 }
+
+// exported for test purposes only
+export const operatorToOpCode: Record<FilterOperator, OpCode> = {
+  equals: 'eq',
+  notEquals: 'neq',
+  isGreaterThan: 'gt',
+  isLessThan: 'lt',
+  isGreaterThanOrEquals: 'gte',
+  isLessThanOrEquals: 'lte',
+};

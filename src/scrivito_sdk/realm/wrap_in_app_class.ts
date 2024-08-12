@@ -2,7 +2,6 @@ import mapValues from 'lodash-es/mapValues';
 
 import { ArgumentError, isSystemAttribute } from 'scrivito_sdk/common';
 import {
-  AttributeType,
   BasicAttributeValue,
   BasicLink,
   BasicObj,
@@ -10,6 +9,7 @@ import {
   BasicTypeInfo,
   BasicWidget,
   Binary,
+  CmsAttributeType,
   DataLocator,
   ObjUnavailable,
 } from 'scrivito_sdk/models';
@@ -119,7 +119,7 @@ export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
 ): Widget<AttrDefs>;
 
 export function wrapInAppClass<
-  A extends AttributeType,
+  A extends CmsAttributeType,
   T extends BasicAttributeValue<A> | BasicObj[] | BasicObj | BasicWidget
 >(internalValue: T) {
   if (Array.isArray(internalValue)) {
@@ -190,7 +190,7 @@ export function unwrapAppAttributes(
 
     return [unwrappedValue, normalizedTypeInfo] as [
       unknown,
-      BasicTypeInfo<AttributeType>
+      BasicTypeInfo<CmsAttributeType>
     ];
   });
 }

@@ -3,10 +3,12 @@ import * as React from 'react';
 import {
   DataContext,
   DataItem,
+  DataItemPojo,
   DataScope,
   DataStack,
   DataStackElement,
   computePlaceholders,
+  isDataItemPojo,
 } from 'scrivito_sdk/data_integration';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
@@ -34,6 +36,14 @@ export function useDataStack(): DataStack | undefined {
 export function useLastDataStackElement(): DataStackElement | undefined {
   const dataStack = React.useContext(DataStackReactContext)?.dataStack;
   return dataStack && dataStack[0];
+}
+
+export function useClosestSingleItemDataStackElement():
+  | DataItemPojo
+  | undefined {
+  return React.useContext(DataStackReactContext)?.dataStack?.find(
+    isDataItemPojo
+  );
 }
 
 export function PushOntoDataStack({

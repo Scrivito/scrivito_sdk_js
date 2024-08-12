@@ -7,9 +7,9 @@ import {
 import { getFieldDiff } from 'scrivito_sdk/data';
 import { getContentValue } from 'scrivito_sdk/models/basic_attribute_content';
 import {
-  AttributeType,
   BasicAttributeValue,
   BasicAttributeValueForUpdate,
+  CmsAttributeType,
 } from 'scrivito_sdk/models/basic_attribute_types';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { getObjFrom } from 'scrivito_sdk/models/basic_scope_get_methods';
@@ -18,7 +18,7 @@ import { ObjScope } from 'scrivito_sdk/models/obj_scope';
 import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_scope_excluding_deleted';
 import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
-export class BasicField<Type extends AttributeType> {
+export class BasicField<Type extends CmsAttributeType> {
   private readonly widgetId?: string;
 
   constructor(

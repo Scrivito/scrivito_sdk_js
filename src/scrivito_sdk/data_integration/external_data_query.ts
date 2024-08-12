@@ -1,3 +1,5 @@
+import mapValues from 'lodash-es/mapValues';
+
 import {
   ArgumentError,
   EmptyContinueIterable,
@@ -6,12 +8,15 @@ import {
   transformContinueIterable,
 } from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
+import { serializeDataAttribute } from 'scrivito_sdk/data_integration/data_attribute';
 import {
   DEFAULT_LIMIT,
-  DataScopeFilters,
+  NormalizedDataScopeFilters,
   OrderSpec,
   PresentDataScopePojo,
+  isOperatorSpec,
 } from 'scrivito_sdk/data_integration/data_class';
+import { DataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/disable_external_data_loading';
 import {
@@ -37,7 +42,7 @@ type WriteCounterStates = Record<string, StateContainer<number>>;
 
 // exported for test purposes only
 export const batchCollection = new IdBatchCollection({
-  recordedAs: 'externaldataquery',
+  name: 'externaldataquery',
   loadBatch,
   invalidation: ([dataClass]) =>
     loadableWithDefault(undefined, () =>
@@ -47,9 +52,12 @@ export const batchCollection = new IdBatchCollection({
 
 export function countExternalData(
   dataClass: string,
-  filters: DataScopeFilters | undefined,
-  search: string | undefined
+  filters: NormalizedDataScopeFilters | undefined,
+  search: string | undefined,
+  schema: DataClassSchema
 ): number | null {
+  validateFilters(dataClass, filters, schema);
+
   return (
     batchCollection.getQueryCount([
       dataClass,
@@ -61,14 +69,13 @@ export function countExternalData(
   );
 }
 
-export function getExternalDataQuery({
-  _class: dataClass,
-  filters,
-  search,
-  order,
-  limit,
-}: PresentDataScopePojo): DataQuery<DataId> {
+export function getExternalDataQuery(
+  { _class: dataClass, filters, search, order, limit }: PresentDataScopePojo,
+  schema: DataClassSchema
+): DataQuery<DataId> {
   if (isExternalDataLoadingDisabled()) return new EmptyContinueIterable();
+
+  validateFilters(dataClass, filters, schema);
 
   const batchSize = limit ?? DEFAULT_LIMIT;
 
@@ -95,6 +102,30 @@ export function getExternalDataQuery({
   );
 }
 
+function validateFilters(
+  dataClassName: string,
+  filters: NormalizedDataScopeFilters | undefined,
+  schema: DataClassSchema
+) {
+  mapValues(filters, (filterValue, filterName) => {
+    const operatorSpecs = isOperatorSpec(filterValue)
+      ? [filterValue]
+      : filterValue.value;
+
+    operatorSpecs.forEach((operatorSpec) => {
+      const actualValue = isOperatorSpec(operatorSpec)
+        ? operatorSpec.value
+        : operatorSpec;
+      serializeDataAttribute({
+        dataClassName,
+        attributeName: filterName,
+        value: actualValue,
+        schema,
+      });
+    });
+  });
+}
+
 export function notifyExternalDataWrite(dataClass: string): void {
   const counterState = getOrCreateWriteCounterState(dataClass);
   const counter = getWriteCounter(dataClass);
@@ -112,7 +143,7 @@ export class DataConnectionError extends ScrivitoError {
 async function loadBatch(
   [dataClass, filters, search, order, count]: [
     string,
-    DataScopeFilters | undefined,
+    NormalizedDataScopeFilters | undefined,
     string | undefined,
     OrderSpec | undefined,
     boolean | undefined
@@ -120,7 +151,7 @@ async function loadBatch(
   continuation: string | undefined,
   batchSize: number
 ) {
-  const indexCallback = getIndexCallback(dataClass);
+  const indexCallback = getExternalDataConnectionOrThrow(dataClass).index;
 
   const result = await indexCallback(
     new IndexParams(continuation, {
@@ -184,18 +215,6 @@ function handleResultItem(dataClass: string, resultItem: ResultItem) {
 
 function preloadExternalData(dataClass: string, id: string) {
   load(() => getExternalData(dataClass, id));
-}
-
-function getIndexCallback(dataClass: string) {
-  const indexCallback = getExternalDataConnectionOrThrow(dataClass).index;
-
-  if (!indexCallback) {
-    throw new ArgumentError(
-      `No index callback defined for data class "${dataClass}"`
-    );
-  }
-
-  return indexCallback;
 }
 
 function getWriteCounter(dataClass: string) {

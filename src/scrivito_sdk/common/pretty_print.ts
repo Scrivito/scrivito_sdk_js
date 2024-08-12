@@ -1,6 +1,6 @@
 import isElement from 'lodash-es/isElement';
-import isObject from 'lodash-es/isObject';
 
+import { isObject } from 'scrivito_sdk/common';
 import { Obj } from 'scrivito_sdk/realm';
 
 export function prettyPrint(input: unknown): string {

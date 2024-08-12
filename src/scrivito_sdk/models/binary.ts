@@ -20,14 +20,14 @@ import {
   tcomb as t,
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
-import { LoadableCollection, LoadableData } from 'scrivito_sdk/loadable';
+import { LoadableData, createLoadableCollection } from 'scrivito_sdk/loadable';
 import { FutureBinary } from 'scrivito_sdk/models/future_binary';
 import { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 
 type CollectionKey = [string, TransformationDefinition | undefined];
 
-const loadableCollection = new LoadableCollection({
-  recordedAs: 'binary',
+const loadableCollection = createLoadableCollection({
+  name: 'binary',
   loadElement: (
     [binaryId, transformation]: CollectionKey,
     objSpaceId: ObjSpaceId

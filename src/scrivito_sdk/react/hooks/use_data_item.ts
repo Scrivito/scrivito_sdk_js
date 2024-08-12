@@ -1,7 +1,8 @@
-import { DataItem } from 'scrivito_sdk/data_integration';
-import { useData } from 'scrivito_sdk/react/hooks/use_data';
+import { DataItem, deserializeDataItem } from 'scrivito_sdk/data_integration';
+import { useClosestSingleItemDataStackElement } from 'scrivito_sdk/react/data_context_container';
 
 /** @public */
 export function useDataItem(): DataItem | undefined {
-  return useData().dataItem() || undefined;
+  const stackElement = useClosestSingleItemDataStackElement();
+  if (stackElement) return deserializeDataItem(stackElement);
 }

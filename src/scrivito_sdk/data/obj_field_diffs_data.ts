@@ -10,11 +10,11 @@ import {
 } from 'scrivito_sdk/client';
 import { equals, underscore } from 'scrivito_sdk/common';
 import { getObjVersion } from 'scrivito_sdk/data';
-import { LoadableCollection } from 'scrivito_sdk/loadable';
+import { createLoadableCollection } from 'scrivito_sdk/loadable';
 
 type CollectionKey = [ObjSpaceId, ObjSpaceId, string];
 
-const loadableCollection = new LoadableCollection({
+const loadableCollection = createLoadableCollection({
   loadElement: ([from, to, objId]: CollectionKey) => ({
     loader: () => cmsRetrieval.retrieveObjFieldDiffs(from, to, objId),
     invalidation: () => `${getVersion(from, objId)}:${getVersion(to, objId)}`,

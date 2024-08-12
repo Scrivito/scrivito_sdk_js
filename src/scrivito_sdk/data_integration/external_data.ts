@@ -1,7 +1,5 @@
-import isObject from 'lodash-es/isObject';
-
 import { ClientError } from 'scrivito_sdk/client';
-import { ArgumentError } from 'scrivito_sdk/common';
+import { ArgumentError, isObject } from 'scrivito_sdk/common';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
   DataIdentifier,
@@ -9,7 +7,7 @@ import {
 } from 'scrivito_sdk/data_integration/data_identifier';
 import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/disable_external_data_loading';
 import { getExternalDataConnectionOrThrow } from 'scrivito_sdk/data_integration/external_data_connection';
-import { LoadableCollection } from 'scrivito_sdk/loadable';
+import { createLoadableCollection } from 'scrivito_sdk/loadable';
 
 /** @public */
 export type ExternalData = Record<DataIdentifier, unknown>;
@@ -32,7 +30,7 @@ export function getExternalData(
   return loadableCollection.get([dataClass, dataId]).get();
 }
 
-const loadableCollection = new LoadableCollection<
+const loadableCollection = createLoadableCollection<
   ExternalData | null,
   [string, string]
 >({

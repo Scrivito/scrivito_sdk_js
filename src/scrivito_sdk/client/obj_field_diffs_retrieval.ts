@@ -6,7 +6,7 @@ import {
   ObjSpaceId,
   asBackendObjSpaceId,
 } from 'scrivito_sdk/client/obj_space_id';
-import { AttributeType } from 'scrivito_sdk/models';
+import { CmsAttributeType } from 'scrivito_sdk/models';
 
 export interface ObjFieldDiffs extends WidgetPoolDiffs {
   [attributeNameOrSpecialKeys: string]:
@@ -20,7 +20,7 @@ interface WidgetPoolDiffs {
 }
 
 export interface FieldDiffs {
-  [attributeName: string]: [AttributeType, FieldDiff];
+  [attributeName: string]: [CmsAttributeType, FieldDiff];
 }
 
 export type FieldDiff = HtmlDiff | WidgetlistDiff;

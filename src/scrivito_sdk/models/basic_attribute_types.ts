@@ -53,7 +53,7 @@ interface BasicAttributeMappingForUpdate {
 
 export type SingleReferenceValue = BasicObj | ObjUnavailable;
 
-export type AttributeType =
+export type CmsAttributeType =
   | 'binary'
   | 'boolean'
   | 'datalocator'
@@ -73,11 +73,32 @@ export type AttributeType =
   | 'widget'
   | 'widgetlist';
 
+export const CMS_ATTRIBUTE_TYPES: CmsAttributeType[] = [
+  'binary',
+  'boolean',
+  'datalocator',
+  'date',
+  'datetime',
+  'enum',
+  'float',
+  'html',
+  'integer',
+  'link',
+  'linklist',
+  'multienum',
+  'reference',
+  'referencelist',
+  'string',
+  'stringlist',
+  'widget',
+  'widgetlist',
+];
+
 // Content update related types section starts here
-export type BasicAttributeValue<Type extends AttributeType> =
+export type BasicAttributeValue<Type extends CmsAttributeType> =
   BasicAttributeMapping[Type];
 
-export type BasicAttributeValueForUpdate<Type extends AttributeType> =
+export type BasicAttributeValueForUpdate<Type extends CmsAttributeType> =
   BasicAttributeMappingForUpdate[Type];
 
 export interface BasicAttributeDict extends SystemAttributeDict {
@@ -105,5 +126,5 @@ interface BasicCustomAttributeDict {
 }
 
 type AnyCustomAttributeValueAndTypeForUpdate = {
-  [Type in AttributeType]: [BasicAttributeValue<Type>, TypeInfo<Type>];
-}[AttributeType];
+  [Type in CmsAttributeType]: [BasicAttributeValue<Type>, TypeInfo<Type>];
+}[CmsAttributeType];

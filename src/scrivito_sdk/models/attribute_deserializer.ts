@@ -13,10 +13,10 @@ import {
   isValidFloat,
 } from 'scrivito_sdk/common';
 import {
-  AttributeType,
   BasicLink,
   BasicLinkAttributes,
   Binary,
+  CmsAttributeType,
   DataLocator,
   getObjIncludingUnavailableFrom,
 } from 'scrivito_sdk/models';
@@ -36,7 +36,7 @@ import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 type BackendValue = AttributeJson | null | unknown;
 type BackendType = keyof CustomAttributeJsonMapping;
 
-export function deserialize<Type extends AttributeType>(
+export function deserialize<Type extends CmsAttributeType>(
   model: ContentValueProvider,
   value: BackendValue,
   typeInfo: BasicTypeInfo<Type>
@@ -44,8 +44,8 @@ export function deserialize<Type extends AttributeType>(
 export function deserialize(
   model: ContentValueProvider,
   value: BackendValue,
-  typeInfo: BasicTypeInfo<AttributeType>
-): BasicAttributeValue<typeof typeInfo[0]> {
+  typeInfo: BasicTypeInfo<CmsAttributeType>
+): BasicAttributeValue<(typeof typeInfo)[0]> {
   switch (typeInfo[0]) {
     case 'binary':
       return deserializeBinaryValue(value, model);

@@ -1,7 +1,12 @@
 import { InternalError, computeCacheKey, isPresent } from 'scrivito_sdk/common';
-import { LoadableData, LoadableState } from 'scrivito_sdk/loadable';
-import { LoaderProcessOptions } from 'scrivito_sdk/loadable/create_loader_process';
+import {
+  LoadableData,
+  LoadableState,
+  createLoadableData,
+} from 'scrivito_sdk/loadable';
+import { LoaderProcessParams } from 'scrivito_sdk/loadable/create_loader_process';
 import { isAvailableState } from 'scrivito_sdk/loadable/loadable_state';
+import { OfflineStore } from 'scrivito_sdk/loadable/offline_store';
 import { StateContainer, createStateContainer } from 'scrivito_sdk/state';
 
 interface LoadableCollectionState<LoadableType> {
@@ -11,48 +16,74 @@ interface LoadableCollectionState<LoadableType> {
 type LoadElementCallback<LoadableType, KeyType, LoaderHintType> = (
   key: KeyType,
   hint?: LoaderHintType
-) => LoaderProcessOptions<LoadableType>;
+) => LoaderProcessParams<LoadableType>;
+
+export type LoadableCollection<
+  LoadableType,
+  KeyType = string,
+  LoaderHintType = undefined
+> = InstanceType<
+  typeof LoadableCollectionImpl<LoadableType, KeyType, LoaderHintType>
+>;
+
+export function createLoadableCollection<
+  LoadableType,
+  KeyType = string,
+  LoaderHintType = undefined
+>(params: {
+  name?: string;
+  loadElement: LoadElementCallback<LoadableType, KeyType, LoaderHintType>;
+}): LoadableCollection<LoadableType, KeyType, LoaderHintType> {
+  return new LoadableCollectionImpl(params);
+}
 
 /** a collection of LoadableData, indexed by key */
-export class LoadableCollection<
+class LoadableCollectionImpl<
   LoadableType,
   KeyType = string,
   LoaderHintType = undefined
 > {
   private state: StateContainer<LoadableCollectionState<LoadableType>>;
-  private recordedAs?: string;
+  private name?: string;
   private loadElement: LoadElementCallback<
     LoadableType,
     KeyType,
     LoaderHintType
   >;
 
+  private readonly offlineStore?: OfflineStore<KeyType, LoadableType>;
+
   constructor({
-    recordedAs,
+    name,
     loadElement,
   }: {
-    recordedAs?: string;
+    name?: string;
     loadElement: LoadElementCallback<LoadableType, KeyType, LoaderHintType>;
   }) {
-    this.recordedAs = recordedAs;
+    this.name = name;
     this.state = createStateContainer();
     this.loadElement = loadElement;
-
-    if (recordedAs) register(recordedAs, this);
+    if (name) {
+      register(name, this);
+      this.offlineStore = new OfflineStore<KeyType, LoadableType>(name);
+    }
   }
 
   /** get a LoadableData instance from this collection */
   get(key: KeyType, loaderHint?: LoaderHintType): LoadableData<LoadableType> {
     const stringifiedKey = stringifyKey(key);
 
-    const loaderOptions = this.loadElement(key, loaderHint);
+    const params = this.loadElement(key, loaderHint);
 
-    const data = new LoadableData({
-      ...loaderOptions,
+    const paramsWithOfflineEntry = params.loader
+      ? { ...params, offlineEntry: this.offlineStore?.getEntry(key) }
+      : params;
+
+    const data = createLoadableData({
+      ...paramsWithOfflineEntry,
+
       state: this.state.subState(stringifiedKey),
-      affiliation: this.recordedAs
-        ? { collectionName: this.recordedAs, key }
-        : undefined,
+      affiliation: this.name ? { collectionName: this.name, key } : undefined,
     });
 
     return data;
@@ -77,6 +108,14 @@ export class LoadableCollection<
       .filter(isPresent)
       .filter(isAvailableState)
       .map((state) => state.value);
+  }
+
+  async findValuesInOfflineStore(
+    selector: (data: LoadableType, key: KeyType) => boolean
+  ): Promise<Array<[LoadableType, KeyType]>> {
+    if (!this.offlineStore) throw new InternalError();
+
+    return this.offlineStore.findValues(selector);
   }
 }
 
