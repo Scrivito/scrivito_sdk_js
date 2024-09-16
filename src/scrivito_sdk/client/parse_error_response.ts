@@ -26,5 +26,5 @@ export function parseErrorResponse(responseText: string): BackendError {
     };
   }
 
-  throw new RequestFailedError();
+  throw new RequestFailedError('Could not parse error response');
 }

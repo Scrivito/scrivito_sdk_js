@@ -43,7 +43,9 @@ export const PublicAuthentication: AuthorizationProvider = {
       const { details, code } = parseErrorResponse(responseText);
 
       if (code === ERROR_CODE_CLIENT_VERIFICATION_REQUIRED) {
-        if (!isChallenge(details)) throw new RequestFailedError();
+        if (!isChallenge(details)) {
+          throw new RequestFailedError('verification without challenge');
+        }
         verification = await computeVerification(details);
         return this.authorize(request);
       }

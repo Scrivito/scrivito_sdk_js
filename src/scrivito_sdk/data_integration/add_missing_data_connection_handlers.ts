@@ -1,10 +1,10 @@
 import { ScrivitoError } from 'scrivito_sdk/common';
-import { UnsafeDataConnection } from 'scrivito_sdk/data_integration';
+import { UncheckedDataConnection } from 'scrivito_sdk/data_integration';
 
 export function addMissingDataConnectionHandlers(
-  connection: Partial<UnsafeDataConnection>,
+  connection: Partial<UncheckedDataConnection>,
   dataClass: string
-): UnsafeDataConnection {
+): UncheckedDataConnection {
   return {
     get: connection.get || throwMissingCallbackError('get', dataClass),
     update: connection.update || throwMissingCallbackError('update', dataClass),
@@ -14,8 +14,8 @@ export function addMissingDataConnectionHandlers(
   };
 }
 
-function throwMissingCallbackError(
-  callbackName: keyof UnsafeDataConnection,
+export function throwMissingCallbackError(
+  callbackName: keyof UncheckedDataConnection,
   dataClass: string
 ) {
   return () => {

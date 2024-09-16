@@ -116,3 +116,8 @@ export type {
   DataLocatorTransformFilter,
   DataLocatorEqFilter,
 } from 'scrivito_sdk/models/data_locator';
+export {
+  assertValidDataIdentifier,
+  isValidDataIdentifier,
+} from 'scrivito_sdk/models/data_identifier';
+export type { DataIdentifier } from 'scrivito_sdk/models/data_identifier';

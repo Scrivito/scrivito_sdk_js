@@ -7,8 +7,10 @@ import {
   DataScope,
   DataStack,
   DataStackElement,
+  PresentDataScopePojo,
   computePlaceholders,
-  isDataItemPojo,
+  isMultiItemDataScopePojo,
+  isSingleItemElement,
 } from 'scrivito_sdk/data_integration';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
@@ -38,11 +40,29 @@ export function useLastDataStackElement(): DataStackElement | undefined {
   return dataStack && dataStack[0];
 }
 
-export function useClosestSingleItemDataStackElement():
-  | DataItemPojo
-  | undefined {
+export function useClosestMultiItemElement(
+  dataClassName?: string
+): PresentDataScopePojo | undefined {
   return React.useContext(DataStackReactContext)?.dataStack?.find(
-    isDataItemPojo
+    (element): element is PresentDataScopePojo => {
+      return (
+        isMultiItemDataScopePojo(element) &&
+        (dataClassName === undefined || element._class === dataClassName)
+      );
+    }
+  );
+}
+
+export function useClosestSingleItemElement(
+  dataClassName?: string
+): DataItemPojo | PresentDataScopePojo | undefined {
+  return React.useContext(DataStackReactContext)?.dataStack?.find(
+    (element): element is DataItemPojo | PresentDataScopePojo => {
+      return (
+        isSingleItemElement(element) &&
+        (dataClassName === undefined || element._class === dataClassName)
+      );
+    }
   );
 }
 

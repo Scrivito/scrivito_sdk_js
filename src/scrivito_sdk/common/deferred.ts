@@ -1,5 +1,3 @@
-import { ScrivitoPromise } from 'scrivito_sdk/common';
-
 // rejecting promises with plain objects instead of errors
 export class Deferred<ValueType = void> implements PromiseLike<ValueType> {
   promise: Promise<ValueType>;
@@ -9,7 +7,7 @@ export class Deferred<ValueType = void> implements PromiseLike<ValueType> {
   private settled?: boolean;
 
   constructor() {
-    this.promise = new ScrivitoPromise(
+    this.promise = new Promise(
       (
         resolveFn: (value: ValueType) => void,
         rejectFn: (error: Error) => void

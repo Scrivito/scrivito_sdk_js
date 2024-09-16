@@ -81,10 +81,6 @@ export { wait, waitMs } from 'scrivito_sdk/common/wait';
 export { equals, equalsBestEffort } from 'scrivito_sdk/common/equals';
 export { promiseAndFinally } from 'scrivito_sdk/common/promise_and_finally';
 export { assumePresence } from 'scrivito_sdk/common/assume_presence';
-export {
-  ScrivitoPromise,
-  setScrivitoPromise,
-} from 'scrivito_sdk/common/scrivito_promise';
 export { appUrlFromPackagedUiUrl } from 'scrivito_sdk/common/app_url_from_packaged_ui_url';
 export { BatchRetrieval } from 'scrivito_sdk/common/batch_retrieval';
 export { computeCacheKey } from 'scrivito_sdk/common/compute_cache_key';
@@ -161,3 +157,4 @@ export { propsAreEqual } from 'scrivito_sdk/common/props_are_equal';
 export { parameterizeDataClass } from 'scrivito_sdk/common/parameterize_data_class';
 export { isPromise } from 'scrivito_sdk/common/is_promise';
 export { isObject } from 'scrivito_sdk/common/is_object';
+export { AsyncTaskTracker } from 'scrivito_sdk/common/async_task_tracker';

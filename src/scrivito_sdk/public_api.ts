@@ -7,7 +7,17 @@
 
 // Client
 export { ArgumentError, ScrivitoError } from 'scrivito_sdk/common';
-export { load } from 'scrivito_sdk/loadable';
+export {
+  load,
+  enableOfflineStore as unstable_enableOfflineStore,
+  isOfflineStoreEnabled as unstable_isOfflineStoreEnabled,
+} from 'scrivito_sdk/loadable';
+export {
+  isInOfflineMode as unstable_isInOfflineMode,
+  leaveOfflineMode as unstable_leaveOfflineMode,
+  enterOfflineMode as unstable_enterOfflineMode,
+  deleteOfflineStore as unstable_deleteOfflineStore,
+} from 'scrivito_sdk/app_support/offline_mode';
 export { Binary, FutureBinary, DataLocator } from 'scrivito_sdk/models';
 export { ClientError, createRestApiClient } from 'scrivito_sdk/client';
 export type { ApiClientOptions } from 'scrivito_sdk/client';

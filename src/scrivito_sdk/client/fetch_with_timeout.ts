@@ -7,18 +7,19 @@ import { setTimeout } from 'scrivito_sdk/common';
  */
 export async function fetchWithTimeout(
   resource: string,
-  options?: Omit<RequestInit, 'signal'>
+  options?: Readonly<Omit<RequestInit, 'signal'>>
 ): Promise<Response> {
   const abortController = new AbortController();
   const timer = setTimeout(() => abortController.abort(), 15000);
-
-  const fetchOptions: RequestInit = options || {};
-  fetchOptions.signal = abortController.signal;
+  const fetchOptions = { ...options, signal: abortController.signal };
 
   try {
     return await fetch(resource, fetchOptions);
   } catch (error) {
-    throw new RequestFailedError(getErrorMessage(error));
+    throw new RequestFailedError(getErrorMessage(error), {
+      url: resource,
+      method: options?.method || 'GET',
+    });
   } finally {
     clearTimeout(timer);
   }

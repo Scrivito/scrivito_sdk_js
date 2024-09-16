@@ -10,6 +10,7 @@ import { setHtmlToTextConverter } from 'scrivito_sdk/app_support/extract_text/re
 import { initialContentFor } from 'scrivito_sdk/app_support/initialize_content';
 import { loadEditingSupport } from 'scrivito_sdk/app_support/load_editing_support';
 import { getCurrentNavigationState } from 'scrivito_sdk/app_support/navigation_state';
+import { initOfflineMode } from 'scrivito_sdk/app_support/offline_mode';
 import { setUiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { initializeUiRedirect } from 'scrivito_sdk/app_support/ui_redirect';
 import {
@@ -80,4 +81,5 @@ export function initializeSdk() {
   }
 
   CanonicalUrl.init();
+  initOfflineMode();
 }

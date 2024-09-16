@@ -12,7 +12,7 @@ import {
   NormalizedDataClassSchema,
   getNormalizedDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
-import { isValidDataIdentifier } from 'scrivito_sdk/data_integration/data_identifier';
+import { isValidDataIdentifier } from 'scrivito_sdk/models';
 import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
 
 /** @public */
@@ -355,6 +355,14 @@ export function itemPojoToScopePojo({
   _id,
 }: DataItemPojo): DataScopePojo {
   return { _class, filters: { _id: { operator: 'equals', value: _id } } };
+}
+
+export function scopePojoToItemPojo({
+  _class,
+  filters,
+}: PresentDataScopePojo): DataItemPojo | undefined {
+  const id = itemIdFromFilters(filters);
+  if (id) return { _class, _id: id };
 }
 
 export function itemIdFromFilters(

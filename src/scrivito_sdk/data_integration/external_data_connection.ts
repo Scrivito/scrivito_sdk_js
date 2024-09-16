@@ -17,9 +17,9 @@ export interface DataConnection {
 }
 
 /** @internal */
-export interface UnsafeDataConnection {
-  index: UnsafeIndexCallback;
-  create: UnsafeCreateCallback;
+export interface UncheckedDataConnection {
+  index: UncheckedIndexCallback;
+  create: UncheckedCreateCallback;
   get: GetCallback;
   update: UpdateCallback;
   delete: DeleteCallback;
@@ -31,7 +31,7 @@ export type IndexCallback = (
 ) => Promise<IndexResult | DataConnectionError>;
 
 /** @internal */
-export type UnsafeIndexCallback = (params: IndexParams) => Promise<unknown>;
+export type UncheckedIndexCallback = (params: IndexParams) => Promise<unknown>;
 
 /** @public */
 export type GetCallback = (id: string) => Promise<unknown | null>;
@@ -40,7 +40,7 @@ export type GetCallback = (id: string) => Promise<unknown | null>;
 export type CreateCallback = (data: ExternalData) => Promise<ResultItem>;
 
 /** @internal */
-export type UnsafeCreateCallback = (data: ExternalData) => Promise<unknown>;
+export type UncheckedCreateCallback = (data: ExternalData) => Promise<unknown>;
 
 /** @public */
 export type UpdateCallback = (
@@ -192,13 +192,13 @@ function isResultItemConvenienceNumericId(
 }
 
 const connectionsState =
-  createStateContainer<Record<string, UnsafeDataConnection>>();
+  createStateContainer<Record<string, UncheckedDataConnection>>();
 
 export function setExternalDataConnection(
   name: string,
   partialConnection:
-    | Partial<UnsafeDataConnection>
-    | Promise<Partial<UnsafeDataConnection>>
+    | Partial<UncheckedDataConnection>
+    | Promise<Partial<UncheckedDataConnection>>
 ): void {
   const connection = isPromise(partialConnection)
     ? anticipatedDataConnection(partialConnection, name)
@@ -212,7 +212,7 @@ export function setExternalDataConnection(
 
 export function getExternalDataConnection(
   name: string
-): UnsafeDataConnection | undefined {
+): UncheckedDataConnection | undefined {
   const connections = connectionsState.get();
   if (connections) return connections[name];
 }
@@ -224,7 +224,7 @@ export function getExternalDataConnectionNames(): string[] {
 
 export function getExternalDataConnectionOrThrow(
   name: string
-): UnsafeDataConnection {
+): UncheckedDataConnection {
   const connection = getExternalDataConnection(name);
 
   if (!connection) {

@@ -1,11 +1,18 @@
-import { ScrivitoError, onReset } from 'scrivito_sdk/common';
+import {
+  ScrivitoError,
+  collectAndSchedule,
+  nextTick,
+  onReset,
+} from 'scrivito_sdk/common';
 import { LoadableData } from 'scrivito_sdk/loadable';
 import { ParamsWithLoader } from 'scrivito_sdk/loadable/create_loader_process';
 import { StoreEntry } from 'scrivito_sdk/loadable/offline_store';
 
-let isOfflineStoreEnabled = false;
+let isEnabled = false;
+
+/** @beta */
 export function enableOfflineStore() {
-  isOfflineStoreEnabled = true;
+  isEnabled = true;
 }
 
 let isInOfflineMode: boolean | PromiseLike<boolean> = false;
@@ -13,9 +20,14 @@ export function setOfflineMode(mode: boolean | PromiseLike<boolean>) {
   isInOfflineMode = mode;
 }
 
+/** @beta */
+export function isOfflineStoreEnabled(): boolean {
+  return !!isEnabled;
+}
+
 onReset(() => {
   isInOfflineMode = false;
-  isOfflineStoreEnabled = false;
+  isEnabled = false;
 });
 
 export function applyOfflineHandling<T>(
@@ -41,11 +53,11 @@ export function applyOfflineHandling<T>(
   return {
     loader: async () =>
       (await isInOfflineMode) ? loadFromEntry(offlineEntry) : loader(),
-    onChange: async () => {
-      if (isOfflineStoreEnabled && !(await isInOfflineMode)) {
+    onChange: collectAndSchedule(nextTick, async () => {
+      if (isEnabled && !(await isInOfflineMode)) {
         storeIntoEntry(loadable, offlineEntry);
       }
-    },
+    }),
   };
 }
 

@@ -1,13 +1,13 @@
 import memoize from 'lodash-es/memoize';
 
 import { addMissingDataConnectionHandlers } from 'scrivito_sdk/data_integration/add_missing_data_connection_handlers';
-import { UnsafeDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
+import { UncheckedDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 
 /** Convert a Promise to a DataConnection into a synchronous DataConnection. */
 export function anticipatedDataConnection(
-  connectionPromise: Promise<Partial<UnsafeDataConnection>>,
+  connectionPromise: Promise<Partial<UncheckedDataConnection>>,
   dataClass: string
-): UnsafeDataConnection {
+): UncheckedDataConnection {
   const getCompleteConnection = memoize(async () =>
     addMissingDataConnectionHandlers(await connectionPromise, dataClass)
   );

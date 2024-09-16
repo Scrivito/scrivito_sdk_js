@@ -116,6 +116,7 @@ export interface Configuration {
     trustedUiOrigins?: string[];
     layoutEditing?: true;
     initialContentDumpUrl?: string;
+    allowOfflineMode?: boolean;
   };
 }
 

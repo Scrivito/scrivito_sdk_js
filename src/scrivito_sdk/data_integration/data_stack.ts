@@ -4,6 +4,8 @@ import {
   DataScope,
   DataScopeError,
   DataScopePojo,
+  EmptyDataScopePojo,
+  PresentDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
@@ -17,9 +19,35 @@ export function isDataItemPojo(
   return !!(element as DataItemPojo)._id;
 }
 
-export function isDataScopePojo(
+export function isSingleItemElement(
   element: DataStackElement
-): element is DataScopePojo {
+): element is DataItemPojo | PresentDataScopePojo {
+  return isDataItemPojo(element) || isSingleItemDataScopePojo(element);
+}
+
+export function isMultiItemDataScopePojo(
+  element: DataStackElement
+): element is PresentDataScopePojo {
+  return isPresentDataScopePojo(element) && !element?.filters?._id;
+}
+
+function isSingleItemDataScopePojo(
+  element: DataStackElement
+): element is PresentDataScopePojo {
+  return isPresentDataScopePojo(element) && !!element?.filters?._id;
+}
+
+function isPresentDataScopePojo(
+  element: DataStackElement
+): element is PresentDataScopePojo {
+  return isDataScopePojo(element) && !isEmptyDataScopePojo(element);
+}
+
+function isEmptyDataScopePojo(pojo: DataScopePojo): pojo is EmptyDataScopePojo {
+  return 'isEmpty' in pojo && pojo.isEmpty === true;
+}
+
+function isDataScopePojo(element: DataStackElement): element is DataScopePojo {
   return !isDataItemPojo(element);
 }
 
@@ -48,7 +76,7 @@ export function findScopeInDataStack(
   if (element && isDataScopePojo(element)) return element;
 }
 
-function deserializeDataScope(
+export function deserializeDataScope(
   { _class: dataClassName, ...dataScopeParams }: DataScopePojo,
   attributeName?: string
 ): DataScope | undefined {

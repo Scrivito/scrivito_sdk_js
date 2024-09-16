@@ -15,10 +15,6 @@ import {
 } from 'scrivito_sdk/data_integration/data_class';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import {
-  DataIdentifier,
-  isValidDataIdentifier,
-} from 'scrivito_sdk/data_integration/data_identifier';
-import {
   DataStack,
   findItemInDataStack,
   findScopeInDataStack,
@@ -39,8 +35,10 @@ import { loadWithDefault } from 'scrivito_sdk/loadable';
 import {
   BasicLink,
   BasicObj,
+  DataIdentifier,
   currentObjSpaceId,
   getObjFrom,
+  isValidDataIdentifier,
   objSpaceScope,
   restrictToObjClass,
 } from 'scrivito_sdk/models';

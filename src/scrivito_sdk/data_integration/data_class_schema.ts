@@ -83,6 +83,7 @@ export function registerDataClassSchema(
   const schemata = { ...schemataState.get() };
   schemata[dataClassName] = wrapInCallback(attributes);
   schemataState.set(schemata);
+  invalidateSchemataCollection();
 }
 
 export function getDataClassSchema(
@@ -105,6 +106,7 @@ export function unregisterDataClassSchema(dataClassName: string): void {
   const schemata = { ...schemataState.get() };
   delete schemata[dataClassName];
   schemataState.set(schemata);
+  invalidateSchemataCollection();
 }
 
 interface Schemata {
@@ -112,6 +114,7 @@ interface Schemata {
 }
 
 const schemataState = createStateContainer<Schemata>();
+const counterState = createStateContainer<number>();
 
 const schemataCollection = createLoadableCollection({
   name: 'dataClassSchema',
@@ -120,8 +123,17 @@ const schemataCollection = createLoadableCollection({
       const callback = schemataState.get()?.[dataClassName];
       return callback ? callback() : Promise.resolve({});
     },
+    invalidation: () => getCounter().toString(),
   }),
 });
+
+function invalidateSchemataCollection() {
+  counterState.set(getCounter() + 1);
+}
+
+function getCounter() {
+  return counterState.get() || 0;
+}
 
 function normalizeDataAttributeDefinition(
   definition: DataAttributeDefinition

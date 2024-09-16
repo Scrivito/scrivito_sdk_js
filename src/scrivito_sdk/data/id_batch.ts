@@ -38,10 +38,12 @@ export class IdBatchCollection<Params> {
   constructor({
     name,
     loadBatch,
+    loadOffline,
     invalidation,
   }: {
     name: string;
     loadBatch: LoadBatch<Params>;
+    loadOffline?: (params: Params) => Promise<QueryData>;
     invalidation: Invalidation<Params>;
   }) {
     this.loadBatch = loadBatch;
@@ -50,6 +52,7 @@ export class IdBatchCollection<Params> {
       name,
       loadElement: ([params, index]: [Params, number], batchSize: number) => ({
         loader: () => this.loader(params, index, batchSize),
+        offlineLoader: loadOffline ? () => loadOffline(params) : undefined,
         invalidation: () => invalidation(params),
       }),
     });

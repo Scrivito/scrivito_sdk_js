@@ -82,6 +82,12 @@ const baseCollection = createLoadableCollection({
   }),
 });
 
+export function findInObjOfflineStore(
+  selector: (data: ObjJson, key: CollectionKey) => boolean
+) {
+  return baseCollection.findValuesInOfflineStore(selector);
+}
+
 export class ObjData {
   private readonly widgetData: LoadableData<WidgetObjJson>;
   private readonly baseData: LoadableData<ObjJson>;

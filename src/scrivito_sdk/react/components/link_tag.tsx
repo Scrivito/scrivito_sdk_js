@@ -2,22 +2,23 @@ import * as React from 'react';
 
 import { basicUrlFor } from 'scrivito_sdk/app_support/basic_url_for';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
+import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
+import { getDetailsPageUrl } from 'scrivito_sdk/app_support/get_details_page_url';
 import { navigateTo } from 'scrivito_sdk/app_support/navigate_to';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import {
   QueryParameters,
-  checkArgumentsFor,
   isModifierClick,
   openWindow,
-  tcomb as t,
 } from 'scrivito_sdk/common';
 import {
+  DataItem,
   getDataContextParameters,
   isSinglePlaceholder,
   replacePlaceholdersWithData,
 } from 'scrivito_sdk/data_integration';
 import { load } from 'scrivito_sdk/loadable';
-import { BasicLink, BasicObj, LinkType, ObjType } from 'scrivito_sdk/models';
+import { BasicLink, BasicObj } from 'scrivito_sdk/models';
 import {
   useDataStack,
   usePlaceholders,
@@ -25,10 +26,12 @@ import {
 import { connect } from 'scrivito_sdk/react_connect';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
+type LinkTagTo = Obj | Link | DataItem | null;
+
 /** @public */
 export const LinkTag = connect(function LinkTag(props: {
   [key: string]: unknown;
-  to?: Obj | Link | null;
+  to?: LinkTagTo;
   target?: string;
   rel?: string;
   params?: QueryParameters | false | null;
@@ -38,12 +41,12 @@ export const LinkTag = connect(function LinkTag(props: {
   const dataStack = useDataStack();
   const placeholders = usePlaceholders();
 
-  checkLinkTagProps(props);
-
-  const customProps = { ...props };
-  delete customProps.children;
-  delete customProps.to;
-  delete customProps.params;
+  const {
+    children,
+    to: linkTagTo,
+    params: linkTagParams,
+    ...customProps
+  } = props;
 
   return (
     <a
@@ -53,7 +56,7 @@ export const LinkTag = connect(function LinkTag(props: {
       rel={getRel()}
       onClick={onClick}
     >
-      {props.children}
+      {children}
     </a>
   );
 
@@ -107,44 +110,68 @@ export const LinkTag = connect(function LinkTag(props: {
     navigateAppTo(to, queryParameters);
   }
 
-  function navigateAppTo(
-    to: Obj | Link | null,
-    params: QueryParameters | undefined
-  ) {
+  function navigateAppTo(to: LinkTagTo, params: QueryParameters | undefined) {
     navigateTo(to, params && { params });
   }
 
   function getDestination(): Destination | null {
     if (!props.to) return null;
 
-    const basicObjOrLink = unwrapAppClass(props.to);
-    const singlePlaceholder = getSinglePlaceholder(basicObjOrLink);
-
-    if (singlePlaceholder) {
-      const url = replacePlaceholdersWithData(singlePlaceholder, {
-        placeholders,
-        dataStack,
-      });
-
-      return {
-        to: new Link({ url }),
-        href: url,
-        queryParameters: undefined,
-      };
+    if (props.to instanceof DataItem) {
+      return getDataItemDestination(props.to);
     }
 
-    if (
-      basicObjOrLink instanceof BasicLink ||
-      basicObjOrLink instanceof BasicObj
-    ) {
-      return {
-        to: props.to,
-        href: getDestinationHref(basicObjOrLink),
-        queryParameters: getDestinationQueryParameters(basicObjOrLink),
-      };
+    const objOrLink = unwrapAppClass(props.to);
+    const singlePlaceholder = getSinglePlaceholder(objOrLink);
+
+    if (singlePlaceholder) {
+      return getSinglePlaceholderDestination(singlePlaceholder);
+    }
+
+    if (objOrLink instanceof BasicLink || objOrLink instanceof BasicObj) {
+      return getBasicLinkOrBasicObjDestination(objOrLink, props.to);
     }
 
     return null;
+  }
+
+  function getDataItemDestination(dataItem: DataItem) {
+    const url = getDetailsPageUrl(
+      dataItem,
+      dataItem.obj()?.siteId() || currentSiteId()
+    );
+
+    if (!url) return null;
+
+    return {
+      to: dataItem,
+      href: url,
+      queryParameters: undefined,
+    };
+  }
+
+  function getBasicLinkOrBasicObjDestination(
+    objOrLink: BasicObj | BasicLink,
+    to: LinkTagTo
+  ) {
+    return {
+      to,
+      href: getDestinationHref(objOrLink),
+      queryParameters: getDestinationQueryParameters(objOrLink),
+    };
+  }
+
+  function getSinglePlaceholderDestination(placeholder: string) {
+    const url = replacePlaceholdersWithData(placeholder, {
+      placeholders,
+      dataStack,
+    });
+
+    return {
+      to: new Link({ url }),
+      href: url,
+      queryParameters: undefined,
+    };
   }
 
   function getDestinationQueryParameters(basicObjOrLink: BasicObj | BasicLink) {
@@ -179,28 +206,7 @@ export const LinkTag = connect(function LinkTag(props: {
 });
 
 interface Destination {
-  to: Obj | Link | null;
+  to: LinkTagTo;
   href: string;
   queryParameters: QueryParameters | undefined;
 }
-
-const checkLinkTagProps = checkArgumentsFor(
-  'Scrivito.LinkTag',
-  [
-    [
-      'props',
-      t.interface(
-        {
-          to: t.maybe(t.union([ObjType, LinkType])),
-          params: t.union([
-            t.dict(t.String, t.union([t.Nil, t.String, t.list(t.String)])),
-            t.maybe(t.irreducible('false', (v) => v === false)),
-          ]),
-          onClick: t.maybe(t.Function),
-        },
-        { strict: false }
-      ),
-    ],
-  ],
-  { docPermalink: 'js-sdk/LinkTag', severity: 'warning' }
-);

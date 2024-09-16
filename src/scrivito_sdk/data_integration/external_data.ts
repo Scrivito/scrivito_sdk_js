@@ -1,13 +1,10 @@
 import { ClientError } from 'scrivito_sdk/client';
 import { ArgumentError, isObject } from 'scrivito_sdk/common';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
-import {
-  DataIdentifier,
-  isValidDataIdentifier,
-} from 'scrivito_sdk/data_integration/data_identifier';
 import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/disable_external_data_loading';
 import { getExternalDataConnectionOrThrow } from 'scrivito_sdk/data_integration/external_data_connection';
 import { createLoadableCollection } from 'scrivito_sdk/loadable';
+import { DataIdentifier, isValidDataIdentifier } from 'scrivito_sdk/models';
 
 /** @public */
 export type ExternalData = Record<DataIdentifier, unknown>;
@@ -35,6 +32,7 @@ const loadableCollection = createLoadableCollection<
   [string, string]
 >({
   loadElement: ([dataClass, dataId]) => ({
+    name: 'externaldata',
     loader: async () => {
       if (!isValidDataId(dataId)) {
         throw new ArgumentError(`Invalid data ID "${dataId}"`);

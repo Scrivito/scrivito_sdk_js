@@ -1,5 +1,6 @@
 import { AuthHandler } from 'scrivito_sdk/app_support/auth_handler';
 import { changeLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
+import { getOfflineMode } from 'scrivito_sdk/app_support/offline_mode';
 import { getUserInfo } from 'scrivito_sdk/app_support/user_info';
 import { startPollingLoggedUser } from 'scrivito_sdk/app_support/user_logged_in_status';
 import { wait } from 'scrivito_sdk/common';
@@ -17,7 +18,8 @@ export const loggedInVisitorAuthHandler: AuthHandler = {
 
   isUserLoggedIn() {
     verifyUserIsLoggedIn();
-    startPollingLoggedUser();
+
+    if (!getOfflineMode()) startPollingLoggedUser();
 
     return true;
   },

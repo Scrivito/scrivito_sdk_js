@@ -8,12 +8,12 @@ import {
   DataClassAttributes,
   DataConnection,
   ExternalDataClass,
-  UnsafeDataConnection,
-  assertValidDataIdentifier,
-  createRestApiConnection,
+  UncheckedDataConnection,
+  createRestApiConnectionForClass,
   registerDataClassSchema,
   setExternalDataConnection,
 } from 'scrivito_sdk/data_integration';
+import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 
 export type RestApi = string | ({ url: string } & ApiClientOptions);
 
@@ -40,8 +40,8 @@ export function provideDataClass(
   name: string,
   params: {
     connection:
-      | Partial<UnsafeDataConnection>
-      | Promise<Partial<UnsafeDataConnection>>;
+      | Partial<UncheckedDataConnection>
+      | Promise<Partial<UncheckedDataConnection>>;
     attributes?: DataClassAttributes;
   }
 ): DataClass;
@@ -56,8 +56,8 @@ export function provideDataClass(
       }
     | {
         connection:
-          | Partial<UnsafeDataConnection>
-          | Promise<Partial<UnsafeDataConnection>>;
+          | Partial<UncheckedDataConnection>
+          | Promise<Partial<UncheckedDataConnection>>;
         attributes?: DataClassAttributes;
       }
 ): DataClass {
@@ -79,7 +79,7 @@ export function provideDataClass(
         : createRestApiClient(restApi.url, restApi);
 
     return provideDataClass(name, {
-      connection: createRestApiConnection(apiClient),
+      connection: createRestApiConnectionForClass(apiClient),
       attributes: params.attributes || (() => fetchSchema(apiClient)),
     });
   }
@@ -106,7 +106,7 @@ function provideDataClassWithAsyncRestApiConfig(
 
   return provideDataClass(name, {
     connection: (async () => {
-      return createRestApiConnection(await memoizedApiClient());
+      return createRestApiConnectionForClass(await memoizedApiClient());
     })(),
     attributes:
       params.attributes || (async () => fetchSchema(await memoizedApiClient())),

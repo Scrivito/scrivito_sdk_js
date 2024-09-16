@@ -24,6 +24,7 @@ import { IdBatchCollection } from 'scrivito_sdk/data/id_batch';
 import { IdBatchQuery } from 'scrivito_sdk/data/id_batch_query';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data/in_memory_tenant';
 import { preloadObjData } from 'scrivito_sdk/data/obj_data_store';
+import { queryObjOfflineStore } from 'scrivito_sdk/data/obj_offline_query';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
 import { loadableWithDefault } from 'scrivito_sdk/loadable';
 import { addBatchUpdate } from 'scrivito_sdk/state';
@@ -43,6 +44,8 @@ const batchCollection = new IdBatchCollection({
   name: 'objquery',
 
   loadBatch,
+
+  loadOffline: ([_objSpaceId, params]) => queryObjOfflineStore(params),
 
   invalidation: ([objSpaceId]: [ObjSpaceId, QueryParams]) =>
     loadableWithDefault(undefined, () => getContentStateId(objSpaceId)) || '',

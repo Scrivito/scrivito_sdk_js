@@ -25,6 +25,7 @@ export function setUserInfo(userinfo: UserInfo | null): void {
 }
 
 const loadableUserInfo = createLoadableData<UserInfo | null>({
+  name: 'userinfo',
   loader: async () =>
     JrRestApi.getWithoutLogin(await getUserInfoPath()) as Promise<UserInfo>,
 });

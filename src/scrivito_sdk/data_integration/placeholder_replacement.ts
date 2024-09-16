@@ -56,7 +56,6 @@ function replacePlaceholder({
     return replaceQualifiedPlaceholder({
       dataClassName,
       attributeName,
-      placeholder,
       dataStack: dataStack || [],
     });
   }
@@ -67,17 +66,14 @@ function replacePlaceholder({
 function replaceQualifiedPlaceholder({
   dataClassName,
   attributeName,
-  placeholder,
   dataStack,
 }: {
   dataClassName: string;
   attributeName: string;
-  placeholder: string;
   dataStack: DataStack;
 }) {
   const dataItem = getDataItem(dataClassName, dataStack);
-  if (dataItem === 'loading') return '';
-  if (!dataItem) return placeholder;
+  if (dataItem === 'loading' || !dataItem) return '';
 
   const attributeValue = dataItem.get(attributeName);
   if (typeof attributeValue !== 'string') return '';

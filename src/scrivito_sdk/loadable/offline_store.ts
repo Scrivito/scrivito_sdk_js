@@ -1,8 +1,12 @@
 import {
+  AsyncTaskTracker,
+  Deferred,
   computeCacheKey,
   getScrivitoVersion,
   registerAsyncTask,
 } from 'scrivito_sdk/common';
+
+const writeTracker = new AsyncTaskTracker();
 
 export class OfflineStore<KeyType, ValueType> {
   constructor(private storeName: string) {}
@@ -58,16 +62,20 @@ export class StoreEntry<ValueType> {
   }
 
   async write(data: ValueType) {
-    // makes 'writing still in progress' visible to flushPromises
-    await registerAsyncTask(async () => {
-      const cache = await this.fetchCache();
+    await writeTracker.registerTask(async () => {
+      if (writingBeingPaused) await writingBeingPaused.promise;
 
-      await cache.put(
-        this.offlineCacheKey(),
-        new Response(JSON.stringify([data, this.key]), {
-          headers: { 'Content-Type': 'application/json' },
-        })
-      );
+      // makes 'writing still in progress' visible to flushPromises
+      await registerAsyncTask(async () => {
+        const cache = await this.fetchCache();
+
+        await cache.put(
+          this.offlineCacheKey(),
+          new Response(JSON.stringify([data, this.key]), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      });
     });
   }
 
@@ -102,7 +110,7 @@ function cacheFor(collectionId: string) {
   return caches.open(`${CACHE_PREFIX}-${getScrivitoVersion()}-${collectionId}`);
 }
 
-export async function deleteOfflineStore(): Promise<void> {
+export async function deleteAllCaches(): Promise<void> {
   const scrivitoCaches = await openAllScrivitoCaches();
 
   await Promise.all(
@@ -114,6 +122,10 @@ export async function deleteOfflineStore(): Promise<void> {
       );
     })
   );
+}
+
+export async function waitUntilWritingFinished(): Promise<void> {
+  return writeTracker.waitForRegisteredTasks();
 }
 
 /** for test purposes only */
@@ -137,4 +149,17 @@ async function openAllScrivitoCaches() {
   return Promise.all(
     scrivitoCacheNames.map((cacheName) => caches.open(cacheName))
   );
+}
+
+let writingBeingPaused: Deferred | undefined;
+
+/** for test purposes only */
+export function pauseAllWriting(): void {
+  if (!writingBeingPaused) writingBeingPaused = new Deferred();
+}
+
+/** for test purposes only */
+export function resumeAllWriting(): void {
+  writingBeingPaused?.resolve();
+  writingBeingPaused = undefined;
 }

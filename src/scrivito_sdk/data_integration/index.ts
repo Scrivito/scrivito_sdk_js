@@ -3,9 +3,14 @@ export {
   DataClass,
   DataItem,
   DataScope,
+  scopePojoToItemPojo,
 } from 'scrivito_sdk/data_integration/data_class';
-export type { DataItemPojo } from 'scrivito_sdk/data_integration/data_class';
-export { createRestApiConnection } from 'scrivito_sdk/data_integration/create_rest_api_connection';
+export type {
+  DataScopePojo,
+  PresentDataScopePojo,
+  DataItemPojo,
+} from 'scrivito_sdk/data_integration/data_class';
+export { createRestApiConnectionForClass } from 'scrivito_sdk/data_integration/create_rest_api_connection';
 export { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 export { ObjDataScope } from 'scrivito_sdk/data_integration/obj_data_class';
 export type { DataContext } from 'scrivito_sdk/data_integration/data_context';
@@ -30,17 +35,15 @@ export { setExternalDataConnection } from 'scrivito_sdk/data_integration/externa
 export { DataConnectionError } from 'scrivito_sdk/data_integration/external_data_query';
 export type {
   DataConnection,
-  UnsafeDataConnection,
+  UncheckedDataConnection,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 export {
-  assertValidDataIdentifier,
-  isValidDataIdentifier,
-} from 'scrivito_sdk/data_integration/data_identifier';
-export {
   isDataItemPojo,
-  isDataScopePojo,
+  isSingleItemElement,
+  isMultiItemDataScopePojo,
   deserializeDataStackElement,
   deserializeDataItem,
+  deserializeDataScope,
 } from 'scrivito_sdk/data_integration/data_stack';
 export { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 export { applyDataLocator } from 'scrivito_sdk/data_integration/apply_data_locator';
@@ -51,7 +54,10 @@ export {
   replacePlaceholdersWithData,
 } from 'scrivito_sdk/data_integration/placeholder_replacement';
 export { disableExternalDataLoading } from 'scrivito_sdk/data_integration/disable_external_data_loading';
-export { getGlobalDataItems } from 'scrivito_sdk/data_integration/global_data';
+export {
+  getGlobalDataItems,
+  findItemInGlobalData,
+} from 'scrivito_sdk/data_integration/global_data';
 export { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 export { isSingletonDataClass } from 'scrivito_sdk/data_integration/singleton_data_classes';
 export type {

@@ -1,16 +1,16 @@
 import { ApiClient, FilterValue } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
 import { OrderSpec } from 'scrivito_sdk/data_integration/data_class';
-import { UnsafeDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
+import { UncheckedDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
   FilterSpec,
   IndexParams,
   IndexParamsFilters,
 } from 'scrivito_sdk/data_integration/index_params';
 
-export function createRestApiConnection(
+export function createRestApiConnectionForClass(
   apiClient: ApiClient
-): UnsafeDataConnection {
+): UncheckedDataConnection {
   return {
     create: async (data) => apiClient.fetch('', { method: 'post', data }),
     index: async (params) =>
