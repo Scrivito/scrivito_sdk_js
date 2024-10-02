@@ -1,9 +1,9 @@
 import { ArgumentError, isObject, isPromise } from 'scrivito_sdk/common';
 import { addMissingDataConnectionHandlers } from 'scrivito_sdk/data_integration/add_missing_data_connection_handlers';
 import { anticipatedDataConnection } from 'scrivito_sdk/data_integration/anticipated_data_connection';
+import { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
-import { DataConnectionError } from 'scrivito_sdk/data_integration/external_data_query';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { createStateContainer } from 'scrivito_sdk/state';
 

@@ -3,11 +3,11 @@ import mapValues from 'lodash-es/mapValues';
 import {
   ArgumentError,
   EmptyContinueIterable,
-  ScrivitoError,
   isValidInteger,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
+import { DataConnectionError } from 'scrivito_sdk/data_integration';
 import { serializeDataAttribute } from 'scrivito_sdk/data_integration/data_attribute';
 import {
   DEFAULT_LIMIT,
@@ -33,6 +33,7 @@ import {
   autocorrectResultItemId,
   getExternalDataConnectionOrThrow,
 } from 'scrivito_sdk/data_integration/external_data_connection';
+import { queryExternalDataOfflineStore } from 'scrivito_sdk/data_integration/external_data_offline_query';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { load, loadableWithDefault } from 'scrivito_sdk/loadable';
 import { StateContainer, createStateContainer } from 'scrivito_sdk/state';
@@ -44,6 +45,7 @@ type WriteCounterStates = Record<string, StateContainer<number>>;
 export const batchCollection = new IdBatchCollection({
   name: 'externaldataquery',
   loadBatch,
+  loadOffline: queryExternalDataOfflineStore,
   invalidation: ([dataClass]) =>
     loadableWithDefault(undefined, () =>
       getWriteCounter(dataClass).toString()
@@ -131,13 +133,6 @@ export function notifyExternalDataWrite(dataClass: string): void {
   const counter = getWriteCounter(dataClass);
 
   counterState.set(counter + 1);
-}
-
-/** @public */
-export class DataConnectionError extends ScrivitoError {
-  constructor(readonly message: string) {
-    super(message);
-  }
 }
 
 async function loadBatch(

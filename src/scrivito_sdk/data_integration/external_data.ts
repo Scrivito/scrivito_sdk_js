@@ -27,12 +27,15 @@ export function getExternalData(
   return loadableCollection.get([dataClass, dataId]).get();
 }
 
+type CollectionData = ExternalData | null;
+type CollectionKey = [string, string];
+
 const loadableCollection = createLoadableCollection<
-  ExternalData | null,
-  [string, string]
+  CollectionData,
+  CollectionKey
 >({
+  name: 'externaldata',
   loadElement: ([dataClass, dataId]) => ({
-    name: 'externaldata',
     loader: async () => {
       if (!isValidDataId(dataId)) {
         throw new ArgumentError(`Invalid data ID "${dataId}"`);
@@ -55,6 +58,12 @@ const loadableCollection = createLoadableCollection<
     },
   }),
 });
+
+export function findInExternalDataOfflineStore(
+  selector: (data: CollectionData, key: CollectionKey) => boolean
+) {
+  return loadableCollection.findValuesInOfflineStore(selector);
+}
 
 function handleExternalData(data: unknown, _id: string) {
   if (data === null) return null;

@@ -110,7 +110,7 @@ function cacheFor(collectionId: string) {
   return caches.open(`${CACHE_PREFIX}-${getScrivitoVersion()}-${collectionId}`);
 }
 
-export async function deleteAllCaches(): Promise<void> {
+export async function deleteOfflineStoreCaches(): Promise<void> {
   const scrivitoCaches = await openAllScrivitoCaches();
 
   await Promise.all(

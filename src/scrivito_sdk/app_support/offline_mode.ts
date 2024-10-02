@@ -14,7 +14,7 @@ import {
   setInLocalStorage,
 } from 'scrivito_sdk/common';
 import {
-  deleteAllCaches,
+  deleteOfflineStoreCaches,
   isOfflineStoreEnabled,
   setOfflineMode,
   waitUntilWritingFinished,
@@ -76,7 +76,7 @@ export async function deleteOfflineStore(): Promise<void> {
     throw new ScrivitoError('Cannot delete the offline store in offline mode');
   }
 
-  return deleteAllCaches();
+  return deleteOfflineStoreCaches();
 }
 
 function determineOfflineMode(config: Configuration) {

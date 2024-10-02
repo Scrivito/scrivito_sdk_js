@@ -38,7 +38,7 @@ export {
   isOfflineStoreEnabled,
 } from 'scrivito_sdk/loadable/offline_handling';
 export {
-  deleteAllCaches,
+  deleteOfflineStoreCaches,
   countOfflineStoreEntries,
   waitUntilWritingFinished,
 } from 'scrivito_sdk/loadable/offline_store';

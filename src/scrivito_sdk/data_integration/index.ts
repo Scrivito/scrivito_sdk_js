@@ -32,7 +32,7 @@ export {
   allExternalDataClasses,
 } from 'scrivito_sdk/data_integration/external_data_class';
 export { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
-export { DataConnectionError } from 'scrivito_sdk/data_integration/external_data_query';
+export { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
 export type {
   DataConnection,
   UncheckedDataConnection,

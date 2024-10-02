@@ -31,6 +31,7 @@ import {
   DataClassSchema,
   getDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
+import { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
 import {
   ExternalData,
   getExternalData,
@@ -43,7 +44,6 @@ import {
   getExternalDataConnectionNames,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
-  DataConnectionError,
   countExternalData,
   getExternalDataQuery,
   notifyExternalDataWrite,
