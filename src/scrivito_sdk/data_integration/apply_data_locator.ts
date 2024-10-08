@@ -139,10 +139,10 @@ function applyValueViaFilter(
   }
 
   if (field === '_id') {
-    const value = viaDataItem.get(viaField);
+    const value = viaDataItem.getRaw(viaField);
     const dataClass = scope.dataClass() ?? undefined;
 
-    if (value === null) {
+    if (value === undefined || value === null) {
       return new EmptyDataScope({
         dataClass,
         isDataItem: true,

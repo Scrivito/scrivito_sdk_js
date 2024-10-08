@@ -335,6 +335,10 @@ export class ExternalDataItem extends DataItem {
       : null;
   }
 
+  getRaw(attributeName: string): unknown {
+    return this.getExternalData()?.[attributeName];
+  }
+
   async update(attributes: DataItemAttributes): Promise<void> {
     assertValidDataItemAttributes(attributes);
 

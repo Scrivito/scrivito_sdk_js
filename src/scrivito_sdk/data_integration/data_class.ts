@@ -278,6 +278,11 @@ export abstract class DataItem {
   attributeDefinitions(): NormalizedDataClassSchema {
     return assumePresence(this.dataClass()).attributeDefinitions();
   }
+
+  /** @internal */
+  getRaw(_attributeName: string): unknown {
+    return;
+  }
 }
 
 /** @public */
