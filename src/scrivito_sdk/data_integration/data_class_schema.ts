@@ -1,6 +1,6 @@
 import mapValues from 'lodash-es/mapValues';
 
-import { isObject, isPromise } from 'scrivito_sdk/common';
+import { isObject, isPromise, logError } from 'scrivito_sdk/common';
 import { createLoadableCollection } from 'scrivito_sdk/loadable';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -29,7 +29,22 @@ export interface NormalizedDataClassSchema {
 
 export type NormalizedDataAttributeDefinition =
   | [DataAttributeDefinitionWithOptionalConfig, {}]
-  | DataAttributeDefinitionWithConfig;
+  | NormalizedDataAttributeDefinitionWithConfig;
+
+export type NormalizedDataAttributeDefinitionWithConfig = {
+  [T in keyof NormalizedDataAttributeConfigs]: [
+    T,
+    NormalizedDataAttributeConfigs[T]
+  ];
+}[keyof NormalizedDataAttributeConfigs];
+
+export type NormalizedDataAttributeConfigs = DataAttributeConfigs & {
+  enum: LocalizedEnumAttributeConfig;
+};
+
+export interface LocalizedEnumAttributeConfig extends EnumAttributeConfig {
+  values: Array<LocalizedEnumValueConfig>;
+}
 
 export type DataAttributeConfigs = {
   boolean: LocalizedAttributeConfig;
@@ -59,7 +74,7 @@ type DataAttributeDefinitionWithOptionalConfig = Exclude<
 >;
 
 export type DataAttributeDefinitionWithConfig = {
-  [T in keyof DataAttributeConfigs]: readonly [T, DataAttributeConfigs[T]];
+  [T in keyof DataAttributeConfigs]: [T, DataAttributeConfigs[T]];
 }[keyof DataAttributeConfigs];
 
 export type DataAttributeConfig = DataAttributeDefinitionWithConfig[1];
@@ -75,6 +90,17 @@ export type DataAttributeType =
 type EnumValueConfig = string | LocalizedEnumValueConfig;
 type LocalizedEnumValueConfig = { value: string; title: string };
 type DataClassName = string;
+
+function isDataAttributeType(
+  attributeType: unknown
+): attributeType is DataAttributeType {
+  return (
+    typeof attributeType === 'string' &&
+    ['boolean', 'date', 'enum', 'number', 'reference', 'string'].includes(
+      attributeType
+    )
+  );
+}
 
 export function registerDataClassSchema(
   dataClassName: string,
@@ -138,7 +164,24 @@ function getCounter() {
 function normalizeDataAttributeDefinition(
   definition: DataAttributeDefinition
 ): NormalizedDataAttributeDefinition {
-  return typeof definition === 'string' ? [definition, {}] : definition;
+  if (typeof definition === 'string') return [definition, {}];
+
+  const [type, config] = definition;
+  if (type === 'enum') return [type, normalizeEnumValueConfig(config)];
+
+  return definition;
+}
+
+function normalizeEnumValueConfig({ title, values }: EnumAttributeConfig) {
+  const config: LocalizedEnumAttributeConfig = {
+    values: values.map((value) =>
+      typeof value === 'string' ? { value, title: value } : value
+    ),
+  };
+
+  if (title) config.title = title;
+
+  return config;
 }
 
 function wrapInCallback(attributes: DataClassAttributes): DataSchemaCallback {
@@ -148,29 +191,83 @@ function wrapInCallback(attributes: DataClassAttributes): DataSchemaCallback {
   return () => Promise.resolve(attributes);
 }
 
-export function isDataClassSchemaResponse(
-  response: unknown
-): response is DataClassSchemaResponse {
-  return (
-    isObject(response) &&
-    'attributes' in response &&
-    isDataClassSchema(response.attributes)
-  );
+export function extractDataClassSchemaResponse(
+  input: unknown
+): DataClassSchemaResponse {
+  const response = { attributes: {} };
+
+  if (!isObject(input)) {
+    logError(
+      `Invalid schema response: expected an object: ${JSON.stringify(input)}`
+    );
+
+    return response;
+  }
+
+  if (!('attributes' in input)) {
+    logError(
+      `Invalid schema response: no "attributes" key: ${JSON.stringify(input)}`
+    );
+
+    return response;
+  }
+
+  response.attributes = extractDataClassSchema(input.attributes);
+
+  return response;
 }
 
-function isDataClassSchema(schema: unknown): schema is DataClassSchema {
-  if (!isObject(schema)) return false;
+function extractDataClassSchema(input: unknown): DataClassSchema {
+  const schema: DataClassSchema = {};
 
-  return Object.values(schema).every(isDataAttributeDefinition);
-}
+  if (!isObject(input)) {
+    logError(
+      `Invalid schema response: expected "attributes" to be an object: ${JSON.stringify(
+        input
+      )}`
+    );
 
-function isDataAttributeDefinition(
-  definition: unknown
-): definition is DataAttributeDefinition {
-  return (
-    isDataAttributeDefinitionWithOptionalConfig(definition) ||
-    isDataAttributeDefinitionWithConfig(definition)
-  );
+    return schema;
+  }
+
+  Object.entries(input).forEach(([attributeName, maybeDefinition]) => {
+    if (attributeName === '_id') {
+      logSchemaError(
+        attributeName,
+        maybeDefinition,
+        'Key "_id" is not allowed in schema attributes'
+      );
+    } else {
+      if (typeof maybeDefinition === 'string') {
+        if (isDataAttributeDefinitionWithOptionalConfig(maybeDefinition)) {
+          schema[attributeName] = maybeDefinition;
+        } else {
+          logSchemaError(
+            attributeName,
+            maybeDefinition,
+            'Unknown attribute type.'
+          );
+        }
+      } else if (Array.isArray(maybeDefinition)) {
+        const definition = extractDataAttributeDefinitionWithConfig(
+          attributeName,
+          maybeDefinition
+        );
+
+        if (definition) {
+          schema[attributeName] = definition;
+        }
+      } else {
+        logSchemaError(
+          attributeName,
+          maybeDefinition,
+          'Expected an array or a string'
+        );
+      }
+    }
+  });
+
+  return schema;
 }
 
 function isDataAttributeDefinitionWithOptionalConfig(
@@ -182,31 +279,62 @@ function isDataAttributeDefinitionWithOptionalConfig(
   );
 }
 
-function isDataAttributeDefinitionWithConfig(
-  definition: unknown
-): definition is DataAttributeDefinitionWithConfig {
-  if (!Array.isArray(definition) || definition.length !== 2) return false;
+function extractDataAttributeDefinitionWithConfig(
+  attributeName: string,
+  definition: unknown[]
+): DataAttributeDefinitionWithConfig | undefined {
+  if (definition.length < 2) {
+    logSchemaError(
+      attributeName,
+      definition,
+      'Expected an array with two elements.'
+    );
 
-  const [attributeType, config] = definition;
+    return;
+  }
 
-  if (
-    typeof attributeType !== 'string' ||
-    !['string', 'number', 'boolean', 'date', 'enum', 'reference'].includes(
-      attributeType
-    )
-  ) {
-    return false;
+  const [attributeType, maybeConfig] = definition;
+
+  if (!isDataAttributeType(attributeType)) {
+    logSchemaError(attributeName, attributeType, 'Unknown attribute type.');
+    return;
   }
 
   if (attributeType === 'enum') {
-    return isEnumAttributeConfig(config);
-  }
+    if (isEnumAttributeConfig(maybeConfig)) {
+      return [attributeType, maybeConfig];
+    }
 
-  if (attributeType === 'reference') {
-    return isReferenceAttributeConfig(config);
-  }
+    logSchemaError(
+      attributeName,
+      maybeConfig,
+      'Invalid "enum" attribute config.'
+    );
+  } else if (attributeType === 'reference') {
+    const config = isReferenceAttributeConfig(maybeConfig)
+      ? maybeConfig
+      : undefined;
 
-  return isLocalizedAttributeConfig(config);
+    if (config) {
+      return [attributeType, config];
+    }
+
+    logSchemaError(
+      attributeName,
+      maybeConfig,
+      'Invalid "reference" attribute config.'
+    );
+  } else {
+    const config = isLocalizedAttributeConfig(maybeConfig)
+      ? maybeConfig
+      : undefined;
+
+    if (config) {
+      return [attributeType, config];
+    }
+
+    logSchemaError(attributeName, maybeConfig, 'Invalid localization.');
+  }
 }
 
 export function isEnumAttributeConfig(
@@ -214,7 +342,6 @@ export function isEnumAttributeConfig(
 ): config is EnumAttributeConfig {
   return (
     isObject(config) &&
-    objectHasOnlyKeysFromList(config, ['values', 'title']) &&
     titleIsValidOrNotPresent(config) &&
     'values' in config &&
     Array.isArray(config.values) &&
@@ -231,7 +358,6 @@ function isLocalizedEnumValueConfig(
 ): config is LocalizedEnumValueConfig {
   return (
     isObject(config) &&
-    objectHasOnlyKeysFromList(config, ['value', 'title']) &&
     'value' in config &&
     typeof config.value === 'string' &&
     !!config.value.length &&
@@ -244,7 +370,6 @@ function isReferenceAttributeConfig(
 ): config is ReferenceAttributeConfig {
   return (
     isObject(config) &&
-    objectHasOnlyKeysFromList(config, ['to', 'title', 'reverseTitle']) &&
     'to' in config &&
     typeof config.to === 'string' &&
     titleIsValidOrNotPresent(config) &&
@@ -257,16 +382,22 @@ function isLocalizedAttributeConfig(
 ): config is LocalizedAttributeConfig {
   return (
     isObject(config) &&
-    (!Object.keys(config).length ||
-      (objectHasOnlyKeysFromList(config, ['title']) &&
-        titleIsValidOrNotPresent(config)))
+    (!Object.keys(config).length || titleIsValidOrNotPresent(config))
   );
-}
-
-function objectHasOnlyKeysFromList(object: Object, keys: string[]): boolean {
-  return Object.keys(object).every((key) => keys.includes(key));
 }
 
 function titleIsValidOrNotPresent(object: Object) {
   return !('title' in object) || typeof object.title === 'string';
+}
+
+function logSchemaError(
+  attributeName: string,
+  actual: unknown,
+  details?: string
+) {
+  logError(
+    `Invalid schema definition for attribute "${attributeName}": ${JSON.stringify(
+      actual
+    )}${details ? `\nDetails: ${details}` : ''}`
+  );
 }

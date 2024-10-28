@@ -2,7 +2,7 @@ import memoize from 'lodash-es/memoize';
 
 import { fetchSchema } from 'scrivito_sdk/app_support/fetch_schema';
 import { ApiClientOptions, createRestApiClient } from 'scrivito_sdk/client';
-import { isPromise } from 'scrivito_sdk/common';
+import { ArgumentError, isPromise } from 'scrivito_sdk/common';
 import {
   DataClass,
   DataClassAttributes,
@@ -14,6 +14,7 @@ import {
   setExternalDataConnection,
 } from 'scrivito_sdk/data_integration';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
+import { getRealmClass } from 'scrivito_sdk/realm';
 
 export type RestApi = string | ({ url: string } & ApiClientOptions);
 
@@ -61,6 +62,10 @@ export function provideDataClass(
         attributes?: DataClassAttributes;
       }
 ): DataClass {
+  if (getRealmClass(name)) {
+    throw new ArgumentError(`Class with name "${name}" already exists`);
+  }
+
   assertValidDataIdentifier(name);
 
   if ('restApi' in params) {

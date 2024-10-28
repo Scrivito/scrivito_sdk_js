@@ -1,11 +1,10 @@
 import {
-  PositiveInteger,
   checkArgumentsFor,
-  classify,
   tcomb as t,
+  throwInvalidArgumentsError,
   underscore,
 } from 'scrivito_sdk/common';
-import { isAppClass } from 'scrivito_sdk/realm/schema';
+import { AttributeDefinitions } from 'scrivito_sdk/realm/schema';
 import {
   ObjClassType,
   WidgetClassType,
@@ -14,121 +13,21 @@ import {
 const noop = () => {};
 
 export const {
-  checkCreateWidgetClass,
-  checkCreateObjClass,
   checkProvideComponent,
   checkProvideLayoutComponent,
   checkProvideDataErrorComponent,
-  checkProvideObjClass,
-  checkProvideWidgetClass,
   checkProvideDataItem,
 } = (() => {
   if (process.env.NODE_ENV !== 'development') {
     return {
-      checkCreateWidgetClass: noop,
-      checkCreateObjClass: noop,
       checkProvideComponent: noop,
       checkProvideLayoutComponent: noop,
       checkProvideDataErrorComponent: noop,
-      checkProvideObjClass: noop,
-      checkProvideWidgetClass: noop,
       checkProvideDataItem: noop,
     };
   }
 
-  const ObjClassDefinitionType = t.interface({
-    attributes: t.maybe(
-      t.dict(
-        t.refinement(
-          t.String,
-          isCustomAttributeName,
-          'String (alphanumeric, starting with a lower-case character)'
-        ),
-        t.union([
-          t.enums.of([
-            'binary',
-            'boolean',
-            'datalocator',
-            'date',
-            'datetime',
-            'float',
-            'html',
-            'integer',
-            'link',
-            'linklist',
-            'reference',
-            'referencelist',
-            'string',
-            'stringlist',
-            'widget',
-            'widgetlist',
-          ]),
-          t.tuple([
-            t.enums.of(['enum', 'multienum']),
-            t.interface({
-              values: t.list(t.String),
-            }),
-          ]),
-          t.tuple([
-            t.enums.of(['reference', 'referencelist']),
-            t.interface({
-              only: t.union([t.String, t.list(t.String)]),
-            }),
-          ]),
-          t.tuple([
-            t.enums.of(['widget']),
-            t.interface({
-              only: t.union([t.String, t.list(t.String)]),
-            }),
-          ]),
-          t.tuple([
-            t.enums.of(['widgetlist']),
-            t.union([
-              t.interface({
-                only: t.union([t.String, t.list(t.String)]),
-                maximum: t.maybe(PositiveInteger),
-              }),
-              t.interface({
-                maximum: PositiveInteger,
-              }),
-            ]),
-          ]),
-        ]),
-        'Attributes Specification'
-      )
-    ),
-    extractTextAttributes: t.maybe(t.list(t.String)),
-    extend: t.maybe(ObjClassType),
-    onlyAsRoot: t.maybe(t.Boolean),
-    onlyChildren: t.maybe(t.union([t.String, t.list(t.String)])),
-    onlyInside: t.maybe(t.union([t.String, t.list(t.String)])),
-    validAsRoot: t.maybe(t.Boolean),
-  });
-
-  const WidgetClassDefinitionType = t.interface({
-    attributes: ObjClassDefinitionType.meta.props.attributes,
-    extractTextAttributes: t.maybe(t.list(t.String)),
-    extend: t.maybe(WidgetClassType),
-    onlyInside: t.maybe(t.union([t.String, t.Array])),
-  });
-
   return {
-    checkCreateObjClass: checkArgumentsFor(
-      'createObjClass',
-      [['definition', ObjClassDefinitionType]],
-      {
-        docPermalink: 'js-sdk/createObjClass',
-      }
-    ),
-
-    checkCreateWidgetClass: checkArgumentsFor(
-      'createWidgetClass',
-      [['definition', WidgetClassDefinitionType]],
-      {
-        docPermalink: 'js-sdk/createWidgetClass',
-      }
-    ),
-
     checkProvideComponent: checkArgumentsFor(
       'provideComponent',
       [
@@ -162,19 +61,6 @@ export const {
       }
     ),
 
-    checkProvideObjClass: (...args: unknown[]) => {
-      checkProvideClass('objClass', ObjClassType, ObjClassDefinitionType, args);
-    },
-
-    checkProvideWidgetClass: (...args: unknown[]) => {
-      checkProvideClass(
-        'widgetClass',
-        WidgetClassType,
-        WidgetClassDefinitionType,
-        args
-      );
-    },
-
     checkProvideDataItem: checkArgumentsFor(
       'provideDataItem',
       [
@@ -198,38 +84,65 @@ function isFunction(fn: unknown) {
   return typeof fn === 'function';
 }
 
-function checkProvideClass(
-  name: string,
-  classType: t.Refinement<object>,
-  definitionType: t.Interface<unknown>,
-  args: unknown[]
-) {
-  const className = classify(name);
-  const classOrDefinition = args[1];
-  const check = checkArgumentsFor(
-    `provide${className}`,
-    [
-      ['name', t.String],
-      typeof classOrDefinition === 'function' && isAppClass(classOrDefinition)
-        ? ['class', classType]
-        : typeof classOrDefinition === 'object' && classOrDefinition !== null
-        ? ['definition', definitionType]
-        : [
-            `${name}OrDefinition`,
-            t.union([classType, definitionType], className),
-          ],
-    ],
-    {
-      docPermalink: `js-sdk/provide${className}`,
-    }
-  );
-
-  check(...args);
-}
-
 function isCustomAttributeName(name: string): boolean {
   return (
     /^[a-z](_+[A-Z0-9]|[A-Za-z0-9])*$/.test(name) &&
     underscore(name).length <= 50
   );
+}
+
+function assertCustomAttributeName(name: string, target: string) {
+  if (isCustomAttributeName(name)) return;
+
+  throwInvalidArgumentsError(
+    target,
+    `attribute name "${name}" is invalid. Must be a string (alphanumeric, starting with a lower-case character).`,
+    { docPermalink: `'js-sdk/${target}'` }
+  );
+}
+
+type WidgetlistOptions =
+  | {
+      only: string | readonly string[];
+      maximum?: number;
+    }
+  | {
+      only?: string | readonly string[];
+      maximum: number;
+    };
+
+function assertWidgetlistDefinition(
+  name: string,
+  options: WidgetlistOptions,
+  target: string
+) {
+  if (options.maximum !== undefined) {
+    const { maximum } = options;
+
+    if (Number.isInteger(maximum) && maximum > 0) return;
+
+    throwInvalidArgumentsError(
+      target,
+      `invalid value "${maximum}" supplied to ${name}: The "maximum" must be a positive integer.`,
+      { docPermalink: `'js-sdk/${target}'` }
+    );
+  }
+}
+
+export function validateAttributeDefinitions(
+  attributeDefinitions: AttributeDefinitions,
+  target: string
+) {
+  Object.entries(attributeDefinitions).forEach(([name, definition]) => {
+    assertCustomAttributeName(name, target);
+
+    const [attributeType, attributeTypeOptions] = definition;
+
+    if (
+      attributeType === 'widgetlist' &&
+      typeof attributeTypeOptions !== 'string'
+    ) {
+      assertWidgetlistDefinition(name, attributeTypeOptions, target);
+    }
+  });
 }

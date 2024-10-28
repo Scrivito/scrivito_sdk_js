@@ -1,3 +1,5 @@
+import isEqual from 'lodash-es/isEqual';
+import omitBy from 'lodash-es/omitBy';
 import * as URI from 'urijs';
 
 import { ArgumentError, QueryParameters } from 'scrivito_sdk/common';
@@ -74,23 +76,12 @@ export class BasicLink {
   }
 
   equals(otherLink: unknown): boolean {
-    if (!(otherLink instanceof BasicLink)) {
-      return false;
-    }
-
-    if (this.isExternal()) {
-      return (
-        this.hash() === otherLink.hash() &&
-        this.query() === otherLink.query() &&
-        this.rel() === otherLink.rel() &&
-        this.target() === otherLink.target() &&
-        this.title() === otherLink.title() &&
-        this.url() === otherLink.url()
-      );
-    }
-
     return (
-      this.objId() === otherLink.objId() && this.title() === otherLink.title()
+      otherLink instanceof BasicLink &&
+      isEqual(
+        otherLink.attributesForComparison(),
+        this.attributesForComparison()
+      )
     );
   }
 
@@ -128,6 +119,13 @@ export class BasicLink {
     return objId
       ? `[object Link objId="${objId}"]`
       : `[object Link url="${this.url() ?? '<empty>'}"]`;
+  }
+
+  protected attributesForComparison() {
+    return omitBy(
+      this.attributes,
+      (attribute) => attribute === null || attribute === undefined
+    );
   }
 }
 

@@ -1,10 +1,5 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import {
-  checkCreateObjClass,
-  checkCreateWidgetClass,
-  checkProvideObjClass,
-  checkProvideWidgetClass,
-} from 'scrivito_sdk/realm/app_class_api_check';
+import { validateAttributeDefinitions } from 'scrivito_sdk/realm/app_class_api_check';
 import { Obj, ObjClass } from 'scrivito_sdk/realm/obj';
 import {
   AttributeDefinitions,
@@ -24,96 +19,11 @@ import {
   assertValidObjExtractTextAttributes,
   assertValidWidgetExtractTextAttributes,
 } from './assert_valid_extract_text_attributes';
-import { registerClass } from './registry';
+import { registerRealmClass } from './registry';
 
 export type AppClass<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > = ObjClass<AttrDefs> | WidgetClass<AttrDefs>;
-
-/** @public */
-export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(name: string, definition: SimpleObjClassDefinition<Attrs>): ObjClass<Attrs>;
-
-/** @public */
-export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(name: string, definition: ObjClass<Attrs>): ObjClass<Attrs>;
-
-/** @public */
-export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(name: string, definition: ExtendObjClassDefinition<Attrs>): ObjClass<Attrs>;
-
-/** @public */
-export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
->(
-  name: string,
-  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>
-): ObjClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
-
-/** @internal */
-export function provideObjClass(
-  name: string,
-  definition: ObjClassDefinition | ObjClass,
-  ...excessArgs: never[]
-): ObjClass {
-  checkProvideObjClass(name, definition, ...excessArgs);
-  const appClass = isAppClass(definition)
-    ? definition
-    : createAppObjClass({ ...definition, name });
-  registerClass(name, appClass);
-
-  return appClass;
-}
-
-/** @public */
-export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(
-  name: string,
-  definition: SimpleWidgetClassDefinition<Attrs>
-): WidgetClass<Attrs>;
-
-/** @public */
-export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(name: string, definition: WidgetClass<Attrs>): WidgetClass<Attrs>;
-
-/** @public */
-export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(
-  name: string,
-  definition: ExtendWidgetClassDefinition<Attrs>
-): WidgetClass<Attrs>;
-
-/** @public */
-export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
->(
-  name: string,
-  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>
-): WidgetClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
-
-/** @internal */
-export function provideWidgetClass(
-  name: string,
-  definition: WidgetClassDefinition | WidgetClass,
-  ...excessArgs: never[]
-): WidgetClass {
-  checkProvideWidgetClass(name, definition, ...excessArgs);
-
-  const appClass = isAppClass(definition)
-    ? definition
-    : createAppWidgetClass({ ...definition, name });
-  registerClass(name, appClass);
-
-  return appClass;
-}
 
 /** @public */
 export function createObjClass<
@@ -134,11 +44,10 @@ export function createObjClass<
 ): ObjClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
-export function createObjClass(
-  definition: ObjClassDefinition,
-  ...excessArgs: never[]
-): ObjClass {
-  checkCreateObjClass(definition, ...excessArgs);
+export function createObjClass(definition: ObjClassDefinition): ObjClass {
+  if (definition.attributes) {
+    validateAttributeDefinitions(definition.attributes, 'createObjClass');
+  }
 
   return createAppObjClass(definition);
 }
@@ -163,10 +72,11 @@ export function createWidgetClass<
 
 /** @internal */
 export function createWidgetClass(
-  definition: WidgetClassDefinition,
-  ...excessArgs: never[]
+  definition: WidgetClassDefinition
 ): WidgetClass {
-  checkCreateWidgetClass(definition, ...excessArgs);
+  if (definition.attributes) {
+    validateAttributeDefinitions(definition.attributes, 'createWidgetClass');
+  }
 
   return createAppWidgetClass(definition);
 }
@@ -253,4 +163,54 @@ function isOrExtends(maybeClass: unknown, klass: UnknownClass): boolean {
 
 function isBinary(definition: ObjClassDefinition) {
   return definition.attributes?.blob === 'binary';
+}
+
+export function registerObjClass(
+  name: string,
+  objClassOrDefinition: ObjClassDefinition | ObjClass
+) {
+  validateAttrs(objClassOrDefinition);
+
+  const objClass = isAppClass(objClassOrDefinition)
+    ? objClassOrDefinition
+    : createAppObjClass({ ...objClassOrDefinition, name });
+
+  registerRealmClass(name, objClass);
+
+  return objClass;
+}
+
+export function registerWidgetClass(
+  name: string,
+  widgetClassOrDefinition: WidgetClassDefinition | WidgetClass
+) {
+  validateAttrs(widgetClassOrDefinition);
+
+  const widgetClass = isAppClass(widgetClassOrDefinition)
+    ? widgetClassOrDefinition
+    : createAppWidgetClass({ ...widgetClassOrDefinition, name });
+
+  registerRealmClass(name, widgetClass);
+
+  return widgetClass;
+}
+
+function validateAttrs(
+  definition:
+    | WidgetClassDefinition
+    | ObjClassDefinition
+    | WidgetClass
+    | ObjClass
+) {
+  if ('extend' in definition && definition.extend) {
+    if (!isAppClass(definition.extend)) {
+      throw new ArgumentError(
+        "Unexpected value for key 'extend'. It must be a valid ObjClass."
+      );
+    }
+  }
+
+  if (!isAppClass(definition) && definition.attributes) {
+    validateAttributeDefinitions(definition.attributes, 'provideObjClass');
+  }
 }

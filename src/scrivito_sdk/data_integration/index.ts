@@ -11,7 +11,10 @@ export type {
   DataItemPojo,
 } from 'scrivito_sdk/data_integration/data_class';
 export { createRestApiConnectionForClass } from 'scrivito_sdk/data_integration/create_rest_api_connection';
-export { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
+export {
+  getDataClassOrThrow,
+  getDataClass,
+} from 'scrivito_sdk/data_integration/get_data_class';
 export { ObjDataScope } from 'scrivito_sdk/data_integration/obj_data_class';
 export type { DataContext } from 'scrivito_sdk/data_integration/data_context';
 export {
@@ -66,9 +69,12 @@ export type {
   NormalizedDataAttributeDefinition,
   NormalizedDataClassSchema,
   DataAttributeType,
+  DataAttributeConfig,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 export {
   getNormalizedDataClassSchema,
-  isDataClassSchemaResponse,
+  extractDataClassSchemaResponse,
   registerDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
+export { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
+export { activateDataIntegration } from 'scrivito_sdk/data_integration/activate_data_integration';

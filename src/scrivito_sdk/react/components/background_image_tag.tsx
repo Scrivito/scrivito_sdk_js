@@ -11,7 +11,6 @@ import {
   throwNextTick,
 } from 'scrivito_sdk/common';
 import { Binary, BinaryType, ObjType } from 'scrivito_sdk/models';
-import { propTypes } from 'scrivito_sdk/react/tcomb';
 import { connect } from 'scrivito_sdk/react_connect';
 import { Obj, isBinaryBasicObj, unwrapAppClass } from 'scrivito_sdk/realm';
 
@@ -98,72 +97,42 @@ type BinaryToUrl = (binary: Binary) => string;
 
 /** @public */
 export const BackgroundImageTag: React.ComponentType<BackgroundImageTagProps> =
-  connect(
-    class BackgroundImageTag extends React.Component<BackgroundImageTagProps> {
-      static displayName = 'Scrivito.BackgroundImageTag';
+  connect(function BackgroundImageTag({
+    style,
+    tag,
+    ...passThroughProps
+  }: BackgroundImageTagProps) {
+    const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
-      static propTypes = propTypes<BackgroundImageTagProps>(
-        {
-          tag: t.maybe(t.String),
-          style: t.maybe(
-            t.interface(
-              {
-                background: t.maybe(ValidBackgroundOrBackgroundList),
-              },
-              { strict: false }
-            )
-          ),
-        },
-        { strict: false }
-      );
+    const decoder = React.useMemo(
+      () => createBackgroundImageDecoder(forceUpdate),
+      []
+    );
 
-      static defaultProps = {
-        tag: 'div',
-        style: {},
-      };
+    React.useEffect(() => {
+      decoder.resumeUpdateCallback();
+      return () => decoder.clear();
+    }, [decoder]);
 
-      private decoder: BackgroundImageDecoder;
+    const Tag = (tag || 'div') as keyof JSX.IntrinsicElements;
 
-      constructor(props: BackgroundImageTagProps) {
-        super(props);
+    assertNoBackgroundRelatedProperties(style);
 
-        this.decoder = createBackgroundImageDecoder(() => this.forceUpdate());
+    return (
+      <Tag
+        {...passThroughProps}
+        style={calculateCSSProperties(style || {}, binaryToUrl)}
+      />
+    );
 
-        this.binaryToUrl = this.binaryToUrl.bind(this);
-      }
+    function binaryToUrl(binary: Binary): string {
+      const { initialUrl, highResUrlToDecode } = scaleDownBinary(binary);
+      const decodedBackgroundUrl =
+        highResUrlToDecode && decoder.getBackgroundImage(highResUrlToDecode);
 
-      componentDidMount() {
-        this.decoder.resumeUpdateCallback();
-      }
-
-      componentWillUnmount() {
-        this.decoder.clear();
-      }
-
-      render() {
-        const { style, tag, ...passThroughProps } = this.props;
-        const Tag = tag as keyof JSX.IntrinsicElements;
-
-        assertNoBackgroundRelatedProperties(style);
-
-        return (
-          <Tag
-            {...passThroughProps}
-            style={calculateCSSProperties(style!, this.binaryToUrl)}
-          />
-        );
-      }
-
-      private binaryToUrl(binary: Binary): string {
-        const { initialUrl, highResUrlToDecode } = scaleDownBinary(binary);
-        const decodedBackgroundUrl =
-          highResUrlToDecode &&
-          this.decoder.getBackgroundImage(highResUrlToDecode);
-
-        return decodedBackgroundUrl || `url(${initialUrl})`;
-      }
+      return decodedBackgroundUrl || `url(${initialUrl})`;
     }
-  );
+  });
 
 // For test purpose only
 export function createBackgroundImageDecoder(

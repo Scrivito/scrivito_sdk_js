@@ -3,7 +3,7 @@ import { ApiClient, ClientError } from 'scrivito_sdk/client';
 import { logError } from 'scrivito_sdk/common';
 import {
   DataClassSchema,
-  isDataClassSchemaResponse,
+  extractDataClassSchemaResponse,
 } from 'scrivito_sdk/data_integration';
 import { load } from 'scrivito_sdk/loadable';
 
@@ -31,10 +31,5 @@ export async function fetchSchema(
     throw error;
   }
 
-  if (isDataClassSchemaResponse(response)) {
-    return response.attributes;
-  }
-
-  logError('Invalid schema (using empty schema)', JSON.stringify(response));
-  return {};
+  return extractDataClassSchemaResponse(response).attributes;
 }

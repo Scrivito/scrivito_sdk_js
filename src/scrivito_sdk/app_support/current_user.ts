@@ -25,8 +25,8 @@ export function ensureUserIsLoggedIn(): void {
   return authHandler().ensureUserIsLoggedIn();
 }
 
-export function getIamAuthProvider() {
-  return authHandler().iamAuthProvider();
+export function getIamTokenFetcher() {
+  return authHandler().iamTokenFetcher();
 }
 
 export function getLoginHandler() {

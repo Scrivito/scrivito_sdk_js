@@ -106,9 +106,9 @@ export {
 } from 'scrivito_sdk/models/auto_convert';
 export { getDetailsPageForDataParam } from 'scrivito_sdk/models/get_details_page_for_data_param';
 export {
-  isDataLocatorValueFilter,
   isDataLocatorValueVia,
   isDataLocatorValueViaFilter,
+  isDataLocatorValueOrOperatorFilter,
   DataLocator,
   SINGLETON_DATA_ID,
 } from 'scrivito_sdk/models/data_locator';

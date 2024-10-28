@@ -1,3 +1,4 @@
+import { isDataIntegrationActive } from 'scrivito_sdk/data_integration/activate_data_integration';
 import {
   DataContext,
   findItemElementInDataStackAndGlobalData,
@@ -27,6 +28,8 @@ export function replacePlaceholdersWithData(
     transform?: (rawValue: string) => string;
   } = {}
 ): string {
+  if (!isDataIntegrationActive()) return text;
+
   return text.replace(PLACEHOLDERS, (placeholder, identifier) => {
     const rawValue = replacePlaceholder({
       identifier,

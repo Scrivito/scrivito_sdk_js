@@ -35,7 +35,7 @@ import {
   Obj,
   ObjSearch,
   Schema,
-  getClass,
+  getRealmClass,
   unwrapAppClass,
   wrapInAppClass,
 } from 'scrivito_sdk/realm';
@@ -352,11 +352,11 @@ function getAttributeTypeInfo(className: string, attributeName: string) {
 }
 
 export function isObjDataClassProvided(className: string): boolean {
-  return !!getClass(className);
+  return !!getRealmClass(className);
 }
 
 function getSchema(className: string) {
-  const objClass = getClass(className);
+  const objClass = getRealmClass(className);
 
   if (!objClass) {
     throw new ArgumentError(`Class ${className} does not exist`);
@@ -480,7 +480,14 @@ function toDataAttributeDefinition([
   }
 
   if (cmsType === 'enum') {
-    return ['enum', { values: [...cmsTypeInfo.values] }];
+    return [
+      'enum',
+      {
+        values: [
+          ...cmsTypeInfo.values.map((value) => ({ value, title: value })),
+        ],
+      },
+    ];
   }
 
   if (cmsType === 'reference') {

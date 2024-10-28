@@ -172,6 +172,10 @@ export interface DataLocatorOperatorFilter {
   value: FilterValue;
 }
 
+export type DataLocatorOperatorOrValueFilter =
+  | DataLocatorOperatorFilter
+  | DataLocatorValueFilter;
+
 export function isDataLocatorOperatorFilter(
   filter: unknown
 ): filter is DataLocatorOperatorFilter {
@@ -185,15 +189,37 @@ export function isDataLocatorOperatorFilter(
       filter.operator as OperatorFilterOpCode
     ) &&
     'value' in filter &&
-    typeof filter.value === 'string'
+    isFilterValue(filter.value)
   );
 }
 
 export type FilterValue = string | number | boolean | null;
 
+function isFilterValue(value: unknown): value is FilterValue {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    value === null
+  );
+}
+
 export interface DataLocatorValueFilter {
   field: string;
   value: FilterValue;
+}
+
+export function isDataLocatorValueFilter(
+  filter: unknown
+): filter is DataLocatorValueFilter {
+  const { value, field } = filter as DataLocatorValueFilter;
+
+  return (
+    isObject(filter) &&
+    typeof field === 'string' &&
+    !(filter as DataLocatorOperatorFilter).operator &&
+    isFilterValue(value)
+  );
 }
 
 export interface DataLocatorValueViaFilter {

@@ -91,6 +91,8 @@ export interface UiAdapterInterface
   getEditorAuthToken(options?: {
     audience?: string;
     treatLocalhostLike?: string;
+    authViaAccount?: string;
+    authViaInstance?: string;
   }): { token: string } | { error: string } | undefined;
   comparisonBase(): ObjSpaceId;
   comparisonRange(): ComparisonRange;

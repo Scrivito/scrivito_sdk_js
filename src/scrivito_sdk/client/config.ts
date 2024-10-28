@@ -1,9 +1,13 @@
-import { AuthorizationProvider } from 'scrivito_sdk/client';
+import { BrowserTokenParams } from 'scrivito_sdk/client';
 import { ConfigStore } from 'scrivito_sdk/common';
+
+export type TokenFetcher = (
+  params: BrowserTokenParams
+) => Promise<string | null>;
 
 interface ClientConfig {
   iamAuthLocation?: string;
-  iamAuthProvider?: AuthorizationProvider;
+  iamTokenFetcher?: TokenFetcher;
   loginHandler?: 'redirect' | 'error';
 }
 

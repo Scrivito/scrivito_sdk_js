@@ -1,61 +1,31 @@
-import {
-  ClientError,
-  TokenAuthorizationProvider,
-  getIamAuthUrl,
-} from 'scrivito_sdk/client';
+import { ClientError, getIamAuthUrl } from 'scrivito_sdk/client';
 import { fetchJson } from 'scrivito_sdk/client/fetch_json';
 import { isAuthMissingClientError } from 'scrivito_sdk/client/login_handler';
-import {
-  InternalError,
-  fetchConfiguredTenant,
-  onReset,
-} from 'scrivito_sdk/common';
+import { InternalError, fetchConfiguredTenant } from 'scrivito_sdk/common';
 
-let providerCache: Record<string, TokenAuthorizationProvider | undefined> = {};
-
-export function getBrowserTokenProvider(
-  audience: string
-): TokenAuthorizationProvider {
-  return providerCache[audience] || initStoredAuthProvider(audience);
-}
-
-function initStoredAuthProvider(audience: string) {
-  providerCache[audience] = new TokenAuthorizationProvider(() =>
-    fetchBrowserToken({ audience })
-  );
-
-  return getBrowserTokenProvider(audience);
-}
-
-/** for test purposes */
-export function injectBrowserToken(audience: string, token: string): void {
-  getBrowserTokenProvider(audience).injectToken(token);
-}
-
-interface RegularBrowserTokenParams {
-  audience: string;
-  origin?: undefined;
-}
-
-interface UiEditorAuthTokenParams {
+export interface BrowserTokenParams {
   audience: string | undefined;
-  origin: string;
+  origin?: string;
+  authViaAccount?: string;
+  authViaInstance?: string;
 }
-
-type BrowserTokenParams = RegularBrowserTokenParams | UiEditorAuthTokenParams;
 
 export async function fetchBrowserToken({
   audience,
   origin,
+  authViaAccount,
+  authViaInstance,
 }: BrowserTokenParams): Promise<string> {
-  const instanceId = await fetchConfiguredTenant();
   const authLocation = await getIamAuthUrl();
 
+  const authPath = authViaAccount
+    ? `account/${authViaAccount}`
+    : `instance/${authViaInstance || (await fetchConfiguredTenant())}`;
+
   try {
-    const response = await fetchJson(
-      `${authLocation}/instance/${instanceId}/token`,
-      { params: { audience, origin } }
-    );
+    const response = await fetchJson(`${authLocation}/${authPath}/token`, {
+      params: { audience, origin },
+    });
 
     assertTokenResponse(response);
 
@@ -90,5 +60,3 @@ function assertTokenResponse(
 
   throw new InternalError();
 }
-
-onReset(() => (providerCache = {}));

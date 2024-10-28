@@ -1,6 +1,11 @@
 import isDate from 'lodash-es/isDate';
 
-import { ArgumentError, isObject, logError } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  isISO8601,
+  isObject,
+  logError,
+} from 'scrivito_sdk/common';
 import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataAttributeConfig,
@@ -292,16 +297,6 @@ function getAttributeConfig(attributeDefinition: DataAttributeDefinition) {
   if (typeof attributeDefinition !== 'string') {
     return attributeDefinition[1];
   }
-}
-
-function isISO8601(value: string) {
-  const isoDateTimeWithOptionalMilliseconds =
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{3})?Z$/;
-
-  return (
-    isoDateTimeWithOptionalMilliseconds.test(value) &&
-    !Number.isNaN(Date.parse(value))
-  );
 }
 
 function getEnumValues(attributeConfig?: DataAttributeConfig) {

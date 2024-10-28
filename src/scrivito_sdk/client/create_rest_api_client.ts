@@ -1,10 +1,9 @@
-import { clientConfig } from 'scrivito_sdk/client';
+import { clientConfig, getTokenProvider } from 'scrivito_sdk/client';
 import {
   ApiClient,
   ApiClientOptions,
   FetchOptions,
 } from 'scrivito_sdk/client/api_client';
-import { getBrowserTokenProvider } from 'scrivito_sdk/client/browser_token';
 import { fetchJson } from 'scrivito_sdk/client/fetch_json';
 import { joinPaths } from 'scrivito_sdk/client/join_paths';
 import { withLoginHandler } from 'scrivito_sdk/client/login_handler';
@@ -30,7 +29,8 @@ async function fetch(
     loginHandler,
     method: verb,
     params,
-    unstable_forceCookie,
+    authViaAccount,
+    authViaInstance,
   }: FetchOptions = {}
 ) {
   const method = verb?.toUpperCase() ?? 'GET';
@@ -40,10 +40,11 @@ async function fetch(
     loginHandler ??
     (config.loginHandler === 'redirect' ? loginRedirectHandler : undefined);
 
-  const authProvider = unstable_forceCookie
-    ? undefined
-    : config.iamAuthProvider ??
-      getBrowserTokenProvider(audience || new URL(url).origin);
+  const authProvider = getTokenProvider({
+    audience: audience || new URL(url).origin,
+    ...(authViaAccount && { authViaAccount }),
+    ...(authViaInstance && { authViaInstance }),
+  });
 
   return withLoginHandler(handler, () =>
     fetchJson(url, { data, authProvider, headers, params, method })

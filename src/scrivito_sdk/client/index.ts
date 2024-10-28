@@ -34,6 +34,7 @@ export type {
   BackendSuggestResponse,
 } from 'scrivito_sdk/client/suggest_retrieval';
 export { clientConfig } from 'scrivito_sdk/client/config';
+export type { TokenFetcher } from 'scrivito_sdk/client/config';
 export {
   PUBLISHED_SPACE,
   getWorkspaceId,
@@ -61,13 +62,15 @@ export {
   isWidgetAttributeJson,
   isWidgetlistAttributeJson,
   isDataLocatorOperatorFilter,
+  isDataLocatorValueFilter,
   OP_CODES,
 } from 'scrivito_sdk/client/obj_json';
 export {
-  getBrowserTokenProvider,
+  getTokenProvider,
   injectBrowserToken,
-  fetchBrowserToken,
-} from 'scrivito_sdk/client/browser_token';
+} from 'scrivito_sdk/client/token_manager';
+export { fetchBrowserToken } from 'scrivito_sdk/client/browser_token';
+export type { BrowserTokenParams } from 'scrivito_sdk/client/browser_token';
 export type {
   ObjJson,
   OpCode,
@@ -94,6 +97,7 @@ export type {
   DataLocatorValueFilter,
   DataLocatorValueVia,
   DataLocatorValueViaFilter,
+  DataLocatorOperatorOrValueFilter,
   FilterValue,
   OrderByItem,
   OrderDirection,

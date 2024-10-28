@@ -25,13 +25,11 @@ export type { ApiClientOptions } from 'scrivito_sdk/client';
 export {
   createObjClass,
   createWidgetClass,
-  getClass,
+  getRealmClass as getClass,
   Link,
   Obj,
   ObjFacetValue,
   ObjSearch,
-  provideObjClass,
-  provideWidgetClass,
   Widget,
 } from 'scrivito_sdk/realm';
 
@@ -70,11 +68,7 @@ export type {
 
 export { DataConnectionError } from 'scrivito_sdk/data_integration';
 
-export type {
-  DataClass,
-  DataItem,
-  DataScope,
-} from 'scrivito_sdk/data_integration';
+export { DataClass, DataItem, DataScope } from 'scrivito_sdk/data_integration';
 
 export { finishLoading, connect } from 'scrivito_sdk/react_connect';
 
@@ -122,8 +116,12 @@ export { editorLanguage } from 'scrivito_sdk/app_support/editor_language';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
 export { provideDataClass } from 'scrivito_sdk/app_support/provide_data_class';
 export { provideDataItem } from 'scrivito_sdk/app_support/provide_data_item';
-
+export {
+  provideObjClass,
+  provideWidgetClass,
+} from 'scrivito_sdk/app_support/provide_content_class';
 export { provideEditingConfig } from 'scrivito_sdk/app_support/provide_editing_config';
+
 export type {
   ObjEditingConfig,
   ObjEditingConfigAttributes,

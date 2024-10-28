@@ -9,7 +9,7 @@ import { skipContentTagsForEmptyAttributes } from 'scrivito_sdk/app_support/cont
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import {
-  getIamAuthProvider,
+  getIamTokenFetcher,
   getLoginHandler,
   isUserLoggedIn,
 } from 'scrivito_sdk/app_support/current_user';
@@ -42,7 +42,7 @@ import {
   Priority,
   clientConfig,
   cmsRestApi,
-  getBrowserTokenProvider,
+  getTokenProvider,
 } from 'scrivito_sdk/client';
 import {
   Deferred,
@@ -63,6 +63,7 @@ import {
   disableObjReplication,
   useInMemoryTenant,
 } from 'scrivito_sdk/data';
+import { activateDataIntegration } from 'scrivito_sdk/data_integration';
 import { load } from 'scrivito_sdk/loadable';
 import {
   getRootObjFrom,
@@ -107,6 +108,8 @@ export interface Configuration {
   contentTagsForEmptyAttributes?: boolean;
   iamAuthLocation?: string;
   treatLocalhostLike?: string;
+
+  activateDataIntegration?: boolean;
 
   /** @internal */
   unstable?: {
@@ -154,12 +157,13 @@ const AllowedConfiguration = t.interface({
   ),
   unstable: t.maybe(t.Object),
   priority: t.maybe(t.enums.of(['foreground', 'background'])),
-  editorLanguage: t.maybe(t.enums.of(['en', 'de'])),
+  editorLanguage: t.maybe(t.enums.of(['en', 'de', 'fr'])),
   strictSearchOperators: t.maybe(t.Boolean),
   optimizedWidgetLoading: t.maybe(t.Boolean),
   contentTagsForEmptyAttributes: t.maybe(t.Boolean),
   iamAuthLocation: t.maybe(t.String),
   treatLocalhostLike: t.maybe(t.String),
+  activateDataIntegration: t.maybe(t.Boolean),
 });
 
 const PUBLIC_FUNCTION_NAME = 'configure';
@@ -216,7 +220,7 @@ export function configure(
 
     clientConfig.set({
       iamAuthLocation: getIamAuthLocation(configuration.iamAuthLocation),
-      iamAuthProvider: getIamAuthProvider(),
+      iamTokenFetcher: getIamTokenFetcher(),
       loginHandler: getLoginHandler(),
     });
 
@@ -238,6 +242,8 @@ export function configure(
   }
 
   if (configuration.strictSearchOperators) enableStrictSearchOperators();
+  if (configuration.activateDataIntegration) activateDataIntegration();
+
   setWantsAutoAttributeConversion(!!configuration.autoConvertAttributes);
   setForcedEditorLanguage(configuration.editorLanguage || null);
   setExtensionsUrl(configuration.extensionsUrl || undefined);
@@ -335,7 +341,7 @@ function getCmsAuthProvider(
   }
 
   if (isRunningInBrowser() && isUserLoggedIn()) {
-    return getBrowserTokenProvider('https://api.justrelate.com');
+    return getTokenProvider({ audience: 'https://api.justrelate.com' });
   }
 
   return getVisitorAuthenticationProvider(visitorAuthentication);

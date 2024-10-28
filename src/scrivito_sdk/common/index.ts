@@ -158,3 +158,4 @@ export { parameterizeDataClass } from 'scrivito_sdk/common/parameterize_data_cla
 export { isPromise } from 'scrivito_sdk/common/is_promise';
 export { isObject } from 'scrivito_sdk/common/is_object';
 export { AsyncTaskTracker } from 'scrivito_sdk/common/async_task_tracker';
+export { isISO8601 } from 'scrivito_sdk/common/is_ISO8601';

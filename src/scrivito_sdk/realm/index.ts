@@ -10,12 +10,7 @@ export { enableStrictSearchOperators } from 'scrivito_sdk/realm/strict_search_op
 export type { AttrDict } from 'scrivito_sdk/realm/attribute_types';
 export type { CmsAttributeType } from 'scrivito_sdk/models';
 
-export {
-  createObjClass,
-  createWidgetClass,
-  provideObjClass,
-  provideWidgetClass,
-} from 'scrivito_sdk/realm/realm';
+export { createObjClass, createWidgetClass } from 'scrivito_sdk/realm/realm';
 export type { AppClass } from 'scrivito_sdk/realm/realm';
 
 export {
@@ -44,12 +39,22 @@ export type {
   BasicAttributeDefinitions,
   ObjClassDefinition,
   WidgetClassDefinition,
+  SimpleObjClassDefinition,
+  SimpleWidgetClassDefinition,
+  ExtendObjClassDefinition,
+  ExtendWidgetClassDefinition,
+  MixedObjClassDefinition,
+  MixedWidgetClassDefinition,
 } from 'scrivito_sdk/realm/schema';
 export {
   allObjClasses,
   allWidgetClasses,
-  getClass,
+  getRealmClass,
 } from 'scrivito_sdk/realm/registry';
 export { schemaFromBasicObjOrWidget } from 'scrivito_sdk/realm/schema_from_basic_obj_or_widget';
 export { isBinaryBasicObj } from 'scrivito_sdk/realm/is_binary_basic_obj';
 export { isObjClass } from 'scrivito_sdk/realm/is_obj_class';
+export {
+  registerObjClass,
+  registerWidgetClass,
+} from 'scrivito_sdk/realm/realm';

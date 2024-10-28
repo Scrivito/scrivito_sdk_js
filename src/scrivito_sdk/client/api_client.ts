@@ -20,23 +20,52 @@ type Method =
   | 'POST'
   | 'PUT';
 
-export interface FetchOptions {
-  audience?: string;
-  headers?: Record<string, string>;
+export type FetchOptions = FetchBaseOptions & AuthViaOptions;
+
+interface FetchBaseOptions extends ApiClientBaseOptions {
   params?: FetchParams;
   data?: FetchData;
   method?: Method;
   // note: only for internal use, will be removed in the future
   loginHandler?: LoginHandler;
-  // special "escape hatch" only meant for console.justrelate.com
-  unstable_forceCookie?: true;
 }
+
+type AuthViaOptions =
+  | {
+      authViaAccount?: string;
+      authViaInstance?: never;
+    }
+  | {
+      authViaInstance?: string;
+      authViaAccount?: never;
+    };
+
+function assertAuthViaOptions(
+  options: MaybeInvalidAuthViaFetchConfig | undefined
+): asserts options is AuthViaOptions {
+  if (!options) return;
+
+  const { authViaAccount, authViaInstance } = options;
+
+  if (authViaAccount && authViaInstance) {
+    throw new Error(
+      'authViaAccount and authViaInstance are mutually exclusive'
+    );
+  }
+}
+
+type MaybeInvalidAuthViaFetchConfig = FetchBaseOptions & {
+  authViaAccount?: string;
+  authViaInstance?: string;
+};
 
 // exported for test purposes only
 export type Fetch = (path: string, options?: FetchOptions) => Promise<unknown>;
 
 /** @public */
-export interface ApiClientOptions {
+export type ApiClientOptions = ApiClientBaseOptions & AuthViaOptions;
+
+interface ApiClientBaseOptions {
   audience?: string;
   headers?: Record<string, string>;
 }
@@ -51,10 +80,14 @@ export class ApiClient {
   ) {}
 
   fetch(path: string, options?: FetchOptions) {
-    return this.fetchCallback(path, {
+    const mergedOptions: MaybeInvalidAuthViaFetchConfig = {
       ...this.options,
       ...options,
-    });
+    };
+
+    assertAuthViaOptions(mergedOptions);
+
+    return this.fetchCallback(path, mergedOptions);
   }
 
   get(path: string, options?: FetchOptions): Promise<unknown> {

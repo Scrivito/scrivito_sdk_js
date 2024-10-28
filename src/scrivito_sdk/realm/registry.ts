@@ -15,12 +15,12 @@ export interface WidgetClassesByName {
 
 let mapping: { [name: string]: AppClass } = {};
 
-export function registerClass(name: string, klass: AppClass): void {
+export function registerRealmClass(name: string, klass: AppClass): void {
   mapping[name] = klass;
 }
 
 /** @public */
-export function getClass(name: string): AppClass | null {
+export function getRealmClass(name: string): AppClass | null {
   return mapping[name] || null;
 }
 
@@ -31,7 +31,7 @@ export function objClassNameFor(modelClass: AppClass): string | null {
 }
 
 function appClassFor(name: string, baseClass: AppClass): AppClass {
-  const appClass = getClass(name);
+  const appClass = getRealmClass(name);
 
   return appClass && baseClass.isPrototypeOf(appClass) ? appClass : baseClass;
 }

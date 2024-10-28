@@ -4,13 +4,13 @@ import { setInterval } from 'scrivito_sdk/common';
 
 let userLoggedInStatusInterval: number | undefined;
 
-export function startPollingLoggedUser(): void {
+export function startPollingLoggedInUser(): void {
   if (userLoggedInStatusInterval) return;
 
-  userLoggedInStatusInterval = setInterval(fetchLoggedUser, 60000);
+  userLoggedInStatusInterval = setInterval(fetchLoggedInUser, 60000);
 }
 
-export async function fetchLoggedUser(): Promise<void> {
+export async function fetchLoggedInUser(): Promise<void> {
   await JrRestApi.get(await getUserInfoPath());
 }
 

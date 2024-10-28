@@ -10,6 +10,8 @@ import {
   FilterValue,
   OrderByItem,
   ViaRef,
+  isDataLocatorOperatorFilter,
+  isDataLocatorValueFilter,
 } from 'scrivito_sdk/client';
 import { isObject } from 'scrivito_sdk/common';
 
@@ -19,7 +21,6 @@ interface DataLocatorParams extends Omit<DataLocatorJson, 'class'> {
   class: string | null;
 }
 
-type DataLocatorTransformQuery = Array<DataLocatorTransformFilter>;
 export type DataLocatorTransformFilter =
   | DataLocatorFilter
   | DataLocatorEqFilter;
@@ -86,40 +87,6 @@ export class DataLocator {
   }
 
   /** @internal */
-  transform(params: {
-    class?: string | null;
-    field?: string | null;
-    query?: DataLocatorTransformQuery;
-    order_by?: OrderByItem[];
-    size?: number | null;
-    viaRef?: ViaRef | null;
-  }): DataLocator {
-    return new DataLocator({
-      class: params.class === null ? null : params.class ?? this._class,
-      field: params.field === null ? undefined : params.field ?? this._field,
-      query: params.query
-        ? normalizeTransformQuery(params.query)
-        : this.query(),
-      order_by: params.order_by || this.orderBy(),
-      size: params.size === null ? undefined : params.size ?? this._size,
-      via_ref: params.viaRef ?? this._viaRef,
-    });
-  }
-
-  /** @internal */
-  isSingleItem(): boolean {
-    return (
-      this._viaRef === 'single' ||
-      !!this._query?.some(
-        (filter) =>
-          (isDataLocatorValueFilter(filter) ||
-            isDataLocatorValueViaFilter(filter)) &&
-          filter.field === '_id'
-      )
-    );
-  }
-
-  /** @internal */
   toPojo(): DataLocatorJson | null {
     if (this._class === null) return null;
 
@@ -139,29 +106,6 @@ export class DataLocator {
       size: this._size,
     };
   }
-}
-
-function isDataLocatorEqFilter(filter: unknown): filter is DataLocatorEqFilter {
-  return (
-    isObject(filter) &&
-    'field' in filter &&
-    typeof filter.field === 'string' &&
-    'operator' in filter &&
-    filter.operator === 'eq' &&
-    'value' in filter &&
-    typeof filter.value === 'string'
-  );
-}
-
-export function isDataLocatorValueFilter(
-  filter: unknown
-): filter is DataLocatorValueFilter {
-  return (
-    isObject(filter) &&
-    typeof (filter as DataLocatorValueFilter).field === 'string' &&
-    !(filter as DataLocatorOperatorFilter).operator &&
-    typeof (filter as DataLocatorValueFilter).value === 'string'
-  );
 }
 
 export function isDataLocatorValueViaFilter(
@@ -184,15 +128,10 @@ export function isDataLocatorValueVia(
   );
 }
 
-function normalizeTransformQuery(
-  transformQuery: DataLocatorTransformQuery
-): DataLocatorQuery {
-  return transformQuery.map((filter) => {
-    if (isDataLocatorEqFilter(filter)) {
-      const { field, value } = filter;
-      return { field, value };
-    }
-
-    return filter;
-  });
+export function isDataLocatorValueOrOperatorFilter(
+  filter: unknown
+): filter is DataLocatorValueFilter | DataLocatorOperatorFilter {
+  return (
+    isDataLocatorValueFilter(filter) || isDataLocatorOperatorFilter(filter)
+  );
 }
