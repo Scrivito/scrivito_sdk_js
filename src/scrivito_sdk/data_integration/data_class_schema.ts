@@ -38,9 +38,9 @@ export type NormalizedDataAttributeDefinitionWithConfig = {
   ];
 }[keyof NormalizedDataAttributeConfigs];
 
-export type NormalizedDataAttributeConfigs = DataAttributeConfigs & {
+export interface NormalizedDataAttributeConfigs extends DataAttributeConfigs {
   enum: LocalizedEnumAttributeConfig;
-};
+}
 
 export interface LocalizedEnumAttributeConfig extends EnumAttributeConfig {
   values: Array<LocalizedEnumValueConfig>;

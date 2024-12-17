@@ -1,6 +1,6 @@
 import { onReset } from 'scrivito_sdk/common';
 
-let dataIntegrationActive = true;
+let dataIntegrationActive = false;
 
 export function activateDataIntegration(): void {
   dataIntegrationActive = true;

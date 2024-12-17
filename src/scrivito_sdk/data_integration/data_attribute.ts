@@ -204,6 +204,8 @@ function deserializeDateAttribute(
   attributeName: string,
   value: unknown
 ) {
+  if (isEmptyStringOrNull(value)) return null;
+
   if (typeof value === 'string' && isISO8601(value)) {
     return new Date(value);
   }
@@ -224,6 +226,8 @@ function deserializeEnumAttribute(
   value: unknown,
   attributeDefinition: DataAttributeDefinition
 ) {
+  if (isEmptyStringOrNull(value)) return null;
+
   const enumValues = getEnumValues(getAttributeConfig(attributeDefinition));
 
   if (typeof value === 'string' && enumValues.includes(value)) {
@@ -246,6 +250,8 @@ function deserializeReferenceAttribute(
   value: unknown,
   attributeDefinition: DataAttributeDefinition
 ) {
+  if (isEmptyStringOrNull(value)) return null;
+
   if (isValidDataId(value)) {
     return (
       getDataClassOrThrow(
@@ -287,6 +293,10 @@ function deserializeStringAttribute(
   return '';
 }
 
+function isEmptyStringOrNull(value: unknown): value is string | null {
+  return value === null || value === '';
+}
+
 function getAttributeType(attributeDefinition: DataAttributeDefinition) {
   return typeof attributeDefinition === 'string'
     ? attributeDefinition
@@ -321,7 +331,7 @@ function getReferencedClassName(attributeConfig?: DataAttributeConfig) {
   );
 }
 
-function isReferenceAttributeConfig(
+export function isReferenceAttributeConfig(
   attributeConfig?: DataAttributeConfig
 ): attributeConfig is ReferenceAttributeConfig {
   return !!(
@@ -340,10 +350,9 @@ function assertNoTypedObject(
     assertNoTypedObject(dataClassName, attributeName, value[0]);
   }
 
-  if (isObject(value) && value.hasOwnProperty('type')) {
+  if (isObject(value) && value.hasOwnProperty('_type')) {
     throw new ArgumentError(
-      `Value for attribute "${attributeName}" of data class "${dataClassName}" ` +
-        'contains an object with property "type"'
+      `Value for attribute "${attributeName}" of data class "${dataClassName}" contains an object with property "_type"`
     );
   }
 }

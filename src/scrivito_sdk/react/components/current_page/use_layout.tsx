@@ -13,10 +13,10 @@ import {
   getLayoutComponentForAppClass,
 } from 'scrivito_sdk/react/component_registry';
 import { CurrentPage } from 'scrivito_sdk/react/components/current_page';
+import { DetailsPageDataContext } from 'scrivito_sdk/react/components/current_page/details_page_data_context';
+import { PageDataContext } from 'scrivito_sdk/react/components/current_page/page_data_context';
 import { connect } from 'scrivito_sdk/react_connect';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
-
-import { DetailsPageDataContext } from './details_page_data_context';
 
 const LayoutIndexContext = React.createContext(0);
 
@@ -77,14 +77,16 @@ const PageLayout = connect(function PageLayout({
   const Component = page && getLayoutComponentForAppClass(page.objClass());
 
   return (
-    <DetailsPageDataContext page={page} params={params}>
-      <LayoutIndexContext.Provider value={layoutIndex + 1}>
-        {Component ? (
-          <Component page={wrapInAppClass(page)} />
-        ) : (
-          <CurrentPage />
-        )}
-      </LayoutIndexContext.Provider>
-    </DetailsPageDataContext>
+    <PageDataContext page={page}>
+      <DetailsPageDataContext page={page} params={params}>
+        <LayoutIndexContext.Provider value={layoutIndex + 1}>
+          {Component ? (
+            <Component page={wrapInAppClass(page)} />
+          ) : (
+            <CurrentPage />
+          )}
+        </LayoutIndexContext.Provider>
+      </DetailsPageDataContext>
+    </PageDataContext>
   );
 });

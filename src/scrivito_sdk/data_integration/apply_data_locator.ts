@@ -134,6 +134,16 @@ function applyValueViaFilter(
 ) {
   const viaDataItem = findMatchingDataItemOrThrow(viaClass, dataStack);
 
+  if (viaField === '_obj_parent_id') {
+    const parentObj = viaDataItem.obj()?.parent();
+
+    if (parentObj) {
+      return applyValueFilter(scope, { field: '_id', value: parentObj.id() });
+    }
+
+    return new EmptyDataScope();
+  }
+
   if (viaField === '_id') {
     return applyValueFilter(scope, { field, value: viaDataItem.id() });
   }

@@ -45,6 +45,10 @@ export function provideObjClass(
   name: string,
   definition: ObjClassDefinition | ObjClass
 ): ObjClass {
+  if (name === 'Obj') {
+    throw new ArgumentError('"Obj" is not a valid Obj class name');
+  }
+
   if (isExternalDataClassProvided(name)) {
     throw new ArgumentError(`Class with name ${name} already exists`);
   }

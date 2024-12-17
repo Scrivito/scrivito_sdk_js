@@ -6,16 +6,16 @@ import {
   ReferenceAttributeJson,
   ReferencelistAttributeJson,
 } from 'scrivito_sdk/client';
-import { createStateContainer } from 'scrivito_sdk/state';
+import { onReset } from 'scrivito_sdk/common';
 
-const autoConvertAttributes = createStateContainer<boolean>();
+let autoConvertAttributes = false;
 
 export function setWantsAutoAttributeConversion(value: boolean): void {
-  autoConvertAttributes.set(value);
+  autoConvertAttributes = value;
 }
 
 export function wantsAutoAttributeConversion(): boolean {
-  return !!autoConvertAttributes.get();
+  return !!autoConvertAttributes;
 }
 
 export function autoConvertToReference(value: unknown): unknown {
@@ -121,3 +121,5 @@ type BackendType = keyof CustomAttributeJsonMapping;
 function backendValueType(value: unknown): BackendType | undefined {
   return Array.isArray(value) ? (value[0] as BackendType) : undefined;
 }
+
+onReset(() => (autoConvertAttributes = false));

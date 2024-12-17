@@ -13,7 +13,8 @@ import { provideGlobalData } from 'scrivito_sdk/data_integration/global_data';
 import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { registerSingletonDataClass } from 'scrivito_sdk/data_integration/singleton_data_classes';
 import { load } from 'scrivito_sdk/loadable';
-import { SINGLETON_DATA_ID } from 'scrivito_sdk/models';
+
+const SINGLETON_DATA_ID = '0';
 
 type ExternalDataItemGetCallback = () => Promise<unknown>;
 
@@ -43,10 +44,11 @@ export function provideExternalDataItem(
     : connection.update;
 
   const dataConnection: Partial<UncheckedDataConnection> = {
-    get: async (id) => (isIdValid(id) ? getCallback() : null),
+    get: async (id) => (isSingletonDataId(id) ? getCallback() : null),
     index: async (params) => readAndFilterItem(params, dataClass),
     ...(updateCallback && {
-      update: async (id, data) => (isIdValid(id) ? updateCallback(data) : null),
+      update: async (id, data) =>
+        isSingletonDataId(id) ? updateCallback(data) : null,
     }),
   };
 
@@ -60,7 +62,7 @@ export function provideExternalDataItem(
   return dataItem;
 }
 
-function isIdValid(id: string) {
+function isSingletonDataId(id: string) {
   return id === SINGLETON_DATA_ID;
 }
 

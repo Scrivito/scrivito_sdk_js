@@ -6,6 +6,8 @@ import {
   OrderSpec,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
+  CollectionData,
+  CollectionKey,
   ExternalData,
   findInExternalDataOfflineStore,
 } from 'scrivito_sdk/data_integration/external_data';
@@ -23,9 +25,7 @@ export async function queryExternalDataOfflineStore([
   OrderSpec | undefined,
   boolean | undefined
 ]): Promise<{ results: string[]; count: number }> {
-  if (search) throwNotSupported('search');
-
-  const unsortedHits = await findInExternalDataOfflineStore(
+  const collection = await findInExternalDataOfflineStore(
     (data, [dataClass, id]) => {
       if (data === null) return false;
       if (dataClass !== wantedDataClass) return false;
@@ -34,17 +34,43 @@ export async function queryExternalDataOfflineStore([
     }
   );
 
-  const hits =
-    order === undefined || order.length === 0
-      ? unsortedHits
-      : unsortedHits.sort((resultA, resultB) =>
-          compareDataForSorting(order, resultA, resultB)
-        );
+  const results = withOrder(withSearch(collection, search), order).map(
+    ([_data, [_class, id]]) => id
+  );
 
-  return {
-    results: hits.map(([_data, [_class, id]]) => id),
-    count: hits.length,
-  };
+  return { results, count: results.length };
+}
+
+function withOrder(
+  collection: Array<[CollectionData, CollectionKey]>,
+  order: OrderSpec | undefined
+) {
+  if (order === undefined || order.length === 0) return collection;
+
+  return collection.sort((resultA, resultB) =>
+    compareDataForSorting(order, resultA, resultB)
+  );
+}
+
+function withSearch(
+  collection: Array<[CollectionData, CollectionKey]>,
+  searchTerm: string | undefined
+) {
+  if (!searchTerm) return collection;
+
+  const searchTerms = searchTerm.trim().split(' ');
+
+  return collection.filter(([data]) => {
+    if (data) {
+      return searchTerms.every((term) =>
+        Object.values(data).some(
+          (value) =>
+            typeof value === 'string' &&
+            value.toLowerCase().includes(term.toLowerCase())
+        )
+      );
+    }
+  });
 }
 
 function isMatchForFilters(

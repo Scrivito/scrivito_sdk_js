@@ -21,7 +21,7 @@ export function getDataClassOrThrow(dataClassName: string): DataClass {
 }
 
 export function getObjDataClass(dataClassName: string) {
-  if (isObjDataClassProvided(dataClassName)) {
+  if (dataClassName === 'Obj' || isObjDataClassProvided(dataClassName)) {
     return new ObjDataClass(dataClassName);
   }
 }

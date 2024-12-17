@@ -37,7 +37,7 @@ export function useDataStack(): DataStack | undefined {
 
 export function useLastDataStackElement(): DataStackElement | undefined {
   const dataStack = React.useContext(DataStackReactContext)?.dataStack;
-  return dataStack && dataStack[0];
+  return dataStack && dataStack.find((element) => !('isBackground' in element));
 }
 
 export function useClosestMultiItemElement(
@@ -60,7 +60,8 @@ export function useClosestSingleItemElement(
     (element): element is DataItemPojo | PresentDataScopePojo => {
       return (
         isSingleItemElement(element) &&
-        (dataClassName === undefined || element._class === dataClassName)
+        ((dataClassName === undefined && !('isBackground' in element)) ||
+          element._class === dataClassName)
       );
     }
   );
@@ -101,10 +102,12 @@ export function PushOntoDataStack({
 
 export function ProvidePlaceholders({
   source,
+  isBackground,
   children,
 }: {
   source: DataContext | DataItem | DataScope | Obj;
   children: React.ReactElement;
+  isBackground?: true;
 }) {
   const dataStack = React.useContext(DataStackReactContext)?.dataStack || [];
 
@@ -126,7 +129,8 @@ export function ProvidePlaceholders({
     const placeholders = computePlaceholders(unwrapAppClass(source));
 
     const { _class, _id } = placeholders;
-    const stackElement = _class && _id && { _class, _id };
+    const stackElement = _class &&
+      _id && { _class, _id, ...(isBackground && { isBackground }) };
 
     return {
       dataStack: stackElement ? [stackElement, ...dataStack] : dataStack,

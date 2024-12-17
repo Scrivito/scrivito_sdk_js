@@ -12,6 +12,7 @@ import { connect } from 'scrivito_sdk/react_connect';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
 
 import { DetailsPageDataContext } from './current_page/details_page_data_context';
+import { PageDataContext } from './current_page/page_data_context';
 import { useLayout } from './current_page/use_layout';
 
 /** @public */
@@ -47,16 +48,21 @@ const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
   const PageComponent = getComponentForPageClass(currentPage.objClass());
 
   return (
-    <DetailsPageDataContext page={currentPage} params={params}>
-      <AutomaticDataContext content={currentPage}>
-        <IsInsideLayoutContext.Provider value={false}>
-          <PageScroll navigationState={navigationState} />
-          {PageComponent && (
-            <PageComponent page={wrapInAppClass(currentPage)} params={params} />
-          )}
-        </IsInsideLayoutContext.Provider>
-      </AutomaticDataContext>
-    </DetailsPageDataContext>
+    <PageDataContext page={currentPage}>
+      <DetailsPageDataContext page={currentPage} params={params}>
+        <AutomaticDataContext content={currentPage}>
+          <IsInsideLayoutContext.Provider value={false}>
+            <PageScroll navigationState={navigationState} />
+            {PageComponent && (
+              <PageComponent
+                page={wrapInAppClass(currentPage)}
+                params={params}
+              />
+            )}
+          </IsInsideLayoutContext.Provider>
+        </AutomaticDataContext>
+      </DetailsPageDataContext>
+    </PageDataContext>
   );
 });
 

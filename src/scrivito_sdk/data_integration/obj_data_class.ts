@@ -1,4 +1,5 @@
-import { ArgumentError } from 'scrivito_sdk/common';
+import { EMPTY_SPACE, isEmptySpaceId } from 'scrivito_sdk/client';
+import { ArgumentError, isSystemAttribute } from 'scrivito_sdk/common';
 import {
   AndOperatorSpec,
   DEFAULT_LIMIT,
@@ -55,6 +56,9 @@ const SUPPORTED_ATTRIBUTE_TYPES = [
   ...TYPES_WITH_SCHEMA_SUPPORT,
   ...TYPES_WITH_GARBAGE_IN_GARBAGE_OUT_SUPPORT,
 ];
+
+// Exported for test purpose only
+export const SUBPAGES_CHILD_ORDER_LIMIT = 200;
 
 export class ObjDataClass extends DataClass {
   constructor(private readonly _name: string) {
@@ -114,6 +118,12 @@ export class ObjDataScope extends DataScope {
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
+    if (this.isBuiltInClass()) {
+      throw new ArgumentError(
+        'Cannot create data items using the built-in Obj class'
+      );
+    }
+
     const obj = createObjIn(
       this.objClassScope(),
       prepareAttributes(
@@ -136,9 +146,27 @@ export class ObjDataScope extends DataScope {
   }
 
   take(): DataItem[] {
-    return this.getSearch()
-      .take(this._params.limit ?? DEFAULT_LIMIT)
-      .map((obj) => this.wrapInDataItem(obj));
+    const search = this.getSearch();
+    const parentObj = this.parentObj();
+    const limit = this._params.limit ?? DEFAULT_LIMIT;
+
+    let objs: BasicObj[];
+
+    if (
+      !this._params.search &&
+      !this._params.order &&
+      parentObj?.hasChildOrder()
+    ) {
+      objs = parentObj
+        .sortByChildOrder(
+          search.take(Math.max(limit, SUBPAGES_CHILD_ORDER_LIMIT))
+        )
+        .slice(0, limit);
+    } else {
+      objs = search.take(limit);
+    }
+
+    return objs.map((obj) => this.wrapInDataItem(obj));
   }
 
   dataItem(): DataItem | null {
@@ -176,8 +204,12 @@ export class ObjDataScope extends DataScope {
     return this._params.limit;
   }
 
-  objSearch(): ObjSearch {
-    return new ObjSearch(this.getSearch());
+  objSearch(): ObjSearch | undefined {
+    const search = this.getSearch();
+
+    if (!isEmptySpaceId(search.objSpaceId())) {
+      return new ObjSearch(search);
+    }
   }
 
   /** @internal */
@@ -190,7 +222,7 @@ export class ObjDataScope extends DataScope {
   }
 
   private getSearch() {
-    let initialSearch = this.objClassScope().and(excludeDeletedObjs).search();
+    let initialSearch = this.getInitialSearch();
 
     const { filters, search: searchTerm, order: givenOrder } = this._params;
 
@@ -213,45 +245,74 @@ export class ObjDataScope extends DataScope {
       );
   }
 
+  private getInitialSearch() {
+    return (this.isBuiltInClass() ? currentObjScope() : this.objClassScope())
+      .and(excludeDeletedObjs)
+      .search();
+  }
+
+  private isBuiltInClass() {
+    return isBuiltInClass(this.dataClassName());
+  }
+
   private applyFilter(
     search: BasicObjSearch,
-    name: string,
+    attributeName: string,
     operatorSpec: OperatorSpec | AndOperatorSpec
   ): BasicObjSearch {
     const { operator, value } = operatorSpec;
 
     if (operator === 'and') {
       return value.reduce(
-        (currentSearch, spec) => this.applyFilter(currentSearch, name, spec),
+        (currentSearch, spec) =>
+          this.applyFilter(currentSearch, attributeName, spec),
         search
       );
     }
 
     if (operator === 'equals') {
-      return search.and(name, 'equals', value);
+      if (attributeName === '_obj_parent_id') {
+        return this.applySubpagesFilter(search);
+      }
+
+      return search.and(attributeName, 'equals', value);
     }
 
     if (operator === 'notEquals') {
-      return search.andNot(name, 'equals', value);
+      return search.andNot(attributeName, 'equals', value);
     }
 
     if (operator === 'isGreaterThan') {
-      return search.and(name, 'isGreaterThan', value);
+      return search.and(attributeName, 'isGreaterThan', value);
     }
 
     if (operator === 'isLessThan') {
-      return search.and(name, 'isLessThan', value);
+      return search.and(attributeName, 'isLessThan', value);
     }
 
     if (operator === 'isGreaterThanOrEquals') {
-      return search.andNot(name, 'isLessThan', value);
+      return search.andNot(attributeName, 'isLessThan', value);
     }
 
     if (operator === 'isLessThanOrEquals') {
-      return search.andNot(name, 'isGreaterThan', value);
+      return search.andNot(attributeName, 'isGreaterThan', value);
     }
 
     throw new ArgumentError(`Unknown filter operator "${operator}"`);
+  }
+
+  private applySubpagesFilter(search: BasicObjSearch) {
+    const parentObj = this.parentObj();
+    const siteId = parentObj?.siteId();
+    const parentPath = parentObj?.path();
+
+    if (!siteId || !parentPath) {
+      return objSpaceScope(EMPTY_SPACE).search();
+    }
+
+    return search
+      .and('_siteId', 'equals', siteId)
+      .and('_parentPath', 'equals', parentPath);
   }
 
   private objClassScope() {
@@ -259,11 +320,22 @@ export class ObjDataScope extends DataScope {
   }
 
   private wrapInDataItem(obj: BasicObj) {
-    return new ObjDataItem(this._dataClass, obj.id());
+    const item = new ObjDataItem(this._dataClass, obj.id());
+    item.setBasicObj(obj);
+
+    return item;
   }
 
   private itemIdFromFilters() {
     return itemIdFromFilters(this._params.filters);
+  }
+
+  private parentObj() {
+    const parentId = this._params.filters?._obj_parent_id?.value;
+
+    if (typeof parentId === 'string') {
+      return getObjFrom(currentObjScope().and(excludeDeletedObjs), parentId);
+    }
   }
 }
 
@@ -302,11 +374,16 @@ export class ObjDataItem extends DataItem {
     return this._obj;
   }
 
+  /** @internal */
+  setBasicObj(obj: BasicObj): void {
+    this._obj = obj;
+  }
+
   get(attributeName: string): unknown {
     const obj = this.getBasicObj();
     if (!obj) return null;
 
-    const typeInfo = getAttributeTypeInfo(this.dataClassName(), attributeName);
+    const typeInfo = getAttributeTypeInfo(obj.objClass(), attributeName);
     if (!typeInfo) return null;
 
     const [attributeType, attributeConfig] = typeInfo;
@@ -372,39 +449,41 @@ function getSchema(className: string) {
 }
 
 function objClassScope(dataClass: DataClass) {
-  return objSpaceScope(currentObjSpaceId()).and(
-    restrictToObjClass(dataClass.name())
-  );
+  return currentObjScope().and(restrictToObjClass(dataClass.name()));
 }
 
 function prepareAttributes(attributes: DataItemAttributes, className: string) {
   const preparedAttributes: BasicObjAttributes = {};
 
   Object.keys(attributes).forEach((attributeName) => {
-    const typeInfo = getAttributeTypeInfo(className, attributeName);
-
-    if (!typeInfo) {
-      throw new ArgumentError(
-        `Attribute ${attributeName} of class ${className} does not exist`
-      );
-    }
-
-    const [attributeType, attributeConfig] = typeInfo;
-
-    if (!SUPPORTED_ATTRIBUTE_TYPES.includes(attributeType)) {
-      throw new ArgumentError(
-        `Attribute ${attributeName} of class ${className} has unsupported type ${attributeType}`
-      );
-    }
-
     const attributeValue = attributes[attributeName];
 
-    preparedAttributes[attributeName] = [
-      attributeType === 'reference'
-        ? prepareReferenceValue(attributeValue, attributeConfig)
-        : attributeValue,
-      typeInfo,
-    ];
+    if (isSystemAttribute(attributeName)) {
+      preparedAttributes[attributeName] = attributeValue;
+    } else {
+      const typeInfo = getAttributeTypeInfo(className, attributeName);
+
+      if (!typeInfo) {
+        throw new ArgumentError(
+          `Attribute ${attributeName} of class ${className} does not exist`
+        );
+      }
+
+      const [attributeType, attributeConfig] = typeInfo;
+
+      if (!SUPPORTED_ATTRIBUTE_TYPES.includes(attributeType)) {
+        throw new ArgumentError(
+          `Attribute ${attributeName} of class ${className} has unsupported type ${attributeType}`
+        );
+      }
+
+      preparedAttributes[attributeName] = [
+        attributeType === 'reference'
+          ? prepareReferenceValue(attributeValue, attributeConfig)
+          : attributeValue,
+        typeInfo,
+      ];
+    }
   });
 
   return preparedAttributes;
@@ -451,6 +530,8 @@ function getValidReferenceClass(attributeConfig?: {
 }
 
 function attributeDefinitions(dataClassName: string) {
+  if (isBuiltInClass(dataClassName)) return {};
+
   const dataClassSchema: NormalizedDataClassSchema = {};
   const normalizedAttributes = getSchema(dataClassName).normalizedAttributes();
 
@@ -503,4 +584,12 @@ function toDataAttributeDefinition([
   }
 
   return null;
+}
+
+function currentObjScope() {
+  return objSpaceScope(currentObjSpaceId());
+}
+
+function isBuiltInClass(dataClassName: string) {
+  return dataClassName === 'Obj';
 }

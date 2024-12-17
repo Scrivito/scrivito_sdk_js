@@ -62,6 +62,10 @@ export function provideDataClass(
         attributes?: DataClassAttributes;
       }
 ): DataClass {
+  if (name === 'Obj') {
+    throw new ArgumentError('"Obj" is not a valid data class name');
+  }
+
   if (getRealmClass(name)) {
     throw new ArgumentError(`Class with name "${name}" already exists`);
   }

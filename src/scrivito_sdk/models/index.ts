@@ -110,7 +110,6 @@ export {
   isDataLocatorValueViaFilter,
   isDataLocatorValueOrOperatorFilter,
   DataLocator,
-  SINGLETON_DATA_ID,
 } from 'scrivito_sdk/models/data_locator';
 export type {
   DataLocatorTransformFilter,

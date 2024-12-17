@@ -333,19 +333,25 @@ export class BasicObj implements ContentValueProvider {
   }
 
   orderedChildren(): BasicObj[] {
-    const children = this.children();
-    if (children.length === 0) return [];
+    return this.sortByChildOrder(this.children());
+  }
 
-    const childOrder = this.get('childOrder', 'referencelist');
-    const idsOrder = childOrder.map((reference) => reference.id());
+  sortByChildOrder(objs: BasicObj[]): BasicObj[] {
+    if (objs.length === 0) return [];
 
-    return children
+    const idsOrder = this.childOrder().map((reference) => reference.id());
+
+    return objs
       .map((child: BasicObj): [number, BasicObj] => {
         const index = idsOrder.indexOf(child.id());
-        return [index === -1 ? children.length : index, child];
+        return [index === -1 ? objs.length : index, child];
       })
       .sort(([a], [b]) => a - b)
       .map(([, child]) => child);
+  }
+
+  hasChildOrder(): boolean {
+    return this.childOrder().length > 0;
   }
 
   backlinks(): BasicObj[] {
@@ -675,6 +681,10 @@ export class BasicObj implements ContentValueProvider {
       index,
       parentWidgetId,
     };
+  }
+
+  private childOrder() {
+    return this.get('childOrder', 'referencelist');
   }
 
   private getChildrenSearch() {

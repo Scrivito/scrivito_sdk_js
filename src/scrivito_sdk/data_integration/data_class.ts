@@ -255,6 +255,7 @@ export type EmptyDataScopePojo = {
 export interface DataItemPojo {
   _id: string;
   _class: string;
+  isBackground?: true;
 }
 
 /** @public */

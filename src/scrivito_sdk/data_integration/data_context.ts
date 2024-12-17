@@ -202,7 +202,7 @@ function getDataContextFromExternalData(dataClassName: string, dataId: string) {
   );
 }
 
-function getDataContextFromObjData(objClassName: string, objId: string) {
+export function getDataContextFromObjData(objClassName: string, objId: string) {
   return getDataContextFrom<BasicObj>(
     () => getBasicObjFrom(objClassName, objId),
     basicObjToDataContext

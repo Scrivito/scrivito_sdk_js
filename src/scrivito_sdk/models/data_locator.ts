@@ -15,8 +15,6 @@ import {
 } from 'scrivito_sdk/client';
 import { isObject } from 'scrivito_sdk/common';
 
-export const SINGLETON_DATA_ID = '0';
-
 interface DataLocatorParams extends Omit<DataLocatorJson, 'class'> {
   class: string | null;
 }

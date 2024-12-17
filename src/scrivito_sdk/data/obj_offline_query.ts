@@ -54,9 +54,12 @@ function computeFieldValue(
   }
 
   if (isSupportedAttribute(field)) {
+    let value = objJson[field];
+    if (Array.isArray(value)) value = value[0];
+
     // converting undefined to null, so that searching for null works reliably
     // (e.g. path equals null)
-    return objJson[field] ?? null;
+    return value ?? null;
   }
 
   throwNotSupported(`field ${field}`);
@@ -75,6 +78,7 @@ const SUPPORTED_ATTRIBUTES = {
   _language: true,
   _content_id: true,
   _permalink: true,
+  _data_param: true,
 };
 
 type SupportedAttribute = keyof typeof SUPPORTED_ATTRIBUTES;

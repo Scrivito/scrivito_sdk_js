@@ -1,4 +1,7 @@
-export { allCustomAttributesOfTypeString } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
+export {
+  allCustomAttributesOfTypeString,
+  basicObjToDataContext,
+} from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
 export {
   DataClass,
   DataItem,
@@ -77,4 +80,8 @@ export {
   registerDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 export { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
-export { activateDataIntegration } from 'scrivito_sdk/data_integration/activate_data_integration';
+export {
+  activateDataIntegration,
+  isDataIntegrationActive,
+} from 'scrivito_sdk/data_integration/activate_data_integration';
+export { isReferenceAttributeConfig } from 'scrivito_sdk/data_integration/data_attribute';

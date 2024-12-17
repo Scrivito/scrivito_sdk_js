@@ -8,6 +8,7 @@ export type WorkspaceObjSpaceId = ['workspace', string];
 type EmptySpaceId = ['empty'];
 
 export const PUBLISHED_SPACE: WorkspaceObjSpaceId = ['workspace', 'published'];
+export const EMPTY_SPACE: EmptySpaceId = ['empty'];
 
 export function getWorkspaceId(spaceId: ObjSpaceId): string {
   if (!isWorkspaceObjSpaceId(spaceId)) throw new InternalError();

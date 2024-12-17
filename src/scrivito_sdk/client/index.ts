@@ -37,6 +37,7 @@ export { clientConfig } from 'scrivito_sdk/client/config';
 export type { TokenFetcher } from 'scrivito_sdk/client/config';
 export {
   PUBLISHED_SPACE,
+  EMPTY_SPACE,
   getWorkspaceId,
   isEmptySpaceId,
   isWorkspaceObjSpaceId,

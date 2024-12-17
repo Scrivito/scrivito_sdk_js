@@ -27,8 +27,8 @@ export function getExternalData(
   return loadableCollection.get([dataClass, dataId]).get();
 }
 
-type CollectionData = ExternalData | null;
-type CollectionKey = [string, string];
+export type CollectionData = ExternalData | null;
+export type CollectionKey = [string, string];
 
 const loadableCollection = createLoadableCollection<
   CollectionData,

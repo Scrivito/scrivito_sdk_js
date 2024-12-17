@@ -128,16 +128,16 @@ export interface BinaryJson {
 export type OrderByItem = [string, OrderDirection];
 export type OrderDirection = 'asc' | 'desc';
 
-export type DataLocatorJson = DataLocatorDefinition | DataLocatorReference;
+export type DataLocatorJson = DefinitionDataLocator | ReferenceDataLocator;
 
-export interface DataLocatorDefinition extends DataLocatorBase {
+export interface DefinitionDataLocator extends DataLocatorBase {
   via_ref?: undefined;
   query?: DataLocatorQuery;
   order_by?: OrderByItem[];
   size?: number;
 }
 
-export interface DataLocatorReference extends DataLocatorBase {
+export interface ReferenceDataLocator extends DataLocatorBase {
   via_ref: ViaRef;
   query?: undefined;
   order_by?: undefined;
