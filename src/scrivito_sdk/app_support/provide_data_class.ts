@@ -1,66 +1,66 @@
-import memoize from 'lodash-es/memoize';
-
-import { fetchSchema } from 'scrivito_sdk/app_support/fetch_schema';
 import { ApiClientOptions, createRestApiClient } from 'scrivito_sdk/client';
-import { ArgumentError, isPromise } from 'scrivito_sdk/common';
+import { ArgumentError } from 'scrivito_sdk/common';
 import {
   DataClass,
-  DataClassAttributes,
   DataConnection,
   ExternalDataClass,
+  LazyAsyncDataAttributeDefinitions,
   UncheckedDataConnection,
   createRestApiConnectionForClass,
-  registerDataClassSchema,
-  setExternalDataConnection,
+  registerExternalDataClass,
 } from 'scrivito_sdk/data_integration';
+import { LazyAsyncDataClassTitle } from 'scrivito_sdk/data_integration/data_class_schema';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 import { getRealmClass } from 'scrivito_sdk/realm';
+import { createRestApiSchema } from './create_rest_api_schema';
 
 export type RestApi = string | ({ url: string } & ApiClientOptions);
 
-/** @public */
-export function provideDataClass(
-  name: string,
-  params: {
-    restApi: RestApi | Promise<RestApi>;
-    attributes?: DataClassAttributes;
-  }
-): DataClass;
+type AsyncOrSync<Type> = Promise<Type> | Type;
+
+type ProvideDataClassParams =
+  | {
+      restApi: AsyncOrSync<RestApi>;
+      attributes?: LazyAsyncDataAttributeDefinitions;
+      title?: LazyAsyncDataClassTitle;
+    }
+  | {
+      connection: AsyncOrSync<Partial<UncheckedDataConnection>>;
+      attributes?: LazyAsyncDataAttributeDefinitions;
+      title?: LazyAsyncDataClassTitle;
+    };
 
 /** @public */
 export function provideDataClass(
   name: string,
-  params: {
-    connection: Partial<DataConnection> | Promise<Partial<DataConnection>>;
-    attributes?: DataClassAttributes;
-  }
+  params: AsyncOrSync<
+    | {
+        restApi: AsyncOrSync<RestApi>;
+        attributes?: LazyAsyncDataAttributeDefinitions;
+        title?: LazyAsyncDataClassTitle;
+      }
+    | {
+        connection: AsyncOrSync<Partial<DataConnection>>;
+        attributes?: LazyAsyncDataAttributeDefinitions;
+        title?: LazyAsyncDataClassTitle;
+      }
+  >
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  params: {
-    connection:
-      | Partial<UncheckedDataConnection>
-      | Promise<Partial<UncheckedDataConnection>>;
-    attributes?: DataClassAttributes;
-  }
+  params: AsyncOrSync<{
+    connection: AsyncOrSync<Partial<UncheckedDataConnection>>;
+    attributes?: LazyAsyncDataAttributeDefinitions;
+    title?: LazyAsyncDataClassTitle;
+  }>
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  params:
-    | {
-        restApi: RestApi | Promise<RestApi>;
-        attributes?: DataClassAttributes;
-      }
-    | {
-        connection:
-          | Partial<UncheckedDataConnection>
-          | Promise<Partial<UncheckedDataConnection>>;
-        attributes?: DataClassAttributes;
-      }
+  params: AsyncOrSync<ProvideDataClassParams>
 ): DataClass {
   if (name === 'Obj') {
     throw new ArgumentError('"Obj" is not a valid data class name');
@@ -71,53 +71,38 @@ export function provideDataClass(
   }
 
   assertValidDataIdentifier(name);
-
-  if ('restApi' in params) {
-    const { restApi } = params;
-
-    if (isPromise(restApi)) {
-      return provideDataClassWithAsyncRestApiConfig(name, {
-        restApi,
-        attributes: params.attributes,
-      });
-    }
-
-    const apiClient =
-      typeof restApi === 'string'
-        ? createRestApiClient(restApi)
-        : createRestApiClient(restApi.url, restApi);
-
-    return provideDataClass(name, {
-      connection: createRestApiConnectionForClass(apiClient),
-      attributes: params.attributes || (() => fetchSchema(apiClient)),
-    });
-  }
-
-  setExternalDataConnection(name, params.connection);
-  registerDataClassSchema(name, params.attributes);
+  registerExternalDataClass(
+    name,
+    (async () => desugar(await Promise.resolve(params)))()
+  );
 
   return new ExternalDataClass(name);
 }
 
-function provideDataClassWithAsyncRestApiConfig(
-  name: string,
-  params: {
-    restApi: Promise<RestApi>;
-    attributes?: DataClassAttributes;
-  }
-) {
-  const memoizedApiClient = memoize(async () => {
-    const restApi = await params.restApi;
-    return typeof restApi === 'string'
-      ? createRestApiClient(restApi)
-      : createRestApiClient(restApi.url, restApi);
-  });
+function desugar(params: ProvideDataClassParams) {
+  if ('restApi' in params) {
+    const apiClient = createApiClient(Promise.resolve(params.restApi));
 
-  return provideDataClass(name, {
-    connection: (async () => {
-      return createRestApiConnectionForClass(await memoizedApiClient());
-    })(),
-    attributes:
-      params.attributes || (async () => fetchSchema(await memoizedApiClient())),
-  });
+    return {
+      connection: (async () =>
+        createRestApiConnectionForClass(await apiClient))(),
+      ...createRestApiSchema(
+        { attributes: params.attributes, title: params.title },
+        apiClient
+      ),
+    };
+  }
+
+  return {
+    connection: Promise.resolve(params.connection),
+    schema: { attributes: params.attributes ?? {}, title: params.title },
+  };
+}
+
+async function createApiClient(restApiPromise: Promise<RestApi>) {
+  const restApi = await restApiPromise;
+
+  return typeof restApi === 'string'
+    ? createRestApiClient(restApi)
+    : createRestApiClient(restApi.url, restApi);
 }

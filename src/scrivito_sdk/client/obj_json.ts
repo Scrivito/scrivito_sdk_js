@@ -132,21 +132,18 @@ export type DataLocatorJson = DefinitionDataLocator | ReferenceDataLocator;
 
 export interface DefinitionDataLocator extends DataLocatorBase {
   via_ref?: undefined;
-  query?: DataLocatorQuery;
-  order_by?: OrderByItem[];
-  size?: number;
 }
 
 export interface ReferenceDataLocator extends DataLocatorBase {
   via_ref: ViaRef;
-  query?: undefined;
-  order_by?: undefined;
-  size?: undefined;
 }
 
 interface DataLocatorBase {
   class: string;
   field?: string;
+  query?: DataLocatorQuery;
+  order_by?: OrderByItem[];
+  size?: number;
 }
 
 export type ViaRef = 'single' | 'multi';
@@ -164,7 +161,13 @@ export type OpCode = NeqOpCode | EqOpCode | 'gt' | 'lt' | 'gte' | 'lte';
 type OperatorFilterOpCode = Exclude<OpCode, EqOpCode>;
 
 export const OP_CODES: OpCode[] = ['eq', 'neq'];
-const OPERATOR_FILTER_OP_CODES: OperatorFilterOpCode[] = ['neq'];
+const OPERATOR_FILTER_OP_CODES: OperatorFilterOpCode[] = [
+  'neq',
+  'gt',
+  'lt',
+  'gte',
+  'lte',
+];
 
 export interface DataLocatorOperatorFilter {
   field: string;
@@ -190,6 +193,15 @@ export function isDataLocatorOperatorFilter(
     ) &&
     'value' in filter &&
     isFilterValue(filter.value)
+  );
+}
+
+export function isDataLocatorOperatorCode(
+  opCode: unknown
+): opCode is OperatorFilterOpCode {
+  return (
+    typeof opCode === 'string' &&
+    OPERATOR_FILTER_OP_CODES.includes(opCode as OperatorFilterOpCode)
   );
 }
 

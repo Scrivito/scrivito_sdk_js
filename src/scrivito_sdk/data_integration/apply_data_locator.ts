@@ -11,6 +11,7 @@ import {
   DataItem,
   DataScope,
   DataScopeError,
+  isFilterOperator,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
   findItemElementInDataStackAndGlobalData,
@@ -23,6 +24,7 @@ import {
 } from 'scrivito_sdk/data_integration/data_stack';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
+import { operatorToOpCode } from 'scrivito_sdk/data_integration/index_params';
 import { DataLocator, isDataLocatorValueViaFilter } from 'scrivito_sdk/models';
 
 export function applyDataLocator(
@@ -37,14 +39,11 @@ export function applyDataLocator(
   try {
     const viaRef = dataLocator.viaRef();
 
-    return viaRef
-      ? findMatchingDataScopeOrThrow(
-          className,
-          dataStack,
-          viaRef,
-          dataLocator.field()
-        )
-      : applyDataLocatorDefinition(className, dataStack, dataLocator);
+    const sourceDataScope = viaRef
+      ? findMatchingDataScopeOrThrow(className, dataStack, viaRef)
+      : getDataClassOrThrow(className).all();
+
+    return applyDataLocatorDefinition(sourceDataScope, dataStack, dataLocator);
   } catch (error) {
     if (error instanceof ArgumentError) {
       return new EmptyDataScope({ error: new DataScopeError(error.message) });
@@ -55,13 +54,16 @@ export function applyDataLocator(
 }
 
 function applyDataLocatorDefinition(
-  className: string,
+  sourceDataScope: DataScope,
   dataStack: DataStack,
   dataLocator: DataLocator
 ): DataScope {
-  const field = dataLocator.field();
-  const dataClass = getDataClassOrThrow(className);
-  let dataScope = field ? dataClass.forAttribute(field) : dataClass.all();
+  let dataScope = sourceDataScope;
+  const attributeName = dataLocator.field();
+
+  if (attributeName) {
+    dataScope = dataScope.transform({ attributeName });
+  }
 
   const query = dataLocator.query();
 
@@ -107,10 +109,13 @@ function applyOperatorFilter(
   scope: DataScope,
   { field, operator, value }: DataLocatorOperatorFilter
 ) {
+  const [fullOperator] =
+    Object.entries(operatorToOpCode).find(([_, val]) => val === operator) || [];
+
   return scope.transform({
     filters: {
       [field]: {
-        operator: operator === 'neq' ? 'notEquals' : 'equals',
+        operator: isFilterOperator(fullOperator) ? fullOperator : 'equals',
         value,
       },
     },
@@ -188,8 +193,7 @@ function findMatchingDataItemOrThrow(viaClass: string, dataStack: DataStack) {
 function findMatchingDataScopeOrThrow(
   className: string,
   dataStack: DataStack,
-  viaRef: ViaRef,
-  attributeName: string | undefined
+  viaRef: ViaRef
 ): DataScope {
   const element = findScopeElementInDataStackAndGlobalData(
     className,
@@ -199,7 +203,7 @@ function findMatchingDataScopeOrThrow(
 
   if (!element) throw new ArgumentError(`No ${className} scope found`);
 
-  const scope = deserializeDataStackElement(element, attributeName);
+  const scope = deserializeDataStackElement(element);
   if (scope instanceof DataScope) return scope;
 
   throw new ArgumentError(`No ${className} scope found`);

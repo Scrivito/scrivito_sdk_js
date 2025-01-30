@@ -144,7 +144,7 @@ function normalizeUri(uri: URI) {
 function siteForUrl(url: string): SiteForUrlResult {
   const result = withForbiddenSiteContext(
     'Access to current site inside siteForUrl. Forgot to use onAllSites?',
-    () => siteForUrlCallback?.call(null, url)
+    () => siteForUrlCallback?.call(null, removeQueryAndHash(url))
   );
 
   if (!isSiteForUrlResult(result)) {
@@ -163,6 +163,10 @@ function siteForUrl(url: string): SiteForUrlResult {
       baseUrl: removeTrailingSlashes(result.baseUrl),
     }
   );
+}
+
+function removeQueryAndHash(url: string) {
+  return new URI(url).query('').hash('').href();
 }
 
 function removeTrailingSlashes(input: string) {

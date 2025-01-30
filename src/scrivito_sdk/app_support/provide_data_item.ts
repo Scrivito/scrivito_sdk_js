@@ -1,29 +1,31 @@
-import memoize from 'lodash-es/memoize';
-
-import { fetchSchema } from 'scrivito_sdk/app_support/fetch_schema';
+import { createRestApiSchema } from 'scrivito_sdk/app_support/create_rest_api_schema';
 import { RestApi } from 'scrivito_sdk/app_support/provide_data_class';
 import { ApiClient, createRestApiClient } from 'scrivito_sdk/client';
-import { isPromise } from 'scrivito_sdk/common';
 import {
-  DataClassAttributes,
   DataItem,
+  ExternalDataClass,
   ExternalDataItemConnection,
+  LazyAsyncDataAttributeDefinitions,
+  LazyAsyncDataClassTitle,
+  SINGLETON_DATA_ID,
   provideExternalDataItem,
-  registerDataClassSchema,
 } from 'scrivito_sdk/data_integration';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 
-interface RestApiParams extends BaseParams {
-  restApi: RestApi | Promise<RestApi>;
-}
+type AsyncOrSync<Type> = Promise<Type> | Type;
 
-interface ConnectionParams extends BaseParams {
-  connection: ExternalDataItemConnection | Promise<ExternalDataItemConnection>;
-}
+type CommonProvideDataItemParams = {
+  attributes?: LazyAsyncDataAttributeDefinitions;
+  title?: LazyAsyncDataClassTitle;
+};
 
-interface BaseParams {
-  attributes?: DataClassAttributes;
-}
+type ProvideDataItemParams =
+  | ({
+      restApi: AsyncOrSync<RestApi>;
+    } & CommonProvideDataItemParams)
+  | ({
+      connection: AsyncOrSync<ExternalDataItemConnection>;
+    } & CommonProvideDataItemParams);
 
 /** @public */
 export function provideDataItem(
@@ -34,80 +36,84 @@ export function provideDataItem(
 /** @public */
 export function provideDataItem(
   name: string,
-  params: RestApiParams | ConnectionParams
+  params: AsyncOrSync<ProvideDataItemParams>
 ): DataItem;
 
 /** @public */
 export function provideDataItem(
   name: string,
-  connection: ConnectionParams['connection']
+  connection: AsyncOrSync<ExternalDataItemConnection>
 ): DataItem;
 
 /** @internal */
 export function provideDataItem(
   name: string,
   params:
+    | AsyncOrSync<ProvideDataItemParams | ExternalDataItemConnection>
     | ExternalDataItemConnection['get']
-    | ConnectionParams['connection']
-    | ConnectionParams
-    | RestApiParams
 ): DataItem {
   assertValidDataIdentifier(name);
 
+  const dataClass = new ExternalDataClass(name);
+
+  const resolvedParams =
+    typeof params === 'function'
+      ? Promise.resolve({ get: params })
+      : Promise.resolve(params);
+
+  provideExternalDataItem(
+    dataClass,
+    (async () => desugar(await resolvedParams))()
+  );
+
+  return dataClass.getUnchecked(SINGLETON_DATA_ID);
+}
+
+function desugar(
+  params:
+    | ProvideDataItemParams
+    | ExternalDataItemConnection
+    | ExternalDataItemConnection['get']
+) {
   if (typeof params === 'function') {
-    return provideDataItem(name, { get: params });
+    return {
+      connection: Promise.resolve({ get: params }),
+      schema: { attributes: {} },
+    };
   }
 
   if ('restApi' in params) {
-    const { restApi } = params;
+    const apiClient = createApiClient(Promise.resolve(params.restApi));
 
-    if (isPromise(restApi)) {
-      return provideDataItemWithAsyncRestApiConfig(name, {
-        restApi,
-        attributes: params.attributes,
-      });
-    }
-
-    const apiClient =
-      typeof restApi === 'string'
-        ? createRestApiClient(restApi)
-        : createRestApiClient(restApi.url, restApi);
-
-    return provideDataItem(name, {
-      connection: createRestApiConnectionForItem(apiClient),
-      attributes: params.attributes || (() => fetchSchema(apiClient)),
-    });
+    return {
+      connection: (async () =>
+        createRestApiConnectionForItem(await apiClient))(),
+      ...createRestApiSchema(
+        { attributes: params.attributes, title: params.title },
+        apiClient
+      ),
+    };
   }
 
   if ('connection' in params) {
-    registerDataClassSchema(name, params.attributes);
-    return provideDataItem(name, params.connection);
+    return {
+      connection: Promise.resolve(params.connection),
+      schema: { attributes: params.attributes ?? {}, title: params.title },
+    };
   }
 
-  return provideExternalDataItem(name, params);
+  return {
+    connection: Promise.resolve(params),
+    schema: { attributes: {} },
+  };
 }
 
-function provideDataItemWithAsyncRestApiConfig(
-  name: string,
-  params: {
-    restApi: Promise<RestApi>;
-    attributes?: DataClassAttributes;
-  }
-) {
-  const memoizedApiClient = memoize(async () => {
-    const restApi = await params.restApi;
-    return typeof restApi === 'string'
-      ? createRestApiClient(restApi)
-      : createRestApiClient(restApi.url, restApi);
-  });
+async function createApiClient(restApiPromise: Promise<RestApi>) {
+  const restApi = await restApiPromise;
 
-  return provideDataItem(name, {
-    connection: (async () => {
-      return createRestApiConnectionForItem(await memoizedApiClient());
-    })(),
-    attributes:
-      params.attributes || (async () => fetchSchema(await memoizedApiClient())),
-  });
+  return typeof restApi === 'string'
+    ? createRestApiClient(restApi)
+    : createRestApiClient(restApi.url, restApi);
 }
 
 function createRestApiConnectionForItem(

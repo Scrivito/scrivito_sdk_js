@@ -5,6 +5,7 @@ export type ObjSpaceId =
   | ['revision', string]
   | EmptySpaceId;
 export type WorkspaceObjSpaceId = ['workspace', string];
+type RevisionObjSpaceId = ['revision', string];
 type EmptySpaceId = ['empty'];
 
 export const PUBLISHED_SPACE: WorkspaceObjSpaceId = ['workspace', 'published'];
@@ -24,6 +25,12 @@ export function isWorkspaceObjSpaceId(
   spaceId: ObjSpaceId
 ): spaceId is WorkspaceObjSpaceId {
   return spaceId[0] === 'workspace';
+}
+
+export function isRevisionObjSpaceId(
+  spaceId: ObjSpaceId
+): spaceId is RevisionObjSpaceId {
+  return spaceId[0] === 'revision';
 }
 
 export function isObjSpaceId(

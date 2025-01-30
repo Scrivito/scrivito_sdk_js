@@ -52,12 +52,11 @@ function isDataScopePojo(element: DataStackElement): element is DataScopePojo {
 }
 
 export function deserializeDataStackElement(
-  element: DataStackElement,
-  attributeName?: string
+  element: DataStackElement
 ): DataScope | DataItem | undefined {
   return isDataItemPojo(element)
     ? deserializeDataItem(element)
-    : deserializeDataScope(element, attributeName);
+    : deserializeDataScope(element);
 }
 
 export function findItemInDataStack(
@@ -76,10 +75,10 @@ export function findScopeInDataStack(
   if (element && isDataScopePojo(element)) return element;
 }
 
-export function deserializeDataScope(
-  { _class: dataClassName, ...dataScopeParams }: DataScopePojo,
-  attributeName?: string
-): DataScope | undefined {
+export function deserializeDataScope({
+  _class: dataClassName,
+  ...dataScopeParams
+}: DataScopePojo): DataScope | undefined {
   if (dataClassName) {
     const dataClass = getDataClassOrThrow(dataClassName);
 
@@ -95,15 +94,11 @@ export function deserializeDataScope(
       });
     }
 
-    const forAttribute =
-      attributeName ||
-      ('_attribute' in dataScopeParams && dataScopeParams._attribute);
+    const attributeName =
+      ('_attribute' in dataScopeParams && dataScopeParams._attribute) ||
+      undefined;
 
-    const dataScope = forAttribute
-      ? dataClass.forAttribute(forAttribute)
-      : dataClass.all();
-
-    return dataScope.transform(dataScopeParams);
+    return dataClass.all().transform({ ...dataScopeParams, attributeName });
   }
 }
 

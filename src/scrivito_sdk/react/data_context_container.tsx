@@ -8,10 +8,12 @@ import {
   DataStack,
   DataStackElement,
   PresentDataScopePojo,
-  computePlaceholders,
+  basicObjToDataContext,
+  dataItemToDataContext,
   isMultiItemDataScopePojo,
   isSingleItemElement,
 } from 'scrivito_sdk/data_integration';
+import { BasicObj } from 'scrivito_sdk/models';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface DataContextContainer {
@@ -137,4 +139,18 @@ export function ProvidePlaceholders({
       placeholders,
     };
   }
+}
+
+function computePlaceholders(
+  from: DataContext | DataItem | BasicObj
+): DataContext {
+  if (from instanceof DataItem) {
+    return dataItemToDataContext(from);
+  }
+
+  if (from instanceof BasicObj) {
+    return basicObjToDataContext(from);
+  }
+
+  return from;
 }

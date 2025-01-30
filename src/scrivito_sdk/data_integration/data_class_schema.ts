@@ -1,29 +1,52 @@
 import mapValues from 'lodash-es/mapValues';
 
-import { isObject, isPromise, logError } from 'scrivito_sdk/common';
+import { isObject, logError } from 'scrivito_sdk/common';
 import { createLoadableCollection } from 'scrivito_sdk/loadable';
 import { createStateContainer } from 'scrivito_sdk/state';
 
-export type DataClassAttributes =
+export type LazyAsyncDataClassSchema =
   | DataClassSchema
   | Promise<DataClassSchema>
-  | DataSchemaCallback;
+  | DataClassSchemaCallback;
 
-type DataSchemaCallback = () => Promise<DataClassSchema>;
+type DataClassSchemaCallback = () => Promise<DataClassSchema>;
 
-export interface DataClassSchemaResponse {
-  attributes: DataClassSchema;
+interface DataClassSchema {
+  attributes?: LazyAsyncDataAttributeDefinitions;
+  title?: LazyAsyncDataClassTitle;
 }
 
-export interface DataClassSchema {
+export type LazyAsyncDataAttributeDefinitions =
+  | DataAttributeDefinitions
+  | Promise<DataAttributeDefinitions>
+  | DataAttributeDefinitionsCallback;
+
+type DataAttributeDefinitionsCallback = () => Promise<DataAttributeDefinitions>;
+
+/** @public */
+export interface DataAttributeDefinitions {
   [attributeName: string]: DataAttributeDefinition;
+}
+
+export type LazyAsyncDataClassTitle =
+  | DataClassTitle
+  | Promise<DataClassTitle>
+  | DataClassTitleCallback;
+
+type DataClassTitleCallback = () => Promise<DataClassTitle>;
+
+type DataClassTitle = string | undefined;
+
+export interface DataClassSchemaResponse {
+  attributes: DataAttributeDefinitions;
+  title?: DataClassTitle;
 }
 
 export type DataAttributeDefinition =
   | DataAttributeDefinitionWithOptionalConfig
   | DataAttributeDefinitionWithConfig;
 
-export interface NormalizedDataClassSchema {
+export interface NormalizedDataAttributeDefinitions {
   [attributeName: string]: NormalizedDataAttributeDefinition;
 }
 
@@ -58,7 +81,7 @@ export type DataAttributeConfigs = {
 type LocalizedAttributeConfig = { title?: string };
 
 export interface EnumAttributeConfig {
-  values: Array<EnumValueConfig>;
+  values: readonly EnumValueConfig[];
   title?: string;
 }
 
@@ -74,7 +97,7 @@ type DataAttributeDefinitionWithOptionalConfig = Exclude<
 >;
 
 export type DataAttributeDefinitionWithConfig = {
-  [T in keyof DataAttributeConfigs]: [T, DataAttributeConfigs[T]];
+  [T in keyof DataAttributeConfigs]: readonly [T, DataAttributeConfigs[T]];
 }[keyof DataAttributeConfigs];
 
 export type DataAttributeConfig = DataAttributeDefinitionWithConfig[1];
@@ -104,25 +127,30 @@ function isDataAttributeType(
 
 export function registerDataClassSchema(
   dataClassName: string,
-  attributes: DataClassAttributes = {}
+  schema: LazyAsyncDataClassSchema
 ): void {
   const schemata = { ...schemataState.get() };
-  schemata[dataClassName] = wrapInCallback(attributes);
+  schemata[dataClassName] = wrapInCallback(schema);
+
   schemataState.set(schemata);
   invalidateSchemataCollection();
 }
 
-export function getDataClassSchema(
+export function getDataAttributeDefinitions(
   dataClassName: string
-): DataClassSchema | undefined {
-  return schemataCollection.get(dataClassName).get();
+): DataAttributeDefinitions | undefined {
+  return schemataCollection.get(dataClassName).get()?.attributes;
 }
 
-export function getNormalizedDataClassSchema(
+export function getDataClassTitle(dataClassName: string): DataClassTitle {
+  return schemataCollection.get(dataClassName).get()?.title;
+}
+
+export function getNormalizedDataAttributeDefinitions(
   dataClassName: string
-): NormalizedDataClassSchema {
+): NormalizedDataAttributeDefinitions {
   return mapValues(
-    getDataClassSchema(dataClassName),
+    getDataAttributeDefinitions(dataClassName),
     normalizeDataAttributeDefinition
   );
 }
@@ -136,7 +164,7 @@ export function unregisterDataClassSchema(dataClassName: string): void {
 }
 
 interface Schemata {
-  [dataClassName: string]: DataSchemaCallback;
+  [dataClassName: string]: DataClassSchemaCallback;
 }
 
 const schemataState = createStateContainer<Schemata>();
@@ -145,9 +173,24 @@ const counterState = createStateContainer<number>();
 const schemataCollection = createLoadableCollection({
   name: 'dataClassSchema',
   loadElement: (dataClassName: string) => ({
-    loader() {
+    async loader() {
       const callback = schemataState.get()?.[dataClassName];
-      return callback ? callback() : Promise.resolve({});
+
+      if (callback) {
+        const data = await callback();
+        return {
+          attributes:
+            data.attributes instanceof Function
+              ? await data.attributes()
+              : await data.attributes,
+          title:
+            data.title instanceof Function
+              ? await data.title()
+              : await data.title,
+        };
+      }
+
+      return { attributes: {} };
     },
     invalidation: () => getCounter().toString(),
   }),
@@ -169,7 +212,7 @@ function normalizeDataAttributeDefinition(
   const [type, config] = definition;
   if (type === 'enum') return [type, normalizeEnumValueConfig(config)];
 
-  return definition;
+  return [...definition];
 }
 
 function normalizeEnumValueConfig({ title, values }: EnumAttributeConfig) {
@@ -184,17 +227,21 @@ function normalizeEnumValueConfig({ title, values }: EnumAttributeConfig) {
   return config;
 }
 
-function wrapInCallback(attributes: DataClassAttributes): DataSchemaCallback {
-  if (attributes instanceof Function) return attributes;
-  if (isPromise(attributes)) return () => attributes;
+function wrapInCallback(
+  schema: LazyAsyncDataClassSchema
+): DataClassSchemaCallback {
+  if (schema instanceof Function) return schema;
 
-  return () => Promise.resolve(attributes);
+  return () => Promise.resolve(schema);
 }
 
 export function extractDataClassSchemaResponse(
   input: unknown
 ): DataClassSchemaResponse {
-  const response = { attributes: {} };
+  const response: DataClassSchemaResponse = {
+    attributes: {},
+    title: undefined,
+  };
 
   if (!isObject(input)) {
     logError(
@@ -212,13 +259,19 @@ export function extractDataClassSchemaResponse(
     return response;
   }
 
-  response.attributes = extractDataClassSchema(input.attributes);
+  if ('title' in input && typeof input.title === 'string') {
+    response.title = input.title;
+  }
+
+  response.attributes = extractDataAttributeDefinitions(input.attributes);
 
   return response;
 }
 
-function extractDataClassSchema(input: unknown): DataClassSchema {
-  const schema: DataClassSchema = {};
+function extractDataAttributeDefinitions(
+  input: unknown
+): DataAttributeDefinitions {
+  const attributes: DataAttributeDefinitions = {};
 
   if (!isObject(input)) {
     logError(
@@ -227,7 +280,7 @@ function extractDataClassSchema(input: unknown): DataClassSchema {
       )}`
     );
 
-    return schema;
+    return attributes;
   }
 
   Object.entries(input).forEach(([attributeName, maybeDefinition]) => {
@@ -240,7 +293,7 @@ function extractDataClassSchema(input: unknown): DataClassSchema {
     } else {
       if (typeof maybeDefinition === 'string') {
         if (isDataAttributeDefinitionWithOptionalConfig(maybeDefinition)) {
-          schema[attributeName] = maybeDefinition;
+          attributes[attributeName] = maybeDefinition;
         } else {
           logSchemaError(
             attributeName,
@@ -255,7 +308,7 @@ function extractDataClassSchema(input: unknown): DataClassSchema {
         );
 
         if (definition) {
-          schema[attributeName] = definition;
+          attributes[attributeName] = definition;
         }
       } else {
         logSchemaError(
@@ -267,7 +320,7 @@ function extractDataClassSchema(input: unknown): DataClassSchema {
     }
   });
 
-  return schema;
+  return attributes;
 }
 
 function isDataAttributeDefinitionWithOptionalConfig(

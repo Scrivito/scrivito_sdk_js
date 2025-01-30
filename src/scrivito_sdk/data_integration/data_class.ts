@@ -2,15 +2,11 @@ import isEqual from 'lodash-es/isEqual';
 import mapValues from 'lodash-es/mapValues';
 
 import { FilterValue } from 'scrivito_sdk/client';
+import { ArgumentError, ScrivitoError, isObject } from 'scrivito_sdk/common';
 import {
-  ArgumentError,
-  ScrivitoError,
-  assumePresence,
-  isObject,
-} from 'scrivito_sdk/common';
-import {
-  NormalizedDataClassSchema,
-  getNormalizedDataClassSchema,
+  NormalizedDataAttributeDefinitions,
+  getDataClassTitle,
+  getNormalizedDataAttributeDefinitions,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { isValidDataIdentifier } from 'scrivito_sdk/models';
 import type { Obj, ObjSearch } from 'scrivito_sdk/realm';
@@ -31,12 +27,19 @@ export abstract class DataClass {
   abstract name(): string;
 
   /** @public */
-  attributeDefinitions(): NormalizedDataClassSchema {
-    return getNormalizedDataClassSchema(this.name());
+  attributeDefinitions(): NormalizedDataAttributeDefinitions {
+    return getNormalizedDataAttributeDefinitions(this.name());
   }
 
   /** @internal */
-  abstract forAttribute(attributeName: string): DataScope;
+  title(): string | undefined {
+    return getDataClassTitle(this.name());
+  }
+
+  /** @internal */
+  forAttribute(attributeName: string): DataScope {
+    return this.all().transform({ attributeName });
+  }
 }
 
 /** @public */
@@ -208,6 +211,7 @@ export interface DataScopeParams {
   search?: string;
   order?: OrderSpec;
   limit?: number;
+  attributeName?: string;
 }
 
 export type FilterOperator =
@@ -276,8 +280,13 @@ export abstract class DataItem {
   abstract delete(): Promise<void>;
 
   /** @public */
-  attributeDefinitions(): NormalizedDataClassSchema {
-    return assumePresence(this.dataClass()).attributeDefinitions();
+  attributeDefinitions(): NormalizedDataAttributeDefinitions {
+    return this.dataClass().attributeDefinitions();
+  }
+
+  /** @internal */
+  title(): string | undefined {
+    return this.dataClass().title();
   }
 
   /** @internal */
@@ -378,11 +387,11 @@ export function itemIdFromFilters(
   if (typeof id === 'string') return id;
 }
 
-export function isOperatorSpec(spec: unknown): spec is OperatorSpec {
+export function isFilterOperator(
+  operator: unknown
+): operator is FilterOperator {
   return (
-    isObject(spec) &&
-    'operator' in spec &&
-    typeof spec.operator === 'string' &&
+    typeof operator === 'string' &&
     [
       'equals',
       'notEquals',
@@ -390,7 +399,15 @@ export function isOperatorSpec(spec: unknown): spec is OperatorSpec {
       'isLessThan',
       'isGreaterThanOrEquals',
       'isLessThanOrEquals',
-    ].includes(spec.operator) &&
+    ].includes(operator)
+  );
+}
+
+export function isOperatorSpec(spec: unknown): spec is OperatorSpec {
+  return (
+    isObject(spec) &&
+    'operator' in spec &&
+    isFilterOperator(spec.operator) &&
     'value' in spec &&
     (spec.value === null ||
       ['string', 'number', 'boolean'].includes(typeof spec.value))

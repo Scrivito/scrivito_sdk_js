@@ -1,8 +1,7 @@
 import { loadContentDump } from 'scrivito_sdk/app_support/content_dump';
 import { currentPage } from 'scrivito_sdk/app_support/current_page';
-import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
+import { isUserLoggedIn } from 'scrivito_sdk/app_support/current_user';
 import { isVisitorAuthenticationEnabled } from 'scrivito_sdk/app_support/visitor_authentication';
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 
 /**
@@ -11,34 +10,12 @@ import { load } from 'scrivito_sdk/loadable';
  */
 export async function preload(
   preloadDump: string
-): Promise<{ dumpLoaded: boolean }>;
-
-/** @internal */
-export async function preload(
-  preloadDump: string,
-  ...excessArgs: never[]
 ): Promise<{ dumpLoaded: boolean }> {
-  checkPreload(preloadDump, ...excessArgs);
+  if (isVisitorAuthenticationEnabled()) return { dumpLoaded: false };
 
-  let dumpLoaded = false;
-  if (isVisitorAuthenticationEnabled()) return { dumpLoaded };
+  const dumpLoaded = !isUserLoggedIn();
+  if (dumpLoaded) loadContentDump(preloadDump);
 
-  if (!uiAdapter) {
-    loadContentDump(preloadDump);
-    dumpLoaded = true;
-  }
-
-  await preloadCurrentPage();
-
+  await load(currentPage);
   return { dumpLoaded };
 }
-
-function preloadCurrentPage() {
-  return load(() => {
-    currentPage();
-  });
-}
-
-const checkPreload = checkArgumentsFor('preload', [['preloadDump', t.String]], {
-  docPermalink: 'js-sdk/preload',
-});

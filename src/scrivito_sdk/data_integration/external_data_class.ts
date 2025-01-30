@@ -1,4 +1,3 @@
-import isEmpty from 'lodash-es/isEmpty';
 import mapValues from 'lodash-es/mapValues';
 
 import { ClientError } from 'scrivito_sdk/client';
@@ -28,20 +27,22 @@ import {
   itemIdFromFilters,
 } from 'scrivito_sdk/data_integration/data_class';
 import {
-  DataClassSchema,
-  getDataClassSchema,
+  DataAttributeDefinitions,
+  getDataAttributeDefinitions,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
 import {
-  ExternalData,
   getExternalData,
   setExternalData,
 } from 'scrivito_sdk/data_integration/external_data';
 import {
-  assertValidResultItem,
-  autocorrectResultItemId,
-  getExternalDataConnection,
+  ExternalCustomAttributes,
+  NormalExternalData,
+  createViaDataConnection,
+  deleteViaDataConnection,
   getExternalDataConnectionNames,
+  hasExternalDataConnection,
+  updateViaDataConnection,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
   countExternalData,
@@ -77,15 +78,10 @@ export class ExternalDataClass extends DataClass {
   getUnchecked(id: string): ExternalDataItem {
     return ExternalDataItem.buildUnchecked(this, id);
   }
-
-  /** @internal */
-  forAttribute(attributeName: string): DataScope {
-    return new ExternalDataScope(this, attributeName);
-  }
 }
 
 export function isExternalDataClassProvided(name: string): boolean {
-  return !!getExternalDataConnection(name);
+  return hasExternalDataConnection(name);
 }
 
 export function allExternalDataClasses(): ExternalDataClass[] {
@@ -118,12 +114,12 @@ export class ExternalDataScope extends DataScope {
 
     const { filters } = this._params;
     const dataClassName = this.dataClassName();
-    const schema = await loadSchemaOrThrow(dataClassName);
+    const dataAttributeDefinitions = await loadAttributesOrThrow(dataClassName);
 
     const serializedAttributes = serializeAttributes(
       dataClassName,
       attributes,
-      schema
+      dataAttributeDefinitions
     );
 
     const dataForCallback = {
@@ -131,22 +127,18 @@ export class ExternalDataScope extends DataScope {
       ...this.attributesFromFilters(filters),
     };
 
-    const createCallback = getConnection(dataClassName).create;
-    const resultItem = await createCallback(dataForCallback);
-    assertValidResultItem(resultItem);
+    const data = await createViaDataConnection(dataClassName, dataForCallback);
 
-    const { _id: id, ...dataFromCallback } =
-      autocorrectResultItemId(resultItem);
-
-    setExternalData(
-      dataClassName,
-      id,
-      (!isEmpty(dataFromCallback) && dataFromCallback) || dataForCallback
-    );
+    const id = data.systemData._id;
+    setExternalData(dataClassName, id, data);
 
     notifyExternalDataWrite(dataClassName);
 
-    return ExternalDataItem.buildWithLoadedSchema(this._dataClass, id, schema);
+    return ExternalDataItem.buildWithLoadedAttributes(
+      this._dataClass,
+      id,
+      dataAttributeDefinitions
+    );
   }
 
   get(id: string): DataItem | null {
@@ -175,28 +167,40 @@ export class ExternalDataScope extends DataScope {
   }
 
   take(): DataItem[] {
-    const schema = getDataClassSchema(this.dataClassName());
-    if (!schema) return [];
+    const attributes = getDataAttributeDefinitions(this.dataClassName());
+    if (!attributes) return [];
 
     const id = this.itemIdFromFilters();
     if (id && this.hasSingleFilter()) {
+      if (this.limit() === 0) return [];
+
       const item = this.get(id);
       return item ? [item] : [];
     }
 
-    return handleCommunicationError(() => this.takeUnsafe(schema));
+    return handleCommunicationError(() => this.takeUnsafe(attributes));
   }
 
-  transform({ filters, search, order, limit }: DataScopeParams): DataScope {
-    return new ExternalDataScope(this._dataClass, this._attributeName, {
-      filters: combineFilters(
-        this._params.filters,
-        this.normalizeFilters(filters)
-      ),
-      search: combineSearches(this._params.search, search),
-      order: order || this._params.order,
-      limit: limit ?? this._params.limit,
-    });
+  transform({
+    filters,
+    search,
+    order,
+    limit,
+    attributeName,
+  }: DataScopeParams): DataScope {
+    return new ExternalDataScope(
+      this._dataClass,
+      attributeName || this._attributeName,
+      {
+        filters: combineFilters(
+          this._params.filters,
+          this.normalizeFilters(filters)
+        ),
+        search: combineSearches(this._params.search, search),
+        order: order || this._params.order,
+        limit: limit ?? this._params.limit,
+      }
+    );
   }
 
   objSearch(): undefined {
@@ -206,11 +210,11 @@ export class ExternalDataScope extends DataScope {
   count(): number | null {
     const { filters, search } = this._params;
     const dataClassName = this.dataClassName();
-    const schema = getDataClassSchema(dataClassName);
-    if (!schema) return null;
+    const attributes = getDataAttributeDefinitions(dataClassName);
+    if (!attributes) return null;
 
     return handleCommunicationError(() =>
-      countExternalData(dataClassName, filters, search, schema)
+      countExternalData(dataClassName, filters, search, attributes)
     );
   }
 
@@ -227,22 +231,22 @@ export class ExternalDataScope extends DataScope {
     };
   }
 
-  private takeUnsafe(schema: DataClassSchema) {
+  private takeUnsafe(attributes: DataAttributeDefinitions) {
     return extractFromIterator(
-      this.getIterator(schema),
+      this.getIterator(attributes),
       this._params.limit ?? DEFAULT_LIMIT
     );
   }
 
-  private getIterator(schema: DataClassSchema) {
+  private getIterator(attributes: DataAttributeDefinitions) {
     return transformContinueIterable(
-      getExternalDataQuery(this.toPojo(), schema),
+      getExternalDataQuery(this.toPojo(), attributes),
       (iterator) =>
         iterator.map((dataId) =>
-          ExternalDataItem.buildWithLoadedSchema(
+          ExternalDataItem.buildWithLoadedAttributes(
             this._dataClass,
             dataId,
-            schema
+            attributes
           )
         )
     ).iterator();
@@ -273,17 +277,17 @@ export class ExternalDataItem extends DataItem {
   /** Returns an item if its schema is loaded. Returns null otherwise. */
   /** Triggers schema loading, thus requires a loading context. */
   static build(dataClass: DataClass, dataId: string): ExternalDataItem | null {
-    const schema = getDataClassSchema(dataClass.name());
-    return schema ? new ExternalDataItem(dataClass, dataId) : null;
+    const attributes = getDataAttributeDefinitions(dataClass.name());
+    return attributes ? new ExternalDataItem(dataClass, dataId) : null;
   }
 
   /** Returns an item for an already loaded schema */
-  static buildWithLoadedSchema(
+  static buildWithLoadedAttributes(
     dataClass: DataClass,
     dataId: string,
-    schema: DataClassSchema
+    attributes: DataAttributeDefinitions
   ): ExternalDataItem {
-    if (!schema) throw new InternalError();
+    if (!attributes) throw new InternalError();
     return new ExternalDataItem(dataClass, dataId);
   }
 
@@ -323,20 +327,22 @@ export class ExternalDataItem extends DataItem {
     if (!externalData) return null;
 
     const dataClassName = this.dataClassName();
-    const schema = getDataClassSchema(dataClassName);
+    const attributes = getDataAttributeDefinitions(dataClassName);
 
-    return schema
+    const { customData } = externalData;
+
+    return attributes
       ? deserializeDataAttribute({
           dataClassName,
           attributeName,
-          value: externalData[attributeName],
-          schema,
+          value: customData[attributeName],
+          attributes,
         })
       : null;
   }
 
   getRaw(attributeName: string): unknown {
-    return this.getExternalData()?.[attributeName];
+    return this.getExternalData()?.customData[attributeName];
   }
 
   async update(attributes: DataItemAttributes): Promise<void> {
@@ -348,29 +354,33 @@ export class ExternalDataItem extends DataItem {
     }
 
     const dataClassName = this.dataClassName();
-    const schema = await loadSchemaOrThrow(dataClassName);
+    const dataAttributeDefinitions = await loadAttributesOrThrow(dataClassName);
 
     const serializedAttributes = serializeAttributes(
       dataClassName,
       attributes,
-      schema
+      dataAttributeDefinitions
     );
 
-    const updateCallback = this.getConnection().update;
-    const response = await updateCallback(this._dataId, serializedAttributes);
+    const updatedData = await updateViaDataConnection(
+      this.dataClassName(),
+      this._dataId,
+      serializedAttributes
+    );
 
     setExternalData(dataClassName, this._dataId, {
-      ...externalData,
-      ...serializedAttributes,
-      ...(response || {}),
+      systemData: externalData.systemData,
+      customData: {
+        ...externalData.customData,
+        ...updatedData,
+      },
     });
 
     this.notifyWrite();
   }
 
   async delete(): Promise<void> {
-    const deleteCallback = this.getConnection().delete;
-    await deleteCallback(this._dataId);
+    await deleteViaDataConnection(this.dataClassName(), this._dataId);
 
     setExternalData(this.dataClassName(), this._dataId, null);
 
@@ -378,12 +388,12 @@ export class ExternalDataItem extends DataItem {
   }
 
   /** @internal */
-  getExternalData(): ExternalData | null | undefined {
-    return getExternalData(this.dataClassName(), this._dataId);
+  getCustomAttributes(): ExternalCustomAttributes {
+    return this.getExternalData()?.customData ?? {};
   }
 
-  private getConnection() {
-    return getConnection(this.dataClassName());
+  private getExternalData(): NormalExternalData | null | undefined {
+    return getExternalData(this.dataClassName(), this._dataId);
   }
 
   private notifyWrite() {
@@ -391,25 +401,18 @@ export class ExternalDataItem extends DataItem {
   }
 }
 
-function getConnection(dataClassName: string) {
-  const connection = getExternalDataConnection(dataClassName);
-
-  if (!connection) {
-    throw new ArgumentError(
-      `No connection provided for data class "${dataClassName}"`
-    );
-  }
-
-  return connection;
-}
-
 function serializeAttributes(
   dataClassName: string,
   attributes: DataItemAttributes,
-  schema: DataClassSchema
+  dataAttributeDefinitions: DataAttributeDefinitions
 ) {
   return mapValues(attributes, (value, attributeName) =>
-    serializeDataAttribute({ dataClassName, attributeName, value, schema })
+    serializeDataAttribute({
+      dataClassName,
+      attributeName,
+      value,
+      attributes: dataAttributeDefinitions,
+    })
   );
 }
 
@@ -428,11 +431,12 @@ function handleCommunicationError<T>(request: () => T) {
   }
 }
 
-async function loadSchemaOrThrow(dataClassName: string) {
-  const schema = await load(() => getDataClassSchema(dataClassName));
+async function loadAttributesOrThrow(dataClassName: string) {
+  const attributes = await load(() =>
+    getDataAttributeDefinitions(dataClassName)
+  );
 
   // A schema must be stored first
-  if (!schema) throw new InternalError();
-
-  return schema;
+  if (!attributes) throw new InternalError();
+  return attributes;
 }

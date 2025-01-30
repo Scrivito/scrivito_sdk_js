@@ -68,19 +68,16 @@ export class DataLocator {
 
   /** @internal */
   query(): DataLocatorQuery | undefined {
-    if (this._viaRef) return;
     if (this._query) return [...this._query];
   }
 
   /** @internal */
   orderBy(): OrderByItem[] | undefined {
-    if (this._viaRef) return;
     if (this._order_by) return [...this._order_by];
   }
 
   /** @internal */
   size(): number | undefined {
-    if (this._viaRef) return;
     return this._size;
   }
 
@@ -88,20 +85,13 @@ export class DataLocator {
   toPojo(): DataLocatorJson | null {
     if (this._class === null) return null;
 
-    if (this._viaRef) {
-      return {
-        class: this._class,
-        field: this._field,
-        via_ref: this._viaRef,
-      };
-    }
-
     return {
       class: this._class,
-      field: this._field,
-      query: this.query(),
-      order_by: this.orderBy(),
-      size: this._size,
+      ...(this._field && { field: this._field }),
+      ...(this.query() && { query: this.query() }),
+      ...(this.orderBy() && { order_by: this.orderBy() }),
+      ...(this._size !== undefined && { size: this._size }),
+      ...(this._viaRef && { via_ref: this._viaRef }),
     };
   }
 }

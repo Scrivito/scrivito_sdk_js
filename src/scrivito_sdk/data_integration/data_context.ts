@@ -9,6 +9,7 @@ import {
 } from 'scrivito_sdk/common';
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
 import {
+  DataItem,
   DataItemPojo,
   DataScopePojo,
   itemPojoToScopePojo,
@@ -19,28 +20,22 @@ import {
   findItemInDataStack,
   findScopeInDataStack,
 } from 'scrivito_sdk/data_integration/data_stack';
+import { ExternalDataItem } from 'scrivito_sdk/data_integration/external_data_class';
 import {
-  ExternalData,
-  getExternalData,
-} from 'scrivito_sdk/data_integration/external_data';
-import { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
-import { externalDataToDataContext } from 'scrivito_sdk/data_integration/external_data_to_data_context';
-import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
+  getDataClass,
+  getDataClassOrThrow,
+} from 'scrivito_sdk/data_integration/get_data_class';
 import {
   findItemInGlobalData,
   findScopeInGlobalData,
 } from 'scrivito_sdk/data_integration/global_data';
-import { isObjDataClassProvided } from 'scrivito_sdk/data_integration/obj_data_class';
+import { ObjDataItem } from 'scrivito_sdk/data_integration/obj_data_class';
 import { loadWithDefault } from 'scrivito_sdk/loadable';
 import {
   BasicLink,
   BasicObj,
   DataIdentifier,
-  currentObjSpaceId,
-  getObjFrom,
   isValidDataIdentifier,
-  objSpaceScope,
-  restrictToObjClass,
 } from 'scrivito_sdk/models';
 
 export type DataContext = Record<DataIdentifier, DataContextValue>;
@@ -164,13 +159,37 @@ export function dataContextFromQueryParams(
   const dataId = getDataId(dataClassName, params);
   if (!isValidDataId(dataId)) return 'unavailable';
 
-  if (isExternalDataClassProvided(dataClassName)) {
-    return getDataContextFromExternalData(dataClassName, dataId);
+  const dataClass = getDataClass(dataClassName);
+  if (!dataClass) return;
+
+  const dataItem = loadWithDefault('loading', () => dataClass.get(dataId));
+
+  if (dataItem === 'loading') return 'loading';
+  if (!dataItem) return 'unavailable';
+
+  return dataItemToDataContext(dataItem);
+}
+
+export function dataItemToDataContext(dataItem: DataItem): DataContext {
+  if (dataItem instanceof ObjDataItem) {
+    return objDataItemToDataContext(dataItem);
   }
 
-  if (isObjDataClassProvided(dataClassName)) {
-    return getDataContextFromObjData(dataClassName, dataId);
-  }
+  // assumption: DataItem can only be either ObjDataItem or ExternalDataItem
+  return externalDataItemToDataContext(dataItem as ExternalDataItem);
+}
+
+function objDataItemToDataContext(dataItem: ObjDataItem) {
+  const basiObj = dataItem.getBasicObj();
+  return basiObj ? basicObjToDataContext(basiObj) : {};
+}
+
+function externalDataItemToDataContext(dataItem: ExternalDataItem) {
+  return {
+    _class: dataItem.dataClassName(),
+    _id: dataItem.id(),
+    ...dataItem.getCustomAttributes(),
+  };
 }
 
 function getDataId(dataClassName: string, params: QueryParameters) {
@@ -192,40 +211,6 @@ function getDataIdOfFirstDataItem(dataClassName: string) {
     .take();
 
   if (firstDataItem) return firstDataItem.id();
-}
-
-function getDataContextFromExternalData(dataClassName: string, dataId: string) {
-  return getDataContextFrom<ExternalData>(
-    () => getExternalData(dataClassName, dataId),
-    (externalData) =>
-      externalDataToDataContext(externalData, dataClassName, dataId)
-  );
-}
-
-export function getDataContextFromObjData(objClassName: string, objId: string) {
-  return getDataContextFrom<BasicObj>(
-    () => getBasicObjFrom(objClassName, objId),
-    basicObjToDataContext
-  );
-}
-
-function getDataContextFrom<T>(
-  load: () => T | null | undefined,
-  map: (data: T) => DataContext | 'loading' | 'unavailable' | undefined
-) {
-  const data = loadWithDefault('loading', load);
-
-  if (data === 'loading') return 'loading';
-  if (!data) return 'unavailable';
-
-  return map(data);
-}
-
-function getBasicObjFrom(objClassName: string, objId: string) {
-  return getObjFrom(
-    objSpaceScope(currentObjSpaceId()).and(restrictToObjClass(objClassName)),
-    objId
-  );
 }
 
 function getObj(objOrLink: BasicObj | BasicLink) {

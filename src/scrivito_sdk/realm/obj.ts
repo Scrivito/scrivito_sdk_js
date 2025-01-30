@@ -73,6 +73,7 @@ type ObjUpdateAttributes<AttrDefs extends AttributeDefinitions> = Omit<
 
 type ReferenceMapping = (refId: string) => string | undefined;
 
+/** @public */
 export interface ObjClass<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > {

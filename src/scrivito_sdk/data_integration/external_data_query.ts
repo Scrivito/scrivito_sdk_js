@@ -1,13 +1,10 @@
 import mapValues from 'lodash-es/mapValues';
 
 import {
-  ArgumentError,
   EmptyContinueIterable,
-  isValidInteger,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
 import { DataQuery, IdBatchCollection, IdBatchQuery } from 'scrivito_sdk/data';
-import { DataConnectionError } from 'scrivito_sdk/data_integration';
 import { serializeDataAttribute } from 'scrivito_sdk/data_integration/data_attribute';
 import {
   DEFAULT_LIMIT,
@@ -16,25 +13,19 @@ import {
   PresentDataScopePojo,
   isOperatorSpec,
 } from 'scrivito_sdk/data_integration/data_class';
-import { DataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';
-import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
+import { DataAttributeDefinitions } from 'scrivito_sdk/data_integration/data_class_schema';
+import { DataId } from 'scrivito_sdk/data_integration/data_id';
 import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/disable_external_data_loading';
 import {
   getExternalData,
   setExternalData,
 } from 'scrivito_sdk/data_integration/external_data';
 import {
-  IndexResultCount,
-  ResultItem,
-  ResultItemData,
-  assertValidIndexResultWithUnknownEntries,
-  assertValidNumericId,
-  assertValidResultItem,
-  autocorrectResultItemId,
-  getExternalDataConnectionOrThrow,
+  NormalExternalData,
+  indexViaDataConnection,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 import { queryExternalDataOfflineStore } from 'scrivito_sdk/data_integration/external_data_offline_query';
-import { IndexParams } from 'scrivito_sdk/data_integration/index_params';
+import { DataConnectionIndexParams } from 'scrivito_sdk/data_integration/index_params';
 import { load, loadableWithDefault } from 'scrivito_sdk/loadable';
 import { StateContainer, createStateContainer } from 'scrivito_sdk/state';
 
@@ -56,9 +47,9 @@ export function countExternalData(
   dataClass: string,
   filters: NormalizedDataScopeFilters | undefined,
   search: string | undefined,
-  schema: DataClassSchema
+  attributes: DataAttributeDefinitions
 ): number | null {
-  validateFilters(dataClass, filters, schema);
+  validateFilters(dataClass, filters, attributes);
 
   return (
     batchCollection.getQueryCount([
@@ -73,11 +64,11 @@ export function countExternalData(
 
 export function getExternalDataQuery(
   { _class: dataClass, filters, search, order, limit }: PresentDataScopePojo,
-  schema: DataClassSchema
+  attributes: DataAttributeDefinitions
 ): DataQuery<DataId> {
   if (isExternalDataLoadingDisabled()) return new EmptyContinueIterable();
 
-  validateFilters(dataClass, filters, schema);
+  validateFilters(dataClass, filters, attributes);
 
   const batchSize = limit ?? DEFAULT_LIMIT;
 
@@ -107,7 +98,7 @@ export function getExternalDataQuery(
 function validateFilters(
   dataClassName: string,
   filters: NormalizedDataScopeFilters | undefined,
-  schema: DataClassSchema
+  attributes: DataAttributeDefinitions
 ) {
   mapValues(filters, (filterValue, filterName) => {
     const operatorSpecs = isOperatorSpec(filterValue)
@@ -122,7 +113,7 @@ function validateFilters(
         dataClassName,
         attributeName: filterName,
         value: actualValue,
-        schema,
+        attributes,
       });
     });
   });
@@ -146,10 +137,9 @@ async function loadBatch(
   continuation: string | undefined,
   batchSize: number
 ) {
-  const indexCallback = getExternalDataConnectionOrThrow(dataClass).index;
-
-  const result = await indexCallback(
-    new IndexParams(continuation, {
+  const result = await indexViaDataConnection(
+    dataClass,
+    new DataConnectionIndexParams(continuation, {
       filters,
       search,
       order,
@@ -158,42 +148,30 @@ async function loadBatch(
     })
   );
 
-  if (result instanceof DataConnectionError) throw result;
-
-  assertValidIndexResultWithUnknownEntries(result);
-
   const dataIds = handleResults(result.results, dataClass);
 
   return {
     continuation: result.continuation ?? undefined,
     results: dataIds,
-    total: autocorrectAndValidateCount(result.count),
+    total: result.count,
   };
 }
 
-function handleResults(results: unknown[], dataClass: string) {
+function handleResults(
+  results: Array<DataId | number | NormalExternalData>,
+  dataClass: string
+) {
   return results.map((idOrItem) => {
     if (typeof idOrItem === 'number') {
-      assertValidNumericId(idOrItem);
       return handleDataId(dataClass, idOrItem.toString());
     }
 
     if (typeof idOrItem === 'string') {
-      assertValidDataId(idOrItem);
       return handleDataId(dataClass, idOrItem);
     }
 
-    assertValidResultItem(idOrItem);
     return handleResultItem(dataClass, idOrItem);
   });
-}
-
-function assertValidDataId(dataId: string): asserts dataId is DataId {
-  if (!isValidDataId(dataId)) {
-    throw new ArgumentError(
-      'Strings in results of an index result must be valid data IDs'
-    );
-  }
 }
 
 function handleDataId(dataClass: string, dataId: string) {
@@ -201,9 +179,9 @@ function handleDataId(dataClass: string, dataId: string) {
   return dataId;
 }
 
-function handleResultItem(dataClass: string, resultItem: ResultItem) {
-  const { _id: id, ...data } = autocorrectResultItemId(resultItem);
-  setExternalData(dataClass, id, data);
+function handleResultItem(dataClass: string, resultItem: NormalExternalData) {
+  const id = resultItem.systemData._id;
+  setExternalData(dataClass, id, resultItem);
 
   return id;
 }
@@ -232,30 +210,16 @@ function getOrCreateWriteCounterState(dataClass: string) {
 
 interface DataResult {
   id: string;
-  data: ResultItemData | null | undefined;
+  data: NormalExternalData | null | undefined;
 }
 
 function toDataResult(
-  idOrItem: DataId | ResultItem,
+  idOrItem: DataId | NormalExternalData,
   dataClass: string
 ): DataResult {
   if (typeof idOrItem === 'string') {
     return { id: idOrItem, data: getExternalData(dataClass, idOrItem) };
   }
 
-  const { _id: id, ...data } = autocorrectResultItemId(idOrItem);
-  return { id, data };
-}
-
-function autocorrectAndValidateCount(
-  resultCount: IndexResultCount | undefined
-): number | undefined {
-  if (resultCount === undefined || resultCount === null) return;
-
-  const count = Number(resultCount);
-  if (count >= 0 && isValidInteger(count)) return count;
-
-  throw new ArgumentError(
-    'Count of an index result must be a non-negative integer'
-  );
+  return { id: idOrItem.systemData._id, data: idOrItem };
 }

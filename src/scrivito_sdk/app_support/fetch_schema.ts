@@ -1,15 +1,15 @@
+import memoize from 'lodash-es/memoize';
+
 import { currentLanguage } from 'scrivito_sdk/app_support/current_language';
 import { ApiClient, ClientError } from 'scrivito_sdk/client';
 import { logError } from 'scrivito_sdk/common';
-import {
-  DataClassSchema,
-  extractDataClassSchemaResponse,
-} from 'scrivito_sdk/data_integration';
+import { extractDataClassSchemaResponse } from 'scrivito_sdk/data_integration';
+import { DataClassSchemaResponse } from 'scrivito_sdk/data_integration/data_class_schema';
 import { load } from 'scrivito_sdk/loadable';
 
-export async function fetchSchema(
+export const fetchSchema = memoize(async function (
   apiClient: ApiClient
-): Promise<DataClassSchema> {
+): Promise<DataClassSchemaResponse> {
   const siteLanguage = await load(currentLanguage);
   let response: unknown;
 
@@ -25,11 +25,11 @@ export async function fetchSchema(
         JSON.stringify(error.details)
       );
 
-      return {};
+      return { attributes: {} };
     }
 
     throw error;
   }
 
-  return extractDataClassSchemaResponse(response).attributes;
-}
+  return extractDataClassSchemaResponse(response);
+});

@@ -11,9 +11,10 @@ import {
   DataAttributeType,
   ExternalDataClass,
   NormalizedDataAttributeDefinition,
-  NormalizedDataClassSchema,
+  NormalizedDataAttributeDefinitions,
   allExternalDataClasses,
-  getNormalizedDataClassSchema,
+  getDataClassTitle,
+  getNormalizedDataAttributeDefinitions,
   isReferenceAttributeConfig,
   isSingletonDataClass,
 } from 'scrivito_sdk/data_integration';
@@ -26,11 +27,11 @@ export function getDataClassSpecs(): DataClassSpec[] {
 }
 
 export function computeDataAttributeNames(
-  schema?: NormalizedDataClassSchema,
+  attributes?: NormalizedDataAttributeDefinitions,
   editingConfig?: AttributesEditingConfig
 ): string[] {
   return union(
-    schema ? Object.keys(schema) : [],
+    attributes ? Object.keys(attributes) : [],
     editingConfig ? Object.keys(editingConfig) : []
   ).sort();
 }
@@ -45,24 +46,27 @@ export function getDataAttributeTitle(
 function buildDataClassSpec(dataClass: ExternalDataClass): DataClassSpec {
   const name = dataClass.name();
   const editingConfig = getEditingConfigFor(name);
-  const schema = getNormalizedDataClassSchema(name);
+  const attributes = getNormalizedDataAttributeDefinitions(name);
 
   return {
     type: 'ExternalData',
     name,
-    title: editingConfig?.title,
+    title: editingConfig?.title || getDataClassTitle(name),
     description: editingConfig?.description,
-    attributes: buildDataClassAttributeSpecs(schema, editingConfig?.attributes),
+    attributes: buildDataClassAttributeSpecs(
+      attributes,
+      editingConfig?.attributes
+    ),
     isSingleton: isSingletonDataClass(name),
   };
 }
 
 function buildDataClassAttributeSpecs(
-  schema?: NormalizedDataClassSchema,
+  attributes?: NormalizedDataAttributeDefinitions,
   editingConfig?: AttributesEditingConfig
 ): ClassAttributeSpec[] {
-  return computeDataAttributeNames(schema, editingConfig).map((name) =>
-    buildDataClassAttributeSpec(name, schema?.[name], editingConfig?.[name])
+  return computeDataAttributeNames(attributes, editingConfig).map((name) =>
+    buildDataClassAttributeSpec(name, attributes?.[name], editingConfig?.[name])
   );
 }
 
@@ -109,7 +113,7 @@ function getReverseTitle(config?: DataAttributeConfig) {
 }
 
 function toEnumValuesLocalization(
-  originalValues: Array<LocalizedValue | string>
+  originalValues: Readonly<Array<LocalizedValue | string>>
 ) {
   return originalValues.reduce<[string[], LocalizedValue[]]>(
     ([values, localizedValues], currentValue) => {

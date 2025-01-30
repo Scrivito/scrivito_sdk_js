@@ -8,9 +8,9 @@ import {
 import {
   CollectionData,
   CollectionKey,
-  ExternalData,
   findInExternalDataOfflineStore,
 } from 'scrivito_sdk/data_integration/external_data';
+import { NormalExternalData } from 'scrivito_sdk/data_integration/external_data_connection';
 
 export async function queryExternalDataOfflineStore([
   wantedDataClass,
@@ -63,7 +63,7 @@ function withSearch(
   return collection.filter(([data]) => {
     if (data) {
       return searchTerms.every((term) =>
-        Object.values(data).some(
+        Object.values(data.customData).some(
           (value) =>
             typeof value === 'string' &&
             value.toLowerCase().includes(term.toLowerCase())
@@ -75,7 +75,7 @@ function withSearch(
 
 function isMatchForFilters(
   id: string,
-  data: ExternalData,
+  data: NormalExternalData,
   filters: NormalizedDataScopeFilters | undefined
 ): boolean {
   if (!filters) return true;
@@ -151,8 +151,8 @@ function isGreaterIfComparable(dataValue: unknown, filterValue: FilterValue) {
 
 function compareDataForSorting(
   [[attribute, direction], ...remainingOrder]: OrderSpec,
-  [dataA, [classA, idA]]: [ExternalData | null, [string, string]],
-  [dataB, [classB, idB]]: [ExternalData | null, [string, string]]
+  [dataA, [classA, idA]]: [NormalExternalData | null, [string, string]],
+  [dataB, [classB, idB]]: [NormalExternalData | null, [string, string]]
 ) {
   const result = compareValuesForSorting(
     attributeValue(idA, dataA, attribute),
@@ -205,12 +205,12 @@ function compareValuesForSorting(valueA: unknown, valueB: unknown): number {
 
 function attributeValue(
   id: string,
-  data: ExternalData | null,
+  data: NormalExternalData | null,
   attribute: string
 ) {
   if (!data) return null;
 
-  const rawValue = attribute === '_id' ? id : data[attribute];
+  const rawValue = attribute === '_id' ? id : data.customData[attribute];
 
   // make sure that "equals null" also matches when the attribute is missing
   return rawValue === undefined ? null : rawValue;

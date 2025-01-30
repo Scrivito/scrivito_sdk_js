@@ -33,6 +33,8 @@ export {
   Widget,
 } from 'scrivito_sdk/realm';
 
+export type { ObjClass } from 'scrivito_sdk/realm';
+
 export {
   BackgroundImageTag,
   ChildListTag,
@@ -66,9 +68,19 @@ export type {
   WidgetComponentProps,
 } from 'scrivito_sdk/react';
 
-export { DataConnectionError } from 'scrivito_sdk/data_integration';
+export {
+  DataClass,
+  DataConnectionError,
+  DataItem,
+  DataScope,
+} from 'scrivito_sdk/data_integration';
 
-export { DataClass, DataItem, DataScope } from 'scrivito_sdk/data_integration';
+export type {
+  DataAttributeDefinitions,
+  DataConnection,
+  DataConnectionIndexParams,
+  DataConnectionResultItem,
+} from 'scrivito_sdk/data_integration';
 
 export { finishLoading, connect } from 'scrivito_sdk/react_connect';
 

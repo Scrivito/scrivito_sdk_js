@@ -1,8 +1,9 @@
 import {
+  EMPTY_SPACE,
   ExistentObjJson,
   ObjSpaceId,
   isEmptySpaceId,
-  isWorkspaceObjSpaceId,
+  isRevisionObjSpaceId,
 } from 'scrivito_sdk/client';
 import { InternalError, ScrivitoError } from 'scrivito_sdk/common';
 import { createObjData, getObjData } from 'scrivito_sdk/data';
@@ -54,14 +55,9 @@ class ObjSpaceScope implements ObjScope {
   }
 
   search(): BasicObjSearch {
-    if (
-      isWorkspaceObjSpaceId(this.objSpaceId) ||
-      isEmptySpaceId(this.objSpaceId)
-    ) {
-      return new BasicObjSearch(this.objSpaceId).includeDeleted();
-    }
-
-    throw new InternalError();
+    return new BasicObjSearch(
+      isRevisionObjSpaceId(this.objSpaceId) ? EMPTY_SPACE : this.objSpaceId
+    ).includeDeleted();
   }
 
   create(id: string, attributes: Partial<ExistentObjJson>): BasicObj {

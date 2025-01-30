@@ -41,6 +41,7 @@ export {
   getWorkspaceId,
   isEmptySpaceId,
   isWorkspaceObjSpaceId,
+  isRevisionObjSpaceId,
   isObjSpaceId,
   objSpaceIdsEqual,
 } from 'scrivito_sdk/client/obj_space_id';
@@ -62,6 +63,7 @@ export {
   isUnavailableObjJson,
   isWidgetAttributeJson,
   isWidgetlistAttributeJson,
+  isDataLocatorOperatorCode,
   isDataLocatorOperatorFilter,
   isDataLocatorValueFilter,
   OP_CODES,

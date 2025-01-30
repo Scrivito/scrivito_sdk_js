@@ -3,8 +3,8 @@ import { ArgumentError } from 'scrivito_sdk/common';
 import { OrderSpec } from 'scrivito_sdk/data_integration/data_class';
 import { UncheckedDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 import {
+  DataConnectionIndexParams,
   FilterSpec,
-  IndexParams,
   IndexParamsFilters,
 } from 'scrivito_sdk/data_integration/index_params';
 
@@ -21,7 +21,7 @@ export function createRestApiConnectionForClass(
   };
 }
 
-function toClientParams(params: IndexParams) {
+function toClientParams(params: DataConnectionIndexParams) {
   return {
     ...toClientFilterParam(params.filters()),
     _continuation: params.continuation(),

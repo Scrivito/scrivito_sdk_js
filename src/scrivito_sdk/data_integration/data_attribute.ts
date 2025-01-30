@@ -10,7 +10,7 @@ import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataAttributeConfig,
   DataAttributeDefinition,
-  DataClassSchema,
+  DataAttributeDefinitions,
   ReferenceAttributeConfig,
   isEnumAttributeConfig,
 } from 'scrivito_sdk/data_integration/data_class_schema';
@@ -30,16 +30,16 @@ export function serializeDataAttribute({
   dataClassName,
   attributeName,
   value,
-  schema,
+  attributes,
 }: {
   dataClassName: string;
   attributeName: string;
   value: unknown;
-  schema: DataClassSchema;
+  attributes: DataAttributeDefinitions;
 }): boolean | string | number | null | unknown {
   assertNoTypedObject(dataClassName, attributeName, value);
 
-  const attributeDefinition = schema[attributeName];
+  const attributeDefinition = attributes[attributeName];
 
   if (attributeDefinition) {
     const attributeType = getAttributeType(attributeDefinition);
@@ -55,16 +55,16 @@ export function deserializeDataAttribute({
   dataClassName,
   attributeName,
   value,
-  schema,
+  attributes,
 }: {
   dataClassName: string;
   attributeName: string;
   value: unknown;
-  schema: DataClassSchema;
+  attributes: DataAttributeDefinitions;
 }): boolean | number | string | Date | DataItem | null | unknown {
   assertNoTypedObject(dataClassName, attributeName, value);
 
-  const attributeDefinition = schema[attributeName];
+  const attributeDefinition = attributes[attributeName];
 
   if (attributeDefinition) {
     const attributeType = getAttributeType(attributeDefinition);

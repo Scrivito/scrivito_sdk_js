@@ -17,7 +17,7 @@ import {
 } from 'scrivito_sdk/data_integration/data_class';
 import {
   NormalizedDataAttributeDefinition,
-  NormalizedDataClassSchema,
+  NormalizedDataAttributeDefinitions,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { getObjDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 import {
@@ -86,13 +86,8 @@ export class ObjDataClass extends DataClass {
     return new ObjDataItem(this, id);
   }
 
-  attributeDefinitions(): NormalizedDataClassSchema {
+  attributeDefinitions(): NormalizedDataAttributeDefinitions {
     return attributeDefinitions(this._name);
-  }
-
-  /** @internal */
-  forAttribute(attributeName: string): DataScope {
-    return new ObjDataScope(this, attributeName);
   }
 }
 
@@ -188,16 +183,26 @@ export class ObjDataScope extends DataScope {
     return this.getSearch().count();
   }
 
-  transform({ filters, search, order, limit }: DataScopeParams): DataScope {
-    return new ObjDataScope(this._dataClass, this._attributeName, {
-      filters: combineFilters(
-        this._params.filters,
-        this.normalizeFilters(filters)
-      ),
-      search: combineSearches(this._params.search, search),
-      order: order || this._params.order,
-      limit: limit ?? this._params.limit,
-    });
+  transform({
+    filters,
+    search,
+    order,
+    limit,
+    attributeName,
+  }: DataScopeParams): DataScope {
+    return new ObjDataScope(
+      this._dataClass,
+      attributeName || this._attributeName,
+      {
+        filters: combineFilters(
+          this._params.filters,
+          this.normalizeFilters(filters)
+        ),
+        search: combineSearches(this._params.search, search),
+        order: order || this._params.order,
+        limit: limit ?? this._params.limit,
+      }
+    );
   }
 
   limit(): number | undefined {
@@ -532,7 +537,7 @@ function getValidReferenceClass(attributeConfig?: {
 function attributeDefinitions(dataClassName: string) {
   if (isBuiltInClass(dataClassName)) return {};
 
-  const dataClassSchema: NormalizedDataClassSchema = {};
+  const attributes: NormalizedDataAttributeDefinitions = {};
   const normalizedAttributes = getSchema(dataClassName).normalizedAttributes();
 
   Object.keys(normalizedAttributes).forEach((attributeName) => {
@@ -541,11 +546,11 @@ function attributeDefinitions(dataClassName: string) {
     );
 
     if (dataAttributeDefinition) {
-      dataClassSchema[attributeName] = dataAttributeDefinition;
+      attributes[attributeName] = dataAttributeDefinition;
     }
   });
 
-  return dataClassSchema;
+  return attributes;
 }
 
 function toDataAttributeDefinition([

@@ -25,7 +25,7 @@ interface AndFilterSpec {
 export type IndexParamsFilters = Record<string, FilterSpec | AndFilterSpec>;
 
 /** @public */
-export class IndexParams {
+export class DataConnectionIndexParams {
   constructor(
     private readonly _continuation: string | undefined,
     private readonly _params: Params
@@ -79,7 +79,6 @@ export class IndexParams {
   }
 }
 
-// exported for test purposes only
 export const operatorToOpCode: Record<FilterOperator, OpCode> = {
   equals: 'eq',
   notEquals: 'neq',

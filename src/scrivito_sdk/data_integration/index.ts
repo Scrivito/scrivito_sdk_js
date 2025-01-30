@@ -25,8 +25,8 @@ export {
   getDataContextQuery,
   getDataContextParameters,
   getDataContextValue,
+  dataItemToDataContext,
 } from 'scrivito_sdk/data_integration/data_context';
-export { computePlaceholders } from 'scrivito_sdk/data_integration/compute_placeholders';
 export type {
   DataStackElement,
   DataStack,
@@ -37,10 +37,12 @@ export {
   ExternalDataScope,
   allExternalDataClasses,
 } from 'scrivito_sdk/data_integration/external_data_class';
-export { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
+export { registerExternalDataClass } from 'scrivito_sdk/data_integration/register_external_data_class';
 export { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
+export type { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 export type {
   DataConnection,
+  DataConnectionResultItem,
   UncheckedDataConnection,
 } from 'scrivito_sdk/data_integration/external_data_connection';
 export {
@@ -54,7 +56,10 @@ export {
 export { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 export { applyDataLocator } from 'scrivito_sdk/data_integration/apply_data_locator';
 export type { ExternalDataItemConnection } from 'scrivito_sdk/data_integration/provide_external_data_item';
-export { provideExternalDataItem } from 'scrivito_sdk/data_integration/provide_external_data_item';
+export {
+  provideExternalDataItem,
+  SINGLETON_DATA_ID,
+} from 'scrivito_sdk/data_integration/provide_external_data_item';
 export {
   isSinglePlaceholder,
   replacePlaceholdersWithData,
@@ -67,17 +72,18 @@ export {
 export { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
 export { isSingletonDataClass } from 'scrivito_sdk/data_integration/singleton_data_classes';
 export type {
-  DataClassSchema,
-  DataClassAttributes,
+  DataAttributeDefinitions,
+  LazyAsyncDataAttributeDefinitions,
+  LazyAsyncDataClassTitle,
   NormalizedDataAttributeDefinition,
-  NormalizedDataClassSchema,
+  NormalizedDataAttributeDefinitions,
   DataAttributeType,
   DataAttributeConfig,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 export {
-  getNormalizedDataClassSchema,
+  getNormalizedDataAttributeDefinitions,
   extractDataClassSchemaResponse,
-  registerDataClassSchema,
+  getDataClassTitle,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 export { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
 export {
@@ -85,3 +91,4 @@ export {
   isDataIntegrationActive,
 } from 'scrivito_sdk/data_integration/activate_data_integration';
 export { isReferenceAttributeConfig } from 'scrivito_sdk/data_integration/data_attribute';
+export type { DataConnectionIndexParams } from 'scrivito_sdk/data_integration/index_params';
