@@ -7,10 +7,9 @@ import {
   ArgumentError,
   docUrl,
   isObject,
-  tcomb as t,
   throwNextTick,
 } from 'scrivito_sdk/common';
-import { Binary, BinaryType, ObjType } from 'scrivito_sdk/models';
+import { Binary } from 'scrivito_sdk/models';
 import { connect } from 'scrivito_sdk/react_connect';
 import { Obj, isBinaryBasicObj, unwrapAppClass } from 'scrivito_sdk/realm';
 
@@ -45,53 +44,6 @@ interface BackgroundProperties {
   repeat?: string;
   size?: string;
 }
-
-const ValidPlainBackground = t.interface({
-  image: t.String,
-
-  attachment: t.maybe(t.String),
-  clip: t.maybe(t.String),
-  color: t.maybe(t.String),
-  origin: t.maybe(t.String),
-  position: t.maybe(t.String),
-  repeat: t.maybe(t.String),
-  size: t.maybe(t.String),
-});
-
-const ValidScrivitoBackground = t.interface({
-  image: t.union([BinaryType, ObjType, t.String, t.Nil]),
-
-  attachment: t.maybe(t.enums.of(['fixed', 'scroll'])),
-  clip: t.maybe(t.enums.of(['border-box'])),
-  color: t.maybe(t.enums.of(['transparent'])),
-  origin: t.maybe(t.enums.of(['padding-box'])),
-  position: t.maybe(t.String),
-  repeat: t.maybe(t.enums.of(['no-repeat'])),
-  size: t.maybe(t.enums.of(['contain', 'cover'])),
-});
-
-const ValidBackground = t.union([
-  ValidPlainBackground,
-  ValidScrivitoBackground,
-]);
-
-ValidBackground.dispatch = (background: Background) => {
-  return isPlainBackground(background)
-    ? ValidPlainBackground
-    : ValidScrivitoBackground;
-};
-
-const ValidBackgroundList = t.list(ValidBackground);
-const ValidBackgroundOrBackgroundList = t.union([
-  ValidBackground,
-  ValidBackgroundList,
-]);
-
-ValidBackgroundOrBackgroundList.dispatch = (
-  background: BackgroundOrBackgroundList
-) => {
-  return Array.isArray(background) ? ValidBackgroundList : ValidBackground;
-};
 
 type BinaryToUrl = (binary: Binary) => string;
 

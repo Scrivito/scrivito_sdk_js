@@ -2,12 +2,8 @@ export {
   collectInListAndSchedule,
   collectAndSchedule,
 } from 'scrivito_sdk/common/collect_and_schedule';
-export {
-  checkArgumentsFor,
-  throwInvalidArgumentsError,
-} from 'scrivito_sdk/common/check_arguments_for';
+export { throwInvalidArgumentsError } from 'scrivito_sdk/common/throw_invalid_arguments_error';
 export { docUrl } from 'scrivito_sdk/common/doc_url';
-export type { TypeCheck } from 'scrivito_sdk/common/check_arguments_for';
 export { ContextContainer } from 'scrivito_sdk/common/context_container';
 export { Deferred } from 'scrivito_sdk/common/deferred';
 export { ensureUrlHasProtocol } from 'scrivito_sdk/common/ensure_url_has_protocol';
@@ -23,11 +19,6 @@ export {
   setNextTickScheduler,
 } from 'scrivito_sdk/common/next_tick';
 export { prettyPrint } from 'scrivito_sdk/common/pretty_print';
-export { tcomb } from 'scrivito_sdk/common/tcomb';
-export {
-  PositiveInteger,
-  NonNegativeInteger,
-} from 'scrivito_sdk/common/tcomb_refinements';
 export { runAndCatchException } from 'scrivito_sdk/common/run_and_catch_exception';
 export { logError } from 'scrivito_sdk/common/error_logging';
 export { getScrivitoVersion } from 'scrivito_sdk/common/get_scrivito_version';
@@ -46,7 +37,6 @@ export type {
   IteratorResult,
 } from 'scrivito_sdk/common/finished_with_optional_value_iterator';
 export { TransIterator } from 'scrivito_sdk/common/trans_iterator';
-export { FileType, BlobType } from 'scrivito_sdk/common/input_types';
 export { isSystemAttribute } from 'scrivito_sdk/common/is_system_attribute';
 export { extractFromIterator } from 'scrivito_sdk/common/iterable';
 export type {
@@ -158,3 +148,5 @@ export { parameterizeDataClass } from 'scrivito_sdk/common/parameterize_data_cla
 export { isObject } from 'scrivito_sdk/common/is_object';
 export { AsyncTaskTracker } from 'scrivito_sdk/common/async_task_tracker';
 export { isISO8601 } from 'scrivito_sdk/common/is_ISO8601';
+export { isWrapping } from 'scrivito_sdk/common/is_wrapping';
+export { isFile, isBlob } from 'scrivito_sdk/common/is_blob';

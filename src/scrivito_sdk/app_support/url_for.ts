@@ -1,7 +1,11 @@
 import { basicUrlFor } from 'scrivito_sdk/app_support/basic_url_for';
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
+import { throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
-import { Binary, BinaryType, LinkType, ObjType } from 'scrivito_sdk/models';
+import {
+  Binary,
+  isWrappingBasicLink,
+  isWrappingBasicObj,
+} from 'scrivito_sdk/models';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface UrlForOptions {
@@ -14,16 +18,9 @@ export interface UrlForOptions {
 export function urlFor(
   target: Binary | Link | Obj,
   options?: UrlForOptions
-): string;
-
-/** @internal */
-export function urlFor(
-  target: Binary | Link | Obj,
-  options?: UrlForOptions,
-  ...excessArgs: never[]
 ): string {
   assertNotUsingInMemoryTenant('Scrivito.urlFor');
-  checkUrlFor(target, options, ...excessArgs);
+  checkUrlFor(target);
 
   let query: string | undefined;
   let hash: string | undefined;
@@ -35,21 +32,20 @@ export function urlFor(
   return basicUrlFor(unwrapAppClass(target), { query, hash });
 }
 
-const TargetType = t.union([ObjType, LinkType, BinaryType]);
-
-const OptionsType = t.interface({
-  query: t.maybe(t.String),
-  hash: t.maybe(t.String),
-  fragment: t.maybe(t.String), // deprecated
-});
-
-const checkUrlFor = checkArgumentsFor(
-  'urlFor',
-  [
-    ['target', TargetType],
-    ['options', t.maybe(OptionsType)],
-  ],
-  {
-    docPermalink: 'js-sdk/urlFor',
+function checkUrlFor(target: Binary | Link | Obj) {
+  if (
+    !(
+      isWrappingBasicObj(target) ||
+      isWrappingBasicLink(target) ||
+      target instanceof Binary
+    )
+  ) {
+    throwInvalidArgumentsError(
+      'urlFor',
+      "'target' must be an instance of 'Obj', 'Link' or 'Binary'.",
+      {
+        docPermalink: 'js-sdk/urlFor',
+      }
+    );
   }
-);
+}

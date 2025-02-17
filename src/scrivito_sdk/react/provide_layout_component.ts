@@ -7,7 +7,6 @@ import {
   AttributeDefinitions,
   Obj,
   ObjClass,
-  checkProvideLayoutComponent,
   isObjClass,
 } from 'scrivito_sdk/realm';
 
@@ -26,11 +25,8 @@ export function provideLayoutComponent(
 /** @internal */
 export function provideLayoutComponent(
   objClass: ObjClass,
-  component: React.ComponentType,
-  ...excessArgs: never[]
+  component: React.ComponentType
 ): void {
-  checkProvideLayoutComponent(objClass, component, ...excessArgs);
-
   if (!isObjClass(objClass)) {
     throwInvalidArgumentsError(
       'provideLayoutComponent',

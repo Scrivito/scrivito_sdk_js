@@ -1,9 +1,9 @@
 import memoize from 'lodash-es/memoize';
 
-import { currentLanguage } from 'scrivito_sdk/app_support/current_language';
 import { ApiClient, ClientError } from 'scrivito_sdk/client';
 import { logError } from 'scrivito_sdk/common';
 import { extractDataClassSchemaResponse } from 'scrivito_sdk/data_integration';
+import { currentLanguage } from 'scrivito_sdk/data_integration/current_language';
 import { DataClassSchemaResponse } from 'scrivito_sdk/data_integration/data_class_schema';
 import { load } from 'scrivito_sdk/loadable';
 

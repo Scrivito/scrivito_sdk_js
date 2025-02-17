@@ -1,7 +1,8 @@
-import { FilterValue, OpCode } from 'scrivito_sdk/client';
+import { OpCode } from 'scrivito_sdk/client';
 import {
   FilterOperator,
   NormalizedDataScopeParams,
+  OperatorSpec,
   OrderSpec,
   isOperatorSpec,
 } from 'scrivito_sdk/data_integration/data_class';
@@ -11,18 +12,17 @@ interface Params extends NormalizedDataScopeParams {
   count: boolean;
 }
 
-export interface FilterSpec {
-  operator: FilterOperator;
+export interface FilterSpec extends OperatorSpec {
   opCode: OpCode;
-  value: FilterValue;
 }
 
-interface AndFilterSpec {
+export interface AndFilterSpec {
   operator: 'and';
   value: FilterSpec[];
 }
 
-export type IndexParamsFilters = Record<string, FilterSpec | AndFilterSpec>;
+/** @public */
+export type DataConnectionFilters = Record<string, FilterSpec | AndFilterSpec>;
 
 /** @public */
 export class DataConnectionIndexParams {
@@ -35,7 +35,7 @@ export class DataConnectionIndexParams {
     return this._continuation;
   }
 
-  filters(): IndexParamsFilters {
+  filters(): DataConnectionFilters {
     return Object.entries(this._params.filters || {}).reduce(
       (filters, [name, operatorSpec]) => {
         if (!name) return filters;
@@ -87,3 +87,9 @@ export const operatorToOpCode: Record<FilterOperator, OpCode> = {
   isGreaterThanOrEquals: 'gte',
   isLessThanOrEquals: 'lte',
 };
+
+export function isAndFilterSpec(
+  spec: FilterSpec | AndFilterSpec
+): spec is AndFilterSpec {
+  return spec.operator === 'and';
+}

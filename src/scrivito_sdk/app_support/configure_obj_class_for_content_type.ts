@@ -1,8 +1,7 @@
 import {
   ArgumentError,
   ScrivitoError,
-  checkArgumentsFor,
-  tcomb as t,
+  throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
 import { ObjClassForContentTypeMapping } from 'scrivito_sdk/ui_interface/app_adapter';
@@ -18,14 +17,9 @@ export function getObjClassForContentTypeMapping():
 /** @public */
 export function configureObjClassForContentType(
   configuration: ObjClassForContentTypeMapping
-): void;
-
-/** @internal */
-export function configureObjClassForContentType(
-  configuration: ObjClassForContentTypeMapping,
-  ...excessArgs: never[]
 ): void {
-  checkConfigureObjClassForContentType(configuration, ...excessArgs);
+  checkConfigureObjClassForContentType(configuration);
+
   if (!configuration['*/*']) {
     throw new ArgumentError(
       'No ObjClass has been configured for the contentType "*/*"'
@@ -40,19 +34,16 @@ export function configureObjClassForContentType(
   state.set(configuration);
 }
 
-const ContentTypePattern = t.refinement(
-  t.String,
-  // either */*, or
-  // type/* (type without / and *), or
-  // type/subtype (subtype without ; and *)
-  // Note: Intentionally no */subtype
-  (s) => /^(\*\/\*|[^\/\*]+\/(\*|[^\*;]+))$/.test(s),
-  'Content Type'
-);
-const ConfigurationType = t.dict(ContentTypePattern, t.String);
-
-const checkConfigureObjClassForContentType = checkArgumentsFor(
-  'configureObjClassForContentType',
-  [['configuration', ConfigurationType]],
-  { docPermalink: 'js-sdk/configureObjClassForContentType' }
-);
+function checkConfigureObjClassForContentType(
+  configuration: ObjClassForContentTypeMapping
+) {
+  Object.keys(configuration).forEach((contentType) => {
+    if (!/^(\*\/\*|[^\/\*]+\/(\*|[^\*;]+))$/.test(contentType)) {
+      throwInvalidArgumentsError(
+        'configureObjClassForContentType',
+        `Content type '${contentType}' is not valid.`,
+        { docPermalink: 'js-sdk/configureObjClassForContentType' }
+      );
+    }
+  });
+}

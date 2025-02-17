@@ -16,7 +16,6 @@ import {
   AttributeDefinitions,
   ObjClass,
   WidgetClass,
-  checkProvideComponent,
 } from 'scrivito_sdk/realm';
 
 interface ProvidedComponentOptions<Props> {
@@ -55,10 +54,8 @@ export function provideComponent(
 export function provideComponent(
   classNameOrClass: string | ObjClass | WidgetClass,
   component: React.ComponentType,
-  options?: { loading?: typeof component },
-  ...excessArgs: never[]
+  options?: { loading?: typeof component }
 ): void {
-  checkProvideComponent(classNameOrClass, component, ...excessArgs);
   const className = getClassName(classNameOrClass);
 
   if (isComponentMissingName(component)) {

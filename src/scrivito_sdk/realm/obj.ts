@@ -1,4 +1,3 @@
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
 import { Modification } from 'scrivito_sdk/data';
 import {
   BasicObj,
@@ -229,7 +228,6 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   }
 
   static onSite(siteId: string): SiteContext {
-    checkObjOnSite(siteId);
     return getSiteContext(this, restrictToSiteAndGlobal(siteId));
   }
 
@@ -258,8 +256,6 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   }
 
   versionOnSite(siteId: string): Obj | null {
-    checkVersionOnSite(siteId);
-
     return wrapInAppClass(versionOnSite(this._scrivitoPrivateContent, siteId));
   }
 
@@ -384,12 +380,7 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   updateReferences(mapping: ReferenceMapping): Promise<void>;
 
   /** @internal */
-  updateReferences(
-    mapping: ReferenceMapping,
-    ...excessArgs: never[]
-  ): Promise<void> {
-    checkUpdateReferences(mapping, ...excessArgs);
-
+  updateReferences(mapping: ReferenceMapping): Promise<void> {
     return updateReferences(this._scrivitoPrivateContent, mapping);
   }
 
@@ -424,23 +415,3 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
     return schema.normalizedAttributes();
   }
 }
-
-const checkObjOnSite = checkArgumentsFor('Obj.onSite', [['siteId', t.String]], {
-  docPermalink: 'js-sdk/Obj-static-onSite',
-});
-
-const checkUpdateReferences = checkArgumentsFor(
-  'obj.updateReferences',
-  [['mapping', t.Function]],
-  {
-    docPermalink: 'js-sdk/Obj-updateReferences',
-  }
-);
-
-const checkVersionOnSite = checkArgumentsFor(
-  'obj.versionOnSite',
-  [['siteId', t.String]],
-  {
-    docPermalink: 'js-sdk/Obj-versionOnSite',
-  }
-);

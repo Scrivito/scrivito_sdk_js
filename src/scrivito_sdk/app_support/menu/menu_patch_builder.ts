@@ -2,7 +2,6 @@ import mapValues from 'lodash-es/mapValues';
 import pick from 'lodash-es/pick';
 
 import { absoluteUrl } from 'scrivito_sdk/app_support/absolute_url';
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
 import {
   CustomMenuItem,
   MenuBuilder,
@@ -22,9 +21,7 @@ export class MenuPatchBuilder implements MenuBuilder {
     };
   }
 
-  insert(customMenuItem: CustomMenuItem, ...excessArgs: never[]): void {
-    checkMenuInsertArguments(customMenuItem, ...excessArgs);
-
+  insert(customMenuItem: CustomMenuItem): void {
     this.patch.insertIds = Array.from(
       new Set(this.patch.insertIds).add(customMenuItem.id)
     );
@@ -35,9 +32,7 @@ export class MenuPatchBuilder implements MenuBuilder {
     };
   }
 
-  modify(menuItem: MenuItem, ...excessArgs: never[]): void {
-    checkMenuModifyArguments(menuItem, ...excessArgs);
-
+  modify(menuItem: MenuItem): void {
     this.patch.modifyItems[menuItem.id] = {
       ...this.patch.modifyItems[menuItem.id],
       ...pick(menuItem, 'group', 'position', 'title'),
@@ -45,8 +40,7 @@ export class MenuPatchBuilder implements MenuBuilder {
     };
   }
 
-  remove(id: string, ...excessArgs: never[]): void {
-    checkMenuRemoveArguments(id, ...excessArgs);
+  remove(id: string): void {
     this.patch.removeIds.push(id);
   }
 
@@ -54,60 +48,6 @@ export class MenuPatchBuilder implements MenuBuilder {
     return this.patch;
   }
 }
-
-const PositionType = t.interface({
-  after: t.maybe(t.String),
-  before: t.maybe(t.String),
-});
-
-const checkMenuInsertArguments = checkArgumentsFor(
-  'menu.insert',
-  [
-    [
-      'options',
-      t.interface({
-        id: t.String,
-        description: t.maybe(t.String),
-        enabled: t.maybe(t.Boolean),
-        group: t.maybe(t.String),
-        icon: t.maybe(t.String),
-        onClick: t.maybe(t.Function),
-        position: t.maybe(PositionType),
-        title: t.maybe(t.String),
-      }),
-    ],
-  ],
-  {
-    docPermalink: 'js-sdk/extendMenu',
-  }
-);
-
-const checkMenuModifyArguments = checkArgumentsFor(
-  'menu.modify',
-  [
-    [
-      'options',
-      t.interface({
-        id: t.String,
-        group: t.maybe(t.String),
-        icon: t.maybe(t.String),
-        position: t.maybe(PositionType),
-        title: t.maybe(t.String),
-      }),
-    ],
-  ],
-  {
-    docPermalink: 'js-sdk/extendMenu',
-  }
-);
-
-const checkMenuRemoveArguments = checkArgumentsFor(
-  'menu.remove',
-  [['id', t.String]],
-  {
-    docPermalink: 'js-sdk/extendMenu',
-  }
-);
 
 function iconPatch(icon?: string) {
   return icon ? { icon: absoluteUrl(icon) } : {};

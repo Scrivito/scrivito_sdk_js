@@ -1,5 +1,3 @@
-import { createRestApiSchema } from 'scrivito_sdk/app_support/create_rest_api_schema';
-import { RestApi } from 'scrivito_sdk/app_support/provide_data_class';
 import { ApiClient, createRestApiClient } from 'scrivito_sdk/client';
 import {
   DataItem,
@@ -10,6 +8,8 @@ import {
   SINGLETON_DATA_ID,
   provideExternalDataItem,
 } from 'scrivito_sdk/data_integration';
+import { createRestApiSchema } from 'scrivito_sdk/data_integration/create_rest_api_schema';
+import { RestApi } from 'scrivito_sdk/data_integration/provide_data_class';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 
 type AsyncOrSync<Type> = Promise<Type> | Type;
@@ -69,7 +69,7 @@ export function provideDataItem(
   return dataClass.getUnchecked(SINGLETON_DATA_ID);
 }
 
-function desugar(
+async function desugar(
   params:
     | ProvideDataItemParams
     | ExternalDataItemConnection
@@ -83,11 +83,10 @@ function desugar(
   }
 
   if ('restApi' in params) {
-    const apiClient = createApiClient(Promise.resolve(params.restApi));
+    const apiClient = await createApiClient(Promise.resolve(params.restApi));
 
     return {
-      connection: (async () =>
-        createRestApiConnectionForItem(await apiClient))(),
+      connection: Promise.resolve(createRestApiConnectionForItem(apiClient)),
       ...createRestApiSchema(
         { attributes: params.attributes, title: params.title },
         apiClient

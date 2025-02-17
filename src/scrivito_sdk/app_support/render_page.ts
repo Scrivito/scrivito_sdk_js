@@ -7,8 +7,7 @@ import { getWorkspaceId } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   ScrivitoError,
-  checkArgumentsFor,
-  tcomb as t,
+  throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
 import {
   assertNotUsingInMemoryTenant,
@@ -17,7 +16,11 @@ import {
 } from 'scrivito_sdk/data';
 import { disableExternalDataLoading } from 'scrivito_sdk/data_integration';
 import { load, reportUsedData } from 'scrivito_sdk/loadable';
-import { BasicObj, ObjType, currentObjSpaceId } from 'scrivito_sdk/models';
+import {
+  BasicObj,
+  currentObjSpaceId,
+  isWrappingBasicObj,
+} from 'scrivito_sdk/models';
 import { Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
 export interface RenderResult<T> {
@@ -34,11 +37,10 @@ export function renderPage<T>(
 /** @internal */
 export function renderPage<T>(
   obj: Obj,
-  render: () => T,
-  ...excessArgs: never[]
+  render: () => T
 ): Promise<RenderResult<T>> {
   assertNotUsingInMemoryTenant('Scrivito.renderPage');
-  checkRenderPage(obj, render, ...excessArgs);
+  checkRenderPage(obj, render);
 
   const objSpaceId = currentObjSpaceId();
   const page = unwrapAppClass(obj);
@@ -92,13 +94,18 @@ function ensureSiteIsPresent(page: BasicObj, errorClass = ScrivitoError) {
   );
 }
 
-const checkRenderPage = checkArgumentsFor(
-  'renderPage',
-  [
-    ['page', ObjType],
-    ['render', t.Function],
-  ],
-  {
-    docPermalink: 'js-sdk/renderPage',
+function checkRenderPage<T>(obj: Obj, render: () => T) {
+  if (!isWrappingBasicObj(obj)) {
+    throwInvalidArgumentsError(
+      'renderPage',
+      "'obj' must be an instance of 'Obj'.",
+      { docPermalink: 'js-sdk/renderPage' }
+    );
   }
-);
+
+  if (typeof render !== 'function') {
+    throwInvalidArgumentsError('renderPage', "'render' must be a function.", {
+      docPermalink: 'js-sdk/renderPage',
+    });
+  }
+}

@@ -11,13 +11,12 @@ import {
 } from 'scrivito_sdk/client';
 import {
   ArgumentError,
-  BlobType,
-  FileType,
   InternalError,
   ScrivitoError,
-  checkArgumentsFor,
   equals,
-  tcomb as t,
+  isBlob,
+  isFile,
+  throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
 import { LoadableData, createLoadableCollection } from 'scrivito_sdk/loadable';
@@ -86,12 +85,11 @@ export class Binary {
   /** @internal */
   static upload(
     source: Blob | File,
-    options?: BinaryUploadOptions,
-    ...excessArgs: never[]
+    options?: BinaryUploadOptions
   ): FutureBinary {
-    checkUpload(source, options, ...excessArgs);
+    checkUpload(source, options);
 
-    if (!FileType.is(source)) {
+    if (!isFile(source)) {
       if (!(options && options.filename)) {
         throw new ArgumentError(
           'Expected a filename to be passed with Blob as the source.'
@@ -284,24 +282,30 @@ export class Binary {
   }
 }
 
-const BinaryOptionsType = t.interface({
-  contentType: t.maybe(t.String),
-  filename: t.maybe(t.String),
-});
-
-const SourceType = t.refinement(
-  t.Object,
-  (value) => BlobType.is(value) || FileType.is(value),
-  'Blob or File'
-);
-
-const checkUpload = checkArgumentsFor(
-  'Binary.upload',
-  [
-    ['source', SourceType],
-    ['options', t.maybe(BinaryOptionsType)],
-  ],
-  {
-    docPermalink: 'js-sdk/Binary-static-upload',
+function checkUpload(source: Blob | File, options?: BinaryUploadOptions) {
+  if (!(isBlob(source) || isFile(source))) {
+    throwInvalidArgumentsError(
+      'Binary.upload',
+      "'source' must be a 'Blob' or a 'File'.",
+      { docPermalink: 'js-sdk/Binary-static-upload' }
+    );
   }
-);
+
+  if (options) {
+    if ('contentType' in options && typeof options.contentType !== 'string') {
+      throwInvalidArgumentsError(
+        'Binary.upload',
+        "'options.contentType' must be a 'String'.",
+        { docPermalink: 'js-sdk/Binary-static-upload' }
+      );
+    }
+
+    if ('filename' in options && typeof options.filename !== 'string') {
+      throwInvalidArgumentsError(
+        'Binary.upload',
+        "'options.filename' must be a 'String'.",
+        { docPermalink: 'js-sdk/Binary-static-upload' }
+      );
+    }
+  }
+}

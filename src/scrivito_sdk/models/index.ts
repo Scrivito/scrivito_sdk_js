@@ -78,13 +78,6 @@ export type { CopyObjHandler } from 'scrivito_sdk/models/copy_obj_handler';
 export { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 export type { BinaryMetadataValue } from 'scrivito_sdk/models/metadata_collection';
 export {
-  ObjSearchType,
-  LinkType,
-  ObjType,
-  WidgetType,
-  BinaryType,
-} from 'scrivito_sdk/models/model_types';
-export {
   currentObjSpaceId,
   currentWorkspaceId,
   isCurrentWorkspacePublished,
@@ -120,3 +113,9 @@ export {
   isValidDataIdentifier,
 } from 'scrivito_sdk/models/data_identifier';
 export type { DataIdentifier } from 'scrivito_sdk/models/data_identifier';
+export {
+  isWrappingBasicContent,
+  isWrappingBasicLink,
+  isWrappingBasicObj,
+  isWrappingBasicWidget,
+} from 'scrivito_sdk/models/is_wrapping_basic_content';

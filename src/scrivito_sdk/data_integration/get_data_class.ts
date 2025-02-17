@@ -9,8 +9,13 @@ import {
   isObjDataClassProvided,
 } from 'scrivito_sdk/data_integration/obj_data_class';
 
-export function getDataClass(dataClassName: string): DataClass | undefined {
-  return getExternalDataClass(dataClassName) || getObjDataClass(dataClassName);
+/** @public */
+export function getDataClass(dataClassName: string): DataClass | null {
+  return (
+    getExternalDataClass(dataClassName) ||
+    getObjDataClass(dataClassName) ||
+    null
+  );
 }
 
 export function getDataClassOrThrow(dataClassName: string): DataClass {

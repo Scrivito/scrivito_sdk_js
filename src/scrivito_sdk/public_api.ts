@@ -78,6 +78,7 @@ export {
 export type {
   DataAttributeDefinitions,
   DataConnection,
+  DataConnectionFilters,
   DataConnectionIndexParams,
   DataConnectionResultItem,
 } from 'scrivito_sdk/data_integration';
@@ -126,8 +127,9 @@ export { validationResultsFor } from 'scrivito_sdk/app_support/validation_result
 export { uiContext } from 'scrivito_sdk/app_support/ui_context';
 export { editorLanguage } from 'scrivito_sdk/app_support/editor_language';
 export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links';
-export { provideDataClass } from 'scrivito_sdk/app_support/provide_data_class';
-export { provideDataItem } from 'scrivito_sdk/app_support/provide_data_item';
+export { provideDataClass } from 'scrivito_sdk/data_integration/provide_data_class';
+export { provideDataItem } from 'scrivito_sdk/data_integration/provide_data_item';
+export { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 export {
   provideObjClass,
   provideWidgetClass,

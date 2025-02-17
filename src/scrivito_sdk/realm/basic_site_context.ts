@@ -1,4 +1,4 @@
-import { ArgumentError, BlobType, FileType } from 'scrivito_sdk/common';
+import { ArgumentError, isBlob, isFile } from 'scrivito_sdk/common';
 import {
   FieldBoost,
   FullTextSearchOperator,
@@ -255,8 +255,8 @@ function assertValidCreateAttributes(attributes: { [key: string]: unknown }) {
 }
 
 function assertValidFile(file: unknown) {
-  if (!FileType.is(file)) {
-    if (BlobType.is(file)) {
+  if (!isFile(file)) {
+    if (isBlob(file)) {
       throw new ArgumentError(
         'Creating CMS objects from file is only available with instances of "File", ' +
           'but an instance of "Blob" is given'

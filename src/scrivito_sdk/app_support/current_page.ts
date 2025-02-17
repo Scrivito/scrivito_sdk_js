@@ -8,10 +8,10 @@ import {
   ContextContainer,
   QueryParameters,
   ScrivitoError,
-  checkArgumentsFor,
+  throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
-import { ObjType } from 'scrivito_sdk/models';
+import { isWrappingBasicObj } from 'scrivito_sdk/models';
 import { Obj, wrapInAppClass } from 'scrivito_sdk/realm';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -26,10 +26,7 @@ export function currentPage(): Obj | null {
 /** @public */
 export function isCurrentPage(page: Obj): boolean {
   assertNotUsingInMemoryTenant('Scrivito.isCurrentPage');
-
-  checkArgumentsFor('isCurrentPage', [['page', ObjType]], {
-    docPermalink: 'js-sdk/isCurrentPage',
-  })(page);
+  checkIsCurrentPage(page);
 
   return currentPage()?.id() === page.id();
 }
@@ -69,4 +66,16 @@ const customComponentSiteIdState = createStateContainer<string | null>();
 
 export function setCustomComponentSiteId(siteId: string | null): void {
   customComponentSiteIdState.set(siteId);
+}
+
+function checkIsCurrentPage(obj: Obj) {
+  if (!isWrappingBasicObj(obj)) {
+    throwInvalidArgumentsError(
+      'isCurrentPage',
+      "'obj' must be an instance of 'Obj'.",
+      {
+        docPermalink: 'js-sdk/isCurrentPage',
+      }
+    );
+  }
 }

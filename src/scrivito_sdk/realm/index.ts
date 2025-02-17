@@ -20,17 +20,6 @@ export {
 } from 'scrivito_sdk/realm/wrap_in_app_class';
 export type { AttributeValue } from 'scrivito_sdk/realm/wrap_in_app_class';
 
-export {
-  ObjClassType,
-  WidgetClassType,
-} from 'scrivito_sdk/realm/tcomb_api_types';
-
-export {
-  checkProvideComponent,
-  checkProvideLayoutComponent,
-  checkProvideDataErrorComponent,
-  checkProvideDataItem,
-} from 'scrivito_sdk/realm/app_class_api_check';
 export { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';
 export { Schema } from 'scrivito_sdk/realm/schema';
 export type {

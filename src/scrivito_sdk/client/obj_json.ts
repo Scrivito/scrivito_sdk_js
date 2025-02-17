@@ -131,7 +131,7 @@ export type OrderDirection = 'asc' | 'desc';
 export type DataLocatorJson = DefinitionDataLocator | ReferenceDataLocator;
 
 export interface DefinitionDataLocator extends DataLocatorBase {
-  via_ref?: undefined;
+  via_ref?: never;
 }
 
 export interface ReferenceDataLocator extends DataLocatorBase {
@@ -157,16 +157,27 @@ export type DataLocatorFilter =
 
 type NeqOpCode = 'neq';
 export type EqOpCode = 'eq';
-export type OpCode = NeqOpCode | EqOpCode | 'gt' | 'lt' | 'gte' | 'lte';
+type RelationalOpCode = 'gt' | 'lt' | 'gte' | 'lte';
+export type OpCode = NeqOpCode | EqOpCode | RelationalOpCode;
 type OperatorFilterOpCode = Exclude<OpCode, EqOpCode>;
 
-export const OP_CODES: OpCode[] = ['eq', 'neq'];
-const OPERATOR_FILTER_OP_CODES: OperatorFilterOpCode[] = [
-  'neq',
+export const DEFAULT_OP_CODES: (EqOpCode | NeqOpCode)[] = ['eq', 'neq'];
+
+export const RELATIONAL_OPERATOR_FILTER_OP_CODES: RelationalOpCode[] = [
   'gt',
   'lt',
   'gte',
   'lte',
+];
+
+export const OP_CODES: OpCode[] = [
+  ...DEFAULT_OP_CODES,
+  ...RELATIONAL_OPERATOR_FILTER_OP_CODES,
+];
+
+const OPERATOR_FILTER_OP_CODES: OperatorFilterOpCode[] = [
+  'neq',
+  ...RELATIONAL_OPERATOR_FILTER_OP_CODES,
 ];
 
 export interface DataLocatorOperatorFilter {
@@ -187,10 +198,7 @@ export function isDataLocatorOperatorFilter(
     'field' in filter &&
     typeof filter.field === 'string' &&
     'operator' in filter &&
-    typeof filter.operator === 'string' &&
-    OPERATOR_FILTER_OP_CODES.includes(
-      filter.operator as OperatorFilterOpCode
-    ) &&
+    isDataLocatorOperatorCode(filter.operator) &&
     'value' in filter &&
     isFilterValue(filter.value)
   );
@@ -202,6 +210,12 @@ export function isDataLocatorOperatorCode(
   return (
     typeof opCode === 'string' &&
     OPERATOR_FILTER_OP_CODES.includes(opCode as OperatorFilterOpCode)
+  );
+}
+
+export function isRelationalOpCode(opCode: OpCode): opCode is RelationalOpCode {
+  return RELATIONAL_OPERATOR_FILTER_OP_CODES.includes(
+    opCode as RelationalOpCode
   );
 }
 

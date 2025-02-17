@@ -349,10 +349,9 @@ function buildSubQuery(
 function assertBoostableOperator(operator: SearchOperator) {
   if (!BOOSTABLE_OPERATORS.includes(operator)) {
     throw new ArgumentError(
-      `Boosting operator "${operator}" is invalid. ${explainValidOperators([
-        'contains',
-        'containsPrefix',
-      ])}`
+      `Boosting operator "${operator}" is invalid. ${explainValidOperators(
+        BOOSTABLE_OPERATORS
+      )}`
     );
   }
 }

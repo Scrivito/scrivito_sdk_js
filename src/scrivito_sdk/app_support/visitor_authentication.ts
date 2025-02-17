@@ -3,11 +3,9 @@ import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { VisitorAuthenticationProvider } from 'scrivito_sdk/client';
 import {
   ScrivitoError,
-  checkArgumentsFor,
   docUrl,
   onReset,
   setTimeout,
-  tcomb as t,
 } from 'scrivito_sdk/common';
 
 const DOC_LINK = 'js-sdk/setVisitorIdToken';
@@ -41,10 +39,8 @@ function enableVisitorAuthentication() {
 export function setVisitorIdToken(token: string): void;
 
 /** @internal */
-export function setVisitorIdToken(token: string, ...args: never[]): void {
+export function setVisitorIdToken(token: string): void {
   if (uiAdapter) return;
-
-  checkSetVisitorIdToken(token, ...args);
 
   if (!provider) {
     throw new ScrivitoError(
@@ -61,14 +57,6 @@ export function setVisitorIdToken(token: string, ...args: never[]): void {
 export function isVisitorAuthenticationEnabled(): boolean {
   return !!provider;
 }
-
-const checkSetVisitorIdToken = checkArgumentsFor(
-  'setVisitorIdToken',
-  [['idToken', t.String]],
-  {
-    docPermalink: DOC_LINK,
-  }
-);
 
 function cancelAndForgetMissingTokenNotification() {
   if (cancelMissingTokenNotification) {

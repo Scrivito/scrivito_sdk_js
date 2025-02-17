@@ -1,9 +1,4 @@
-import {
-  ArgumentError,
-  NonNegativeInteger,
-  checkArgumentsFor,
-  tcomb as t,
-} from 'scrivito_sdk/common';
+import { ArgumentError, throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { FacetQueryOptions, SuggestOptions } from 'scrivito_sdk/data';
 import {
   BasicObjSearch,
@@ -147,9 +142,7 @@ export class ObjSearch<
   take(count?: number): Obj<AttrDefs>[];
 
   /** @internal */
-  take(count?: number, ...excessArgs: never[]): Obj<AttrDefs>[] {
-    checkTakeArguments(count, ...excessArgs);
-
+  take(count?: number): Obj<AttrDefs>[] {
     const basicObjs =
       count === undefined
         ? this._scrivitoPrivateContent.dangerouslyUnboundedTake()
@@ -231,26 +224,20 @@ function unwrapAppClassValue(value: SearchValue) {
   return unwrapAppClass(value);
 }
 
-const OperatorAllowedInNonFullTextSearch = t.refinement(
-  t.String,
-  (searchOperator) =>
-    FULL_TEXT_OPERATORS.indexOf(searchOperator as FullTextSearchOperator) ===
-    -1,
-  'Search operators except "contains" and "containsPrefix"'
-);
-
 export function checkNonFullTextSearchOperator(
   functionName: string,
   operator: SearchOperator,
   docPermalink: string
 ) {
-  return checkArgumentsFor(
-    functionName,
-    [['operator', t.maybe(OperatorAllowedInNonFullTextSearch)]],
-    {
-      docPermalink,
-    }
-  )(operator);
+  if (FULL_TEXT_OPERATORS.indexOf(operator as FullTextSearchOperator) !== -1) {
+    throwInvalidArgumentsError(
+      functionName,
+      `operator '${operator}' must be a search operator except: ${FULL_TEXT_OPERATORS.join(
+        ', '
+      )}`,
+      { docPermalink }
+    );
+  }
 }
 
 export function checkFullTextSearchOperator(
@@ -258,19 +245,13 @@ export function checkFullTextSearchOperator(
   operator: SearchOperator,
   docPermalink: string
 ) {
-  return checkArgumentsFor(
-    functionName,
-    [['operator', t.maybe(t.enums.of(FULL_TEXT_OPERATORS))]],
-    {
-      docPermalink,
-    }
-  )(operator);
-}
-
-const checkTakeArguments = checkArgumentsFor(
-  'objSearch.take',
-  [['count', t.maybe(NonNegativeInteger)]],
-  {
-    docPermalink: 'js-sdk/ObjSearch-take',
+  if (FULL_TEXT_OPERATORS.indexOf(operator as FullTextSearchOperator) === -1) {
+    throwInvalidArgumentsError(
+      functionName,
+      `operator '${operator}' must be a full text search operator: ${FULL_TEXT_OPERATORS.join(
+        ', '
+      )}`,
+      { docPermalink }
+    );
   }
-);
+}

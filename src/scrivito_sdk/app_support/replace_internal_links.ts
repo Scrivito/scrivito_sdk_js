@@ -1,7 +1,7 @@
 import { basicUrlForObj } from 'scrivito_sdk/app_support/basic_url_for';
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { generateUrl } from 'scrivito_sdk/app_support/routing';
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
+import { throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { DataStack, getDataContextQuery } from 'scrivito_sdk/data_integration';
 import { InternalUrl, formatInternalLinks } from 'scrivito_sdk/link_resolution';
 import { getObjFrom } from 'scrivito_sdk/models';
@@ -44,8 +44,12 @@ function calculateInternalLinkUrl(
   });
 }
 
-const checkResolveHtmlUrls = checkArgumentsFor(
-  'resolveHtmlUrls',
-  [['htmlString', t.String]],
-  { docPermalink: 'js-sdk/resolveHtmlUrls' }
-);
+function checkResolveHtmlUrls(htmlString: string) {
+  if (typeof htmlString !== 'string') {
+    throwInvalidArgumentsError(
+      'resolveHtmlUrls',
+      "'htmlString' must be a 'String'.",
+      { docPermalink: 'js-sdk/resolveHtmlUrls' }
+    );
+  }
+}

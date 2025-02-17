@@ -66,7 +66,10 @@ export {
   isDataLocatorOperatorCode,
   isDataLocatorOperatorFilter,
   isDataLocatorValueFilter,
+  isRelationalOpCode,
+  DEFAULT_OP_CODES,
   OP_CODES,
+  RELATIONAL_OPERATOR_FILTER_OP_CODES,
 } from 'scrivito_sdk/client/obj_json';
 export {
   getTokenProvider,

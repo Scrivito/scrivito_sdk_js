@@ -79,13 +79,12 @@ export function provideDataClass(
   return new ExternalDataClass(name);
 }
 
-function desugar(params: ProvideDataClassParams) {
+async function desugar(params: ProvideDataClassParams) {
   if ('restApi' in params) {
-    const apiClient = createApiClient(Promise.resolve(params.restApi));
+    const apiClient = await createApiClient(Promise.resolve(params.restApi));
 
     return {
-      connection: (async () =>
-        createRestApiConnectionForClass(await apiClient))(),
+      connection: Promise.resolve(createRestApiConnectionForClass(apiClient)),
       ...createRestApiSchema(
         { attributes: params.attributes, title: params.title },
         apiClient

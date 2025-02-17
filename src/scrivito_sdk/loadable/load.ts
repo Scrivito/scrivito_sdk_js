@@ -1,4 +1,4 @@
-import { checkArgumentsFor, tcomb as t } from 'scrivito_sdk/common';
+import { throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { getValueOrThrowError } from 'scrivito_sdk/loadable/loadable_state';
 import { observeAndLoad } from 'scrivito_sdk/loadable/observe_and_load';
 import { withFrozenState } from 'scrivito_sdk/state';
@@ -23,11 +23,8 @@ import { withFrozenState } from 'scrivito_sdk/state';
 export function load<T>(loadableFunction: () => T): Promise<T>;
 
 /** @internal */
-export function load<T>(
-  loadableFunction: () => T,
-  ...excessArgs: never[]
-): Promise<T> {
-  checkLoad(loadableFunction, ...excessArgs);
+export function load<T>(loadableFunction: () => T): Promise<T> {
+  checkLoad(loadableFunction);
 
   return observeAndLoad(() =>
     withFrozenState(
@@ -44,10 +41,12 @@ export function load<T>(
     .then(getValueOrThrowError);
 }
 
-const checkLoad = checkArgumentsFor(
-  'load',
-  [['loadableFunction', t.Function]],
-  {
-    docPermalink: 'js-sdk/load',
+function checkLoad<T>(loadableFunction: () => T) {
+  if (typeof loadableFunction !== 'function') {
+    throwInvalidArgumentsError(
+      'Scrivito.load',
+      'Use an async callback: Scrivito.load(/* ... */).then(/* ... */).',
+      { docPermalink: 'js-sdk/load' }
+    );
   }
-);
+}

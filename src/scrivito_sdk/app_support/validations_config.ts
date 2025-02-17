@@ -1,5 +1,5 @@
 import { getConstraintsValidationCallback } from 'scrivito_sdk/app_support/constraints_validation_callback';
-import { ValidationSeverityLevel, tcomb as t } from 'scrivito_sdk/common';
+import { ValidationSeverityLevel } from 'scrivito_sdk/common';
 import { AttributeValue, Obj, Widget } from 'scrivito_sdk/realm';
 
 export const VALIDATION_SEVERITY_LEVELS: ValidationSeverityLevel[] = [
@@ -11,19 +11,6 @@ export const VALIDATION_SEVERITY_LEVELS: ValidationSeverityLevel[] = [
 export type ValidationsConfig<T extends Obj | Widget> = ReadonlyArray<
   ContentValidationCallback<T> | AttributeValidations<T>
 >;
-
-const ConstraintsConfig = t.interface({
-  severity: t.maybe(t.enums.of(VALIDATION_SEVERITY_LEVELS)),
-});
-
-const ConstraintsWithConfig = t.tuple([ConstraintsConfig, t.Object]);
-
-export const ValidationsConfigType = t.list(
-  t.union([
-    t.Function,
-    t.list(t.union([t.String, t.Function, t.Object, ConstraintsWithConfig])),
-  ])
-);
 
 export type ContentValidationCallback<T extends Obj | Widget> = (
   content: T
@@ -122,7 +109,7 @@ export type ValidationResult =
 
 export interface ValidationResultObject {
   message: string;
-  severity?: ValidationSeverityLevel;
+  severity: ValidationSeverityLevel;
 }
 
 export type AttributeValidationCallback<T extends Obj | Widget> = (

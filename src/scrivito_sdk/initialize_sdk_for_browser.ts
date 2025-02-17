@@ -1,5 +1,6 @@
 import { initializeAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import * as CanonicalUrl from 'scrivito_sdk/app_support/canonical_url';
+import { currentLanguage } from 'scrivito_sdk/app_support/current_language';
 import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
 import { setNavigationStateProvider } from 'scrivito_sdk/app_support/current_page_data';
 import { observeDocumentTitle } from 'scrivito_sdk/app_support/document_title';
@@ -27,6 +28,7 @@ import {
   setObjStreamReplicationEndpoint,
   useReplicationStrategy,
 } from 'scrivito_sdk/data';
+import { setCurrentLanguageHandler } from 'scrivito_sdk/data_integration';
 import {
   setUrlResolutionHandler,
   setupWriteMonitorNotification,
@@ -85,4 +87,5 @@ export function initializeSdk() {
   CanonicalUrl.init();
   initOfflineMode();
   setHasComponentHandler(hasComponent);
+  setCurrentLanguageHandler(currentLanguage);
 }

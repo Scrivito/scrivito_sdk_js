@@ -48,13 +48,11 @@ import {
   Deferred,
   ScrivitoError,
   cdnAssetUrlBase,
-  checkArgumentsFor,
   currentOrigin,
   logError,
   onReset,
   setConfiguredTenant,
   setTimeout,
-  tcomb as t,
   throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
 import {
@@ -123,75 +121,14 @@ export interface Configuration {
   };
 }
 
-const OriginValue = t.refinement(t.String, isOrigin, 'Origin String');
-
-function isOrigin(origin: string) {
-  try {
-    return new URL(origin).origin === origin;
-  } catch {
-    return false;
-  }
-}
-
-const AllowedConfiguration = t.interface({
-  tenant: t.String,
-  adoptUi: t.maybe(t.union([t.Boolean, OriginValue])),
-  autoConvertAttributes: t.maybe(t.Boolean),
-  baseUrlForSite: t.maybe(t.Function),
-  constraintsValidation: t.maybe(t.Function),
-  endpoint: t.maybe(t.String),
-  extensionsUrl: t.maybe(t.String),
-  homepage: t.maybe(t.Function),
-  origin: t.maybe(OriginValue),
-  routingBasePath: t.maybe(t.String),
-  siteForUrl: t.maybe(t.Function),
-  visitorAuthentication: t.maybe(t.Boolean),
-  apiKey: t.maybe(
-    t.union([
-      t.String,
-      t.interface({
-        clientId: t.String,
-        clientSecret: t.String,
-      }),
-    ])
-  ),
-  unstable: t.maybe(t.Object),
-  priority: t.maybe(t.enums.of(['foreground', 'background'])),
-  editorLanguage: t.maybe(t.enums.of(['en', 'de', 'fr'])),
-  strictSearchOperators: t.maybe(t.Boolean),
-  optimizedWidgetLoading: t.maybe(t.Boolean),
-  contentTagsForEmptyAttributes: t.maybe(t.Boolean),
-  iamAuthLocation: t.maybe(t.String),
-  treatLocalhostLike: t.maybe(t.String),
-  activateDataIntegration: t.maybe(t.Boolean),
-});
-
-const PUBLIC_FUNCTION_NAME = 'configure';
-const CHECK_ARGUMENTS_OPTIONS = { docPermalink: 'js-sdk/configure' };
-const checkConfigure = checkArgumentsFor(
-  PUBLIC_FUNCTION_NAME,
-  [['configuration', AllowedConfiguration]],
-  CHECK_ARGUMENTS_OPTIONS
-);
-
 let configDeferred = new Deferred<Configuration>();
 
 /** @public */
 export function configure(configuration: Configuration): void;
 
 /** @internal */
-export function configure(
-  configuration: Readonly<Configuration>,
-  ...excessArgs: never[]
-): void {
-  checkConfigure(configuration, ...excessArgs);
-  if (configuration.apiKey && isRunningInBrowser()) {
-    throwInvalidArgumentsError(
-      PUBLIC_FUNCTION_NAME,
-      'The option "apiKey" is only available under Node.js.',
-      CHECK_ARGUMENTS_OPTIONS
-    );
-  }
+export function configure(configuration: Readonly<Configuration>): void {
+  checkConfigure(configuration);
 
   const routingConfiguration = getCheckedRoutingConfiguration(configuration);
 
@@ -272,6 +209,50 @@ export function setConfiguration(configuration: Configuration): void {
 export function resetConfiguration(): void {
   configDeferred = new Deferred();
   clientConfig.reset();
+}
+
+function checkConfigure(configuration: Configuration) {
+  if (!configuration.tenant) {
+    throwInvalidConfigurationError("The param 'tenant' is required.");
+  }
+
+  if (configuration.apiKey && isRunningInBrowser()) {
+    throwInvalidConfigurationError(
+      "The option 'apiKey' is only available under Node.js."
+    );
+  }
+
+  if (configuration.origin && !isOrigin(configuration.origin)) {
+    throwInvalidConfigurationError(
+      "The option 'origin' is must be a valid origin string."
+    );
+  }
+
+  if (
+    configuration.adoptUi &&
+    !(
+      typeof configuration.adoptUi === 'boolean' ||
+      isOrigin(configuration.adoptUi)
+    )
+  ) {
+    throwInvalidConfigurationError(
+      "The option 'adoptUi' is must be an origin string."
+    );
+  }
+}
+
+function throwInvalidConfigurationError(message: string) {
+  throwInvalidArgumentsError('configure', message, {
+    docPermalink: 'js-sdk/configure',
+  });
+}
+
+function isOrigin(origin: string) {
+  try {
+    return new URL(origin).origin === origin;
+  } catch {
+    return false;
+  }
 }
 
 function configureWithUi(tenant: string, uiAdapterClient: UiAdapterClient) {
@@ -362,10 +343,8 @@ function getCheckedRoutingConfiguration({
     if (routingBasePath || origin) {
       const presentKey = routingBasePath ? 'routingBasePath' : 'origin';
 
-      throwInvalidArgumentsError(
-        PUBLIC_FUNCTION_NAME,
-        `The '${presentKey}' cannot be combined with the "baseUrlForSite" option`,
-        CHECK_ARGUMENTS_OPTIONS
+      throwInvalidConfigurationError(
+        `The '${presentKey}' cannot be combined with the "baseUrlForSite" option`
       );
     }
 
@@ -379,18 +358,15 @@ function getCheckedRoutingConfiguration({
   if (baseUrlForSite || siteForUrl) {
     const presentKey = siteForUrl ? 'siteForUrl' : 'baseUrlForSite';
     const missingKey = siteForUrl ? 'baseUrlForSite' : 'siteForUrl';
-    throwInvalidArgumentsError(
-      PUBLIC_FUNCTION_NAME,
-      `Unexpected value for argument 'configuration': a value for '${missingKey}' is required if '${presentKey}' is present.`,
-      CHECK_ARGUMENTS_OPTIONS
+
+    throwInvalidConfigurationError(
+      `Unexpected value for argument 'configuration': a value for '${missingKey}' is required if '${presentKey}' is present.`
     );
   }
 
   if (origin !== undefined && !isOrigin(origin)) {
-    throwInvalidArgumentsError(
-      PUBLIC_FUNCTION_NAME,
-      `Unexpected value: '${origin}' is not a valid origin.`,
-      CHECK_ARGUMENTS_OPTIONS
+    throwInvalidConfigurationError(
+      `Unexpected value: '${origin}' is not a valid origin.`
     );
   }
 

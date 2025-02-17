@@ -1,7 +1,6 @@
-import { InternalError, checkArgumentsFor } from 'scrivito_sdk/common';
-import { currentObjSpaceId } from 'scrivito_sdk/models';
+import { InternalError, throwInvalidArgumentsError } from 'scrivito_sdk/common';
+import { currentObjSpaceId, isWrappingBasicObj } from 'scrivito_sdk/models';
 import { Binary } from 'scrivito_sdk/models/binary';
-import { ObjType } from 'scrivito_sdk/models/model_types';
 import { Obj } from 'scrivito_sdk/realm';
 import { failIfFrozen } from 'scrivito_sdk/state';
 
@@ -76,8 +75,8 @@ export class FutureBinary {
   into(target: Obj): Promise<Binary>;
 
   /** @internal */
-  into(target: Obj, ...excessArgs: never[]): Promise<Binary> {
-    checkInto(target, ...excessArgs);
+  into(target: Obj): Promise<Binary> {
+    checkInto(target);
     failIfFrozen('Changing CMS content');
 
     return this.intoId(target._scrivitoPrivateContent.id());
@@ -109,13 +108,15 @@ export class FutureBinary {
   }
 }
 
-const checkInto = checkArgumentsFor(
-  'FutureBinary#into',
-  [['target', ObjType]],
-  {
-    docPermalink: 'js-sdk/FutureBinary-into',
+function checkInto(target: Obj) {
+  if (!isWrappingBasicObj(target)) {
+    throwInvalidArgumentsError(
+      'FutureBinary#into',
+      "'target' must be an instance of 'Obj'.",
+      { docPermalink: 'js-sdk/FutureBinary-into' }
+    );
   }
-);
+}
 
 function isIdToCopySource(toCheck: unknown): toCheck is SourceSpecIdToCopy {
   return !!(toCheck as SourceSpecIdToCopy).idToCopy;
