@@ -291,21 +291,19 @@ function checkUpload(source: Blob | File, options?: BinaryUploadOptions) {
     );
   }
 
-  if (options) {
-    if ('contentType' in options && typeof options.contentType !== 'string') {
-      throwInvalidArgumentsError(
-        'Binary.upload',
-        "'options.contentType' must be a 'String'.",
-        { docPermalink: 'js-sdk/Binary-static-upload' }
-      );
-    }
+  if (!['string', 'undefined'].includes(typeof options?.contentType)) {
+    throwInvalidArgumentsError(
+      'Binary.upload',
+      "'options.contentType' must be a 'String'.",
+      { docPermalink: 'js-sdk/Binary-static-upload' }
+    );
+  }
 
-    if ('filename' in options && typeof options.filename !== 'string') {
-      throwInvalidArgumentsError(
-        'Binary.upload',
-        "'options.filename' must be a 'String'.",
-        { docPermalink: 'js-sdk/Binary-static-upload' }
-      );
-    }
+  if (!['string', 'undefined'].includes(typeof options?.filename)) {
+    throwInvalidArgumentsError(
+      'Binary.upload',
+      "'options.filename' must be a 'String'.",
+      { docPermalink: 'js-sdk/Binary-static-upload' }
+    );
   }
 }
