@@ -91,8 +91,9 @@ export const ImageTag = connect(function ImageTag({
 
   if (binary === undefined) return null;
 
-  if (binary === null) {
-    return (
+  const fullWidth = getFullWidth(binary, width, isLazy);
+  if (binary === null || fullWidth === null) {
+    return isLazy ? null : (
       <ContentTag
         attribute={attribute}
         content={content}
@@ -105,8 +106,7 @@ export const ImageTag = connect(function ImageTag({
     );
   }
 
-  const fullWidth = getFullWidth(binary, width, isLazy);
-  return fullWidth === null ? null : (
+  return (
     <ContentTagWithElementCallback
       attribute={attribute}
       content={content}
@@ -133,10 +133,11 @@ function scaledSrc(decoder: ImageDecoder | undefined, binary: Binary): string {
 // * number, string or undefined => render with this width
 // * null => render null (since width is not yet loaded)
 function getFullWidth(
-  binary: Binary,
+  binary: Binary | null,
   width: Width,
   isLazy: boolean
 ): Width | null {
+  if (binary === null) return null;
   if (isLazy && !isInitialUrlAvailable(binary)) return null;
   if (width !== undefined) return width;
 

@@ -16,7 +16,6 @@ import {
 import { setExtensionsUrl } from 'scrivito_sdk/app_support/extensions_url';
 import { setForcedEditorLanguage } from 'scrivito_sdk/app_support/forced_editor_language';
 import { setInitialContentDumpUrl } from 'scrivito_sdk/app_support/initial_content_dump_url';
-import { enableLayoutEditing } from 'scrivito_sdk/app_support/layout_editing';
 import { loadEditingAssets } from 'scrivito_sdk/app_support/load_editing_assets';
 import { initializeLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
 import {
@@ -115,7 +114,6 @@ export interface Configuration {
     getSiteIdForObj?: SiteIdForObjCallback;
     useRailsAuth?: boolean;
     trustedUiOrigins?: string[];
-    layoutEditing?: true;
     initialContentDumpUrl?: string;
     allowOfflineMode?: boolean;
   };
@@ -184,8 +182,6 @@ export function configure(configuration: Readonly<Configuration>): void {
   setWantsAutoAttributeConversion(!!configuration.autoConvertAttributes);
   setForcedEditorLanguage(configuration.editorLanguage || null);
   setExtensionsUrl(configuration.extensionsUrl || undefined);
-
-  if (unofficialConfiguration?.layoutEditing) enableLayoutEditing();
 
   if (unofficialConfiguration?.initialContentDumpUrl) {
     setInitialContentDumpUrl(unofficialConfiguration.initialContentDumpUrl);

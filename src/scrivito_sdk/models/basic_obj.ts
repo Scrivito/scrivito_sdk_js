@@ -30,9 +30,11 @@ import {
 } from 'scrivito_sdk/link_resolution';
 import * as AttributeSerializer from 'scrivito_sdk/models/attribute_serializer';
 import {
+  ContentValueOrConnection,
   ContentValueProvider,
   NormalizedBasicAttributesWithUnknownValues,
   getContentValue,
+  getContentValueOrConnection,
   normalizeAttributes,
   normalizedRestriction,
   persistWidgets,
@@ -277,6 +279,13 @@ export class BasicObj implements ContentValueProvider {
     typeInfo: TypeInfo<Type>
   ): BasicAttributeValue<Type> {
     return getContentValue(this, attributeName, typeInfo);
+  }
+
+  getValueOrConnection<Type extends CmsAttributeType>(
+    attributeName: string,
+    typeInfo: TypeInfo<Type>
+  ): ContentValueOrConnection<Type> {
+    return getContentValueOrConnection(this, attributeName, typeInfo);
   }
 
   isModified(): boolean {

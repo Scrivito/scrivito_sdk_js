@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { ArgumentError } from 'scrivito_sdk/common';
 import {
   DataContext,
   DataItem,
@@ -35,6 +36,18 @@ export function usePlaceholders(): DataContext | undefined {
 
 export function useDataStack(): DataStack | undefined {
   return React.useContext(DataStackReactContext)?.dataStack;
+}
+
+export function useDataStackOrThrow(): DataStack {
+  const dataStack = React.useContext(DataStackReactContext)?.dataStack;
+
+  if (!dataStack) {
+    throw new ArgumentError(
+      'Missing data context: Please use this hook inside a Scrivito application.'
+    );
+  }
+
+  return dataStack;
 }
 
 export function useLastDataStackElement(): DataStackElement | undefined {

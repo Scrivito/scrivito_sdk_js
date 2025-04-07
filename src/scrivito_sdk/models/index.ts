@@ -11,6 +11,8 @@ export { CMS_ATTRIBUTE_TYPES } from 'scrivito_sdk/models/basic_attribute_types';
 export {
   normalizedRestriction,
   serializeAttributes,
+  isContentConnection,
+  getContentValueOrConnection,
 } from 'scrivito_sdk/models/basic_attribute_content';
 export { BasicField } from 'scrivito_sdk/models/basic_field';
 export { BasicLink } from 'scrivito_sdk/models/basic_link';

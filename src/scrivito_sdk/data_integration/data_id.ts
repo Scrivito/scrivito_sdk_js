@@ -2,8 +2,6 @@ export type DataId = string;
 
 export function isValidDataId(id: unknown): id is DataId {
   return (
-    typeof id === 'string' &&
-    (!!id.match(/^\d+(-\d+)*$/) ||
-      !!id.match(/^[a-f0-9]{8,}(-[a-f0-9]{8,})*$/i))
+    typeof id === 'string' && !id.includes('^') && /^[\x21-\x7D]+$/.test(id) // all printable ASCII characters except tilde
   );
 }

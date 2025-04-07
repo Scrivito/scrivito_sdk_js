@@ -9,11 +9,13 @@ import {
 } from 'scrivito_sdk/data';
 import * as AttributeSerializer from 'scrivito_sdk/models/attribute_serializer';
 import {
+  ContentValueOrConnection,
   ContentValueProvider,
   NormalizedBasicAttributeDict,
   NormalizedBasicAttributesWithUnknownValues,
   NormalizedUnknownAttributeValue,
   getContentValue,
+  getContentValueOrConnection,
   isWidgetAttributeValueAndType,
   isWidgetlistAttributeValueAndType,
   normalizeAttributes,
@@ -180,6 +182,13 @@ export class BasicWidget implements ContentValueProvider {
     typeInfo: TypeInfo<Type>
   ): BasicAttributeValue<Type> {
     return getContentValue(this, attributeName, typeInfo);
+  }
+
+  getValueOrConnection<Type extends CmsAttributeType>(
+    attributeName: string,
+    typeInfo: TypeInfo<Type>
+  ): ContentValueOrConnection<Type> {
+    return getContentValueOrConnection(this, attributeName, typeInfo);
   }
 
   container(): BasicObj | BasicWidget {

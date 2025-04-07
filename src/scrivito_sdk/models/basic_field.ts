@@ -5,7 +5,10 @@ import {
   ObjSpaceId,
 } from 'scrivito_sdk/client';
 import { getFieldDiff } from 'scrivito_sdk/data';
-import { getContentValue } from 'scrivito_sdk/models/basic_attribute_content';
+import {
+  ContentValueOrConnection,
+  getContentValue,
+} from 'scrivito_sdk/models/basic_attribute_content';
 import {
   BasicAttributeValue,
   BasicAttributeValueForUpdate,
@@ -31,6 +34,13 @@ export class BasicField<Type extends CmsAttributeType> {
 
   get(): BasicAttributeValue<Type> {
     return getContentValue(this.container, this.attributeName, this.typeInfo);
+  }
+
+  getValueOrConnection(): ContentValueOrConnection<Type> {
+    return this.container.getValueOrConnection(
+      this.attributeName,
+      this.typeInfo
+    );
   }
 
   update(newValue: BasicAttributeValueForUpdate<Type>): void {

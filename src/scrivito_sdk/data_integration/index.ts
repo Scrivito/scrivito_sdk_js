@@ -5,6 +5,7 @@ export {
 export {
   DataClass,
   DataItem,
+  DataItemAttribute,
   DataScope,
   scopePojoToItemPojo,
 } from 'scrivito_sdk/data_integration/data_class';
@@ -40,6 +41,7 @@ export {
 export { registerExternalDataClass } from 'scrivito_sdk/data_integration/register_external_data_class';
 export { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
 export type { ExternalData } from 'scrivito_sdk/data_integration/external_data';
+export { setExternalData } from 'scrivito_sdk/data_integration/external_data';
 export type {
   DataConnection,
   DataConnectionResultItem,
@@ -84,6 +86,7 @@ export {
   getNormalizedDataAttributeDefinitions,
   extractDataClassSchemaResponse,
   getDataClassTitle,
+  getDataAttributeDefinitions,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 export { isExternalDataClassProvided } from 'scrivito_sdk/data_integration/external_data_class';
 export {
@@ -96,3 +99,4 @@ export type {
   DataConnectionIndexParams,
 } from 'scrivito_sdk/data_integration/index_params';
 export { setCurrentLanguageHandler } from 'scrivito_sdk/data_integration/current_language';
+export { provideDataClass } from 'scrivito_sdk/data_integration/provide_data_class';

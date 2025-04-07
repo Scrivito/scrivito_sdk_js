@@ -80,15 +80,15 @@ export function registerLayoutComponentForAppClass(
   const changesCounter = layoutChangesCounter.get() ?? 0;
   layoutChangesCounter.set(changesCounter + 1);
 
-  if (!layoutComponentsStoredState.get()) {
-    layoutComponentsStoredState.set(true);
+  if (!hasLayoutComponentsState.get()) {
+    hasLayoutComponentsState.set(true);
   }
 }
 
-const layoutComponentsStoredState = createStateContainer<boolean>();
+const hasLayoutComponentsState = createStateContainer<boolean>();
 
-export function areLayoutComponentsStored() {
-  return layoutComponentsStoredState.get() ?? false;
+export function hasLayoutComponents(): boolean {
+  return hasLayoutComponentsState.get() ?? false;
 }
 
 function getLayoutChangesCounterState(className: string) {

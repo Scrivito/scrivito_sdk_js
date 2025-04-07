@@ -45,19 +45,10 @@ export type DataContextCallback = (
   identifier: DataIdentifier
 ) => DataContextValue | undefined;
 
-export function isValidDataContextValue(
+function isValidDataContextValue(
   maybeValue: unknown
 ): maybeValue is DataContextValue | undefined {
   return typeof maybeValue === 'string' || maybeValue === undefined;
-}
-
-export function isValidDataClassName(
-  maybeDataClassName: unknown
-): maybeDataClassName is DataContextValue {
-  return (
-    typeof maybeDataClassName === 'string' &&
-    !!maybeDataClassName.match(/^[A-Z][a-zA-Z0-9]{0,49}$/)
-  );
 }
 
 export function getDataContextQuery(

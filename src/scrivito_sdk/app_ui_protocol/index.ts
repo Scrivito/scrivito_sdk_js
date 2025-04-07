@@ -1,6 +1,7 @@
 export { uiAdapterDescription } from 'scrivito_sdk/app_ui_protocol/ui_adapter_interface';
 export type {
   Locale,
+  EditableArea,
   TenantConfiguration,
   UiAdapterInterface,
   UiAdapterOpenContentBrowserOptions,

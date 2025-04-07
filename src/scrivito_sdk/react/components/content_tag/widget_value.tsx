@@ -12,7 +12,7 @@ import {
   WidgetContent,
   WidgetProps,
 } from 'scrivito_sdk/react/components/content_tag/widget_content';
-import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/hooks/use_layout_aware_in_place_editing';
+import { useInPlaceEditing } from 'scrivito_sdk/react/hooks/use_in_place_editing';
 import { connect } from 'scrivito_sdk/react_connect';
 
 export const WidgetValue = connect(function WidgetValue({
@@ -22,7 +22,7 @@ export const WidgetValue = connect(function WidgetValue({
   field: BasicField<'widget'>;
   widgetProps?: WidgetProps;
 }) {
-  const isInPlaceEditingEnabled = useLayoutAwareInPlaceEditing();
+  const isInPlaceEditingEnabled = useInPlaceEditing();
 
   if (isComparisonActive()) throw new InternalError('Not yet implemented');
 

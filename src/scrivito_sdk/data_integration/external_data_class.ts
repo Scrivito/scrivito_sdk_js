@@ -12,7 +12,6 @@ import {
   serializeDataAttribute,
 } from 'scrivito_sdk/data_integration/data_attribute';
 import {
-  DEFAULT_LIMIT,
   DataClass,
   DataItem,
   DataItemAttributes,
@@ -234,7 +233,7 @@ export class ExternalDataScope extends DataScope {
   private takeUnsafe(attributes: DataAttributeDefinitions) {
     return extractFromIterator(
       this.getIterator(attributes),
-      this._params.limit ?? DEFAULT_LIMIT
+      this._params.limit
     );
   }
 

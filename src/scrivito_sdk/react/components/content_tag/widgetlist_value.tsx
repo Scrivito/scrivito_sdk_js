@@ -12,7 +12,7 @@ import {
   WidgetContent,
   WidgetProps,
 } from 'scrivito_sdk/react/components/content_tag/widget_content';
-import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/hooks/use_layout_aware_in_place_editing';
+import { useInPlaceEditing } from 'scrivito_sdk/react/hooks/use_in_place_editing';
 import { connect } from 'scrivito_sdk/react_connect';
 
 interface WidgetlistValueProps {
@@ -24,7 +24,7 @@ export const WidgetlistValue = connect(function WidgetlistValue({
   field,
   widgetProps,
 }: WidgetlistValueProps) {
-  const isInPlaceEditingEnabled = useLayoutAwareInPlaceEditing();
+  const isInPlaceEditingEnabled = useInPlaceEditing();
 
   if (isComparisonActive()) {
     return (

@@ -1,13 +1,14 @@
 import mapValues from 'lodash-es/mapValues';
 
 import { isObject, logError } from 'scrivito_sdk/common';
+import {
+  LazyAsync,
+  normalizeLazyAsync,
+} from 'scrivito_sdk/data_integration/lazy_async';
 import { createLoadableCollection } from 'scrivito_sdk/loadable';
 import { createStateContainer } from 'scrivito_sdk/state';
 
-export type LazyAsyncDataClassSchema =
-  | DataClassSchema
-  | Promise<DataClassSchema>
-  | DataClassSchemaCallback;
+export type LazyAsyncDataClassSchema = LazyAsync<DataClassSchema>;
 
 type DataClassSchemaCallback = () => Promise<DataClassSchema>;
 
@@ -17,23 +18,14 @@ interface DataClassSchema {
 }
 
 export type LazyAsyncDataAttributeDefinitions =
-  | DataAttributeDefinitions
-  | Promise<DataAttributeDefinitions>
-  | DataAttributeDefinitionsCallback;
-
-type DataAttributeDefinitionsCallback = () => Promise<DataAttributeDefinitions>;
+  LazyAsync<DataAttributeDefinitions>;
 
 /** @public */
 export interface DataAttributeDefinitions {
   [attributeName: string]: DataAttributeDefinition;
 }
 
-export type LazyAsyncDataClassTitle =
-  | DataClassTitle
-  | Promise<DataClassTitle>
-  | DataClassTitleCallback;
-
-type DataClassTitleCallback = () => Promise<DataClassTitle>;
+export type LazyAsyncDataClassTitle = LazyAsync<DataClassTitle>;
 
 type DataClassTitle = string | undefined;
 
@@ -130,7 +122,7 @@ export function registerDataClassSchema(
   schema: LazyAsyncDataClassSchema
 ): void {
   const schemata = { ...schemataState.get() };
-  schemata[dataClassName] = wrapInCallback(schema);
+  schemata[dataClassName] = normalizeLazyAsync(schema);
 
   schemataState.set(schemata);
   invalidateSchemataCollection();
@@ -225,14 +217,6 @@ function normalizeEnumValueConfig({ title, values }: EnumAttributeConfig) {
   if (title) config.title = title;
 
   return config;
-}
-
-function wrapInCallback(
-  schema: LazyAsyncDataClassSchema
-): DataClassSchemaCallback {
-  if (schema instanceof Function) return schema;
-
-  return () => Promise.resolve(schema);
 }
 
 export function extractDataClassSchemaResponse(

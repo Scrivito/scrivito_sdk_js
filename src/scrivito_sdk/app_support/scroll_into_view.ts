@@ -1,6 +1,6 @@
 // @rewire
+import { getCurrentPageId } from 'scrivito_sdk/app_support/get_current_page_id';
 import { onReset, randomHex, scrollElementIntoView } from 'scrivito_sdk/common';
-import { getCurrentPageId } from './get_current_page_id';
 
 export type ScrollTarget = ObjFieldScrollTarget | WidgetScrollTarget;
 type RevealCallback = () => void;

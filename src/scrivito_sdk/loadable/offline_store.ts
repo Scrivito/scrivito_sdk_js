@@ -110,17 +110,11 @@ function cacheFor(collectionId: string) {
   return caches.open(`${CACHE_PREFIX}-${getScrivitoVersion()}-${collectionId}`);
 }
 
-export async function deleteOfflineStoreCaches(): Promise<void> {
-  const scrivitoCaches = await openAllScrivitoCaches();
+export async function deleteOfflineStoreCaches() {
+  const scrivitoCacheNames = await getAllScrivitoCacheNames();
 
   await Promise.all(
-    scrivitoCaches.map(async (cache) => {
-      const cacheKeys = await cache.keys();
-
-      await Promise.all(
-        cacheKeys.map(async (cacheKey) => cache.delete(cacheKey))
-      );
-    })
+    scrivitoCacheNames.map((cacheName) => caches.delete(cacheName))
   );
 }
 
@@ -140,15 +134,17 @@ export async function countOfflineStoreEntries(): Promise<number> {
 }
 
 async function openAllScrivitoCaches() {
-  const cacheNames = await caches.keys();
-
-  const scrivitoCacheNames = cacheNames.filter((name) =>
-    name.startsWith(CACHE_PREFIX)
-  );
+  const scrivitoCacheNames = await getAllScrivitoCacheNames();
 
   return Promise.all(
     scrivitoCacheNames.map((cacheName) => caches.open(cacheName))
   );
+}
+
+async function getAllScrivitoCacheNames() {
+  const cacheNames = await caches.keys();
+
+  return cacheNames.filter((name) => name.startsWith(CACHE_PREFIX));
 }
 
 let writingBeingPaused: Deferred | undefined;

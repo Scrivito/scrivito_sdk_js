@@ -31,8 +31,8 @@ export const appAdapterDescription = {
   generalPropertiesForWidget: GET,
   propertiesGroupsForObj: GET,
   propertiesGroupsForWidget: GET,
-  wantsLayoutEditing: GET,
   getInitialContentDumpUrl: GET,
+  hasLayoutComponents: GET,
 
   objReplicationMessageStream: STREAM,
 

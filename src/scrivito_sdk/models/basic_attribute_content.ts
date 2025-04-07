@@ -28,6 +28,7 @@ import {
   BasicWidgetAttributes,
   SerializedWidgetAttributes,
 } from 'scrivito_sdk/models/basic_widget';
+import { DataLocator } from 'scrivito_sdk/models/data_locator';
 import { BasicTypeInfo, TypeInfo } from 'scrivito_sdk/models/type_info';
 
 type CustomAttributeValueWithTypeInfo = {
@@ -83,6 +84,30 @@ function getContentValueUsingInternalName<Type extends CmsAttributeType>(
 ): BasicAttributeValue<Type> {
   const rawValue = content.getAttributeData(internalAttributeName, typeInfo[0]);
   return AttributeDeserializer.deserialize(content, rawValue, typeInfo);
+}
+
+type ContentConnection = ['connection', DataLocator];
+export type ContentValueOrConnection<Type extends CmsAttributeType> =
+  | ['value', BasicAttributeValue<Type>]
+  | ContentConnection;
+
+export function getContentValueOrConnection<Type extends CmsAttributeType>(
+  content: ContentValueProvider,
+  attributeName: string,
+  typeInfo: TypeInfo<Type>
+): ContentValueOrConnection<Type> {
+  const internalAttributeName = underscore(attributeName);
+  const attributeData = content.getAttributeData(internalAttributeName);
+
+  return Array.isArray(attributeData) && attributeData[0] === 'datalocator'
+    ? ['connection', getContentValue(content, attributeName, 'datalocator')]
+    : ['value', getContentValue(content, attributeName, typeInfo)];
+}
+
+export function isContentConnection<Type extends CmsAttributeType>(
+  valueOrConnection: ContentValueOrConnection<Type>
+): valueOrConnection is ContentConnection {
+  return valueOrConnection[0] === 'connection';
 }
 
 export function serializeAttributes(content: BasicObj): SerializedObjAttributes;

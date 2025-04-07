@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
+import { getCurrentPageId } from 'scrivito_sdk/app_support/get_current_page_id';
 import {
   InternalError,
   QueryParameters,
@@ -9,9 +10,10 @@ import {
 import { loadWithDefault } from 'scrivito_sdk/loadable';
 import { BasicObj, getObjByPath, restrictToSite } from 'scrivito_sdk/models';
 import {
-  areLayoutComponentsStored,
   getLayoutComponentForAppClass,
+  hasLayoutComponents,
 } from 'scrivito_sdk/react/component_registry';
+import { CurrentEditableArea } from 'scrivito_sdk/react/components/current_editable_area';
 import { CurrentPage } from 'scrivito_sdk/react/components/current_page';
 import { DetailsPageDataContext } from 'scrivito_sdk/react/components/current_page/details_page_data_context';
 import { PageDataContext } from 'scrivito_sdk/react/components/current_page/page_data_context';
@@ -25,7 +27,7 @@ export function useLayout(
   params: QueryParameters
 ): React.ReactElement | 'loading' | undefined {
   const layoutIndex = React.useContext(LayoutIndexContext);
-  if (!areLayoutComponentsStored()) return;
+  if (!hasLayoutComponents()) return;
 
   // preload ancestors, to avoid loading them one-by-one.
   if (layoutIndex === 0) page.ancestors();
@@ -79,14 +81,22 @@ const PageLayout = connect(function PageLayout({
   return (
     <PageDataContext page={page}>
       <DetailsPageDataContext page={page} params={params}>
-        <LayoutIndexContext.Provider value={layoutIndex + 1}>
-          {Component ? (
-            <Component page={wrapInAppClass(page)} />
-          ) : (
-            <CurrentPage />
-          )}
-        </LayoutIndexContext.Provider>
+        <CurrentEditableArea value={calculateCurrentEditableArea}>
+          <LayoutIndexContext.Provider value={layoutIndex + 1}>
+            {Component ? (
+              <Component page={wrapInAppClass(page)} />
+            ) : (
+              <CurrentPage />
+            )}
+          </LayoutIndexContext.Provider>
+        </CurrentEditableArea>
       </DetailsPageDataContext>
     </PageDataContext>
   );
+
+  function calculateCurrentEditableArea() {
+    return page && page.id() === getCurrentPageId()
+      ? 'currentPageLayout'
+      : 'parentPageLayout';
+  }
 });

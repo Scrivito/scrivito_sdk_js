@@ -4,18 +4,23 @@ import {
   registerDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
+import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 
 interface DataClassParams {
   connection: Promise<Partial<UncheckedDataConnection>>;
   schema: LazyAsyncDataClassSchema;
 }
 
-export async function registerExternalDataClass(
+export function registerExternalDataClass(
   name: string,
   params: Promise<DataClassParams>
-): Promise<void> {
-  const { connection, schema } = await params;
-
-  setExternalDataConnection(name, connection);
-  registerDataClassSchema(name, schema);
+): void {
+  setExternalDataConnection(
+    name,
+    mapLazyAsync(params, (eagerParams) => eagerParams.connection)()
+  );
+  registerDataClassSchema(
+    name,
+    mapLazyAsync(params, (eagerParams) => eagerParams.schema)
+  );
 }

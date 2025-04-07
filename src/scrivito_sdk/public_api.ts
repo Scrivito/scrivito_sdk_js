@@ -59,6 +59,7 @@ export {
   useUrlFor,
   useResolvedStringValue,
   useResolvedHtmlValue,
+  useContent,
 } from 'scrivito_sdk/react';
 
 export type {

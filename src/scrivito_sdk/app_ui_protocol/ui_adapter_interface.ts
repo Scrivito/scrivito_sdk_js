@@ -38,8 +38,7 @@ export const uiAdapterDescription = {
   currentEditingContext: GET,
   getUiContext: GET,
   getUiLanguage: GET,
-  isLayoutEditable: GET,
-  isPageEditable: GET,
+  getEditableArea: GET,
 
   // LinkResolution methods
   getResolvedUrl: GET,
@@ -137,8 +136,7 @@ export interface UiAdapterInterface
   currentWorkspace(): WorkspaceData;
   getUiContext(): UiContext;
   getUiLanguage(): Locale | null;
-  isLayoutEditable(): boolean;
-  isPageEditable(): boolean;
+  getEditableArea(): EditableArea | undefined;
 }
 
 export interface TenantConfiguration {
@@ -153,3 +151,4 @@ export interface UiAdapterOpenContentBrowserOptions {
 }
 
 export type Locale = 'de' | 'fr' | 'en';
+export type EditableArea = 'everywhere' | 'layout' | 'page';

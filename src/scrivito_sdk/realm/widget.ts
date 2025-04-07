@@ -88,6 +88,8 @@ export class Widget<
   ): AttributeValueOf<AttrDefs, AttributeName> {
     assertValidAttributeName(attributeName);
 
+    // Bang: TypeScript will display an error if the attribute in question does not have a
+    // corresponding attribute definition.
     return readAppAttribute(this, attributeName)!;
   }
 

@@ -454,7 +454,12 @@ function getSchema(className: string) {
 }
 
 function objClassScope(dataClass: DataClass) {
-  return currentObjScope().and(restrictToObjClass(dataClass.name()));
+  const dataScope = currentObjScope();
+  const dataClassName = dataClass.name();
+
+  return dataClassName === 'Obj'
+    ? dataScope
+    : dataScope.and(restrictToObjClass(dataClassName));
 }
 
 function prepareAttributes(attributes: DataItemAttributes, className: string) {

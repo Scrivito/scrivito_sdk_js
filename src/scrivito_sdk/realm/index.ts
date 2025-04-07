@@ -18,7 +18,10 @@ export {
   unwrapAppClass,
   unwrapAppAttributes,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
-export type { AttributeValue } from 'scrivito_sdk/realm/wrap_in_app_class';
+export type {
+  AttributeValue,
+  AttributeValueOf,
+} from 'scrivito_sdk/realm/wrap_in_app_class';
 
 export { ObjFacetValue } from 'scrivito_sdk/realm/obj_facet_value';
 export { Schema } from 'scrivito_sdk/realm/schema';

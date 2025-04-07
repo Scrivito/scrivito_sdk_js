@@ -228,6 +228,11 @@ function assertValidDataId(dataId: string): asserts dataId is DataId {
 const connectionsState =
   createStateContainer<Record<string, UncheckedDataConnection>>();
 
+// for test purposes only
+export function resetExternalDataConnections(): void {
+  connectionsState.clear();
+}
+
 export function setExternalDataConnection(
   name: string,
   partialConnection: Promise<Partial<UncheckedDataConnection>>

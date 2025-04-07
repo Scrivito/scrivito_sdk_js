@@ -118,6 +118,12 @@ export const LinkTag = connect(function LinkTag(props: {
     if (!props.to) return null;
 
     if (props.to instanceof DataItem) {
+      const obj = props.to.obj();
+
+      if (obj) {
+        return getBasicLinkOrBasicObjDestination(unwrapAppClass(obj), obj);
+      }
+
       return getDataItemDestination(props.to);
     }
 

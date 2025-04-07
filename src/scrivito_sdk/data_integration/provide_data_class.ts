@@ -10,6 +10,7 @@ import {
   registerExternalDataClass,
 } from 'scrivito_sdk/data_integration';
 import { LazyAsyncDataClassTitle } from 'scrivito_sdk/data_integration/data_class_schema';
+import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 import { getRealmClass } from 'scrivito_sdk/realm';
 import { createRestApiSchema } from './create_rest_api_schema';
@@ -71,10 +72,7 @@ export function provideDataClass(
   }
 
   assertValidDataIdentifier(name);
-  registerExternalDataClass(
-    name,
-    (async () => desugar(await Promise.resolve(params)))()
-  );
+  registerExternalDataClass(name, mapLazyAsync(params, desugar)());
 
   return new ExternalDataClass(name);
 }

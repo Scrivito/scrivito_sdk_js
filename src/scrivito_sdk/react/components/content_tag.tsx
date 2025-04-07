@@ -22,7 +22,7 @@ import { BasicField, CmsAttributeType } from 'scrivito_sdk/models';
 import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attribute_value';
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
-import { useLayoutAwareInPlaceEditing } from 'scrivito_sdk/react/hooks/use_layout_aware_in_place_editing';
+import { useInPlaceEditing } from 'scrivito_sdk/react/hooks/use_in_place_editing';
 import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
@@ -34,6 +34,7 @@ export interface ContentTagProps<
   attribute: keyof AttrDefs & string;
   dataContext?: DataContext | Obj | DataItem | DataScope | null;
   widgetProps?: WidgetProps;
+  renderEmptyAttribute?: boolean;
 
   [key: string]: unknown;
 }
@@ -59,9 +60,10 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
     dataContext,
     widgetProps,
     elementCallback,
+    renderEmptyAttribute,
     ...customProps
   }: ContentTagWithElementCallbackProps) {
-    const isInPlaceEditingEnabled = useLayoutAwareInPlaceEditing();
+    const isInPlaceEditingEnabled = useInPlaceEditing();
 
     if (!content) return null;
 
@@ -70,7 +72,10 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
 
     if (isComparisonActive()) {
       const [fromField, toField] = getFieldsForComparison(field);
-      if (shouldComparisonBeSkipped(fromField, toField)) return null;
+
+      if (shouldComparisonBeSkipped(fromField, toField, renderEmptyAttribute)) {
+        return null;
+      }
 
       field = toField || fromField;
       if (!field) return null;
@@ -80,7 +85,7 @@ export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithEl
       (!isInPlaceEditingActive() || !isInPlaceEditingEnabled) &&
       !isComparisonActive() &&
       isEmptyValue(field.get()) &&
-      shouldContentTagsForEmptyAttributesBeSkipped()
+      renderNothingForEmptyAttribute(renderEmptyAttribute)
     ) {
       return null;
     }
@@ -167,12 +172,13 @@ function assertWidgetPropsAreAllowed<T extends CmsAttributeType>(
 
 function shouldComparisonBeSkipped<T extends CmsAttributeType>(
   fromField: BasicField<T> | null,
-  toField?: BasicField<T> | null
+  toField?: BasicField<T> | null,
+  renderEmptyAttribute?: boolean
 ) {
   return (
     isEmptyValue(fromField?.get()) &&
     isEmptyValue(toField?.get()) &&
-    shouldContentTagsForEmptyAttributesBeSkipped()
+    renderNothingForEmptyAttribute(renderEmptyAttribute)
   );
 }
 
@@ -191,4 +197,10 @@ function isDataContextObject(
     !(dataContext instanceof DataScope) &&
     !(dataContext instanceof Obj)
   );
+}
+
+function renderNothingForEmptyAttribute(renderEmptyAttribute?: boolean) {
+  return renderEmptyAttribute === undefined
+    ? shouldContentTagsForEmptyAttributesBeSkipped()
+    : !renderEmptyAttribute;
 }

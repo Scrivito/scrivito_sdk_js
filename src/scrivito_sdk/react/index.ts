@@ -2,7 +2,10 @@ export { provideComponent } from 'scrivito_sdk/react/provide_component';
 export { provideLayoutComponent } from 'scrivito_sdk/react/provide_layout_component';
 export { provideDataErrorComponent } from 'scrivito_sdk/react/provide_data_error_component';
 export { registerComponent } from 'scrivito_sdk/react/register_component';
-export { getComponentForId } from 'scrivito_sdk/react/component_registry';
+export {
+  hasLayoutComponents,
+  getComponentForId,
+} from 'scrivito_sdk/react/component_registry';
 export { BackgroundImageTag } from 'scrivito_sdk/react/components/background_image_tag';
 export type { Background } from 'scrivito_sdk/react/components/background_image_tag';
 export { ChildListTag } from 'scrivito_sdk/react/components/child_list_tag';
@@ -34,6 +37,7 @@ export {
   useResolvedHtmlValue,
   useResolvedStringValue,
 } from 'scrivito_sdk/react/hooks/use_resolved_value';
+export { useContent } from 'scrivito_sdk/react/hooks/use_content';
 export type {
   CustomPageComponentProps,
   CustomWidgetComponentProps,
