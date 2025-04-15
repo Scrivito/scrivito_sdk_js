@@ -91,31 +91,36 @@ export const ImageTag = connect(function ImageTag({
 
   if (binary === undefined) return null;
 
-  const fullWidth = getFullWidth(binary, width, isLazy);
-  if (binary === null || fullWidth === null) {
-    return isLazy ? null : (
-      <ContentTag
-        attribute={attribute}
-        content={content}
-        tag={'img'}
-        src={imagePlaceholder}
-        data-scrivito-image-placeholder={true}
-        width={width}
-        {...htmlOptions}
-      />
-    );
+  if (binary !== null) {
+    const fullWidth = getFullWidth(binary, width, isLazy);
+
+    if (fullWidth !== null) {
+      return (
+        <ContentTagWithElementCallback
+          attribute={attribute}
+          content={content}
+          width={fullWidth}
+          tag={'img'}
+          src={scaledSrc(decoder, binary)}
+          {...htmlOptions}
+          onLoad={load}
+          elementCallback={setEagerIfComplete}
+        />
+      );
+    }
+
+    if (isLazy) return null;
   }
 
   return (
-    <ContentTagWithElementCallback
+    <ContentTag
       attribute={attribute}
       content={content}
-      width={fullWidth}
       tag={'img'}
-      src={scaledSrc(decoder, binary)}
+      src={imagePlaceholder}
+      data-scrivito-image-placeholder={true}
+      width={width}
       {...htmlOptions}
-      onLoad={load}
-      elementCallback={setEagerIfComplete}
     />
   );
 }) as ImageTagType;
@@ -133,11 +138,10 @@ function scaledSrc(decoder: ImageDecoder | undefined, binary: Binary): string {
 // * number, string or undefined => render with this width
 // * null => render null (since width is not yet loaded)
 function getFullWidth(
-  binary: Binary | null,
+  binary: Binary,
   width: Width,
   isLazy: boolean
 ): Width | null {
-  if (binary === null) return null;
   if (isLazy && !isInitialUrlAvailable(binary)) return null;
   if (width !== undefined) return width;
 
