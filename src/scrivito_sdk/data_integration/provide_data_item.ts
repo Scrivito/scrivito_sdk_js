@@ -9,6 +9,7 @@ import {
   provideExternalDataItem,
 } from 'scrivito_sdk/data_integration';
 import { createRestApiSchema } from 'scrivito_sdk/data_integration/create_rest_api_schema';
+import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 import { RestApi } from 'scrivito_sdk/data_integration/provide_data_class';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 
@@ -56,14 +57,9 @@ export function provideDataItem(
 
   const dataClass = new ExternalDataClass(name);
 
-  const resolvedParams =
-    typeof params === 'function'
-      ? Promise.resolve({ get: params })
-      : Promise.resolve(params);
-
   provideExternalDataItem(
     dataClass,
-    (async () => desugar(await resolvedParams))()
+    mapLazyAsync(Promise.resolve(params), desugar)()
   );
 
   return dataClass.getUnchecked(SINGLETON_DATA_ID);
@@ -76,17 +72,14 @@ async function desugar(
     | ExternalDataItemConnection['get']
 ) {
   if (typeof params === 'function') {
-    return {
-      connection: Promise.resolve({ get: params }),
-      schema: { attributes: {} },
-    };
+    return { connection: { get: params }, schema: { attributes: {} } };
   }
 
   if ('restApi' in params) {
     const apiClient = await createApiClient(Promise.resolve(params.restApi));
 
     return {
-      connection: Promise.resolve(createRestApiConnectionForItem(apiClient)),
+      connection: createRestApiConnectionForItem(apiClient),
       ...createRestApiSchema(
         { attributes: params.attributes, title: params.title },
         apiClient
@@ -96,13 +89,13 @@ async function desugar(
 
   if ('connection' in params) {
     return {
-      connection: Promise.resolve(params.connection),
+      connection: params.connection,
       schema: { attributes: params.attributes ?? {}, title: params.title },
     };
   }
 
   return {
-    connection: Promise.resolve(params),
+    connection: params,
     schema: { attributes: {} },
   };
 }

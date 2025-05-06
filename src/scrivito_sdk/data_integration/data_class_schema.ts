@@ -68,19 +68,22 @@ export type DataAttributeConfigs = {
   number: LocalizedAttributeConfig;
   reference: ReferenceAttributeConfig;
   string: LocalizedAttributeConfig;
+  unknown: UnknownAttributeConfig;
 };
 
 type LocalizedAttributeConfig = { title?: string };
 
-export interface EnumAttributeConfig {
+export interface EnumAttributeConfig extends LocalizedAttributeConfig {
   values: readonly EnumValueConfig[];
-  title?: string;
 }
 
-export interface ReferenceAttributeConfig {
+export interface ReferenceAttributeConfig extends LocalizedAttributeConfig {
   to: DataClassName;
-  title?: string;
   reverseTitle?: string;
+}
+
+export interface UnknownAttributeConfig extends LocalizedAttributeConfig {
+  type?: string;
 }
 
 type DataAttributeDefinitionWithOptionalConfig = Exclude<
@@ -100,7 +103,8 @@ export type DataAttributeType =
   | 'enum'
   | 'number'
   | 'reference'
-  | 'string';
+  | 'string'
+  | 'unknown';
 
 type EnumValueConfig = string | LocalizedEnumValueConfig;
 type LocalizedEnumValueConfig = { value: string; title: string };
@@ -111,9 +115,15 @@ function isDataAttributeType(
 ): attributeType is DataAttributeType {
   return (
     typeof attributeType === 'string' &&
-    ['boolean', 'date', 'enum', 'number', 'reference', 'string'].includes(
-      attributeType
-    )
+    [
+      'boolean',
+      'date',
+      'enum',
+      'number',
+      'reference',
+      'string',
+      'unknown',
+    ].includes(attributeType)
   );
 }
 
@@ -286,7 +296,7 @@ function extractDataAttributeDefinitions(
           );
         }
       } else if (Array.isArray(maybeDefinition)) {
-        const definition = extractDataAttributeDefinitionWithConfig(
+        const definition = extractDefinitionWithConfig(
           attributeName,
           maybeDefinition
         );
@@ -316,7 +326,7 @@ function isDataAttributeDefinitionWithOptionalConfig(
   );
 }
 
-function extractDataAttributeDefinitionWithConfig(
+function extractDefinitionWithConfig(
   attributeName: string,
   definition: unknown[]
 ): DataAttributeDefinitionWithConfig | undefined {
@@ -337,41 +347,32 @@ function extractDataAttributeDefinitionWithConfig(
     return;
   }
 
-  if (attributeType === 'enum') {
-    if (isEnumAttributeConfig(maybeConfig)) {
-      return [attributeType, maybeConfig];
-    }
-
-    logSchemaError(
-      attributeName,
-      maybeConfig,
-      'Invalid "enum" attribute config.'
-    );
-  } else if (attributeType === 'reference') {
-    const config = isReferenceAttributeConfig(maybeConfig)
-      ? maybeConfig
-      : undefined;
-
-    if (config) {
-      return [attributeType, config];
-    }
-
-    logSchemaError(
-      attributeName,
-      maybeConfig,
-      'Invalid "reference" attribute config.'
-    );
-  } else {
-    const config = isLocalizedAttributeConfig(maybeConfig)
-      ? maybeConfig
-      : undefined;
-
-    if (config) {
-      return [attributeType, config];
-    }
-
-    logSchemaError(attributeName, maybeConfig, 'Invalid localization.');
+  switch (attributeType) {
+    case 'enum':
+      return extractEnumDefinitionWithConfig(attributeName, maybeConfig);
+    case 'reference':
+      return extractReferenceDefinitionWithConfig(attributeName, maybeConfig);
+    default:
+      return extractLocalizedAttributeConfig(
+        attributeName,
+        attributeType,
+        maybeConfig
+      );
   }
+}
+
+function extractLocalizedAttributeConfig(
+  attributeName: string,
+  attributeType: Exclude<DataAttributeType, 'enum' | 'reference'>,
+  maybeConfig: unknown
+): DataAttributeDefinitionWithConfig | undefined {
+  const config = isLocalizedAttributeConfig(maybeConfig)
+    ? maybeConfig
+    : undefined;
+
+  if (config) return [attributeType, config];
+
+  logSchemaError(attributeName, maybeConfig, 'Invalid localization.');
 }
 
 export function isEnumAttributeConfig(
@@ -387,6 +388,38 @@ export function isEnumAttributeConfig(
         (typeof valueOrConfig === 'string' && valueOrConfig.length) ||
         isLocalizedEnumValueConfig(valueOrConfig)
     )
+  );
+}
+
+function extractEnumDefinitionWithConfig(
+  attributeName: string,
+  maybeConfig: unknown
+): DataAttributeDefinitionWithConfig | undefined {
+  if (isEnumAttributeConfig(maybeConfig)) {
+    return ['enum', maybeConfig];
+  }
+
+  logSchemaError(
+    attributeName,
+    maybeConfig,
+    'Invalid "enum" attribute config.'
+  );
+}
+
+function extractReferenceDefinitionWithConfig(
+  attributeName: string,
+  maybeConfig: unknown
+): DataAttributeDefinitionWithConfig | undefined {
+  const config = isReferenceAttributeConfig(maybeConfig)
+    ? maybeConfig
+    : undefined;
+
+  if (config) return ['reference', config];
+
+  logSchemaError(
+    attributeName,
+    maybeConfig,
+    'Invalid "reference" attribute config.'
   );
 }
 

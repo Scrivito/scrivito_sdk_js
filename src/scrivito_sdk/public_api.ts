@@ -91,6 +91,7 @@ export { canEdit } from 'scrivito_sdk/app_support/can_edit';
 export { canWrite } from 'scrivito_sdk/app_support/can_write';
 export { configure } from 'scrivito_sdk/app_support/configure';
 export { configureContentBrowser } from 'scrivito_sdk/app_support/configure_content_browser';
+export { configureCropAspectRatios } from 'scrivito_sdk/app_support/crop_aspect_ratios';
 export { configureObjClassForContentType } from 'scrivito_sdk/app_support/configure_obj_class_for_content_type';
 export { configurePreviewSizes } from 'scrivito_sdk/app_support/preview_sizes';
 export { currentEditor } from 'scrivito_sdk/app_support/current_editor';

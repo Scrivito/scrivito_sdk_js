@@ -9,7 +9,7 @@ import {
   openWindow,
   replaceLocation,
 } from 'scrivito_sdk/common';
-import { isLocalUri } from './routing';
+import { isOriginLocal } from './routing';
 
 export function redirectToUrl(url: string): void {
   if (uiAdapter) changeLocation(url);
@@ -26,7 +26,7 @@ export function changeLocation(url: string): void {
 }
 
 export function openInNewWindow(url: string): void {
-  if (uiAdapter && isLocalUri(URI(url))) {
+  if (uiAdapter && isOriginLocal(URI(url))) {
     uiAdapter.openInNewUiWindow(convertToAbsoluteLocalUrl(url));
   } else {
     openWindow(url, '_blank');

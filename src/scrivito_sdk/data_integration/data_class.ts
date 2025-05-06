@@ -4,6 +4,7 @@ import mapValues from 'lodash-es/mapValues';
 import { FilterValue } from 'scrivito_sdk/client';
 import { ArgumentError, ScrivitoError, isObject } from 'scrivito_sdk/common';
 import {
+  NormalizedDataAttributeDefinition,
   NormalizedDataAttributeDefinitions,
   getDataClassTitle,
   getNormalizedDataAttributeDefinitions,
@@ -182,6 +183,11 @@ export class DataItemAttribute {
 
   async update(value: unknown): Promise<void> {
     return this._dataItem.update({ [this._attributeName]: value });
+  }
+
+  /** @internal */
+  attributeDefinition(): NormalizedDataAttributeDefinition | null {
+    return this.dataClass().attributeDefinitions()[this._attributeName] || null;
   }
 }
 

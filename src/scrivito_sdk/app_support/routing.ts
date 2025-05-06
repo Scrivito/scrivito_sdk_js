@@ -285,6 +285,11 @@ export function ensureRoutingDataAvailable(basicPage: BasicObj) {
   });
 }
 
-export function isLocalUri(uri: URI): boolean {
+export function isOriginLocal(uri: URI): boolean {
   return uri.is('relative') || uri.origin() === currentOrigin();
+}
+
+export function isSiteLocal(uri: URI): boolean {
+  const currentBaseUrl = getCurrentRoute()?.siteData?.baseUrl;
+  return !!currentBaseUrl && uri.toString().indexOf(currentBaseUrl) === 0;
 }

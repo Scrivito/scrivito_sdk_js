@@ -1,3 +1,4 @@
+import identity from 'lodash-es/identity';
 import isDate from 'lodash-es/isDate';
 
 import {
@@ -24,6 +25,7 @@ const serializers = {
   number: serializeNumberAttribute,
   reference: serializeReferenceAttribute,
   string: serializeStringAttribute,
+  unknown: identity,
 };
 
 export function serializeDataAttribute({
@@ -45,16 +47,23 @@ export function serializeDataAttribute({
     const attributeType = getAttributeType(attributeDefinition);
     const serializer = serializers[attributeType];
 
-    return serializer(dataClassName, attributeName, value, attributeDefinition);
+    if (serializer) {
+      return serializer(
+        value,
+        dataClassName,
+        attributeName,
+        attributeDefinition
+      );
+    }
   }
 
   return value ?? null;
 }
 
 export function deserializeDataAttribute({
+  value,
   dataClassName,
   attributeName,
-  value,
   attributes,
 }: {
   dataClassName: string;
@@ -70,30 +79,32 @@ export function deserializeDataAttribute({
     const attributeType = getAttributeType(attributeDefinition);
     const deserializer = deserializers[attributeType];
 
-    return deserializer(
-      dataClassName,
-      attributeName,
-      value,
-      attributeDefinition
-    );
+    if (deserializer) {
+      return deserializer(
+        value,
+        dataClassName,
+        attributeName,
+        attributeDefinition
+      );
+    }
   }
 
   return value ?? null;
 }
 
 function serializeBooleanAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (typeof value === 'boolean') return value;
   throwTypeMismatch(dataClassName, attributeName, 'a boolean', value);
 }
 
 function serializeDateAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (value === null || (typeof value === 'string' && isISO8601(value))) {
     return value;
@@ -110,9 +121,9 @@ function serializeDateAttribute(
 }
 
 function serializeEnumAttribute(
+  value: unknown,
   dataClassName: string,
   attributeName: string,
-  value: unknown,
   attributeDefinition: DataAttributeDefinition
 ) {
   const enumValues = getEnumValues(getAttributeConfig(attributeDefinition));
@@ -133,18 +144,18 @@ function serializeEnumAttribute(
 }
 
 function serializeNumberAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (value === null || typeof value === 'number') return value;
   throwTypeMismatch(dataClassName, attributeName, 'a number or null', value);
 }
 
 function serializeReferenceAttribute(
+  value: unknown,
   dataClassName: string,
   attributeName: string,
-  value: unknown,
   attributeDefinition: DataAttributeDefinition
 ) {
   if (value === null || isValidDataId(value)) return value;
@@ -168,9 +179,9 @@ function serializeReferenceAttribute(
 }
 
 function serializeStringAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (typeof value === 'string') return value;
   throwTypeMismatch(dataClassName, attributeName, 'a string', value);
@@ -183,12 +194,13 @@ const deserializers = {
   number: deserializeNumberAttribute,
   reference: deserializeReferenceAttribute,
   string: deserializeStringAttribute,
+  unknown: identity,
 };
 
 function deserializeBooleanAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (typeof value === 'boolean') {
     return value;
@@ -200,9 +212,9 @@ function deserializeBooleanAttribute(
 }
 
 function deserializeDateAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (isEmptyStringOrNull(value)) return null;
 
@@ -221,9 +233,9 @@ function deserializeDateAttribute(
 }
 
 function deserializeEnumAttribute(
+  value: unknown,
   dataClassName: string,
   attributeName: string,
-  value: unknown,
   attributeDefinition: DataAttributeDefinition
 ) {
   if (isEmptyStringOrNull(value)) return null;
@@ -245,9 +257,9 @@ function deserializeEnumAttribute(
 }
 
 function deserializeReferenceAttribute(
+  value: unknown,
   dataClassName: string,
   attributeName: string,
-  value: unknown,
   attributeDefinition: DataAttributeDefinition
 ) {
   if (isEmptyStringOrNull(value)) return null;
@@ -266,9 +278,9 @@ function deserializeReferenceAttribute(
 }
 
 function deserializeNumberAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (typeof value === 'number') {
     return value;
@@ -280,9 +292,9 @@ function deserializeNumberAttribute(
 }
 
 function deserializeStringAttribute(
+  value: unknown,
   dataClassName: string,
-  attributeName: string,
-  value: unknown
+  attributeName: string
 ) {
   if (typeof value === 'string') {
     return value;

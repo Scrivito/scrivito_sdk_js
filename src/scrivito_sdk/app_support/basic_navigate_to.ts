@@ -13,9 +13,15 @@ import {
   Hash,
   generateDestination,
   generateDestinationForId,
-  isLocalUri,
+  isOriginLocal,
+  isSiteLocal,
 } from 'scrivito_sdk/app_support/routing';
-import { QueryParameters, assignLocation, logError } from 'scrivito_sdk/common';
+import {
+  InternalError,
+  QueryParameters,
+  assignLocation,
+  logError,
+} from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
 import { isBinaryBasicObj } from 'scrivito_sdk/realm';
@@ -114,7 +120,13 @@ function isUrlRoutingTarget(
 function destinationForUrl(url: string) {
   const uri = URI(url);
 
-  return isLocalUri(uri)
-    ? { type: 'local' as const, resource: uri.resource() }
-    : { type: 'remote' as const, url };
+  if (uri.is('relative')) throw new InternalError();
+
+  if (isOriginLocal(uri)) {
+    return isSiteLocal(uri)
+      ? { type: 'local' as const, resource: uri.resource() }
+      : { type: 'crossSite' as const, url };
+  }
+
+  return { type: 'remote' as const, url };
 }

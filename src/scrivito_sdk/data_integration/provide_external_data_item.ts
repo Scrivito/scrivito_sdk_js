@@ -1,3 +1,5 @@
+import { isObject } from 'scrivito_sdk/common';
+
 import { registerExternalDataClass } from 'scrivito_sdk/data_integration';
 import { throwMissingCallbackError } from 'scrivito_sdk/data_integration/add_missing_data_connection_handlers';
 import { LazyAsyncDataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';
@@ -6,6 +8,11 @@ import { ExternalDataClass } from 'scrivito_sdk/data_integration/external_data_c
 import { UncheckedDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
 import { filterExternalDataItem } from 'scrivito_sdk/data_integration/filter_external_data_item';
 import { provideGlobalData } from 'scrivito_sdk/data_integration/global_data';
+import {
+  LazyAsync,
+  mapLazyAsync,
+  normalizeLazyAsync,
+} from 'scrivito_sdk/data_integration/lazy_async';
 import { registerSingletonDataClass } from 'scrivito_sdk/data_integration/singleton_data_classes';
 import { load } from 'scrivito_sdk/loadable';
 
@@ -20,27 +27,56 @@ export type ExternalDataItemConnection = {
   update?: ExternalDataItemUpdateCallback;
 };
 
-export async function provideExternalDataItem(
+type LazyAsyncExternalDataItemConnection =
+  LazyAsync<ExternalDataItemConnection>;
+
+export function provideExternalDataItem(
   dataClass: ExternalDataClass,
-  paramsPromise: Promise<{
-    connection: Promise<ExternalDataItemConnection>;
+  params: Promise<{
+    connection: LazyAsyncExternalDataItemConnection;
     schema: LazyAsyncDataClassSchema;
   }>
-): Promise<void> {
+): void {
   const name = dataClass.name();
 
-  const { connection, schema } = await paramsPromise;
+  registerExternalDataClass(
+    name,
+    mapLazyAsync(params, ({ connection, schema }) => ({
+      connection: desugarConnection(connection, dataClass),
+      schema,
+    }))()
+  );
 
-  const getCallback = async () => (await connection).get();
+  registerSingletonDataClass(name);
+  provideGlobalData(dataClass.getUnchecked(SINGLETON_DATA_ID));
+}
+
+function isSingletonDataId(id: string) {
+  return id === SINGLETON_DATA_ID;
+}
+
+function desugarConnection(
+  connection: LazyAsyncExternalDataItemConnection,
+  dataClass: ExternalDataClass
+) {
+  const getCallback = async () =>
+    (await normalizeLazyAsync(connection)()).get();
 
   const updateCallback = async (data: ExternalData) => {
-    const { update } = await connection;
+    const { update } = await normalizeLazyAsync(connection)();
+
     if (update) return update(data);
-    throwMissingCallbackError('update', name)();
+    throwMissingCallbackError('update', dataClass.name())();
   };
 
   const dataConnection: Partial<UncheckedDataConnection> = {
-    get: async (id) => (isSingletonDataId(id) ? getCallback() : null),
+    get: async (id) => {
+      if (isSingletonDataId(id)) {
+        return ignoreDataId(await getCallback());
+      }
+
+      return null;
+    },
 
     index: async (params) => {
       const dataItem = await load(() => dataClass.get(SINGLETON_DATA_ID));
@@ -55,18 +91,14 @@ export async function provideExternalDataItem(
     }),
   };
 
-  registerExternalDataClass(
-    name,
-    (async () => ({
-      connection: Promise.resolve(dataConnection),
-      schema,
-    }))()
-  );
-
-  registerSingletonDataClass(name);
-  provideGlobalData(dataClass.getUnchecked(SINGLETON_DATA_ID));
+  return dataConnection;
 }
 
-function isSingletonDataId(id: string) {
-  return id === SINGLETON_DATA_ID;
+function ignoreDataId(data: unknown) {
+  if (isObject(data) && '_id' in data) {
+    const { _id, ...rest } = data;
+    return rest;
+  }
+
+  return data;
 }

@@ -26,7 +26,7 @@ import {
 import { connect } from 'scrivito_sdk/react_connect';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 
-type LinkTagTo = Obj | Link | DataItem | null;
+type LinkTagTo = Obj | Link | DataItem | string | null;
 
 /** @public */
 export const LinkTag = connect(function LinkTag(props: {
@@ -116,6 +116,13 @@ export const LinkTag = connect(function LinkTag(props: {
 
   function getDestination(): Destination | null {
     if (!props.to) return null;
+
+    if (typeof props.to === 'string') {
+      return {
+        to: props.to,
+        href: props.to,
+      };
+    }
 
     if (props.to instanceof DataItem) {
       const obj = props.to.obj();
@@ -214,5 +221,5 @@ export const LinkTag = connect(function LinkTag(props: {
 interface Destination {
   to: LinkTagTo;
   href: string;
-  queryParameters: QueryParameters | undefined;
+  queryParameters?: QueryParameters | undefined;
 }

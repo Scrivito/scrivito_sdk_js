@@ -10,7 +10,7 @@ import {
 import {
   deserializeDataAttribute,
   serializeDataAttribute,
-} from 'scrivito_sdk/data_integration/data_attribute';
+} from 'scrivito_sdk/data_integration/attribute_serialization_and_deserialization';
 import {
   DataClass,
   DataItem,

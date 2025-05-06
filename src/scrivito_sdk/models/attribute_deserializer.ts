@@ -9,8 +9,8 @@ import {
 import {
   InternalError,
   deserializeAsDate,
+  deserializeAsFloat,
   deserializeAsInteger,
-  isValidFloat,
 } from 'scrivito_sdk/common';
 import {
   BasicLink,
@@ -164,23 +164,17 @@ function deserializeMultienumValue(
 
 function deserializeFloatValue(value: BackendValue) {
   if (isBackendValueOfType('number', value)) {
-    return convertToFloat(value[1].toString());
+    return deserializeAsFloat(value[1].toString());
   }
 
   if (isBackendValueOfType('string', value)) {
     const [, valueFromBackend] = value;
     if (valueFromBackend.match(/^-?\d+(\.\d+)?$/)) {
-      return convertToFloat(valueFromBackend);
+      return deserializeAsFloat(valueFromBackend);
     }
   }
 
   return null;
-}
-
-function convertToFloat(floatAsString: string) {
-  const floatValue = parseFloat(floatAsString);
-
-  return isValidFloat(floatValue) ? floatValue : null;
 }
 
 function deserializeIntegerValue(value: BackendValue) {

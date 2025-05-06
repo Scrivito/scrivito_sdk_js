@@ -4,10 +4,13 @@ import {
   registerDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
-import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
+import {
+  LazyAsync,
+  mapLazyAsync,
+} from 'scrivito_sdk/data_integration/lazy_async';
 
 interface DataClassParams {
-  connection: Promise<Partial<UncheckedDataConnection>>;
+  connection: LazyAsync<Partial<UncheckedDataConnection>>;
   schema: LazyAsyncDataClassSchema;
 }
 

@@ -130,6 +130,5 @@ export class BasicLink {
 }
 
 interface ExternalLink extends BasicLink {
-  isExternal(): true;
   url(): string;
 }

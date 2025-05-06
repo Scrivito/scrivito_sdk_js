@@ -4,6 +4,7 @@ import type { AppAdapter } from 'scrivito_sdk/ui_interface/app_adapter';
 export const appAdapterDescription = {
   getAdapterSpec: GET,
   getCapabilities: GET,
+  getCropAspectRatios: GET,
   getPreviewSizes: GET,
   descriptionForObj: GET,
   getClasses: GET,

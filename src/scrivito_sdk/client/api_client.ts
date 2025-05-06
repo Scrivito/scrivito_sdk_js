@@ -67,8 +67,13 @@ export type ApiClientOptions = ApiClientBaseOptions & AuthViaOptions;
 
 interface ApiClientBaseOptions {
   audience?: string;
-  headers?: Record<string, string>;
+  headers?: ApiClientHeaders;
+  credentials?: RequestCredentials;
 }
+
+export type ApiClientHeaders =
+  | HeadersInit
+  | ({ Authorization: null } & Record<string, string | null>);
 
 /** given a 'fetch' method, construct an ApiClient which offers convenience
  * methods for getting, putting etc.

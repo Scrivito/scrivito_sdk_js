@@ -1,4 +1,4 @@
-import { FilterValue, isRelationalOpCode } from 'scrivito_sdk/client';
+import { isRelationalOpCode } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
 import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import {
@@ -50,7 +50,7 @@ function valueMatchesFilter(
     return RELATIONAL_OPERATOR_COMPARATORS[opCode](itemValue, filterValue);
   }
 
-  const areEqual = areValuesEqual(filterValue, itemValue);
+  const areEqual = filterValue === itemValue;
   return opCode === 'neq' ? !areEqual : areEqual;
 }
 
@@ -67,14 +67,4 @@ function assertStringOrNumber(arg: unknown): asserts arg is ComparisonType {
   if (typeof arg === 'string' || typeof arg === 'number') return;
 
   throw new ArgumentError(`Must be a string or number, but got ${String(arg)}`);
-}
-
-function areValuesEqual(filterValue: FilterValue, itemValue: unknown) {
-  if (filterValue === itemValue) return true;
-  if (filterValue === null || filterValue === 'null') return itemValue == null;
-
-  return (
-    (filterValue === 'true' && itemValue === true) ||
-    (filterValue === 'false' && itemValue === false)
-  );
 }

@@ -62,7 +62,10 @@ export {
   parseStringToDate,
   deserializeAsDate,
   deserializeAsInteger,
+  deserializeAsFloat,
   isValidFloat,
+  convertToFloat,
+  convertToInteger,
   formatDateToString,
   isValidDateString,
   isValidInteger,
@@ -71,6 +74,7 @@ export { wait, waitMs } from 'scrivito_sdk/common/wait';
 export { equals, equalsBestEffort } from 'scrivito_sdk/common/equals';
 export { promiseAndFinally } from 'scrivito_sdk/common/promise_and_finally';
 export { assumePresence } from 'scrivito_sdk/common/assume_presence';
+export { assumeString } from 'scrivito_sdk/common/assume_string';
 export { appUrlFromPackagedUiUrl } from 'scrivito_sdk/common/app_url_from_packaged_ui_url';
 export { BatchRetrieval } from 'scrivito_sdk/common/batch_retrieval';
 export { computeCacheKey } from 'scrivito_sdk/common/compute_cache_key';

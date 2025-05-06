@@ -1,5 +1,5 @@
 import { basicUrlForObj } from 'scrivito_sdk/app_support/basic_url_for';
-import { parameterizeDataClass } from 'scrivito_sdk/common';
+import { QueryParameters, parameterizeDataClass } from 'scrivito_sdk/common';
 import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import { BasicObj, getDetailsPageForDataParam } from 'scrivito_sdk/models';
 
@@ -10,13 +10,14 @@ export function getDetailsPageUrl(
   const detailsPageAndQuery = getDetailsPageAndQuery(dataItem, siteId);
   if (!detailsPageAndQuery) return null;
 
-  const { detailsPage, query } = detailsPageAndQuery;
-  return basicUrlForObj(detailsPage, { query });
+  const { detailsPage, queryString } = detailsPageAndQuery;
+  return basicUrlForObj(detailsPage, { query: queryString });
 }
 
 interface DetailsPageAndQuery {
   detailsPage: BasicObj;
-  query: string;
+  queryParameters: QueryParameters;
+  queryString: string;
 }
 
 export function getDetailsPageAndQuery(
@@ -28,6 +29,10 @@ export function getDetailsPageAndQuery(
 
   if (!detailsPage) return null;
 
-  const query = `${parameterizeDataClass(dataClassName)}=${dataItem.id()}`;
-  return { detailsPage, query };
+  const paramName = parameterizeDataClass(dataClassName);
+  const paramValue = dataItem.id();
+  const queryParameters = { [paramName]: paramValue };
+  const queryString = [paramName, paramValue].join('=');
+
+  return { detailsPage, queryParameters, queryString };
 }

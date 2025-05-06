@@ -8,8 +8,9 @@ import {
   getNextNavigateToCallId,
   isLatestNavigateToCallId,
 } from 'scrivito_sdk/app_support/basic_navigate_to';
+import { currentSiteId } from 'scrivito_sdk/app_support/current_page';
+import { getDetailsPageAndQuery } from 'scrivito_sdk/app_support/get_details_page_url';
 import { Hash } from 'scrivito_sdk/app_support/routing';
-import { urlForDataItem } from 'scrivito_sdk/app_support/url_for_data_item';
 import {
   ArgumentError,
   QueryParameters,
@@ -21,7 +22,7 @@ import { BasicLink, BasicObj } from 'scrivito_sdk/models';
 import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 import { failIfFrozen } from 'scrivito_sdk/state';
 
-type Target = Obj | Link | DataItem | null;
+type Target = Obj | Link | DataItem | string | null;
 
 type TargetFunction = () => Target;
 
@@ -79,6 +80,12 @@ async function navigateToTarget(
     );
 
     const basicTarget = unwrapAppClass(evaluatedTarget);
+
+    if (typeof basicTarget === 'string') {
+      assertAbsoluteUrl(basicTarget);
+      return basicNavigateTo({ url: basicTarget }, callId);
+    }
+
     if (!isBasicTarget(basicTarget)) return;
 
     return basicNavigateTo(
@@ -92,32 +99,45 @@ async function navigateToTarget(
 
 async function navigateToDataItem(
   dataItem: DataItem,
-  options: { queryParameters?: QueryParameters; hash: Hash },
+  {
+    queryParameters: optionalParameters,
+    hash,
+  }: { queryParameters?: QueryParameters; hash: Hash },
   callId: number
 ) {
-  const url = await load(() => urlForDataItem(dataItem));
-  if (!url) return;
+  const pageAndQuery = await load(() =>
+    getDetailsPageAndQuery(dataItem, currentSiteId())
+  );
 
-  const uri = URI(url);
+  if (pageAndQuery) {
+    const { detailsPage, queryParameters: requiredParameters } = pageAndQuery;
 
-  const { queryParameters } = options;
+    if (optionalParameters) {
+      assertNoParametersConflict(requiredParameters, optionalParameters);
+    }
 
-  if (queryParameters) {
-    const params = new URLSearchParams(uri.query());
-
-    Object.entries(queryParameters).forEach(([key, value]) => {
-      if (params.get(key) === value) {
-        throw new ArgumentError(
-          'The data ID is the same as the URL query param'
-        );
-      }
-    });
-
-    uri.addQuery(queryParameters);
+    return basicNavigateTo(
+      {
+        objId: detailsPage.id(),
+        query: { ...requiredParameters, ...optionalParameters },
+        hash,
+      },
+      callId
+    );
   }
+}
 
-  if (options.hash) uri.hash(options.hash);
-  return basicNavigateTo({ url: uri.resource() }, callId);
+function assertNoParametersConflict(
+  requiredParameters: QueryParameters,
+  optionalParameters: QueryParameters
+) {
+  Object.entries(optionalParameters).forEach(([key, value]) => {
+    if (requiredParameters[key] === value) {
+      throw new ArgumentError(
+        `Query parameter "${key}" is reserved for internal usage`
+      );
+    }
+  });
 }
 
 async function getRoutingTarget(
@@ -169,7 +189,12 @@ function extractRoutingTargetForLink(
   queryParameters: QueryParameters | undefined,
   hashToApply: Hash
 ): RoutingTarget | undefined {
-  if (link.isExternal()) return { url: link.url() };
+  if (link.isExternal()) {
+    const url = link.url();
+    assertAbsoluteUrl(url);
+
+    return { url };
+  }
 
   const hash = hashToApply || link.hash();
   const query =
@@ -180,4 +205,13 @@ function extractRoutingTargetForLink(
   const linkObj = link.obj();
   const objId = linkObj instanceof BasicObj ? linkObj.id() : link.objId();
   return objId ? { objId, query, hash } : undefined;
+}
+
+function assertAbsoluteUrl(url: string) {
+  if (URI(url).is('relative')) {
+    throw new ArgumentError(
+      `Scrivito.navigateTo was called with a relative URL "${url}".` +
+        ' When called with a string, Scrivito.navigateTo only accepts absolute URLs.'
+    );
+  }
 }

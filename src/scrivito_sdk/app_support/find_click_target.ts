@@ -2,7 +2,7 @@
 import { MouseEvent } from 'react';
 import * as URI from 'urijs';
 
-import { isLocalUri } from 'scrivito_sdk/app_support/routing';
+import { isOriginLocal } from 'scrivito_sdk/app_support/routing';
 import { isModifierClick } from 'scrivito_sdk/common';
 
 export type LinkTarget = OpenInCurrentWindow | OpenInNewWindow | null;
@@ -46,7 +46,7 @@ function findLinkTarget(
     const url = currentNode.href;
 
     const uri = URI(url);
-    if (!isLocalUri(uri)) {
+    if (!isOriginLocal(uri)) {
       return null;
     }
 
