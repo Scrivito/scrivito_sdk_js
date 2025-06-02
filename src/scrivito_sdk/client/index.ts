@@ -23,6 +23,7 @@ export {
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
 export { getIamAuthUrl, JrRestApi } from 'scrivito_sdk/client/jr_rest_api';
 export { ClientError } from 'scrivito_sdk/client/client_error';
+export type { ClientErrorRequestDetails } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
 export type {
   BackendFacetRequestParams,

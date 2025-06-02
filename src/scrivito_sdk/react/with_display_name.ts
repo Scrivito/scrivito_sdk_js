@@ -1,6 +1,8 @@
+import { SyncFunctionComponent } from './provide_component';
+
 export function withDisplayName<Props>(
   name: string,
-  component: React.FunctionComponent<Props>
+  component: SyncFunctionComponent<Props>
 ) {
   component.displayName = name;
 

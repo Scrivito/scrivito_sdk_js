@@ -14,6 +14,10 @@ import {
   isCurrentlyCapturing,
   runAndCatchErrorsWhileLoading,
 } from 'scrivito_sdk/loadable';
+import {
+  ComponentType,
+  SyncFunctionComponent,
+} from 'scrivito_sdk/react/provide_component';
 import { displayNameFromComponent } from 'scrivito_sdk/react_connect/display_name_from_component';
 import { forwardElementTypeProps } from 'scrivito_sdk/react_connect/get_element_type';
 import { useForceUpdate } from 'scrivito_sdk/react_connect/hooks/use_force_update';
@@ -28,15 +32,15 @@ import {
   withUnfrozenState,
 } from 'scrivito_sdk/state';
 
-interface ConnectOptions<LoadingProps> {
-  loading?: React.ComponentType<LoadingProps>;
+export interface ConnectOptions<LoadingProps> {
+  loading?: ComponentType<LoadingProps>;
 }
 
 /** @public */
 export function connect<Props extends LoadingProps, LoadingProps>(
-  component: React.FunctionComponent<Props>,
+  component: SyncFunctionComponent<Props>,
   options?: ConnectOptions<LoadingProps>
-): React.FunctionComponent<Props>;
+): SyncFunctionComponent<Props>;
 
 /** @public */
 export function connect<Props extends LoadingProps, LoadingProps>(
@@ -46,15 +50,15 @@ export function connect<Props extends LoadingProps, LoadingProps>(
 
 /** @public */
 export function connect<Props extends LoadingProps, LoadingProps>(
-  component: React.ComponentType<Props>,
+  component: ComponentType<Props>,
   options?: ConnectOptions<LoadingProps>
-): React.ComponentType<Props>;
+): ComponentType<Props>;
 
 /** @internal */
 export function connect<Props extends LoadingProps, LoadingProps extends {}>(
-  component: React.ComponentType<Props>,
+  component: ComponentType<Props>,
   options?: ConnectOptions<LoadingProps>
-): React.FunctionComponent<Props> | React.ComponentClass<Props> {
+): SyncFunctionComponent<Props> | React.ComponentClass<Props> {
   if (typeof component !== 'function') {
     throw new ArgumentError(
       'Scrivito.connect expects either a plain function or a subclass of React.Component'
@@ -78,7 +82,7 @@ interface ConnectedComponent {
 type ConnectedComponentClass<Props> = ConnectedComponent &
   React.ComponentClass<Props>;
 type ConnectedFunctionComponent<Props> = ConnectedComponent &
-  React.FunctionComponent<Props>;
+  SyncFunctionComponent<Props>;
 
 function connectClassComponent<
   Props extends LoadingProps,
@@ -161,7 +165,7 @@ function connectFunctionComponent<
   Props extends LoadingProps,
   LoadingProps extends {}
 >(
-  functionalComponent: React.FunctionComponent<Props>,
+  functionalComponent: SyncFunctionComponent<Props>,
   options?: ConnectOptions<LoadingProps>
 ): ConnectedFunctionComponent<Props> {
   const initialLoaderComponent = options?.loading;
@@ -188,7 +192,7 @@ function useConnectedRender(
 ): React.ReactElement {
   const forceUpdate = useForceUpdate();
 
-  const connectorRef = React.useRef<ComponentConnector | undefined>();
+  const connectorRef = React.useRef<ComponentConnector | undefined>(undefined);
   if (!connectorRef.current) {
     connectorRef.current = new ComponentConnector({
       forceUpdate,
@@ -209,7 +213,7 @@ function useConnectedRender(
 }
 
 function isConnectedComponent<Props>(
-  component: React.ComponentType<Props>
+  component: ComponentType<Props>
 ): component is ConnectedComponentClass<Props> {
   return (
     (component as ConnectedComponentClass<Props>)

@@ -18,42 +18,51 @@ import {
   WidgetClass,
 } from 'scrivito_sdk/realm';
 
-interface ProvidedComponentOptions<Props> {
-  loading?: React.ComponentType<Props>;
+export type SyncFunctionComponent<P = {}> = {
+  (props: P): React.ReactNode;
+  displayName?: string | undefined;
+};
+
+export type ComponentType<P = {}> =
+  | React.ComponentClass<P>
+  | SyncFunctionComponent<P>;
+
+export interface ProvidedComponentOptions<Props> {
+  loading?: ComponentType<Props>;
 }
 
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   objClass: ObjClass<AttrDefs>,
-  component: React.ComponentType<PageComponentProps<AttrDefs>>,
+  component: ComponentType<PageComponentProps<AttrDefs>>,
   options?: ProvidedComponentOptions<PageComponentProps<AttrDefs>>
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrObjClass: string | ObjClass,
-  component: React.ComponentType<Partial<PageComponentProps>>,
+  component: ComponentType<Partial<PageComponentProps>>,
   options?: ProvidedComponentOptions<Partial<PageComponentProps>>
 ): void;
 
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   widgetClass: WidgetClass<AttrDefs>,
-  component: React.ComponentType<WidgetComponentProps<AttrDefs>>,
+  component: ComponentType<WidgetComponentProps<AttrDefs>>,
   options?: ProvidedComponentOptions<WidgetComponentProps<AttrDefs>>
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrWidgetClass: string | WidgetClass,
-  component: React.ComponentType<Partial<WidgetComponentProps>>,
+  component: ComponentType<Partial<WidgetComponentProps>>,
   options?: ProvidedComponentOptions<Partial<WidgetComponentProps>>
 ): void;
 
 /** @internal */
 export function provideComponent(
   classNameOrClass: string | ObjClass | WidgetClass,
-  component: React.ComponentType,
+  component: ComponentType,
   options?: { loading?: typeof component }
 ): void {
   const className = getClassName(classNameOrClass);
@@ -68,7 +77,7 @@ export function provideComponent(
   registerComponentForAppClass(className, wrappedComponent);
 }
 
-function wrapComponent(component: React.ComponentType) {
+function wrapComponent(component: ComponentType) {
   const wrappedComponent = isClassComponent(component)
     ? wrapClassComponent(component)
     : wrapFunctionComponent(component);
@@ -79,8 +88,8 @@ function wrapComponent(component: React.ComponentType) {
 }
 
 function wrapFunctionComponent<Props extends {}>(
-  functionComponent: React.FunctionComponent<Props>
-): React.FunctionComponent<Props> {
+  functionComponent: SyncFunctionComponent<Props>
+): SyncFunctionComponent<Props> {
   return memo((props: Props) => {
     return hasWidgetProp(props)
       ? wrapInWidgetTag(functionComponent(props))
@@ -110,7 +119,7 @@ function wrapInWidgetTag<Rendered extends React.ReactNode>(
     : React.createElement(WidgetTag, { children: rendered });
 }
 
-export function isComponentMissingName(component: React.ComponentType) {
+export function isComponentMissingName(component: ComponentType) {
   // In some browsers functional components are missing the `name` property.
   // In some other browsers they have that property, but the value is meaningless: `_class`.
   return (

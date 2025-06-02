@@ -33,6 +33,7 @@ async function fetch(
     data,
     headers,
     loginHandler,
+    idp,
     method: verb,
     params,
     authViaAccount,
@@ -51,7 +52,9 @@ async function fetch(
 
     handler =
       loginHandler ??
-      (config.loginHandler === 'redirect' ? loginRedirectHandler : undefined);
+      (config.loginHandler === 'redirect'
+        ? (visit) => loginRedirectHandler(visit, idp)
+        : undefined);
 
     authProvider = getTokenProvider({
       audience: audience || new URL(url).origin,

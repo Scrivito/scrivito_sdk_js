@@ -78,7 +78,7 @@ function replaceQualifiedPlaceholder({
   const dataItem = getDataItem(dataClassName, dataStack);
   if (dataItem === 'loading' || !dataItem) return '';
 
-  const attributeValue = dataItem.get(attributeName);
+  const attributeValue = dataItem.getLocalized(attributeName);
   if (typeof attributeValue !== 'string') return '';
 
   return attributeValue;

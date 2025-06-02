@@ -9,11 +9,11 @@ import {
   createRestApiConnectionForClass,
   registerExternalDataClass,
 } from 'scrivito_sdk/data_integration';
+import { createRestApiSchema } from 'scrivito_sdk/data_integration/create_rest_api_schema';
 import { LazyAsyncDataClassTitle } from 'scrivito_sdk/data_integration/data_class_schema';
 import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
 import { getRealmClass } from 'scrivito_sdk/realm';
-import { createRestApiSchema } from './create_rest_api_schema';
 
 export type RestApi = string | ({ url: string } & ApiClientOptions);
 
@@ -83,7 +83,7 @@ async function desugar(params: ProvideDataClassParams) {
 
     return {
       connection: Promise.resolve(createRestApiConnectionForClass(apiClient)),
-      ...createRestApiSchema(
+      schema: createRestApiSchema(
         { attributes: params.attributes, title: params.title },
         apiClient
       ),

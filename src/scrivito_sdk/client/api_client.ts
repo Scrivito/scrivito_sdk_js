@@ -1,3 +1,5 @@
+import merge from 'lodash-es/merge';
+
 import { LoginHandler } from 'scrivito_sdk/client';
 
 export interface FetchParams {
@@ -26,6 +28,8 @@ interface FetchBaseOptions extends ApiClientBaseOptions {
   params?: FetchParams;
   data?: FetchData;
   method?: Method;
+  // @internal
+  idp?: string;
   // note: only for internal use, will be removed in the future
   loginHandler?: LoginHandler;
 }
@@ -85,10 +89,11 @@ export class ApiClient {
   ) {}
 
   fetch(path: string, options?: FetchOptions) {
-    const mergedOptions: MaybeInvalidAuthViaFetchConfig = {
-      ...this.options,
-      ...options,
-    };
+    const mergedOptions: MaybeInvalidAuthViaFetchConfig = merge(
+      {},
+      this.options,
+      options
+    );
 
     assertAuthViaOptions(mergedOptions);
 

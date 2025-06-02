@@ -1,4 +1,4 @@
-import { InternalError } from 'scrivito_sdk/common';
+import { InternalError, isPresent } from 'scrivito_sdk/common';
 import { conservativeUpdate } from 'scrivito_sdk/state/conservative_update';
 import { failIfFrozen } from 'scrivito_sdk/state/frozen';
 import { notifySubscribers } from 'scrivito_sdk/state/subscribers';
@@ -144,7 +144,7 @@ abstract class AbstractStateStore<StateType>
   ): SubType<StateType, K> | undefined {
     const state = this.untrackedGet();
 
-    if (state !== undefined && state !== null) {
+    if (isPresent(state)) {
       // we know that state is neither null or undefined
       const nonNullState = state as NonNullable<typeof state>;
       const subState = nonNullState[key];

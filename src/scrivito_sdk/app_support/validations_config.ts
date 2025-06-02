@@ -1,5 +1,5 @@
 import { getConstraintsValidationCallback } from 'scrivito_sdk/app_support/constraints_validation_callback';
-import { ValidationSeverityLevel } from 'scrivito_sdk/common';
+import { ValidationSeverityLevel, isObject } from 'scrivito_sdk/common';
 import { AttributeValue, Obj, Widget } from 'scrivito_sdk/realm';
 
 export const VALIDATION_SEVERITY_LEVELS: ValidationSeverityLevel[] = [
@@ -82,7 +82,7 @@ export function isAttributeValidationConstraintsWithOptions(
   const [maybeOptions, maybeConstraints] = candidate;
   if (!isAttributeValidationOptions(maybeOptions)) return false;
 
-  return !!maybeConstraints && typeof maybeConstraints === 'object';
+  return isObject(maybeConstraints);
 }
 
 function isAttributeValidationOptions(

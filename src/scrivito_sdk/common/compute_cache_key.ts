@@ -1,10 +1,8 @@
+import { isObject } from 'scrivito_sdk/common';
+
 export function computeCacheKey(data: unknown): string {
   const normalizedData = normalizeData(data);
   return JSON.stringify(normalizedData);
-}
-
-interface UnknownObject {
-  [index: string]: unknown;
 }
 
 function normalizeData(data: unknown): unknown {
@@ -21,6 +19,6 @@ function normalizeData(data: unknown): unknown {
   return data;
 }
 
-function isUnknownObject(data: unknown): data is UnknownObject {
-  return typeof data === 'object' && data !== null;
+function isUnknownObject(data: unknown): data is Record<string, unknown> {
+  return isObject(data);
 }

@@ -1,3 +1,5 @@
+import { isObject } from 'scrivito_sdk/common';
+
 export type PrimitiveValue =
   | null
   | undefined
@@ -15,12 +17,7 @@ export interface PrimitiveObject {
 export function isPrimitiveObject(
   value: PrimitiveValue
 ): value is PrimitiveObject {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    !instanceOfClass(value)
-  );
+  return isObject(value) && !instanceOfClass(value);
 }
 
 function instanceOfClass(object: {}): boolean {
