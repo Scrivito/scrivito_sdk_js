@@ -191,10 +191,17 @@ export const LinkTag = connect(function LinkTag(props: {
     let queryParameters = props.params || undefined;
 
     if (dataStack) {
-      queryParameters = {
-        ...getDataContextParameters(basicObjOrLink, dataStack),
-        ...queryParameters,
-      };
+      const dataContextParameters = getDataContextParameters(
+        basicObjOrLink,
+        dataStack
+      );
+
+      if (dataContextParameters) {
+        queryParameters = {
+          ...dataContextParameters,
+          ...queryParameters,
+        };
+      }
     }
 
     return queryParameters;

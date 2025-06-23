@@ -340,33 +340,8 @@ export class ExternalDataItem extends DataItem {
       : null;
   }
 
-  /** @internal */
   getRaw(attributeName: string): unknown {
     return this.getExternalData()?.customData[attributeName];
-  }
-
-  /** @internal */
-  getLocalized(attributeName: string): unknown {
-    const attributeValue = this.get(attributeName);
-    if (typeof attributeValue !== 'string') return attributeValue;
-
-    const attributeDefinition = this.attributeDefinitions()[attributeName];
-    if (!attributeDefinition) return attributeValue;
-
-    const [attributeType, attributeConfig] = attributeDefinition;
-    if (attributeType === 'enum') {
-      const valueConfig = attributeConfig.values.find(
-        (config) => config.value === attributeValue
-      );
-
-      if (!valueConfig) throw new InternalError();
-
-      const { title } = valueConfig;
-
-      return typeof title === 'string' ? title : attributeValue;
-    }
-
-    return attributeValue;
   }
 
   async update(attributes: DataItemAttributes): Promise<void> {

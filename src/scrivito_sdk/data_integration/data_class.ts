@@ -299,11 +299,6 @@ export abstract class DataItem {
   getRaw(_attributeName: string): unknown {
     return;
   }
-
-  /** @internal */
-  getLocalized(attributeName: string): unknown {
-    return this.get(attributeName);
-  }
 }
 
 /** @public */

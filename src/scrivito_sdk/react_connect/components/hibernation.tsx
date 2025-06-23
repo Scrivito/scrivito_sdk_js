@@ -21,9 +21,7 @@ export const Hibernation = ({
     return () => subscription?.unsubscribe();
   }, [parentAwakeness]);
 
-  const awakenessRef = React.useRef<BehaviorSubject<boolean> | undefined>(
-    undefined
-  );
+  const awakenessRef = React.useRef<BehaviorSubject<boolean>>();
 
   if (awakenessRef.current === undefined && !awake) return null;
 

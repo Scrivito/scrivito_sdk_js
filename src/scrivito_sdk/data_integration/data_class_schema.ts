@@ -12,7 +12,7 @@ export type LazyAsyncDataClassSchema = LazyAsync<DataClassSchema>;
 
 type DataClassSchemaCallback = () => Promise<DataClassSchema>;
 
-export interface DataClassSchema {
+interface DataClassSchema {
   attributes?: LazyAsyncDataAttributeDefinitions;
   title?: LazyAsyncDataClassTitle;
 }

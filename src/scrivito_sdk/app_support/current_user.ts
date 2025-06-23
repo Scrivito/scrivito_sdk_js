@@ -1,5 +1,4 @@
 import { anonymousVisitorAuthHandler } from 'scrivito_sdk/app_support/anonymous_visitor_auth_handler';
-import { EnsureUserIsLoggedInParams } from 'scrivito_sdk/app_support/auth_handler';
 import { insideUiAuthHandler } from 'scrivito_sdk/app_support/inside_ui_auth_handler';
 import { isInLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
 import { loggedInVisitorAuthHandler } from 'scrivito_sdk/app_support/logged_in_visitor_auth_handler';
@@ -22,10 +21,8 @@ export function isUserLoggedIn(): boolean {
 }
 
 /** @public */
-export function ensureUserIsLoggedIn(
-  params: EnsureUserIsLoggedInParams = {}
-): void {
-  return authHandler().ensureUserIsLoggedIn(params);
+export function ensureUserIsLoggedIn(): void {
+  return authHandler().ensureUserIsLoggedIn();
 }
 
 export function getIamTokenFetcher() {

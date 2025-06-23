@@ -89,7 +89,7 @@ async function navigateToTarget(
     if (!isBasicTarget(basicTarget)) return;
 
     return basicNavigateTo(
-      await getRoutingTarget(basicTarget, options),
+      await loadRoutingTarget(basicTarget, options),
       callId
     );
   } catch (e) {
@@ -140,12 +140,12 @@ function assertNoParametersConflict(
   });
 }
 
-async function getRoutingTarget(
+async function loadRoutingTarget(
   basicTarget: BasicObj | BasicLink,
   options: { queryParameters?: QueryParameters; hash: Hash }
 ) {
   const routingTarget = await load(() =>
-    extractRoutingTarget(basicTarget, options.queryParameters, options.hash)
+    getRoutingTarget(basicTarget, options.queryParameters, options.hash)
   );
 
   if (!routingTarget) {
@@ -172,39 +172,34 @@ function getNavigateToOptions(options: Options | undefined) {
   };
 }
 
-function extractRoutingTarget(
+function getRoutingTarget(
   target: BasicObj | BasicLink,
   query: QueryParameters | undefined,
   hash: Hash
 ): RoutingTarget | undefined {
   if (target instanceof BasicLink) {
-    return extractRoutingTargetForLink(target, query, hash);
+    return getRoutingTargetFromLink(target, query, hash);
   }
 
   return { objId: target.id(), query, hash };
 }
 
-function extractRoutingTargetForLink(
+function getRoutingTargetFromLink(
   link: BasicLink,
-  queryParameters: QueryParameters | undefined,
-  hashToApply: Hash
+  query: QueryParameters | undefined,
+  hash: Hash
 ): RoutingTarget | undefined {
-  if (link.isExternal()) {
-    const url = link.url();
-    assertAbsoluteUrl(url);
+  if (link.isExternal()) return { url: link.url() };
 
-    return { url };
-  }
+  const obj = link.obj();
+  const objId = obj instanceof BasicObj ? obj.id() : link.objId();
+  if (!objId) return;
 
-  const hash = hashToApply || link.hash();
-  const query =
-    queryParameters && !isEmpty(queryParameters)
-      ? queryParameters
-      : link.queryParameters();
-
-  const linkObj = link.obj();
-  const objId = linkObj instanceof BasicObj ? linkObj.id() : link.objId();
-  return objId ? { objId, query, hash } : undefined;
+  return {
+    objId,
+    query: !isEmpty(query) ? query : link.queryParameters(),
+    hash: hash || link.hash(),
+  };
 }
 
 function assertAbsoluteUrl(url: string) {

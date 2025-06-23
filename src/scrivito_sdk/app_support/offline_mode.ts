@@ -7,8 +7,11 @@ import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import {
   ScrivitoError,
   getConfiguredTenant,
+  getFromLocalStorage,
   onReset,
   reload,
+  removeFromLocalStorage,
+  setInLocalStorage,
 } from 'scrivito_sdk/common';
 import {
   deleteOfflineStoreCaches,
@@ -34,7 +37,7 @@ export function enterOfflineMode(): void {
       );
     }
 
-    window.localStorage.setItem(getOfflineModeStorageKey(), 'true');
+    setInLocalStorage(getOfflineModeStorageKey(), 'true');
     waitUntilWritingFinishedAndReload();
   }
 }
@@ -47,7 +50,7 @@ async function waitUntilWritingFinishedAndReload() {
 /** @beta */
 export function leaveOfflineMode(): void {
   if (isInOfflineMode()) {
-    window.localStorage.removeItem(getOfflineModeStorageKey());
+    removeFromLocalStorage(getOfflineModeStorageKey());
     reload();
   }
 }
@@ -90,7 +93,7 @@ function calculateOfflineMode(config: Configuration) {
 }
 
 function getOfflineModeFromStorage() {
-  return window.localStorage.getItem(getOfflineModeStorageKey());
+  return getFromLocalStorage(getOfflineModeStorageKey());
 }
 
 function getOfflineModeStorageKey() {

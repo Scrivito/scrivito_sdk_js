@@ -1,7 +1,4 @@
-import {
-  AuthHandler,
-  EnsureUserIsLoggedInParams,
-} from 'scrivito_sdk/app_support/auth_handler';
+import { AuthHandler } from 'scrivito_sdk/app_support/auth_handler';
 import { changeLoggedInState } from 'scrivito_sdk/app_support/logged_in_state';
 import { fetchLoggedInUser } from 'scrivito_sdk/app_support/user_logged_in_status';
 
@@ -14,8 +11,8 @@ export const anonymousVisitorAuthHandler: AuthHandler = {
     return false;
   },
 
-  ensureUserIsLoggedIn(params: EnsureUserIsLoggedInParams) {
-    ensureUserIsLoggedInAsync(params);
+  ensureUserIsLoggedIn() {
+    ensureUserIsLoggedInAsync();
   },
 
   iamTokenFetcher() {
@@ -27,8 +24,8 @@ export const anonymousVisitorAuthHandler: AuthHandler = {
   },
 };
 
-async function ensureUserIsLoggedInAsync(params: EnsureUserIsLoggedInParams) {
+async function ensureUserIsLoggedInAsync() {
   // If the user isn't logged-in, this triggers a login redirect
-  await fetchLoggedInUser(params);
+  await fetchLoggedInUser();
   changeLoggedInState(true);
 }

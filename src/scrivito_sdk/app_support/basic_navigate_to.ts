@@ -16,12 +16,7 @@ import {
   isOriginLocal,
   isSiteLocal,
 } from 'scrivito_sdk/app_support/routing';
-import {
-  InternalError,
-  QueryParameters,
-  assignLocation,
-  logError,
-} from 'scrivito_sdk/common';
+import { QueryParameters, assignLocation, logError } from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
 import { isBinaryBasicObj } from 'scrivito_sdk/realm';
@@ -120,7 +115,7 @@ function isUrlRoutingTarget(
 function destinationForUrl(url: string) {
   const uri = URI(url);
 
-  if (uri.is('relative')) throw new InternalError();
+  if (uri.is('relative')) return { type: 'local' as const, resource: url };
 
   if (isOriginLocal(uri)) {
     return isSiteLocal(uri)

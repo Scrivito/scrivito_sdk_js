@@ -4,9 +4,12 @@ import {
   ScrivitoError,
   currentHref,
   getConfiguredTenant,
+  getFromLocalStorage,
   onReset,
   reload,
+  removeFromLocalStorage,
   replaceHistoryState,
+  setInLocalStorage,
 } from 'scrivito_sdk/common';
 
 let loggedInState: boolean | undefined;
@@ -29,8 +32,7 @@ export function initializeLoggedInState(): void {
     return;
   }
 
-  loggedInState =
-    window.localStorage.getItem(isUserLoggedInStorageKey()) !== null;
+  loggedInState = getFromLocalStorage(isUserLoggedInStorageKey()) !== null;
 }
 
 export function isInLoggedInState() {
@@ -45,7 +47,7 @@ export function changeLoggedInState(state: boolean): void {
   if (state) {
     setFlagInLocalStorage();
   } else {
-    window.localStorage.removeItem(isUserLoggedInStorageKey());
+    removeFromLocalStorage(isUserLoggedInStorageKey());
   }
 
   reload();
@@ -53,9 +55,7 @@ export function changeLoggedInState(state: boolean): void {
 
 function setFlagInLocalStorage() {
   // Never write into the flag when inside UI!
-  if (!uiAdapter) {
-    window.localStorage.setItem(isUserLoggedInStorageKey(), '');
-  }
+  if (!uiAdapter) setInLocalStorage(isUserLoggedInStorageKey(), '');
 }
 
 function isUserLoggedInStorageKey() {

@@ -16,7 +16,10 @@ export {
 } from 'scrivito_sdk/models/basic_attribute_content';
 export { BasicField } from 'scrivito_sdk/models/basic_field';
 export { BasicLink } from 'scrivito_sdk/models/basic_link';
-export type { BasicLinkAttributes } from 'scrivito_sdk/models/basic_link';
+export type {
+  ExternalLink,
+  BasicLinkAttributes,
+} from 'scrivito_sdk/models/basic_link';
 export { BasicObjFacetValue } from 'scrivito_sdk/models/basic_obj_facet_value';
 export {
   BasicObjSearch,

@@ -1,4 +1,3 @@
-import { EnsureUserIsLoggedInParams } from 'scrivito_sdk/app_support/auth_handler';
 import { getUserInfoPath } from 'scrivito_sdk/app_support/user_info';
 import { JrRestApi } from 'scrivito_sdk/client';
 import { setInterval } from 'scrivito_sdk/common';
@@ -11,10 +10,8 @@ export function startPollingLoggedInUser(): void {
   userLoggedInStatusInterval = setInterval(fetchLoggedInUser, 60000);
 }
 
-export async function fetchLoggedInUser(
-  params: EnsureUserIsLoggedInParams
-): Promise<void> {
-  await JrRestApi.get(await getUserInfoPath(), params);
+export async function fetchLoggedInUser(): Promise<void> {
+  await JrRestApi.get(await getUserInfoPath());
 }
 
 // For test purposes only

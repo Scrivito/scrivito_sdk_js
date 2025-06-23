@@ -23,7 +23,6 @@ import { AttributeValue } from 'scrivito_sdk/react/components/content_tag/attrib
 import { WidgetProps } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
 import { useInPlaceEditing } from 'scrivito_sdk/react/hooks/use_in_place_editing';
-import { ComponentType } from 'scrivito_sdk/react/provide_component';
 import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
@@ -53,7 +52,7 @@ type ContentTagWithElementCallbackProps = ContentTagProps & {
   elementCallback?: (element?: HTMLElement) => void;
 };
 
-export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementCallbackProps> =
+export const ContentTagWithElementCallback: React.ComponentType<ContentTagWithElementCallbackProps> =
   connect(function ContentTagWithElementCallback({
     content,
     attribute,

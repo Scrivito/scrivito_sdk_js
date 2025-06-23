@@ -129,6 +129,6 @@ export class BasicLink {
   }
 }
 
-interface ExternalLink extends BasicLink {
+export interface ExternalLink extends BasicLink {
   url(): string;
 }

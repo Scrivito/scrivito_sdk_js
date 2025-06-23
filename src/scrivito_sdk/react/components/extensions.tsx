@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
+import { legacyRenderExtension } from 'scrivito_sdk/app_support/legacy_render_extension';
 import { getDocument, onReset } from 'scrivito_sdk/common';
 
 type OnShowExtension = (reactElement: React.ReactElement | null) => void;
@@ -8,7 +9,8 @@ type OnShowExtension = (reactElement: React.ReactElement | null) => void;
 let onShowExtension: OnShowExtension | undefined;
 
 export function showExtension(reactElement: React.ReactElement): void {
-  if (onShowExtension) onShowExtension(reactElement);
+  if (!onShowExtension) return legacyRenderExtension(reactElement);
+  onShowExtension(reactElement);
 }
 
 /** @public */
