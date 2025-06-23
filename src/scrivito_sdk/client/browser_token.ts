@@ -1,6 +1,6 @@
 import { ClientError, getIamAuthUrl } from 'scrivito_sdk/client';
 import { fetchJson } from 'scrivito_sdk/client/fetch_json';
-import { isAuthMissingClientError } from 'scrivito_sdk/client/login_handler';
+import { isAuthError } from 'scrivito_sdk/client/login_handler';
 import { InternalError, fetchConfiguredTenant } from 'scrivito_sdk/common';
 
 export interface BrowserTokenParams {
@@ -39,7 +39,7 @@ function resolveLocationInAuthError(
   error: unknown,
   authLocation: string
 ): unknown {
-  if (!isAuthMissingClientError(error)) return error;
+  if (!isAuthError(error)) return error;
 
   return new ClientError(error.message, error.code, {
     visit: error.details.visit.replace('$JR_AUTH_LOCATION', authLocation),

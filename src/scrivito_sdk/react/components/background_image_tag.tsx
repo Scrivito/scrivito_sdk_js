@@ -66,7 +66,7 @@ export const BackgroundImageTag: React.ComponentType<BackgroundImageTagProps> =
       return () => decoder.clear();
     }, [decoder]);
 
-    const Tag = (tag || 'div') as keyof JSX.IntrinsicElements;
+    const Tag = (tag || 'div') as keyof React.JSX.IntrinsicElements;
 
     assertNoBackgroundRelatedProperties(style);
 

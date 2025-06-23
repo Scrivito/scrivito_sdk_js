@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { ValidationsConfig } from 'scrivito_sdk/app_support/validations_config';
 import { Binary } from 'scrivito_sdk/models';
 import {
@@ -90,7 +91,7 @@ export type RestrictDataTo = Array<
 export type IteratesOver = 'data';
 
 export interface AttributeEditingOptions {
-  allowedTags?: readonly (keyof JSX.IntrinsicElements)[];
+  allowedTags?: readonly (keyof React.JSX.IntrinsicElements)[];
   multiLine?: boolean;
   showHtmlSource?: boolean;
   toolbar?: readonly ToolbarButton[];
@@ -149,6 +150,7 @@ export interface RegisteredComponentGroupDescription {
 }
 
 type ToolbarButton =
+  | 'abbr'
   | 'blockquote'
   | 'bold'
   | 'bulletList'

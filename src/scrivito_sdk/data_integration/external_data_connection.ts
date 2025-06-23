@@ -1,5 +1,10 @@
 import { ClientError } from 'scrivito_sdk/client';
-import { ArgumentError, isObject, isValidInteger } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  isObject,
+  isPresent,
+  isValidInteger,
+} from 'scrivito_sdk/common';
 import { anticipatedDataConnection } from 'scrivito_sdk/data_integration/anticipated_data_connection';
 import { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
@@ -185,7 +190,7 @@ function parseIndexResult(result: unknown): NormalIndexResult {
         'Continuation of an index result must be a non-empty string, null or undefined'
       );
     }
-  } else if (continuation !== null && continuation !== undefined) {
+  } else if (isPresent(continuation)) {
     throw new ArgumentError(
       'Continuation of an index result must be a string, null or undefined'
     );

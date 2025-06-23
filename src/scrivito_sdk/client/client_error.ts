@@ -1,6 +1,6 @@
 import { ScrivitoError } from 'scrivito_sdk/common';
 
-export interface RequestDetails {
+export interface ClientErrorRequestDetails {
   url?: string;
   method?: string;
 }
@@ -12,7 +12,7 @@ export class ClientError extends ScrivitoError {
     readonly code: string | undefined,
     readonly details: object,
     readonly httpStatus?: number,
-    readonly requestDetails: RequestDetails = {}
+    readonly requestDetails: ClientErrorRequestDetails = {}
   ) {
     super(message);
   }

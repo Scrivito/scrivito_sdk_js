@@ -80,7 +80,7 @@ async function desugar(
 
     return {
       connection: createRestApiConnectionForItem(apiClient),
-      ...createRestApiSchema(
+      schema: createRestApiSchema(
         { attributes: params.attributes, title: params.title },
         apiClient
       ),

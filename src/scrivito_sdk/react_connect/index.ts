@@ -1,4 +1,5 @@
 export { connect } from 'scrivito_sdk/react_connect/connect';
+export type { ConnectOptions } from 'scrivito_sdk/react_connect/connect';
 export { Hibernation } from 'scrivito_sdk/react_connect/components/hibernation';
 export { finishLoading } from 'scrivito_sdk/react_connect/loading_monitor';
 export { isClassComponent } from 'scrivito_sdk/react_connect/is_class_component';

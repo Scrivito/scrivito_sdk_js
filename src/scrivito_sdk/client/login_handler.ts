@@ -12,7 +12,7 @@ export async function withLoginHandler(
   try {
     return await fn();
   } catch (error: unknown) {
-    if (loginHandler && isAuthMissingClientError(error)) {
+    if (loginHandler && isAuthError(error)) {
       return loginHandler(error.details.visit);
     }
 
@@ -20,17 +20,23 @@ export async function withLoginHandler(
   }
 }
 
-export function isAuthMissingClientError(
-  error: unknown
-): error is AuthMissingError {
+export type AuthErrorCode =
+  | typeof ERROR_CODE_AUTH_CHECK_REQUIRED
+  | typeof ERROR_CODE_AUTH_MISSING;
+
+export const ERROR_CODE_AUTH_CHECK_REQUIRED = 'auth_check_required';
+export const ERROR_CODE_AUTH_MISSING = 'auth_missing';
+
+export function isAuthError(error: unknown): error is AuthError {
   return (
     error instanceof ClientError &&
-    error.code === 'auth_missing' &&
+    (error.code === ERROR_CODE_AUTH_MISSING ||
+      error.code === ERROR_CODE_AUTH_CHECK_REQUIRED) &&
     'visit' in error.details &&
     typeof error.details.visit === 'string'
   );
 }
 
-interface AuthMissingError extends ClientError {
+interface AuthError extends ClientError {
   details: { visit: string };
 }

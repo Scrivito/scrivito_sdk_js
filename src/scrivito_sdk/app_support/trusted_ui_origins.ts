@@ -1,7 +1,6 @@
 import * as URI from 'urijs';
 
 import { getConfiguration } from 'scrivito_sdk/app_support/configure';
-import { getFromLocalStorage } from 'scrivito_sdk/common';
 
 export async function checkIfTrustedOrigin(origin: string): Promise<boolean> {
   if (
@@ -49,5 +48,7 @@ function getLocalOrigins() {
   // intended for debugging purposes.
   // note: you may have to allow 3rd party cookies in your browser
   // for this to work!
-  return getFromLocalStorage('SCRIVITO_TRUSTED_UI_ORIGINS')?.split(' ') ?? [];
+  return (
+    window.localStorage.getItem('SCRIVITO_TRUSTED_UI_ORIGINS')?.split(' ') ?? []
+  );
 }

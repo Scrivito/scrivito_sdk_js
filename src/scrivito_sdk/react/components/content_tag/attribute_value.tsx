@@ -47,7 +47,7 @@ export const AttributeValue = connect(
     'Scrivito.ContentTag.AttributeValue',
     <Type extends CmsAttributeType>(props: AttributeValueProps<Type>) => {
       const dataContextContainer = useDataContextContainer();
-      const element = React.useRef<HTMLElement>();
+      const element = React.useRef<HTMLElement | undefined>(undefined);
 
       React.useEffect(() => {
         if (!element.current) return;
