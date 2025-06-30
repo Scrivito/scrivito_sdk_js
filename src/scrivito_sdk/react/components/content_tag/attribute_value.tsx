@@ -25,6 +25,7 @@ import {
   DataContextContainer,
   useDataContextContainer,
 } from 'scrivito_sdk/react/data_context_container';
+import { handleRefAssignment } from 'scrivito_sdk/react/handle_ref_assignment';
 import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
 import { connect } from 'scrivito_sdk/react_connect';
 
@@ -40,6 +41,7 @@ export interface AttributeValueProps<Type extends CmsAttributeType> {
   tag: string;
   widgetProps?: WidgetProps;
   elementCallback?: (element?: HTMLElement) => void;
+  ref?: React.Ref<Element>;
 }
 
 export const AttributeValue = connect(
@@ -86,11 +88,15 @@ export const AttributeValue = connect(
         ...customProps,
         ...renderProps,
         ...editingProps,
-        ref: (e?: HTMLElement) => {
-          element.current = e;
-          if (props.elementCallback) props.elementCallback(e);
-        },
+        ref: combineRefs,
       });
+
+      function combineRefs(e: HTMLElement) {
+        handleRefAssignment(e, props.ref);
+
+        element.current = e;
+        if (props.elementCallback) props.elementCallback(e);
+      }
     }
   )
 );
@@ -220,12 +226,11 @@ function renderPropsForHtml(
   return {
     dangerouslySetInnerHTML: {
       __html: replaceInternalLinks(
-        diffContent ||
-          replacePlaceholdersWithData(field.get(), {
-            placeholders,
-            dataStack,
-            transform: escape,
-          }),
+        replacePlaceholdersWithData(diffContent || field.get(), {
+          placeholders,
+          dataStack,
+          transform: escape,
+        }),
         { dataStack }
       ),
     },
@@ -238,25 +243,39 @@ function renderPropsForString(
   customChildren?: { children: React.ReactNode },
   dataContextContainer?: DataContextContainer
 ) {
-  if (isComparisonActive()) {
-    const diffContent = field.getHtmlDiffContent(getComparisonRange());
+  const diffContent = isComparisonActive()
+    ? field.getHtmlDiffContent(getComparisonRange())
+    : undefined;
 
-    if (diffContent) {
-      return { dangerouslySetInnerHTML: { __html: diffContent } };
-    }
+  if (diffContent) {
+    return renderPropsForStringWithPlaceholders(
+      diffContent,
+      dataContextContainer
+    );
   }
 
+  return (
+    customChildren ??
+    renderPropsForStringWithPlaceholders(field.get(), dataContextContainer)
+  );
+}
+
+function renderPropsForStringWithPlaceholders(
+  content: string,
+  dataContextContainer?: DataContextContainer
+) {
   const placeholders = dataContextContainer?.placeholders;
   const dataStack = dataContextContainer?.dataStack;
 
-  return (
-    customChildren ?? {
-      children: replacePlaceholdersWithData(field.get(), {
+  return {
+    dangerouslySetInnerHTML: {
+      __html: replacePlaceholdersWithData(content, {
         placeholders,
         dataStack,
+        transform: escape,
       }),
-    }
-  );
+    },
+  };
 }
 
 function renderPropsForNumber(field: BasicField<'integer' | 'float'>) {

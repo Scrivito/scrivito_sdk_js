@@ -20,7 +20,7 @@ export function throwMissingCallbackError(
 ) {
   return () => {
     throw new ScrivitoError(
-      `No ${callbackName} callback defined for data class "${dataClass}"`
+      `No "${callbackName}" callback function defined for data class "${dataClass}".`
     );
   };
 }

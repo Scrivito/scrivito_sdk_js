@@ -5,6 +5,7 @@ import { connect } from 'scrivito_sdk/react_connect';
 
 type WidgetTagProps = React.HTMLAttributes<HTMLElement> & {
   tag?: string;
+  ref?: React.Ref<Element>;
 };
 
 /** @public */

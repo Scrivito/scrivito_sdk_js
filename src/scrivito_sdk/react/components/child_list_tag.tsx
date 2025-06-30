@@ -14,6 +14,7 @@ type ChildListTagProps = React.HTMLAttributes<HTMLElement> & {
   parent?: Obj;
   tag?: string;
   renderChild?: RenderChild;
+  ref?: React.Ref<Element>;
 };
 
 /** @public */

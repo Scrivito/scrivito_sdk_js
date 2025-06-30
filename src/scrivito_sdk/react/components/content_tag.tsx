@@ -37,6 +37,8 @@ export interface ContentTagProps<
   widgetProps?: WidgetProps;
   renderEmptyAttribute?: boolean;
 
+  ref?: React.Ref<Element>;
+
   [key: string]: unknown;
 }
 
@@ -62,13 +64,14 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
     widgetProps,
     elementCallback,
     renderEmptyAttribute,
+    ref,
     ...customProps
   }: ContentTagWithElementCallbackProps) {
     const isInPlaceEditingEnabled = useInPlaceEditing();
 
     if (!content) return null;
 
-    let field = getField(content, attribute);
+    const field = getField(content, attribute);
     if (!field) return null;
 
     if (isComparisonActive()) {
@@ -77,9 +80,6 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
       if (shouldComparisonBeSkipped(fromField, toField, renderEmptyAttribute)) {
         return null;
       }
-
-      field = toField || fromField;
-      if (!field) return null;
     }
 
     if (
@@ -99,6 +99,7 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
       tag: tag || 'div',
       customProps,
       widgetProps,
+      ref,
     };
 
     const AttributeValueWithEditing = importFrom(

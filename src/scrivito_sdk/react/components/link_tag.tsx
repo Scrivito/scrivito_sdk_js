@@ -37,6 +37,7 @@ export const LinkTag = connect(function LinkTag(props: {
   params?: QueryParameters | false | null;
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   children?: React.ReactNode;
+  ref?: React.Ref<HTMLAnchorElement | null>;
 }) {
   const dataStack = useDataStack();
   const placeholders = usePlaceholders();
@@ -55,6 +56,7 @@ export const LinkTag = connect(function LinkTag(props: {
       target={getTarget()}
       rel={getRel()}
       onClick={onClick}
+      ref={props.ref}
     >
       {children}
     </a>

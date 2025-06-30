@@ -1,6 +1,7 @@
 import * as URI from 'urijs';
 
-export function ensureUrlHasProtocol(url: string): string {
+export function sanitizeUrl(rawUrl: string): string {
+  const url = rawUrl.trim();
   let uri: URI;
 
   try {

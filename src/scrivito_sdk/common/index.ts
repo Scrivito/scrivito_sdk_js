@@ -6,7 +6,7 @@ export { throwInvalidArgumentsError } from 'scrivito_sdk/common/throw_invalid_ar
 export { docUrl } from 'scrivito_sdk/common/doc_url';
 export { ContextContainer } from 'scrivito_sdk/common/context_container';
 export { Deferred } from 'scrivito_sdk/common/deferred';
-export { ensureUrlHasProtocol } from 'scrivito_sdk/common/ensure_url_has_protocol';
+export { sanitizeUrl } from 'scrivito_sdk/common/sanitize_url';
 export {
   ArgumentError,
   InternalError,

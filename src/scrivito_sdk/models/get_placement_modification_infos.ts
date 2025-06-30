@@ -16,13 +16,19 @@ export type PlacementModification = null | 'new' | 'deleted';
 
 export function getPlacementModificationInfos(
   field: BasicField<'widgetlist'>,
-  comparisonRange: ComparisonRange
+  comparisonRange: ComparisonRange,
+  containerPlacementModification: PlacementModification
 ): PlacementModificationInfo[] {
   const widgets = field.get();
+
+  if (containerPlacementModification === 'deleted') {
+    return toBlankPlacementModifications(widgets);
+  }
+
   const diff = field.getDiff(comparisonRange);
 
   if (!isWidgetlistDiff(diff) || !diff.content) {
-    return widgets.map((widget) => ({ widget, modification: null }));
+    return toBlankPlacementModifications(widgets);
   }
 
   const infos: PlacementModificationInfo[] = [];
@@ -41,6 +47,10 @@ export function getPlacementModificationInfos(
   return infos;
 }
 
+function toBlankPlacementModifications(widgets: BasicWidget[]) {
+  return widgets.map((widget) => ({ widget, modification: null }));
+}
+
 function getPlacementModificationInfo(
   field: BasicField<'widgetlist'>,
   comparisonRange: ComparisonRange,
@@ -53,6 +63,7 @@ function getPlacementModificationInfo(
       field.obj().id(),
       widgetId
     );
+
     if (!vanishedWidget) return null;
 
     const vanishedModification =
@@ -72,17 +83,10 @@ function getPlacementModificationInfo(
 }
 
 function getVanishedWidget(
-  [from, to]: ComparisonRange,
+  [from]: ComparisonRange,
   objId: string,
   widgetId: string
 ) {
-  const toObj = getObjFrom(objSpaceScopeExcludingDeleted(to), objId);
-
-  if (toObj) {
-    const toWidget = toObj.widget(widgetId);
-    if (toWidget) return toWidget;
-  }
-
   const fromObj = getObjFrom(objSpaceScopeExcludingDeleted(from), objId);
   return fromObj?.widget(widgetId);
 }

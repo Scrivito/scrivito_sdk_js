@@ -11,6 +11,7 @@ import {
   ContentTag,
   ContentTagWithElementCallback,
 } from 'scrivito_sdk/react/components/content_tag';
+import { handleRefAssignment } from 'scrivito_sdk/react/handle_ref_assignment';
 import { imagePlaceholder } from 'scrivito_sdk/react/image_placeholder';
 import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
@@ -24,6 +25,7 @@ interface ImageTagProps<
   content?: Binary | Obj<AttrDefs> | Widget<AttrDefs> | null;
   width?: Width;
   onLoad?: React.ImgHTMLAttributes<HTMLImageElement>['onLoad'];
+  ref?: React.Ref<Element>;
   [key: string]: unknown;
 }
 
@@ -39,6 +41,7 @@ export const ImageTag = connect(function ImageTag({
   attribute = 'blob',
   width,
   onLoad,
+  ref,
   ...htmlOptions
 }: ImageTagProps) {
   const [isLazy, setIsLazy] = React.useState(htmlOptions.loading === 'lazy');
@@ -82,7 +85,10 @@ export const ImageTag = connect(function ImageTag({
         width={fullWidth}
         {...htmlOptions}
         onLoad={load}
-        ref={setEagerIfComplete}
+        ref={(element: HTMLImageElement) => {
+          handleRefAssignment(element, ref);
+          return setEagerIfComplete(element);
+        }}
       />
     );
   }
@@ -105,6 +111,7 @@ export const ImageTag = connect(function ImageTag({
           {...htmlOptions}
           onLoad={load}
           elementCallback={setEagerIfComplete}
+          ref={ref}
         />
       );
     }
@@ -120,6 +127,7 @@ export const ImageTag = connect(function ImageTag({
       src={imagePlaceholder}
       data-scrivito-image-placeholder={true}
       width={width}
+      ref={ref}
       {...htmlOptions}
     />
   );

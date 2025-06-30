@@ -6,11 +6,13 @@ import {
   isInPlaceEditingActive,
 } from 'scrivito_sdk/app_support/editing_context';
 import { getComparisonRange } from 'scrivito_sdk/app_support/get_comparison_range';
+import { InternalError } from 'scrivito_sdk/common';
 import { importFrom } from 'scrivito_sdk/import_from';
 import { BasicField, getPlacementModificationInfos } from 'scrivito_sdk/models';
 import {
   WidgetContent,
   WidgetProps,
+  WidgetTagContext,
 } from 'scrivito_sdk/react/components/content_tag/widget_content';
 import { useInPlaceEditing } from 'scrivito_sdk/react/hooks/use_in_place_editing';
 import { connect } from 'scrivito_sdk/react_connect';
@@ -62,10 +64,25 @@ const WidgetlistValueContentForComparison = connect(
     field: BasicField<'widgetlist'>;
     widgetProps?: WidgetProps;
   }) {
+    const { placementModification: containerPlacementModification } =
+      React.useContext(WidgetTagContext);
+
+    // Circular diffs should never happen, due to how we fetch the content
+    // However, a circular diff will cause an infinite loop and crash the browser
+    // This circuit breaker avoids crashing the browser in case we have an internal bug
+    const renderingDepth = React.useContext(WidgetlistRenderingDepth) + 1;
+    if (renderingDepth >= 100) throw new InternalError();
+
+    const infos = getPlacementModificationInfos(
+      field,
+      getComparisonRange(),
+      containerPlacementModification ?? null
+    );
+
     return (
-      <>
-        {getPlacementModificationInfos(field, getComparisonRange()).map(
-          (info) => (
+      <WidgetlistRenderingDepth.Provider value={renderingDepth}>
+        {infos.map((info) => {
+          return (
             <WidgetContent
               key={calculateKey(info.widget.id(), info.modification)}
               widget={info.widget}
@@ -73,9 +90,9 @@ const WidgetlistValueContentForComparison = connect(
               placementModification={info.modification}
               fieldType="widgetlist"
             />
-          )
-        )}
-      </>
+          );
+        })}
+      </WidgetlistRenderingDepth.Provider>
     );
 
     function calculateKey(widgetId: string, modification: string | null) {
@@ -83,6 +100,8 @@ const WidgetlistValueContentForComparison = connect(
     }
   }
 );
+
+const WidgetlistRenderingDepth = React.createContext<number>(0);
 
 const WidgetlistValueContent = connect(function WidgetlistValueContent({
   field,
