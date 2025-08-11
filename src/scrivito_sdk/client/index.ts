@@ -139,3 +139,6 @@ export type {
 } from 'scrivito_sdk/client/workspace_json';
 export { setupRegisterVerificator } from 'scrivito_sdk/client/verificator_functions';
 export { TokenAuthorizationProvider } from 'scrivito_sdk/client/token_authorization_provider';
+export { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
+export { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
+export { withLoginHandler } from 'scrivito_sdk/client/login_handler';

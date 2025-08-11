@@ -78,7 +78,8 @@ function getWorkers(
     const convert = getConversion(jsonToUpdate);
     if (!convert) return;
 
-    const worker = load(() => convert(jsonToUpdate, fn)).then((newJson) => {
+    const worker = (async () => {
+      const newJson = await load(() => convert(jsonToUpdate, fn));
       const currentJson = widgetId
         ? obj.getWidgetAttribute(widgetId, attributeName)
         : obj.getAttributeData(attributeName);
@@ -95,7 +96,7 @@ function getWorkers(
       } else {
         obj.objData.update(patch);
       }
-    });
+    })();
 
     workers.push(worker);
   });

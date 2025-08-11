@@ -58,33 +58,28 @@ function isWidget(maybeWidget: unknown | Widget): maybeWidget is Widget {
   );
 }
 
-export function initializeContentForObj(objId: string): Promise<void> {
-  return load(() => BasicObj.get(objId)).then((basicObj) => {
-    if (basicObj) {
-      initializeContentFor(basicObj);
-      initializeContentFromHook(basicObj);
-    }
-  });
+export async function initializeContentForObj(objId: string): Promise<void> {
+  const basicObj = await load(() => BasicObj.get(objId));
+  if (basicObj) {
+    initializeContentFor(basicObj);
+    initializeContentFromHook(basicObj);
+  }
 }
 
-export function initializeContentForWidget(
+export async function initializeContentForWidget(
   objId: string,
   widgetId: string
 ): Promise<void> {
-  return load(() => BasicObj.get(objId)).then((basicObj) => {
-    if (!basicObj) return;
+  const basicObj = await load(() => BasicObj.get(objId));
+  if (!basicObj) return;
 
-    return presentUiAdapter()
-      .finishReplicatingObj(currentObjSpaceId(), objId)
-      .then(() => {
-        const basicWidget = basicObj.widget(widgetId);
+  await presentUiAdapter().finishReplicatingObj(currentObjSpaceId(), objId);
+  const basicWidget = basicObj.widget(widgetId);
 
-        if (basicWidget) {
-          initializeContentFor(basicWidget);
-          initializeContentFromHook(basicWidget);
-        }
-      });
-  });
+  if (basicWidget) {
+    initializeContentFor(basicWidget);
+    initializeContentFromHook(basicWidget);
+  }
 }
 
 function initializeContentFor(basicContent: BasicObj | BasicWidget): void {

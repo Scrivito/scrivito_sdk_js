@@ -125,7 +125,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
     return wrapInAppClass<AttrDefs>(basicObj);
   }
 
-  createFromFile(
+  async createFromFile(
     file: File,
     attributes: ObjAttributes<AttrDefs> = {}
   ): Promise<Obj<AttrDefs>> {
@@ -155,11 +155,12 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
       schema
     );
 
-    return createObjFromFileIn(
+    const basicObj = await createObjFromFileIn(
       this.scope().and(restrictToObjClass(objClassName)),
       file,
       attributesForCreate
-    ).then((basicObj) => wrapInAppClass<AttrDefs>(basicObj));
+    );
+    return wrapInAppClass<AttrDefs>(basicObj);
   }
 
   toSiteContext(): SiteContext<AttrDefs> {

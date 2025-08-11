@@ -19,6 +19,7 @@ import {
 } from 'scrivito_sdk/realm/wrap_in_app_class';
 import { readAppAttribute, updateAppAttributes } from './app_model_accessor';
 
+/** @public */
 export interface WidgetClass<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > {
@@ -26,6 +27,8 @@ export interface WidgetClass<
   readonly _scrivitoPrivateSchema?: Schema;
 
   new (attributes?: AttrDict<AttrDefs>): Widget<AttrDefs>;
+
+  attributeDefinitions(): NormalizedAttributeDefinitions;
 }
 
 /** @public */
@@ -73,6 +76,13 @@ export class Widget<
     });
 
     this._scrivitoPrivateContent = basicWidget;
+  }
+
+  static attributeDefinitions(): NormalizedAttributeDefinitions {
+    const schema = Schema.forClass(this);
+    if (!schema) return {};
+
+    return schema.normalizedAttributes();
   }
 
   id(): string {

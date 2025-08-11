@@ -40,18 +40,21 @@ export class BackgroundImageDecoder {
   private ensureLoading(imageUrl: string) {
     if (this.decodedUrls[imageUrl] || this.loadingRegistry[imageUrl]) return;
 
-    const promise = decodeBackgroundImage(imageUrl).then(
-      ({ decodedBackgroundUrl, clear }) => {
-        if (this.isOnUpdateCallbackActive) {
-          if (clear) this.clears.push(clear);
-          this.decodedUrls[imageUrl] = decodedBackgroundUrl;
-          this.onUpdateCallback();
-        } else {
-          if (clear) clear();
-          this.decodedUrls[imageUrl] = undefined;
-        }
+    const promise = (async () => {
+      const { decodedBackgroundUrl, clear } = await decodeBackgroundImage(
+        imageUrl
+      );
+
+      if (this.isOnUpdateCallbackActive) {
+        if (clear) this.clears.push(clear);
+        this.decodedUrls[imageUrl] = decodedBackgroundUrl;
+        this.onUpdateCallback();
+      } else {
+        if (clear) clear();
+        this.decodedUrls[imageUrl] = undefined;
       }
-    );
+    })();
+
     this.loadingRegistry[imageUrl] = promiseAndFinally(
       promise,
       () => delete this.loadingRegistry[imageUrl]

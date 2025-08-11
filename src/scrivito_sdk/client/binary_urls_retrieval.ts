@@ -43,12 +43,13 @@ interface BinaryRequest {
 }
 
 const batchRetrieval = new BatchRetrieval<BinaryRequest, BackendBinaryData>(
-  (blobs) =>
-    cmsRestApi
-      .get('blobs/mget', { blobs })
-      .then(({ results }: { results: Array<unknown> }) =>
-        results.map((result) => result as unknown as BackendBinaryData)
-      )
+  async (blobs) => {
+    const { results } = (await cmsRestApi.get('blobs/mget', { blobs })) as {
+      results: Array<unknown>;
+    };
+
+    return results.map((result) => result as unknown as BackendBinaryData);
+  }
 );
 
 export function retrieveBinaryUrls(

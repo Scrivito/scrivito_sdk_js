@@ -19,49 +19,48 @@ export type RestApi = string | ({ url: string } & ApiClientOptions);
 
 type AsyncOrSync<Type> = Promise<Type> | Type;
 
+export type FuncOrAsyncOrSync<Type> =
+  | (() => AsyncOrSync<Type>)
+  | AsyncOrSync<Type>;
+
+interface CommonProvideDataClassParams {
+  attributes?: LazyAsyncDataAttributeDefinitions;
+  title?: LazyAsyncDataClassTitle;
+}
+
+type ProvideDataClassParamsWithRestApi = {
+  restApi: AsyncOrSync<RestApi>;
+} & CommonProvideDataClassParams;
+
+type ProvideDataClassParamsWithUncheckedConnection = {
+  connection: AsyncOrSync<Partial<UncheckedDataConnection>>;
+} & CommonProvideDataClassParams;
+
 type ProvideDataClassParams =
-  | {
-      restApi: AsyncOrSync<RestApi>;
-      attributes?: LazyAsyncDataAttributeDefinitions;
-      title?: LazyAsyncDataClassTitle;
-    }
-  | {
-      connection: AsyncOrSync<Partial<UncheckedDataConnection>>;
-      attributes?: LazyAsyncDataAttributeDefinitions;
-      title?: LazyAsyncDataClassTitle;
-    };
+  | ProvideDataClassParamsWithRestApi
+  | ProvideDataClassParamsWithUncheckedConnection;
 
 /** @public */
 export function provideDataClass(
   name: string,
-  params: AsyncOrSync<
-    | {
-        restApi: AsyncOrSync<RestApi>;
-        attributes?: LazyAsyncDataAttributeDefinitions;
-        title?: LazyAsyncDataClassTitle;
-      }
-    | {
+  params: FuncOrAsyncOrSync<
+    | ProvideDataClassParamsWithRestApi
+    | ({
         connection: AsyncOrSync<Partial<DataConnection>>;
-        attributes?: LazyAsyncDataAttributeDefinitions;
-        title?: LazyAsyncDataClassTitle;
-      }
+      } & CommonProvideDataClassParams)
   >
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  params: AsyncOrSync<{
-    connection: AsyncOrSync<Partial<UncheckedDataConnection>>;
-    attributes?: LazyAsyncDataAttributeDefinitions;
-    title?: LazyAsyncDataClassTitle;
-  }>
+  params: FuncOrAsyncOrSync<ProvideDataClassParamsWithUncheckedConnection>
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  params: AsyncOrSync<ProvideDataClassParams>
+  params: FuncOrAsyncOrSync<ProvideDataClassParams>
 ): DataClass {
   if (name === 'Obj') {
     throw new ArgumentError('"Obj" is not a valid data class name');
@@ -72,7 +71,7 @@ export function provideDataClass(
   }
 
   assertValidDataIdentifier(name);
-  registerExternalDataClass(name, mapLazyAsync(params, desugar)());
+  registerExternalDataClass(name, mapLazyAsync(params, desugar));
 
   return new ExternalDataClass(name);
 }

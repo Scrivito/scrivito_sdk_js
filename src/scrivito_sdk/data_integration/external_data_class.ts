@@ -346,8 +346,9 @@ export class ExternalDataItem extends DataItem {
   }
 
   /** @internal */
+  /** In contrast to `#get` supports both system and custom attributes */
   getLocalized(attributeName: string): unknown {
-    const attributeValue = this.get(attributeName);
+    const attributeValue = this.getSystemOrCustom(attributeName);
     if (typeof attributeValue !== 'string') return attributeValue;
 
     const attributeDefinition = this.attributeDefinitions()[attributeName];
@@ -418,6 +419,11 @@ export class ExternalDataItem extends DataItem {
 
   private getExternalData(): NormalExternalData | null | undefined {
     return getExternalData(this.dataClassName(), this._dataId);
+  }
+
+  private getSystemOrCustom(attributeName: string) {
+    if (attributeName === '_id') return this.id();
+    return this.get(attributeName);
   }
 
   private notifyWrite() {

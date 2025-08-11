@@ -112,7 +112,6 @@ export interface Configuration {
   unstable?: {
     assetUrlBase?: string;
     getSiteIdForObj?: SiteIdForObjCallback;
-    useRailsAuth?: boolean;
     trustedUiOrigins?: string[];
     initialContentDumpUrl?: string;
     allowOfflineMode?: boolean;
@@ -377,12 +376,11 @@ function configureConstraintsValidationCallback(configuration: Configuration) {
   }
 }
 
-function setAppAdapter(uiAdapterClient: UiAdapterClient) {
-  importUiInterface().then(({ startAppAdapter }) => {
-    const channel = new MessageChannel();
-    startAppAdapter(linkViaPort(channel.port1));
-    uiAdapterClient.setAppAdapter(channel.port2);
-  });
+async function setAppAdapter(uiAdapterClient: UiAdapterClient) {
+  const { startAppAdapter } = await importUiInterface();
+  const channel = new MessageChannel();
+  startAppAdapter(linkViaPort(channel.port1));
+  uiAdapterClient.setAppAdapter(channel.port2);
 }
 
 /** exported for test purposes only */
@@ -390,22 +388,20 @@ export function importUiInterface() {
   return import('scrivito_sdk/ui_interface');
 }
 
-function warnIfNoSiteIdSelection() {
-  const timeout = setTimeout(
-    () =>
-      load(currentSiteId).then((siteId) => {
-        if (siteId === 'default') {
-          logError(
-            'Warning: No site ID was selected within 30 seconds.' +
-              ' In the multi-site mode a site ID must be selected before Scrivito can render content.' +
-              ' Forgot to use Scrivito.unstable_selectSiteId?'
-          );
-        }
-      }),
-    30000
-  );
+async function warnIfNoSiteIdSelection() {
+  const timeout = setTimeout(async () => {
+    const siteId = await load(currentSiteId);
+    if (siteId === 'default') {
+      logError(
+        'Warning: No site ID was selected within 30 seconds.' +
+          ' In the multi-site mode a site ID must be selected before Scrivito can render content.' +
+          ' Forgot to use Scrivito.unstable_selectSiteId?'
+      );
+    }
+  }, 30000);
 
-  load(getUnstableSelectedSiteId).then(() => clearTimeout(timeout));
+  await load(getUnstableSelectedSiteId);
+  clearTimeout(timeout);
 }
 
 function getIamAuthLocation(iamAuthLocation: string | undefined) {

@@ -42,19 +42,19 @@ export type WidgetlistDiffContent = Array<[WidgetlistModification, WidgetId]>;
 export type WidgetlistModification = '+' | '-' | '=';
 type WidgetId = string;
 
-export function retrieveObjFieldDiffs(
+export async function retrieveObjFieldDiffs(
   from: ObjSpaceId,
   to: ObjSpaceId,
   objId: string
 ): Promise<ObjFieldDiffs> {
-  return cmsRestApi
-    .get(`objs/${objId}/diff`, {
+  try {
+    const response = await cmsRestApi.get(`objs/${objId}/diff`, {
       from: asBackendObjSpaceId(from),
       to: asBackendObjSpaceId(to),
-    })
-    .then((response) => response as Promise<ObjFieldDiffs>)
-    .catch((error) => {
-      if (error instanceof MissingWorkspaceError) return {};
-      throw error;
     });
+    return response as ObjFieldDiffs;
+  } catch (error) {
+    if (error instanceof MissingWorkspaceError) return {};
+    throw error;
+  }
 }

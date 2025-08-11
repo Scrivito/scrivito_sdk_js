@@ -15,16 +15,17 @@ export interface DecodedBackgroundImage {
   clear?: () => void;
 }
 
-export function decodeBackgroundImage(
+export async function decodeBackgroundImage(
   imageUrl: string
 ): Promise<DecodedBackgroundImage> {
-  return decodeOrLoadImg(imageUrl)
-    .then((img) => {
-      if (hasGetCSSCanvasContext()) return webkitCanvas(img);
-      if (!hasDecodeImg(img)) return drawCanvas(img);
-      return { decodedBackgroundUrl: `url(${imageUrl})` };
-    })
-    .catch(() => ({ decodedBackgroundUrl: `url(${imageUrl})` }));
+  try {
+    const img = await decodeOrLoadImg(imageUrl);
+    if (hasGetCSSCanvasContext()) return webkitCanvas(img);
+    if (!hasDecodeImg(img)) return drawCanvas(img);
+    return { decodedBackgroundUrl: `url(${imageUrl})` };
+  } catch {
+    return { decodedBackgroundUrl: `url(${imageUrl})` };
+  }
 }
 
 function webkitCanvas(img: HTMLImageElement): DecodedBackgroundImage {

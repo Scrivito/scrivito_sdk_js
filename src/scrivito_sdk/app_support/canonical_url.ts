@@ -33,20 +33,20 @@ export function init() {
     .subscribe(switchToCanonicalUrl);
 }
 
-function switchToCanonicalUrl(pageData: PageDataWithPage): void {
+async function switchToCanonicalUrl(pageData: PageDataWithPage): Promise<void> {
   const location = pageData.navigationState.historyState.location;
 
-  load(() => {
+  const canonicalPath = await load(() => {
     if (BrowserLocation.get() !== location) return;
 
     return generateLocalPath(pageData.currentPage);
-  }).then((canonicalPath) => {
-    if (!canonicalPath) return;
-    if (BrowserLocation.get() !== location) return;
-
-    const locationUri = new URI(location);
-    if (canonicalPath === locationUri.path()) return;
-
-    BrowserLocation.replace(locationUri.path(canonicalPath).toString());
   });
+
+  if (!canonicalPath) return;
+  if (BrowserLocation.get() !== location) return;
+
+  const locationUri = new URI(location);
+  if (canonicalPath === locationUri.path()) return;
+
+  BrowserLocation.replace(locationUri.path(canonicalPath).toString());
 }

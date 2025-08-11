@@ -68,25 +68,27 @@ interface BackendQueryResponse {
   objs?: ExistentObjJson[];
 }
 
-export function retrieveObjQuery(
+export async function retrieveObjQuery(
   workspaceId: string,
   params: BackendQueryRetrievalParams
 ): Promise<QueryResponse> {
-  return cmsRestApi
-    .get(`workspaces/${workspaceId}/objs/search`, params)
-    .then(({ results, total, continuation, objs }: BackendQueryResponse) => {
-      return {
-        results: results.map((result) => result.id),
-        continuation,
-        total,
-        objs,
-      };
-    })
-    .catch((error) => {
-      if (error instanceof MissingWorkspaceError) {
-        return { results: [], total: 0 };
-      }
+  try {
+    const { results, total, continuation, objs } = (await cmsRestApi.get(
+      `workspaces/${workspaceId}/objs/search`,
+      params
+    )) as BackendQueryResponse;
 
-      throw error;
-    });
+    return {
+      results: results.map((result) => result.id),
+      continuation,
+      total,
+      objs,
+    };
+  } catch (error) {
+    if (error instanceof MissingWorkspaceError) {
+      return { results: [], total: 0 };
+    }
+
+    throw error;
+  }
 }

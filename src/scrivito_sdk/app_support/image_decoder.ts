@@ -36,10 +36,11 @@ export class ImageDecoder {
   private ensureLoading(imageUrl: string) {
     if (this.decodedUrls[imageUrl] || this.loadingRegistry[imageUrl]) return;
 
-    const promise = decodeImage(imageUrl).then((url) => {
+    const promise = (async () => {
+      const url = await decodeImage(imageUrl);
       this.decodedUrls[imageUrl] = url;
       this.isOnUpdateCallbackActive && this.onUpdateCallback();
-    });
+    })();
 
     this.loadingRegistry[imageUrl] = promiseAndFinally(
       promise,

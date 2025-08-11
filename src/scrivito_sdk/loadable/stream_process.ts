@@ -100,6 +100,11 @@ export function flushLoadableStreams() {
 function enqueueFlush(callback: () => void) {
   const runCallbackOnce = once(callback);
 
-  waitMs(UNSUBSCRIBE_DELAY).then(runCallbackOnce);
-  flushSubject.waitForFirst().then(runCallbackOnce);
+  (async () => {
+    const waitPromise = waitMs(UNSUBSCRIBE_DELAY);
+    const flushPromise = flushSubject.waitForFirst();
+
+    await Promise.race([waitPromise, flushPromise]);
+    runCallbackOnce();
+  })();
 }

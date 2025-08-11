@@ -64,7 +64,9 @@ class LinkResolution {
     const promise = this.getDataAndPerformResolution(objId);
     const priorPromise = this.cache[objId];
     const combinedPromise = priorPromise
-      ? Promise.all([priorPromise, promise]).then(() => undefined)
+      ? (async () => {
+          await Promise.all([priorPromise, promise]);
+        })()
       : promise;
     this.cache[objId] = combinedPromise;
 

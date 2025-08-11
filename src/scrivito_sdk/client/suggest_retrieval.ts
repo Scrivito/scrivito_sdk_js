@@ -18,15 +18,18 @@ export interface BackendSuggestResponse {
   results: string[];
 }
 
-export function retrieveSuggest(
+export async function retrieveSuggest(
   workspaceId: string,
   params: BackendSuggestParams
 ): Promise<BackendSuggestResponse> {
-  return cmsRestApi
-    .put(`workspaces/${workspaceId}/objs/search/suggest`, params)
-    .then((response) => response as BackendSuggestResponse)
-    .catch((error) => {
-      if (error instanceof MissingWorkspaceError) return { results: [] };
-      throw error;
-    });
+  try {
+    const response = await cmsRestApi.put(
+      `workspaces/${workspaceId}/objs/search/suggest`,
+      params
+    );
+    return response as BackendSuggestResponse;
+  } catch (error) {
+    if (error instanceof MissingWorkspaceError) return { results: [] };
+    throw error;
+  }
 }
