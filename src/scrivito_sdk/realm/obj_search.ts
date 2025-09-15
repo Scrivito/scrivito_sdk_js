@@ -106,6 +106,16 @@ export class ObjSearch<
     return this;
   }
 
+  andIsChildOf(obj: Obj): this {
+    this._scrivitoPrivateContent.andIsChildOf(unwrapAppClass(obj));
+    return this;
+  }
+
+  andIsInsideSubtreeOf(obj: Obj): this {
+    this._scrivitoPrivateContent.andIsInsideSubtreeOf(unwrapAppClass(obj));
+    return this;
+  }
+
   boost(
     field: SearchField,
     operator: SearchOperator,

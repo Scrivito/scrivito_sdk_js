@@ -25,7 +25,13 @@ import { ProvidePlaceholders } from 'scrivito_sdk/react/data_context_container';
 import { useInPlaceEditing } from 'scrivito_sdk/react/hooks/use_in_place_editing';
 import { ComponentType } from 'scrivito_sdk/react/provide_component';
 import { connect } from 'scrivito_sdk/react_connect';
-import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
+import {
+  AttributeDefinitions,
+  Obj,
+  Schema,
+  Widget,
+  unwrapAppClass,
+} from 'scrivito_sdk/realm';
 
 export interface ContentTagProps<
   AttrDefs extends AttributeDefinitions = AttributeDefinitions
@@ -67,7 +73,9 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
     ref,
     ...customProps
   }: ContentTagWithElementCallbackProps) {
-    const isInPlaceEditingEnabled = useInPlaceEditing();
+    const isInPlaceEditingEnabled = useInPlaceEditing(
+      unwrapAppClass(content)?.obj() ?? null
+    );
 
     if (!content) return null;
 

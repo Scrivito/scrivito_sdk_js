@@ -7,6 +7,7 @@ import {
   isDataLocatorOperatorFilter,
 } from 'scrivito_sdk/client';
 import { ArgumentError } from 'scrivito_sdk/common';
+import { getDataClassOrThrow } from 'scrivito_sdk/data_integration';
 import {
   DataItem,
   DataScope,
@@ -23,7 +24,6 @@ import {
   deserializeDataStackElement,
 } from 'scrivito_sdk/data_integration/data_stack';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
-import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 import { operatorToOpCode } from 'scrivito_sdk/data_integration/index_params';
 import { DataLocator, isDataLocatorValueViaFilter } from 'scrivito_sdk/models';
 

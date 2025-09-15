@@ -4,7 +4,6 @@ import {
   ObjSpaceId,
   cmsRestApi,
   getWorkspaceId,
-  isUnavailableObjJson,
   retrieveObj,
 } from 'scrivito_sdk/client';
 import {
@@ -18,7 +17,7 @@ import { setObjData } from 'scrivito_sdk/data/obj_data_store';
 import {
   ObjJsonPatch,
   diffObjJson,
-  patchObjJson,
+  threeWayMergeObjs,
 } from 'scrivito_sdk/data/obj_patch';
 import { ObjReplication } from 'scrivito_sdk/data/obj_replication';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
@@ -63,35 +62,39 @@ export class ObjBackendReplication implements ObjReplication {
     this.startReplication();
   }
 
-  notifyBackendState(newBackendState: ObjJson) {
+  notifyBackendState(notifiedBackendState: ObjJson) {
     if (!this.localState) {
-      this.backendState = newBackendState;
-      this.updateLocalState(newBackendState);
+      // if we don't have a local state yet, we accept any backend state as-is
+      this.backendState = notifiedBackendState;
+      this.updateLocalState(notifiedBackendState);
       return;
     }
 
     const newestKnownBackendState =
       this.bufferedBackendState || this.backendState;
     if (
-      !newestKnownBackendState ||
-      compareStates(newBackendState, newestKnownBackendState) > 0
+      newestKnownBackendState &&
+      compareStates(newestKnownBackendState, notifiedBackendState) > 0
     ) {
-      if (this.replicationActive) {
-        this.bufferedBackendState = newBackendState;
-      } else {
-        if (isUnavailableObjJson(newBackendState)) {
-          this.updateLocalState(newBackendState);
-        } else {
-          this.updateLocalState(
-            patchObjJson(
-              this.localState,
-              diffObjJson(this.backendState, newBackendState)
-            )
-          );
-        }
-        this.backendState = newBackendState;
-      }
+      // The notified state is older than the one we know, so we ignore it.
+      return;
     }
+
+    if (this.replicationActive) {
+      // during replication, the algorithm can't integrate new backend states
+      // buffer the new state. it will be applied when the replication finishes
+      this.bufferedBackendState = notifiedBackendState;
+      return;
+    }
+
+    this.updateLocalState(
+      threeWayMergeObjs(
+        notifiedBackendState,
+        this.localState,
+        this.backendState
+      )
+    );
+    this.backendState = notifiedBackendState;
   }
 
   async finishSaving(): Promise<void> {
@@ -209,16 +212,17 @@ export class ObjBackendReplication implements ObjReplication {
     this.bufferedBackendState = undefined;
 
     this.updateLocalState(
-      patchObjJson(
+      threeWayMergeObjs(
+        this.getLocalObjJson(),
         this.backendState,
-        diffObjJson(replicatedState, this.getLocalObjJson())
+        replicatedState
       )
     );
   }
 
-  private updateLocalState(localState: ObjJson) {
-    this.localState = localState;
-    setObjData(this.objSpaceId, this.objId, localState);
+  private updateLocalState(newLocalState: ObjJson) {
+    this.localState = newLocalState;
+    setObjData(this.objSpaceId, this.objId, newLocalState);
   }
 
   private getLocalObjJson(): ObjJson {

@@ -2,7 +2,7 @@ import { ObjJson, ObjSpaceId } from 'scrivito_sdk/client';
 import { Streamable } from 'scrivito_sdk/common';
 
 import { objDataFor } from 'scrivito_sdk/data/obj_data_store';
-import { diffObjJson, patchObjJson } from 'scrivito_sdk/data/obj_patch';
+import { threeWayMergeObjs } from 'scrivito_sdk/data/obj_patch';
 import { loadAndObserve, loadableWithDefault } from 'scrivito_sdk/loadable';
 import {
   LocalStateForReplication,
@@ -74,20 +74,12 @@ function localStateForObj(
   };
 }
 
-/** given two versions, and a common base version from which both versions
- * are derived, create a merged version that incorporated both changes.
- * if changes cannot be merged, then my version wins.
- */
 function assertiveThreeWayMergeObjs(
   myVersion: ObjJson | undefined,
   otherVersion: ObjJson | undefined,
   baseVersion: ObjJson | undefined
 ): ObjJson | undefined {
-  if (otherVersion === undefined) return myVersion;
-  if (myVersion === undefined) return otherVersion;
-
-  const primaryChanges = diffObjJson(baseVersion, myVersion);
-  return patchObjJson(otherVersion, primaryChanges);
+  return threeWayMergeObjs(myVersion, otherVersion, baseVersion);
 }
 
 /** similar to assertiveThreeWayMergeObjs, but in case of conflict, other version wins. */
@@ -96,5 +88,5 @@ function humbleThreeWayMergeObjs(
   otherVersion: ObjJson | undefined,
   baseVersion: ObjJson | undefined
 ): ObjJson | undefined {
-  return assertiveThreeWayMergeObjs(otherVersion, myVersion, baseVersion);
+  return threeWayMergeObjs(otherVersion, myVersion, baseVersion);
 }

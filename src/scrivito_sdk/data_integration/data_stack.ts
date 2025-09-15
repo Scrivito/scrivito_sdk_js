@@ -1,3 +1,4 @@
+import { getDataClassOrThrow } from 'scrivito_sdk/data_integration';
 import {
   DataItem,
   DataItemPojo,
@@ -8,7 +9,6 @@ import {
   PresentDataScopePojo,
 } from 'scrivito_sdk/data_integration/data_class';
 import { EmptyDataScope } from 'scrivito_sdk/data_integration/empty_data_scope';
-import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 
 export type DataStack = Array<DataStackElement>;
 export type DataStackElement = DataItemPojo | DataScopePojo;

@@ -1,3 +1,4 @@
+import { slugify } from '@justrelate/slugify';
 import {
   AttributeJson,
   ExistentObjJson,
@@ -72,7 +73,6 @@ import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_sco
 import { restrictToSite } from 'scrivito_sdk/models/restrict_to_site';
 import { TypeInfo } from 'scrivito_sdk/models/type_info';
 import { withBatchedUpdates } from 'scrivito_sdk/state';
-import { slugify } from 'slugify';
 
 interface WidgetInsertionBefore {
   before: BasicWidget;
@@ -714,9 +714,9 @@ export class BasicObj implements ContentValueProvider {
     const siteId = this.siteId();
     if (!path || siteId === null) return;
 
-    return hierarchyObjSpace(this.objSpaceId(), siteId)
+    return objSpaceScopeExcludingDeleted(this.objSpaceId())
       .search()
-      .and('_parentPath', 'equals', path);
+      .andIsChildOf(this);
   }
 }
 
@@ -737,9 +737,9 @@ function currentObjSpaceWithoutDeleted() {
 }
 
 function getObjByPath(objSpaceId: ObjSpaceId, siteId: string, path: string) {
-  return getObjBy(hierarchyObjSpace(objSpaceId, siteId), '_path', path);
-}
-
-function hierarchyObjSpace(objSpaceId: ObjSpaceId, siteId: string) {
-  return objSpaceScopeExcludingDeleted(objSpaceId).and(restrictToSite(siteId));
+  return getObjBy(
+    objSpaceScopeExcludingDeleted(objSpaceId).and(restrictToSite(siteId)),
+    '_path',
+    path
+  );
 }

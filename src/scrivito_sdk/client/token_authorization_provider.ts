@@ -4,8 +4,21 @@ import {
   ClientErrorRequestDetails,
 } from 'scrivito_sdk/client';
 import { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
-import { isHighSecurityAction } from 'scrivito_sdk/client/is_high_security_action';
-import { ScrivitoError } from 'scrivito_sdk/common';
+import { isErrorResponse } from 'scrivito_sdk/client/is_error_response';
+import { ERROR_CODE_AUTH_CHECK_REQUIRED } from 'scrivito_sdk/client/login_handler';
+import { ScrivitoError, registerAsyncTask } from 'scrivito_sdk/common';
+
+export type ResultOrFail<T> =
+  | {
+      result: T;
+    }
+  | {
+      authenticationFailed: {
+        error: string;
+        code: string;
+        details?: object;
+      };
+    };
 
 export class TokenAuthorizationError extends ScrivitoError {
   constructor(
@@ -26,6 +39,53 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
   async authorize(
     request: (auth?: string) => Promise<Response>
   ): Promise<Response> {
+    return this.authorizeAbstract<Response>(
+      async (auth: string | undefined) => {
+        const result = await request(auth ? `Bearer ${auth}` : undefined);
+
+        // IAM always responds with a 401 status code if a new token is needed.
+        // Any other status code indicates that something went wrong.
+        if (result.status !== 401) return { result };
+
+        const contentType = result.headers.get('content-type');
+
+        if (!contentType?.includes('application/json')) {
+          return { authenticationFailed: fallbackErrorResponse() };
+        }
+
+        const clonedResponse = result.clone();
+
+        const authenticationFailed = await registerAsyncTask(async () => {
+          try {
+            // Explicit cast ensures TS infers the return type correctly.
+            // Without it, `json()` is typed as any.
+            return clonedResponse.json() as Promise<unknown>;
+          } catch {
+            return Promise.resolve();
+          }
+        });
+
+        if (
+          !isErrorResponse(authenticationFailed) ||
+          !authenticationFailed.code
+        ) {
+          return { authenticationFailed: fallbackErrorResponse() };
+        }
+
+        return {
+          authenticationFailed: {
+            error: authenticationFailed.error,
+            code: authenticationFailed.code,
+            details: authenticationFailed.details,
+          },
+        };
+      }
+    );
+  }
+
+  async authorizeAbstract<T>(
+    callback: (auth?: string) => Promise<ResultOrFail<T>>
+  ): Promise<T> {
     const backoff = new ExponentialBackoff();
     let fetchedTokenBefore = false;
 
@@ -57,14 +117,19 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
       const tokenPromise = this.fetchTokenPromise;
 
       const token = await tokenPromise;
-      const response =
-        token === null ? await request() : await request(`Bearer ${token}`);
 
-      // IAM always responds with a 401 status code if a new token is needed.
-      // Any other status code indicates that something went wrong.
-      if (response.status !== 401) return response;
+      const outcome = token === null ? await callback() : await callback(token);
+      if ('result' in outcome) return outcome.result;
 
-      if (await isHighSecurityAction(response)) return response;
+      const {
+        authenticationFailed: { error, code, details = {} },
+      } = outcome;
+
+      if (
+        outcome.authenticationFailed.code === ERROR_CODE_AUTH_CHECK_REQUIRED
+      ) {
+        throw new ClientError(error, code, details);
+      }
 
       // is token renewal already in progress? (concurrency)
       if (tokenPromise === this.fetchTokenPromise) {
@@ -78,4 +143,11 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
   injectToken(token: string): void {
     this.fetchTokenPromise = Promise.resolve(token);
   }
+}
+
+function fallbackErrorResponse() {
+  return {
+    error: 'authentication invalid',
+    code: 'auth_missing',
+  };
 }

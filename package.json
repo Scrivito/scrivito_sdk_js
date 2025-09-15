@@ -1,6 +1,7 @@
 {
   "browser": "dist/index.browser.js",
   "dependencies": {
+    "@justrelate/slugify": "^1.0.0",
     "history": "^4.10.1 || ^5.0.0",
     "html-to-text": "^7.1.1",
     "lodash-es": "^4.17.21",
@@ -26,5 +27,5 @@
   },
   "license": "LGPL-3.0",
   "types": "types/scrivito.d.ts",
-  "version": "1.53.1"
+  "version": "1.54.0"
 }

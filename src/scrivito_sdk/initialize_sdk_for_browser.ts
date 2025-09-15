@@ -13,6 +13,7 @@ import { initialContentFor } from 'scrivito_sdk/app_support/initialize_content';
 import { loadEditingSupport } from 'scrivito_sdk/app_support/load_editing_support';
 import { getCurrentNavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { initOfflineMode } from 'scrivito_sdk/app_support/offline_mode';
+import { refetchExternalDataOnWindowFocus } from 'scrivito_sdk/app_support/refetch_external_data_on_window_focus';
 import { setUiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { initializeUiRedirect } from 'scrivito_sdk/app_support/ui_redirect';
 import {
@@ -87,4 +88,5 @@ export async function initializeSdk() {
   initOfflineMode();
   setHasComponentHandler(hasComponent);
   setCurrentLanguageHandler(currentLanguage);
+  refetchExternalDataOnWindowFocus();
 }

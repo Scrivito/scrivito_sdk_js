@@ -7,6 +7,7 @@ import {
   isObject,
   logError,
 } from 'scrivito_sdk/common';
+import { getDataClassOrThrow } from 'scrivito_sdk/data_integration';
 import { DataItem } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataAttributeConfig,
@@ -16,7 +17,6 @@ import {
   isEnumAttributeConfig,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { isValidDataId } from 'scrivito_sdk/data_integration/data_id';
-import { getDataClassOrThrow } from 'scrivito_sdk/data_integration/get_data_class';
 
 const serializers = {
   boolean: serializeBooleanAttribute,

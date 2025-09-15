@@ -22,7 +22,7 @@ export const WidgetValue = connect(function WidgetValue({
   field: BasicField<'widget'>;
   widgetProps?: WidgetProps;
 }) {
-  const isInPlaceEditingEnabled = useInPlaceEditing();
+  const isInPlaceEditingEnabled = useInPlaceEditing(field.obj());
 
   if (isComparisonActive()) throw new InternalError('Not yet implemented');
 

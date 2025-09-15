@@ -171,6 +171,24 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
     return this;
   }
 
+  andIsChildOf(obj: BasicObj): this {
+    const siteId = obj.siteId();
+    const path = obj.path();
+
+    return siteId && path
+      ? this.onSite(siteId).and('_parentPath', 'equals', path)
+      : this.and('_id', 'equals', null);
+  }
+
+  andIsInsideSubtreeOf(obj: BasicObj): this {
+    const siteId = obj.siteId();
+    const path = obj.path();
+
+    return siteId && path
+      ? this.onSite(siteId).and('_path', 'startsWith', path)
+      : this.and('_id', 'equals', obj.id());
+  }
+
   boost(
     field: SearchField,
     operator: SearchOperator,
@@ -331,6 +349,10 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
     } finally {
       this._batchSize = oldBatchSize;
     }
+  }
+
+  private onSite(siteId: string) {
+    return this.and('_siteId', 'equals', siteId);
   }
 }
 

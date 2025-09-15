@@ -22,6 +22,7 @@ export {
   InPlaceEditingOff,
   RestoreInPlaceEditing,
 } from 'scrivito_sdk/react/components/in_place_editing';
+export { InPlaceEditAsPageContent } from 'scrivito_sdk/react/components/in_place_edit_as_page_content';
 export { LinkTag } from 'scrivito_sdk/react/components/link_tag';
 export { NotFoundErrorPage } from 'scrivito_sdk/react/components/not_found_error_page';
 export { WidgetTag } from 'scrivito_sdk/react/components/widget_tag';

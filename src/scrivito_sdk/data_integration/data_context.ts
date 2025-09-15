@@ -7,6 +7,10 @@ import {
   parameterizeDataClass,
   throwNextTick,
 } from 'scrivito_sdk/common';
+import {
+  getDataClass,
+  getDataClassOrThrow,
+} from 'scrivito_sdk/data_integration';
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration/basic_obj_to_data_context';
 import {
   DataItem,
@@ -21,10 +25,6 @@ import {
   findScopeInDataStack,
 } from 'scrivito_sdk/data_integration/data_stack';
 import { ExternalDataItem } from 'scrivito_sdk/data_integration/external_data_class';
-import {
-  getDataClass,
-  getDataClassOrThrow,
-} from 'scrivito_sdk/data_integration/get_data_class';
 import {
   findItemInGlobalData,
   findScopeInGlobalData,

@@ -2,6 +2,7 @@ import {
   DATA_PLACEHOLDERS,
   SINGLE_DATA_PLACEHOLDER,
 } from 'scrivito_sdk/common';
+import { getDataClass } from 'scrivito_sdk/data_integration';
 import { isDataIntegrationActive } from 'scrivito_sdk/data_integration/activate_data_integration';
 import {
   DataContext,
@@ -9,7 +10,6 @@ import {
   getDataContextValue,
 } from 'scrivito_sdk/data_integration/data_context';
 import type { DataStack } from 'scrivito_sdk/data_integration/data_stack';
-import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 import { loadableWithDefault } from 'scrivito_sdk/loadable';
 
 export function isSinglePlaceholder(text: string): boolean {

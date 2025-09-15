@@ -153,3 +153,7 @@ export {
   DATA_PLACEHOLDERS,
   SINGLE_DATA_PLACEHOLDER,
 } from 'scrivito_sdk/common/data_placeholders';
+export {
+  observeWindowFocus,
+  subscribeWindowFocus,
+} from 'scrivito_sdk/common/window_focus';

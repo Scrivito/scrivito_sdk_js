@@ -116,7 +116,7 @@ type AttributeTypeWithOmittedConfig = Exclude<
   AttributeTypeWithMandatoryConfig | AttributeTypeWithoutConfig
 >;
 
-type AttributeTypeToConfigMapping = {
+export type AttributeTypeToConfigMapping = {
   enum: { values: readonly string[] };
   multienum: { values: readonly string[] };
   reference: { only: string | readonly string[] };

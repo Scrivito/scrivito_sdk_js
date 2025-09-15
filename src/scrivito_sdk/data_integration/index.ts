@@ -100,3 +100,5 @@ export type {
 } from 'scrivito_sdk/data_integration/index_params';
 export { setCurrentLanguageHandler } from 'scrivito_sdk/data_integration/current_language';
 export { provideDataClass } from 'scrivito_sdk/data_integration/provide_data_class';
+export { provideDataItem } from 'scrivito_sdk/data_integration/provide_data_item';
+export { invalidateExternalData } from 'scrivito_sdk/data_integration/external_data_invalidation';

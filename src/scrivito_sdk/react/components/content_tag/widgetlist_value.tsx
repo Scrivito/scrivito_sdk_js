@@ -26,7 +26,7 @@ export const WidgetlistValue = connect(function WidgetlistValue({
   field,
   widgetProps,
 }: WidgetlistValueProps) {
-  const isInPlaceEditingEnabled = useInPlaceEditing();
+  const isInPlaceEditingEnabled = useInPlaceEditing(field.obj());
 
   if (isComparisonActive()) {
     return (

@@ -11,7 +11,7 @@ import {
 export async function loginRedirectHandler(
   visit: string,
   idp?: string
-): Promise<void> {
+): Promise<never> {
   assignLocation(await authenticationUrl(visit, idp));
 
   return never();

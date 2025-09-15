@@ -166,7 +166,6 @@ class CmsRestApi {
     return this.request({
       method: 'PUT',
       path: `sessions/${sessionId}`,
-      requestParams: undefined,
       authorizationProvider: {
         authorize(request) {
           return request(`id_token ${token}`);

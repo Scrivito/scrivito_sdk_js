@@ -4,25 +4,21 @@ import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context
 import { InPlaceEditingEnabledContext } from 'scrivito_sdk/react/in_place_editing_enabled_context';
 
 /** @public */
-export function InPlaceEditingOff({ children }: { children: React.ReactNode }) {
-  return isInPlaceEditingActive() ? (
-    <InPlaceEditingEnabledContext.Provider children={children} value={false} />
-  ) : (
-    (children as ReactChildren)
-  );
-}
+export const InPlaceEditingOff: React.FC<React.PropsWithChildren> =
+  createInPlaceEditingToggle({ value: false });
 
 /** @public */
-export function RestoreInPlaceEditing({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return isInPlaceEditingActive() ? (
-    <InPlaceEditingEnabledContext.Provider children={children} value={true} />
-  ) : (
-    (children as ReactChildren)
-  );
+export const RestoreInPlaceEditing: React.FC<React.PropsWithChildren> =
+  createInPlaceEditingToggle({ value: true });
+
+function createInPlaceEditingToggle({ value }: { value: boolean }) {
+  return ({ children }: { children: React.ReactNode }) =>
+    isInPlaceEditingActive() ? (
+      <InPlaceEditingEnabledContext.Provider
+        value={value}
+        children={children}
+      />
+    ) : (
+      <>{children}</>
+    );
 }
-// can be deleted after https://github.com/DefinitelyTyped/DefinitelyTyped/issues/18051 is fixed
-type ReactChildren = React.ReactElement<unknown> | null;

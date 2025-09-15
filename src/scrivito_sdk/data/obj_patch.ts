@@ -3,8 +3,14 @@ import difference from 'lodash-es/difference';
 import isEmpty from 'lodash-es/isEmpty';
 import isEqual from 'lodash-es/isEqual';
 
-import { ObjJson, WidgetJson, WidgetPoolJson } from 'scrivito_sdk/client';
+import {
+  ObjJson,
+  WidgetJson,
+  WidgetPoolJson,
+  isUnavailableObjJson,
+} from 'scrivito_sdk/client';
 import { isSystemAttribute } from 'scrivito_sdk/common';
+import { repairDanglingWidgets } from 'scrivito_sdk/data/obj_repair';
 import {
   REMOVE_THIS_KEY,
   RemoveThisKey,
@@ -31,6 +37,46 @@ export interface WidgetJsonPatch extends _WidgetJsonPatch {}
 type _WidgetJsonPatch = {
   [attrName in keyof WidgetJson]?: WidgetJson[attrName] | RemoveThisKey;
 };
+
+/** given two versions, and a common base version from which both versions
+ * are derived, create a merged version that incorporated both changes.
+ * if changes cannot be merged, then the main version wins.
+ */
+
+// if the mainVersion is guaranteed to not be undefined,
+// then the merge result is guaranteed to also not be undefined
+export function threeWayMergeObjs(
+  mainVersion: ObjJson,
+  otherVersion: ObjJson | undefined,
+  baseVersion: ObjJson | undefined
+): ObjJson;
+
+// if all three versions are potentially undefined,
+// then the result is also potentially undefined
+export function threeWayMergeObjs(
+  mainVersion: ObjJson | undefined,
+  otherVersion: ObjJson | undefined,
+  baseVersion: ObjJson | undefined
+): ObjJson | undefined;
+
+export function threeWayMergeObjs(
+  mainVersion: ObjJson | undefined,
+  otherVersion: ObjJson | undefined,
+  baseVersion: ObjJson | undefined
+): ObjJson | undefined {
+  // if one version is "unknown", there's no merge to be done
+  if (otherVersion === undefined) return mainVersion;
+  if (mainVersion === undefined) return otherVersion;
+
+  // a deleted version always wins
+  if (isUnavailableObjJson(mainVersion)) return mainVersion;
+  if (isUnavailableObjJson(otherVersion)) return otherVersion;
+
+  const primaryChanges = diffObjJson(baseVersion, mainVersion);
+  const mergedVersion = patchObjJson(otherVersion, primaryChanges);
+
+  return repairDanglingWidgets(mergedVersion, baseVersion);
+}
 
 export function patchObjJson(
   primitiveObj: ObjJson,

@@ -26,6 +26,7 @@ export type FuncOrAsyncOrSync<Type> =
 interface CommonProvideDataClassParams {
   attributes?: LazyAsyncDataAttributeDefinitions;
   title?: LazyAsyncDataClassTitle;
+  refetchOnWindowFocus?: false;
 }
 
 type ProvideDataClassParamsWithRestApi = {
@@ -86,12 +87,14 @@ async function desugar(params: ProvideDataClassParams) {
         { attributes: params.attributes, title: params.title },
         apiClient
       ),
+      refetchOnWindowFocus: params.refetchOnWindowFocus,
     };
   }
 
   return {
     connection: Promise.resolve(params.connection),
     schema: { attributes: params.attributes ?? {}, title: params.title },
+    refetchOnWindowFocus: params.refetchOnWindowFocus,
   };
 }
 

@@ -1,12 +1,12 @@
 import { ClientError } from 'scrivito_sdk/client';
 
-export type LoginHandler = (visit: string) => Promise<unknown>;
+export type LoginHandler<T = unknown> = (visit: string) => Promise<T>;
 
 /** execute the function fn and use loginHandler in case of "auth missing" */
-export async function withLoginHandler(
-  loginHandler: LoginHandler | undefined,
-  fn: () => Promise<unknown>
-): Promise<unknown> {
+export async function withLoginHandler<T, S>(
+  loginHandler: LoginHandler<T> | undefined,
+  fn: () => Promise<S>
+): Promise<T | S> {
   if (!loginHandler) return fn();
 
   try {

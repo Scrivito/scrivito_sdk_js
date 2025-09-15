@@ -54,11 +54,13 @@ export function serialize(
     } else {
       const [value, typeInfo] = attributes[name];
 
-      serializedAttributes[serializedName] = serializeAttributeEntry(
-        value,
-        name,
-        typeInfo!
-      );
+      if (value !== undefined) {
+        serializedAttributes[serializedName] = serializeAttributeEntry(
+          value,
+          name,
+          typeInfo!
+        );
+      }
     }
   });
 

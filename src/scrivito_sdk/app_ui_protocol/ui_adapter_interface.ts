@@ -6,7 +6,7 @@ import type {
   ComparisonRange,
   ObjSpaceId,
 } from 'scrivito_sdk/client';
-import type { Position } from 'scrivito_sdk/common';
+import type { Position, Streamable } from 'scrivito_sdk/common';
 import type {
   ContentUpdateHandler,
   ObjStreamReplicationEndpoint,
@@ -77,6 +77,8 @@ export const uiAdapterDescription = {
   endDrag: SEND,
   dragTo: SEND,
   drop: SEND,
+
+  windowFocusStream: STREAM,
 };
 
 export interface UiAdapterInterface
@@ -137,6 +139,7 @@ export interface UiAdapterInterface
   getUiContext(): UiContext;
   getUiLanguage(): Locale | null;
   getEditableArea(): EditableArea | undefined;
+  windowFocusStream(): Streamable<void>;
 }
 
 export interface TenantConfiguration {

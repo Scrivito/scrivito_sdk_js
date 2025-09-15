@@ -1,22 +1,42 @@
 import { throwInvalidArgumentsError, underscore } from 'scrivito_sdk/common';
-import { AttributeDefinitions } from 'scrivito_sdk/realm/schema';
+import {
+  AttributeDefinitions,
+  AttributeTypeToConfigMapping,
+} from 'scrivito_sdk/realm/schema';
 
 export function validateAttributeDefinitions(
   attributeDefinitions: AttributeDefinitions,
-  target: string
+  apiFunctionName: string
 ) {
-  Object.entries(attributeDefinitions).forEach(([name, definition]) => {
-    assertCustomAttributeName(name, target);
+  Object.entries(attributeDefinitions).forEach(
+    ([attributeName, definition]) => {
+      assertCustomAttributeName(attributeName, apiFunctionName);
 
-    const [attributeType, attributeTypeOptions] = definition;
+      const [attributeType, attributeTypeOptions] = definition;
 
-    if (
-      attributeType === 'widgetlist' &&
-      typeof attributeTypeOptions !== 'string'
-    ) {
-      assertWidgetlistDefinition(name, attributeTypeOptions, target);
+      if (
+        attributeType === 'widgetlist' &&
+        typeof attributeTypeOptions !== 'string'
+      ) {
+        assertWidgetlistDefinition(
+          attributeName,
+          attributeTypeOptions,
+          apiFunctionName
+        );
+      }
+
+      if (
+        (attributeType === 'enum' || attributeType === 'multienum') &&
+        typeof attributeTypeOptions !== 'string'
+      ) {
+        assertEnumOrMultienumDefinition(
+          attributeName,
+          attributeTypeOptions,
+          apiFunctionName
+        );
+      }
     }
-  });
+  );
 }
 
 type WidgetlistOptions =
@@ -30,9 +50,9 @@ type WidgetlistOptions =
     };
 
 function assertWidgetlistDefinition(
-  name: string,
+  attributeName: string,
   options: WidgetlistOptions,
-  target: string
+  apiFunctionName: string
 ) {
   if (options.maximum !== undefined) {
     const { maximum } = options;
@@ -40,9 +60,27 @@ function assertWidgetlistDefinition(
     if (Number.isInteger(maximum) && maximum > 0) return;
 
     throwInvalidArgumentsError(
-      target,
-      `invalid value "${maximum}" supplied to ${name}: The "maximum" must be a positive integer.`,
-      { docPermalink: `'js-sdk/${target}'` }
+      apiFunctionName,
+      `invalid value "${maximum}" supplied to ${attributeName}: The "maximum" must be a positive integer.`,
+      { docPermalink: `'js-sdk/${apiFunctionName}'` }
+    );
+  }
+}
+
+function assertEnumOrMultienumDefinition(
+  attributeName: string,
+  {
+    values,
+  }:
+    | AttributeTypeToConfigMapping['enum']
+    | AttributeTypeToConfigMapping['multienum'],
+  apiFunctionName: string
+) {
+  if (values.includes('')) {
+    throwInvalidArgumentsError(
+      apiFunctionName,
+      `invalid "values" config supplied for ${attributeName}: An empty string is not a valid enum or multienum value.`,
+      { docPermalink: `'js-sdk/${apiFunctionName}'` }
     );
   }
 }
