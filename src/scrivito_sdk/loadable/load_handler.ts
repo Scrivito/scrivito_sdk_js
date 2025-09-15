@@ -64,17 +64,6 @@ export class CaptureReport<T> {
     this.result = result;
   }
 
-  /** creates a new report, with any 'incomplete' data treated as 'outdated' instead. */
-  treatIncompleteAsOutdated(): CaptureReport<T> {
-    const newCaptureList = {
-      datas: [...this.captureList.datas],
-      incomplete: false,
-      outdated: this.captureList.outdated || this.captureList.incomplete,
-    };
-
-    return new CaptureReport(newCaptureList, this.result);
-  }
-
   forwardToCurrent() {
     const currentList = currentCaptureList();
     if (!currentList) {

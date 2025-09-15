@@ -47,10 +47,11 @@ export class ObjBackendReplication implements ObjReplication {
     );
   }
 
-  async start() {
-    const data = await retrieveObj(this.objSpaceId, this.objId, 'full');
-    addBatchUpdate(() => {
-      this.notifyBackendState(data);
+  start() {
+    retrieveObj(this.objSpaceId, this.objId, 'full').then((data) => {
+      addBatchUpdate(() => {
+        this.notifyBackendState(data);
+      });
     });
   }
 
@@ -105,7 +106,7 @@ export class ObjBackendReplication implements ObjReplication {
       return;
     }
 
-    return finishSavingPromise;
+    return finishSavingPromise.catch(() => Promise.reject());
   }
 
   finishReplicating(): never {
@@ -149,27 +150,27 @@ export class ObjBackendReplication implements ObjReplication {
     }
   }
 
-  private async performReplication() {
+  private performReplication() {
     const localState = this.getLocalObjJson();
 
     this.scheduledReplication = false;
     this.replicationActive = true;
 
-    try {
-      const backendState = await this.replicateLocalStateToBackend(localState);
-      this.handleBackendUpdate(localState, backendState);
-      this.currentRequestDeferred!.resolve();
-      this.currentRequestDeferred = undefined;
-      this.replicationActive = false;
+    this.replicateLocalStateToBackend(localState).then(
+      (backendState) => {
+        this.handleBackendUpdate(localState, backendState);
+        this.currentRequestDeferred!.resolve();
+        this.currentRequestDeferred = undefined;
+        this.replicationActive = false;
 
-      this.startReplication();
-    } catch (error) {
-      if (!(error instanceof Error)) throw error;
-
-      this.currentRequestDeferred!.reject(error);
-      this.currentRequestDeferred = undefined;
-      this.replicationActive = false;
-    }
+        this.startReplication();
+      },
+      (error) => {
+        this.currentRequestDeferred!.reject(error);
+        this.currentRequestDeferred = undefined;
+        this.replicationActive = false;
+      }
+    );
   }
 
   private async replicateLocalStateToBackend(

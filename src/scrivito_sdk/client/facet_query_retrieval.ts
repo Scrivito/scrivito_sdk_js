@@ -6,6 +6,7 @@ import { ObjSearchParams } from 'scrivito_sdk/models';
 
 export interface BackendFacetRequestParams {
   facets: [BackendRequestFacet];
+
   options: { site_aware: true };
   size: number;
   query?: Query;
@@ -29,17 +30,15 @@ export interface BackendFacetQueryResponse {
   facets: [BackendResponseFacet[]];
 }
 
-export async function retrieveFacetQuery(
+export function retrieveFacetQuery(
   workspaceId: string,
   params: BackendFacetRequestParams
 ): Promise<BackendFacetQueryResponse> {
-  try {
-    return (await cmsRestApi.get(
-      `workspaces/${workspaceId}/objs/search`,
-      params
-    )) as BackendFacetQueryResponse;
-  } catch (error) {
-    if (error instanceof MissingWorkspaceError) return { facets: [[]] };
-    throw error;
-  }
+  return cmsRestApi
+    .get(`workspaces/${workspaceId}/objs/search`, params)
+    .then((response) => response as BackendFacetQueryResponse)
+    .catch((error) => {
+      if (error instanceof MissingWorkspaceError) return { facets: [[]] };
+      throw error;
+    });
 }

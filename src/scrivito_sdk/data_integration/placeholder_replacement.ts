@@ -1,7 +1,3 @@
-import {
-  DATA_PLACEHOLDERS,
-  SINGLE_DATA_PLACEHOLDER,
-} from 'scrivito_sdk/common';
 import { isDataIntegrationActive } from 'scrivito_sdk/data_integration/activate_data_integration';
 import {
   DataContext,
@@ -12,8 +8,12 @@ import type { DataStack } from 'scrivito_sdk/data_integration/data_stack';
 import { getDataClass } from 'scrivito_sdk/data_integration/get_data_class';
 import { loadableWithDefault } from 'scrivito_sdk/loadable';
 
+const PLACEHOLDERS = /__([a-z](?:[a-z0-9]|\.[a-z]|(\._id)|_(?!_)){0,100})__/gi;
+const SINGLE_PLACEHOLDER =
+  /^__([a-z](?:[a-z0-9]|\.[a-z]|(\._id)|_(?!_)){0,100})__$/i;
+
 export function isSinglePlaceholder(text: string): boolean {
-  return !!text.match(SINGLE_DATA_PLACEHOLDER);
+  return !!text.match(SINGLE_PLACEHOLDER);
 }
 
 export function replacePlaceholdersWithData(
@@ -30,7 +30,7 @@ export function replacePlaceholdersWithData(
 ): string {
   if (!isDataIntegrationActive()) return text;
 
-  return text.replace(DATA_PLACEHOLDERS, (placeholder, identifier) => {
+  return text.replace(PLACEHOLDERS, (placeholder, identifier) => {
     const rawValue = replacePlaceholder({
       identifier,
       placeholder,

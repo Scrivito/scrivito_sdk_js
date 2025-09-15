@@ -61,9 +61,10 @@ export class ObjStreamReplication implements ObjReplication {
     return this.replicationProcess.finishReplicating();
   }
 
-  async finishSaving() {
-    await this.finishReplicating();
-    return getEndpoint().finishSavingObj(this.objSpaceId, this.objId);
+  finishSaving() {
+    return this.finishReplicating().then(() =>
+      getEndpoint().finishSavingObj(this.objSpaceId, this.objId)
+    );
   }
 
   replicationMessageStream() {

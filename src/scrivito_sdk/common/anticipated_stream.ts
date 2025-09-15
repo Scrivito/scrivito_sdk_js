@@ -6,19 +6,17 @@ export function anticipatedStream<T>(
 ): Streamable<T> {
   return new Streamable((subscriber) => {
     let subscription: Subscription | undefined;
-
-    (async () => {
-      try {
-        const stream = await streamPromise;
+    streamPromise
+      .then((stream) => {
         if (subscriber.isClosed()) return;
 
         subscription = stream.subscribe(subscriber);
-      } catch (error) {
+      })
+      .catch((error) => {
         subscriber.complete();
 
         throw error;
-      }
-    })();
+      });
 
     return () => {
       if (subscription) subscription.unsubscribe();

@@ -78,16 +78,15 @@ async function computeVerification(
   if (!computation) {
     // note that further request's challenges are ignored (intentionally)
     const { verificator, data } = challenge;
-    const promise = (async () => {
-      const compute: VerificationForChallenge = await fetchVerificatorFunction(
-        verificator.id,
-        verificator.url
-      );
-
-      return new Promise<Verification>((resolve) => {
-        compute(data, (result: Verification) => resolve(result));
-      });
-    })();
+    const promise = fetchVerificatorFunction(
+      verificator.id,
+      verificator.url
+    ).then(
+      (compute: VerificationForChallenge) =>
+        new Promise<Verification>((resolve) => {
+          compute(data, (result: Verification) => resolve(result));
+        })
+    );
 
     computation = {
       challenge: { verificator, data },

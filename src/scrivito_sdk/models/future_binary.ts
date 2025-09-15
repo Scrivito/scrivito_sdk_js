@@ -83,12 +83,12 @@ export class FutureBinary {
   }
 
   /** @internal */
-  async intoId(targetId: string): Promise<Binary> {
+  intoId(targetId: string): Promise<Binary> {
     if (!binaryHandler) throw new InternalError();
+    let binaryPromise;
 
-    let result;
     if (this.idToCopy) {
-      result = await binaryHandler.copyBinary(
+      binaryPromise = binaryHandler.copyBinary(
         this.idToCopy,
         targetId,
         this.filename,
@@ -96,7 +96,7 @@ export class FutureBinary {
       );
     } else {
       if (!this.source) throw new InternalError();
-      result = await binaryHandler.uploadBinary(
+      binaryPromise = binaryHandler.uploadBinary(
         targetId,
         this.source,
         this.filename,
@@ -104,7 +104,7 @@ export class FutureBinary {
       );
     }
 
-    return new Binary(result.id, currentObjSpaceId());
+    return binaryPromise.then(({ id }) => new Binary(id, currentObjSpaceId()));
   }
 }
 

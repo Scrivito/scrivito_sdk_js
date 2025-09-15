@@ -61,6 +61,7 @@ import {
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
 import { computeParentPath } from 'scrivito_sdk/models/compute_parent_path';
+import { convertToSlug } from 'scrivito_sdk/models/convert_to_slug';
 import {
   currentObjSpaceId,
   currentWorkspaceId,
@@ -72,7 +73,6 @@ import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_sco
 import { restrictToSite } from 'scrivito_sdk/models/restrict_to_site';
 import { TypeInfo } from 'scrivito_sdk/models/type_info';
 import { withBatchedUpdates } from 'scrivito_sdk/state';
-import { slugify } from 'slugify';
 
 interface WidgetInsertionBefore {
   before: BasicWidget;
@@ -103,10 +103,6 @@ export interface SerializedObjAttributes {
   _restriction?: [string] | null;
   _language?: string | null;
   _data_param?: [string] | null;
-}
-
-export class BasicObjSnapshot {
-  constructor(readonly _data: ObjJson) {}
 }
 
 export class BasicObj implements ContentValueProvider {
@@ -491,9 +487,8 @@ export class BasicObj implements ContentValueProvider {
     return this.finishSaving();
   }
 
-  async finishSaving(): Promise<void> {
-    await this.finishLinkResolution();
-    return this.objData.finishSaving();
+  finishSaving(): Promise<void> {
+    return this.finishLinkResolution().then(() => this.objData.finishSaving());
   }
 
   equals(other: unknown): boolean {
@@ -588,7 +583,7 @@ export class BasicObj implements ContentValueProvider {
 
   slug(): string {
     const title = this.get('title', 'string');
-    return slugify(title);
+    return convertToSlug(title);
   }
 
   getWidgetData(id: string): WidgetJson | undefined {
@@ -618,16 +613,8 @@ export class BasicObj implements ContentValueProvider {
       : this.objData.getAttributeWithoutWidgetData(attributeName);
   }
 
-  getData(): ObjJson | undefined {
+  getData(): ObjJson | undefined | null {
     return this.objData.get();
-  }
-
-  createSnapshot(): BasicObjSnapshot {
-    return new BasicObjSnapshot(this.objData.getOrThrow());
-  }
-
-  revertTo(snapshot: BasicObjSnapshot): void {
-    this.objData.set(snapshot._data);
   }
 
   private blob(): Binary | null {

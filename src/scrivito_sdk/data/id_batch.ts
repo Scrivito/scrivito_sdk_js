@@ -89,7 +89,7 @@ export class IdBatchCollection<Params> {
     return !!this.fakeQuery;
   }
 
-  private async loader(
+  private loader(
     params: Params,
     index: number,
     batchSize: number
@@ -97,17 +97,17 @@ export class IdBatchCollection<Params> {
     if (index === 0) return this.loadBatch(params, undefined, batchSize);
 
     const previousBatch = this.getBatch(params, batchSize, index - 1);
-    const continuation = await load(() =>
-      previousBatch.continuationForNextBatch()
+    return load(() => previousBatch.continuationForNextBatch()).then(
+      (continuation) => {
+        if (!continuation) {
+          // no continuation means the index is too large (beyond the last batch)
+          // note: only the first batch's 'total' value is ever used
+          return { results: [], total: -1 };
+        }
+
+        return this.loadBatch(params, continuation, batchSize);
+      }
     );
-
-    if (!continuation) {
-      // no continuation means the index is too large (beyond the last batch)
-      // note: only the first batch's 'total' value is ever used
-      return { results: [], total: -1 };
-    }
-
-    return this.loadBatch(params, continuation, batchSize);
   }
 }
 

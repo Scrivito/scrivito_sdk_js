@@ -9,7 +9,7 @@ export function hasDecodeImg(img: HTMLImageElement): boolean {
 }
 
 // For test purpose only
-export async function decodeImg(
+export function decodeImg(
   img: HTMLImageElement,
   imageUrl: string
 ): Promise<HTMLImageElement> {
@@ -18,8 +18,7 @@ export async function decodeImg(
   }
 
   img.src = imageUrl;
-  await imgDecode(img)();
-  return img;
+  return imgDecode(img)().then(() => img);
 }
 
 // For test purpose only

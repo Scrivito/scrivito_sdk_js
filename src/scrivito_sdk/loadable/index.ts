@@ -6,7 +6,6 @@ export {
   LoadingSubscriber,
 } from 'scrivito_sdk/loadable/load_handler';
 export { load } from 'scrivito_sdk/loadable/load';
-export { ignoreLoadingState } from 'scrivito_sdk/loadable/ignore_loading_state';
 export type { LoadableData } from 'scrivito_sdk/loadable/loadable_data';
 export {
   reportUsedData,

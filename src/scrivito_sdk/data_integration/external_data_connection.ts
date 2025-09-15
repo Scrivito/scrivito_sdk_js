@@ -10,7 +10,6 @@ import { DataConnectionError } from 'scrivito_sdk/data_integration/data_connecti
 import { DataId, isValidDataId } from 'scrivito_sdk/data_integration/data_id';
 import { ExternalData } from 'scrivito_sdk/data_integration/external_data';
 import { DataConnectionIndexParams } from 'scrivito_sdk/data_integration/index_params';
-import { LazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 import { isValidDataIdentifier } from 'scrivito_sdk/models';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -241,7 +240,7 @@ export function resetExternalDataConnections(): void {
 
 export function setExternalDataConnection(
   name: string,
-  partialConnection: LazyAsync<Partial<UncheckedDataConnection>>
+  partialConnection: Promise<Partial<UncheckedDataConnection>>
 ): void {
   const connection = anticipatedDataConnection(partialConnection, name);
 

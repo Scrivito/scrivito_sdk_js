@@ -2,10 +2,11 @@
 import { getAssetUrlBase } from 'scrivito_sdk/app_support/asset_url_base';
 import { getDocument, loadCss } from 'scrivito_sdk/common';
 
-export async function loadEditingAssets() {
+export function loadEditingAssets() {
   loadEditingCss();
-  const { initializeEditors } = await importEditors();
-  initializeEditors();
+  importEditors().then(({ initializeEditors }) => {
+    initializeEditors();
+  });
 }
 
 function loadEditingCss() {

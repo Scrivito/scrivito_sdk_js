@@ -46,30 +46,31 @@ export function isLatestNavigateToCallId(callId: number): boolean {
   return latestCallId === callId;
 }
 
-export async function basicNavigateTo(
+export function basicNavigateTo(
   target: RoutingTarget,
   callId = getNextNavigateToCallId()
 ): Promise<void> {
   failIfFrozen('basicNavigateTo');
 
-  const routingTarget = await load(() => destinationForTarget(target));
-  if (isLatestNavigateToCallId(callId)) {
-    switch (routingTarget.type) {
-      case 'remote':
-        changeLocation(routingTarget.url);
-        break;
-      case 'local':
-        navigateToResource(routingTarget.resource);
-        break;
-      case 'crossSite':
-        assignLocation(routingTarget.url);
-        break;
-      case 'unavailable':
-        logError(
-          `Could not navigate to Obj ${routingTarget.objId}, no URL found`
-        );
+  return load(() => destinationForTarget(target)).then((routingTarget) => {
+    if (isLatestNavigateToCallId(callId)) {
+      switch (routingTarget.type) {
+        case 'remote':
+          changeLocation(routingTarget.url);
+          break;
+        case 'local':
+          navigateToResource(routingTarget.resource);
+          break;
+        case 'crossSite':
+          assignLocation(routingTarget.url);
+          break;
+        case 'unavailable':
+          logError(
+            `Could not navigate to Obj ${routingTarget.objId}, no URL found`
+          );
+      }
     }
-  }
+  });
 }
 
 type NavigationDestination =

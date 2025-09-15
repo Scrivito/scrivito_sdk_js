@@ -16,11 +16,11 @@ interface DataClassParams {
 
 export function registerExternalDataClass(
   name: string,
-  params: LazyAsync<DataClassParams>
+  params: Promise<DataClassParams>
 ): void {
   setExternalDataConnection(
     name,
-    mapLazyAsync(params, (eagerParams) => eagerParams.connection)
+    mapLazyAsync(params, (eagerParams) => eagerParams.connection)()
   );
   registerDataClassSchema(
     name,

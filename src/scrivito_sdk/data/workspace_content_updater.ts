@@ -40,21 +40,19 @@ export class WorkspaceContentUpdater {
     if (!from) return;
 
     this.updating = promiseAndFinally(
-      (async () => {
-        const { to, current, objs } = await getWorkspaceChanges(
-          this.workspaceId,
-          from
-        );
-        if (objs === '*' || (to && to !== current)) {
-          // the backend was unable to send the complete list of changes
-          // (for whatever reason)
-          invalidateAllLoadedObjsIn(['workspace', this.workspaceId]);
-        } else if (Array.isArray(objs)) {
-          this.applyChanges(objs);
-        }
+      getWorkspaceChanges(this.workspaceId, from).then(
+        ({ to, current, objs }) => {
+          if (objs === '*' || (to && to !== current)) {
+            // the backend was unable to send the complete list of changes
+            // (for whatever reason)
+            invalidateAllLoadedObjsIn(['workspace', this.workspaceId]);
+          } else if (Array.isArray(objs)) {
+            this.applyChanges(objs);
+          }
 
-        this.setContentStateId(current);
-      })(),
+          this.setContentStateId(current);
+        }
+      ),
       () => {
         this.updating = undefined;
       }

@@ -26,7 +26,7 @@ export type FetchOptions = FetchBaseOptions & AuthViaOptions;
 
 interface FetchBaseOptions extends ApiClientBaseOptions {
   params?: FetchParams;
-  data?: FetchData | FormData;
+  data?: FetchData;
   method?: Method;
   // @internal
   idp?: string;

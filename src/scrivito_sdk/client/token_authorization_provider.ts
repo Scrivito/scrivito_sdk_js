@@ -4,7 +4,7 @@ import {
   ClientErrorRequestDetails,
 } from 'scrivito_sdk/client';
 import { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
-import { isHighSecurityAction } from 'scrivito_sdk/client/is_high_security_action';
+import { isAuthCheckRequired } from 'scrivito_sdk/client/is_auth_check_required';
 import { ScrivitoError } from 'scrivito_sdk/common';
 
 export class TokenAuthorizationError extends ScrivitoError {
@@ -60,11 +60,9 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
       const response =
         token === null ? await request() : await request(`Bearer ${token}`);
 
-      // IAM always responds with a 401 status code if a new token is needed.
-      // Any other status code indicates that something went wrong.
-      if (response.status !== 401) return response;
-
-      if (await isHighSecurityAction(response)) return response;
+      if (response.status !== 401 || (await isAuthCheckRequired(response))) {
+        return response;
+      }
 
       // is token renewal already in progress? (concurrency)
       if (tokenPromise === this.fetchTokenPromise) {

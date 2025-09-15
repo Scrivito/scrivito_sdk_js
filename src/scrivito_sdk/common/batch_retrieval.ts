@@ -34,27 +34,21 @@ export class BatchRetrieval<KEY_TYPE, RETURN_TYPE> {
     (items: Item<KEY_TYPE, RETURN_TYPE>[]) => {
       const nextBatch = items.splice(0, this.batchSize);
       const keys = nextBatch.map((item) => item.key);
-
-      (async () => {
-        try {
-          const results = await this.mget(keys);
-          nextBatch.forEach(async ({ key, deferred }, index) => {
+      this.mget(keys).then(
+        (results) => {
+          nextBatch.forEach(({ key, deferred }, index) => {
             if (index < results.length) {
               const result = results[index];
               deferred.resolve(result);
             } else {
-              try {
-                const result = await this.retrieve(key);
-                deferred.resolve(result);
-              } catch (error) {
-                deferred.reject(error as Error);
-              }
+              this.retrieve(key).then(deferred.resolve, deferred.reject);
             }
           });
-        } catch (error) {
-          nextBatch.forEach((item) => item.deferred.reject(error as Error));
+        },
+        (error) => {
+          nextBatch.forEach((item) => item.deferred.reject(error));
         }
-      })();
+      );
 
       return items;
     }

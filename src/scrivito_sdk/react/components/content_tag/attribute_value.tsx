@@ -247,35 +247,29 @@ function renderPropsForString(
     ? field.getHtmlDiffContent(getComparisonRange())
     : undefined;
 
-  if (diffContent) {
-    return renderPropsForStringWithPlaceholders(
-      diffContent,
-      dataContextContainer
-    );
-  }
-
-  return (
-    customChildren ??
-    renderPropsForStringWithPlaceholders(field.get(), dataContextContainer)
-  );
-}
-
-function renderPropsForStringWithPlaceholders(
-  content: string,
-  dataContextContainer?: DataContextContainer
-) {
   const placeholders = dataContextContainer?.placeholders;
   const dataStack = dataContextContainer?.dataStack;
 
-  return {
-    dangerouslySetInnerHTML: {
-      __html: replacePlaceholdersWithData(content, {
+  if (diffContent) {
+    return {
+      dangerouslySetInnerHTML: {
+        __html: replacePlaceholdersWithData(diffContent, {
+          placeholders,
+          dataStack,
+          transform: escape,
+        }),
+      },
+    };
+  }
+
+  return (
+    customChildren ?? {
+      children: replacePlaceholdersWithData(field.get(), {
         placeholders,
         dataStack,
-        transform: escape,
       }),
-    },
-  };
+    }
+  );
 }
 
 function renderPropsForNumber(field: BasicField<'integer' | 'float'>) {
