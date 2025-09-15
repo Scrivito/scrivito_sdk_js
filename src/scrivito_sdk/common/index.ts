@@ -149,3 +149,7 @@ export { AsyncTaskTracker } from 'scrivito_sdk/common/async_task_tracker';
 export { isISO8601 } from 'scrivito_sdk/common/is_ISO8601';
 export { isWrapping } from 'scrivito_sdk/common/is_wrapping';
 export { isFile, isBlob } from 'scrivito_sdk/common/is_blob';
+export {
+  DATA_PLACEHOLDERS,
+  SINGLE_DATA_PLACEHOLDER,
+} from 'scrivito_sdk/common/data_placeholders';

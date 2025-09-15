@@ -1,6 +1,5 @@
 import {
   LoginHandler,
-  TokenAuthorizationProvider,
   clientConfig,
   getTokenProvider,
 } from 'scrivito_sdk/client';
@@ -45,36 +44,71 @@ async function fetch(
   const authorization =
     headers && 'Authorization' in headers ? headers.Authorization : undefined;
 
-  let handler: LoginHandler | undefined;
-  let authProvider: TokenAuthorizationProvider;
-  if (authorization === undefined) {
-    const config = await clientConfig.fetch();
-
-    handler =
-      loginHandler ??
-      (config.loginHandler === 'redirect'
-        ? (visit) => loginRedirectHandler(visit, idp)
-        : undefined);
-
-    authProvider = getTokenProvider({
-      audience: audience || new URL(url).origin,
-      ...(authViaAccount && { authViaAccount }),
-      ...(authViaInstance && { authViaInstance }),
-    });
-  }
+  const authProvider = calculateAuthProvider({
+    url,
+    authorization,
+    audience,
+    authViaAccount,
+    authViaInstance,
+  });
 
   const fetchFn = () =>
     fetchJson(url, {
       data,
       authProvider,
       headers: removeNullValues(headers),
-      skipAuthorization: authorization === null || !!authorization,
+      skipAuthorization: authorization === null,
       params,
       method,
       credentials,
     });
 
-  return method === 'GET' ? withLoginHandler(handler, fetchFn) : fetchFn();
+  if (authorization !== undefined) return fetchFn();
+
+  if (method === 'GET') {
+    return withLoginHandler(
+      await calculateLoginHandler({ loginHandler, idp }),
+      fetchFn
+    );
+  }
+
+  return fetchFn();
+}
+
+async function calculateLoginHandler({
+  loginHandler,
+  idp,
+}: {
+  loginHandler?: LoginHandler;
+  idp?: string;
+}) {
+  if (loginHandler) return loginHandler;
+
+  if ((await clientConfig.fetch()).loginHandler !== 'redirect') return;
+
+  return (visit: string) => loginRedirectHandler(visit, idp);
+}
+
+function calculateAuthProvider({
+  url,
+  authorization,
+  audience,
+  authViaAccount,
+  authViaInstance,
+}: {
+  url: string;
+  authorization?: string | null;
+  audience?: string;
+  authViaAccount?: string;
+  authViaInstance?: string;
+}) {
+  if (authorization !== undefined) return;
+
+  return getTokenProvider({
+    audience: audience || new URL(url).origin,
+    ...(authViaAccount && { authViaAccount }),
+    ...(authViaInstance && { authViaInstance }),
+  });
 }
 
 function removeNullValues(headers: ApiClientHeaders = {}) {

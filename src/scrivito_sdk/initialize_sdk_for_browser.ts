@@ -38,7 +38,7 @@ import { hasComponent } from 'scrivito_sdk/react/has_component';
 import { setCurrentSiteIdHandler } from 'scrivito_sdk/realm';
 import { setInitialContentFor } from 'scrivito_sdk/realm/initial_content_registry';
 
-export function initializeSdk() {
+export async function initializeSdk() {
   setupRegisterVerificator();
 
   initializeAssetUrlBase();
@@ -73,12 +73,11 @@ export function initializeSdk() {
     setObjStreamReplicationEndpoint(uiAdapterClient);
     useReplicationStrategy(ObjStreamReplication);
 
-    loadEditingSupport().then((editingSupport) => {
-      editingSupport.installDndHandler();
-      editingSupport.installScrollHandler();
-      editingSupport.setModeIndicators();
-      editingSupport.reloadIfContextChangesFrom(windowName);
-    });
+    const editingSupport = await loadEditingSupport();
+    editingSupport.installDndHandler();
+    editingSupport.installScrollHandler();
+    editingSupport.setModeIndicators();
+    editingSupport.reloadIfContextChangesFrom(windowName);
     observeDocumentTitle();
 
     setInitialContentFor(initialContentFor);

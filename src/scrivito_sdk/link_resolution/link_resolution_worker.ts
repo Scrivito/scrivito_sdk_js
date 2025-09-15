@@ -45,22 +45,21 @@ export async function runWorker(
     return;
   }
 
-  return load(convertValue).then((convertedData) => {
-    if (isEqual(convertedData, attributeDataToConvert)) return;
+  const convertedData = await load(convertValue);
+  if (isEqual(convertedData, attributeDataToConvert)) return;
 
-    if (
-      hasDataToConvertBeenChangedConcurrently(
-        attributeDataToConvert,
-        objData,
-        attributeName,
-        widgetId
-      )
-    ) {
-      return;
-    }
+  if (
+    hasDataToConvertBeenChangedConcurrently(
+      attributeDataToConvert,
+      objData,
+      attributeName,
+      widgetId
+    )
+  ) {
+    return;
+  }
 
-    update(objData, attributeName, widgetId, convertedData);
-  });
+  update(objData, attributeName, widgetId, convertedData);
 }
 
 function hasDataToConvertBeenChangedConcurrently(

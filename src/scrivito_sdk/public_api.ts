@@ -33,7 +33,7 @@ export {
   Widget,
 } from 'scrivito_sdk/realm';
 
-export type { ObjClass } from 'scrivito_sdk/realm';
+export type { WidgetClass, ObjClass } from 'scrivito_sdk/realm';
 
 export {
   BackgroundImageTag,
@@ -151,6 +151,7 @@ export type {
 export { isOnCurrentPath } from 'scrivito_sdk/app_support/is_on_current_path';
 export { getInstanceId } from 'scrivito_sdk/app_support/get_instance_id';
 export { currentLanguage } from 'scrivito_sdk/app_support/current_language';
+export { performWithIamToken } from 'scrivito_sdk/app_support/perform_with_iam_token';
 
 /** @internal */
 export { unstable_selectSiteId } from 'scrivito_sdk/app_support/unstable_multi_site_mode';

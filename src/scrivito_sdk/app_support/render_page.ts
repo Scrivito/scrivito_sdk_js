@@ -35,7 +35,7 @@ export function renderPage<T>(
 ): Promise<RenderResult<T>>;
 
 /** @internal */
-export function renderPage<T>(
+export async function renderPage<T>(
   obj: Obj,
   render: () => T
 ): Promise<RenderResult<T>> {
@@ -48,41 +48,40 @@ export function renderPage<T>(
 
   ensureSiteIsPresent(page, ArgumentError);
 
-  return trackContentStateId(workspaceId).then(() => {
-    const contentStateId = getContentStateId(objSpaceId);
-    const siteId = ensureSiteIsPresent(page);
+  await trackContentStateId(workspaceId);
+  const contentStateId = getContentStateId(objSpaceId);
+  const siteId = ensureSiteIsPresent(page);
 
-    return load(() =>
-      reportUsedData(() =>
-        disableExternalDataLoading(() => {
-          const baseUrl = baseUrlForSite(siteId);
-          if (!baseUrl) {
-            throw new ScrivitoError(
-              `The obj "${page.id()}" cannot be rendered because the baseUrlForSite callback did not return a URL for its site "${siteId}".`
-            );
-          }
-
-          // ID is currently good enough.
-          // no need for a vanity path with slug or permalink
-          const sitePath = `/${page.id()}`;
-
-          return withCurrentPageContext(
-            { page, siteId, baseUrl, sitePath },
-            () => {
-              ensureRoutingDataAvailable(page);
-
-              return usePrerenderScaling(render);
-            }
+  const { result, usedData } = await load(() =>
+    reportUsedData(() =>
+      disableExternalDataLoading(() => {
+        const baseUrl = baseUrlForSite(siteId);
+        if (!baseUrl) {
+          throw new ScrivitoError(
+            `The obj "${page.id()}" cannot be rendered because the baseUrlForSite callback did not return a URL for its site "${siteId}".`
           );
-        })
-      )
-    ).then(({ result, usedData }) => {
-      return {
-        result,
-        preloadDump: generateContentDump(usedData, contentStateId),
-      };
-    });
-  });
+        }
+
+        // ID is currently good enough.
+        // no need for a vanity path with slug or permalink
+        const sitePath = `/${page.id()}`;
+
+        return withCurrentPageContext(
+          { page, siteId, baseUrl, sitePath },
+          () => {
+            ensureRoutingDataAvailable(page);
+
+            return usePrerenderScaling(render);
+          }
+        );
+      })
+    )
+  );
+
+  return {
+    result,
+    preloadDump: generateContentDump(usedData, contentStateId),
+  };
 }
 
 function ensureSiteIsPresent(page: BasicObj, errorClass = ScrivitoError) {

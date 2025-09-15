@@ -12,7 +12,7 @@ import {
 
 interface FetchApiOptions extends RequestInit {
   authProvider?: AuthorizationProvider;
-  data?: FetchData;
+  data?: FetchData | FormData;
   headers?: Record<string, string>;
   params?: FetchParams;
   isIdempotent?: boolean;
@@ -60,14 +60,19 @@ export async function fetchJson(
     : nonIdempotentRequest();
 }
 
-function calculateDataFetchOptions(data: FetchData, options: FetchApiOptions) {
+function calculateDataFetchOptions(
+  data: FetchData | FormData,
+  options: FetchApiOptions
+) {
+  const isFormData = data instanceof FormData;
+
   return {
     ...options,
     headers: {
       ...options.headers,
-      'Content-Type': 'application/json; charset=utf-8',
+      ...(!isFormData && { 'Content-Type': 'application/json; charset=utf-8' }),
     },
-    body: JSON.stringify(data),
+    body: isFormData ? data : JSON.stringify(data),
     data: undefined,
   };
 }

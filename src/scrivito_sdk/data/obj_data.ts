@@ -110,6 +110,12 @@ export class ObjData {
     return this._id;
   }
 
+  getOrThrow(): ObjJson {
+    const result = this.get();
+    if (!result) throw new InternalError();
+    return result;
+  }
+
   get(): ObjJson | undefined {
     failIfPerformanceConstraint(
       'for performance reasons, avoid this method when rendering'
@@ -238,11 +244,8 @@ export class ObjData {
   }
 
   update(objPatch: ObjJsonPatch): void {
-    // Bang:
-    // - If called, the objData to update belongs to an instantiated obj, therefore has been loaded
-    // - The data loaded is not a Nullable, therefore `!` removes only the `undefined` introduced
-    //   by LoadableData#get
-    const newState = patchObjJson(this.get()!, objPatch);
+    // Should never throw b/c if called, the objData to update belongs to an instantiated obj, therefore has been loaded
+    const newState = patchObjJson(this.getOrThrow(), objPatch);
 
     this.set(newState);
   }

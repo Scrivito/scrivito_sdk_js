@@ -95,7 +95,7 @@ export function getObjQuery(
   );
 }
 
-function loadBatch(
+async function loadBatch(
   [objSpaceId, params]: [ObjSpaceId, QueryParams],
   continuation: string | undefined,
   size: number
@@ -124,30 +124,31 @@ function loadBatch(
   }
 
   const workspaceId = getWorkspaceId(objSpaceId);
-  return cmsRetrieval
-    .retrieveObjQuery(workspaceId, requestParams)
-    .then((response) => {
-      // including Objs only makes sense for the first request(s), since
-      // afterwards many Objs will already be cached locally.
-      includeObjs = false;
+  const response = await cmsRetrieval.retrieveObjQuery(
+    workspaceId,
+    requestParams
+  );
 
-      const includedObjs = response.objs;
-      addBatchUpdate(() => {
-        if (includedObjs) {
-          includedObjs.forEach((objJson) => {
-            objReplicationPool
-              .get(objSpaceId, objJson._id)
-              .notifyBackendState(objJson);
-          });
-        }
+  // including Objs only makes sense for the first request(s), since
+  // afterwards many Objs will already be cached locally.
+  includeObjs = false;
 
-        response.results.forEach((id) => preloadObjData(objSpaceId, id));
+  const includedObjs = response.objs;
+  addBatchUpdate(() => {
+    if (includedObjs) {
+      includedObjs.forEach((objJson) => {
+        objReplicationPool
+          .get(objSpaceId, objJson._id)
+          .notifyBackendState(objJson);
       });
+    }
 
-      return {
-        results: response.results,
-        total: response.total,
-        continuation: response.continuation,
-      };
-    });
+    response.results.forEach((id) => preloadObjData(objSpaceId, id));
+  });
+
+  return {
+    results: response.results,
+    total: response.total,
+    continuation: response.continuation,
+  };
 }

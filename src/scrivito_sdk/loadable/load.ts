@@ -23,29 +23,29 @@ import { withFrozenState } from 'scrivito_sdk/state';
 export function load<T>(loadableFunction: () => T): Promise<T>;
 
 /** @internal */
-export function load<T>(loadableFunction: () => T): Promise<T> {
+export async function load<T>(loadableFunction: () => T): Promise<T> {
   checkLoad(loadableFunction);
 
-  return observeAndLoad(() =>
+  const observed = await observeAndLoad(() =>
     withFrozenState(
       {
         contextName: 'Scrivito.load',
-        message:
-          'Use an async callback: Scrivito.load(/* ... */).then(/* ... */).',
+        message: 'Use an async callback: await Scrivito.load(/* ... */)',
       },
       loadableFunction
     )
   )
-    .filter((observed) => !observed.meta.incomplete && !observed.meta.outdated)
-    .waitForFirst()
-    .then(getValueOrThrowError);
+    .filter((o) => !o.meta.incomplete && !o.meta.outdated)
+    .waitForFirst();
+
+  return getValueOrThrowError(observed);
 }
 
 function checkLoad<T>(loadableFunction: () => T) {
   if (typeof loadableFunction !== 'function') {
     throwInvalidArgumentsError(
       'Scrivito.load',
-      'Use an async callback: Scrivito.load(/* ... */).then(/* ... */).',
+      'Use an async callback: await Scrivito.load(/* ... */)',
       { docPermalink: 'js-sdk/load' }
     );
   }

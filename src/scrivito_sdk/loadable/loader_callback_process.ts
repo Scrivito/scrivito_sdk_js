@@ -51,7 +51,7 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
 
   // trigger loading the data.
   // does nothing if the data is already loading, or no loading is needed.
-  private triggerLoadingIfNeeded() {
+  private async triggerLoadingIfNeeded() {
     if (this.isLoading()) return;
 
     const versionWhenLoadingStarted = versionFromCallback(this.invalidation);
@@ -69,23 +69,23 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
       }
     };
 
-    this.loader().then(
-      (result) =>
-        finishLoader(() =>
-          this.stateContainer.set({
-            value: result,
-            meta: { version: versionWhenLoadingStarted },
-          })
-        ),
-      (error) =>
-        finishLoader(() =>
-          this.stateContainer.set({
-            meta: { error, version: versionWhenLoadingStarted },
-          })
-        )
-    );
-
     this.currentLoad = loadId;
+
+    try {
+      const result = await this.loader();
+      finishLoader(() =>
+        this.stateContainer.set({
+          value: result,
+          meta: { version: versionWhenLoadingStarted },
+        })
+      );
+    } catch (error) {
+      finishLoader(() =>
+        this.stateContainer.set({
+          meta: { error, version: versionWhenLoadingStarted },
+        })
+      );
+    }
   }
 
   private loadingNeeded(currentVersion?: LoadableVersion): boolean {

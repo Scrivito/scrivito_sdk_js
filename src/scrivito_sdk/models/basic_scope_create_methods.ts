@@ -17,7 +17,7 @@ export function createObjIn(
   return obj;
 }
 
-export function createObjFromFileIn(
+export async function createObjFromFileIn(
   scope: ObjScope,
   file: File,
   attributes: BasicObjAttributes
@@ -25,16 +25,14 @@ export function createObjFromFileIn(
   const maybeId = denormalizeSystemAttributeValue(attributes._id);
   const objId = maybeId || BasicObj.generateId();
 
-  return Binary.upload(file)
-    .intoId(objId)
-    .then((binary) => {
-      const basicObj = createObjIn(scope, {
-        ...attributes,
-        _id: [objId],
-        blob: [binary, ['binary']],
-      });
-      return basicObj.finishSaving().then(() => basicObj);
-    });
+  const binary = await Binary.upload(file).intoId(objId);
+  const basicObj = createObjIn(scope, {
+    ...attributes,
+    _id: [objId],
+    blob: [binary, ['binary']],
+  });
+  await basicObj.finishSaving();
+  return basicObj;
 }
 
 function denormalizeSystemAttributeValue(value: unknown): string | undefined {

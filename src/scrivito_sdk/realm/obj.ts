@@ -119,6 +119,8 @@ export interface ObjClass<
   onAllSites(): SiteContext<AttrDefs>;
 
   onSite(siteId: string): SiteContext<AttrDefs>;
+
+  attributeDefinitions(): NormalizedAttributeDefinitions;
 }
 
 function currentSiteContext(objClass: ObjClass) {
@@ -229,6 +231,13 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
 
   static onSite(siteId: string): SiteContext {
     return getSiteContext(this, restrictToSiteAndGlobal(siteId));
+  }
+
+  static attributeDefinitions(): NormalizedAttributeDefinitions {
+    const schema = Schema.forClass(this);
+    if (!schema) return {};
+
+    return schema.normalizedAttributes();
   }
 
   id(): string {
@@ -395,10 +404,9 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
     return wrapInAppClass(subWidgets(this._scrivitoPrivateContent));
   }
 
-  copy(): Promise<Obj<AttrDefs>> {
-    return copyObjViaHandler(this._scrivitoPrivateContent).then((newObj) =>
-      wrapInAppClass<AttrDefs>(newObj)
-    );
+  async copy(): Promise<Obj<AttrDefs>> {
+    const newObj = await copyObjViaHandler(this._scrivitoPrivateContent);
+    return wrapInAppClass<AttrDefs>(newObj);
   }
 
   /** @deprecated Use `Obj#delete` instead */
