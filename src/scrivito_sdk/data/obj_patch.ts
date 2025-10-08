@@ -1,5 +1,4 @@
 // @rewire
-import difference from 'lodash-es/difference';
 import isEmpty from 'lodash-es/isEmpty';
 import isEqual from 'lodash-es/isEqual';
 
@@ -33,7 +32,7 @@ export interface WidgetPoolJsonPatch {
   [key: string]: WidgetJsonPatch | RemoveThisKey | null | undefined;
 }
 
-export interface WidgetJsonPatch extends _WidgetJsonPatch {}
+export type WidgetJsonPatch = _WidgetJsonPatch;
 type _WidgetJsonPatch = {
   [attrName in keyof WidgetJson]?: WidgetJson[attrName] | RemoveThisKey;
 };
@@ -68,9 +67,15 @@ export function threeWayMergeObjs(
   if (otherVersion === undefined) return mainVersion;
   if (mainVersion === undefined) return otherVersion;
 
-  // a deleted version always wins
-  if (isUnavailableObjJson(mainVersion)) return mainVersion;
-  if (isUnavailableObjJson(otherVersion)) return otherVersion;
+  if (!baseVersion || isUnavailableObjJson(baseVersion)) {
+    // if one side created, the creator wins
+    if (isUnavailableObjJson(mainVersion)) return otherVersion;
+    if (isUnavailableObjJson(otherVersion)) return mainVersion;
+  } else {
+    // if one side deleted, the deleter wins
+    if (isUnavailableObjJson(mainVersion)) return mainVersion;
+    if (isUnavailableObjJson(otherVersion)) return otherVersion;
+  }
 
   const primaryChanges = diffObjJson(baseVersion, mainVersion);
   const mergedVersion = patchObjJson(otherVersion, primaryChanges);
@@ -88,20 +93,9 @@ export function patchObjJson(
 ObjJson;
 
 export function patchObjJson(
-  primitiveObj: null,
-  patch: ObjJsonPatch
-): ObjJsonPatch;
-
-export function patchObjJson(
-  primitiveObj: undefined,
-  patch: ObjJsonPatch
-): ObjJsonPatch;
-
-export function patchObjJson(
-  primitiveObj: ObjJson | null | undefined,
+  primitiveObj: ObjJson,
   patch: ObjJsonPatch
 ): ObjJsonPatch {
-  if (!primitiveObj) return patch;
   return patchJson(primitiveObj, patch);
 }
 
@@ -173,10 +167,9 @@ function eachKeyFrom<T1, T2>(
   ) => void
 ) {
   const keysOfA = Object.keys(objectA);
-  const keysOfB = Object.keys(objectB);
-  const keysOfAOnly = difference(keysOfA, keysOfB);
-  keysOfAOnly.forEach((key) => {
-    handler(key, objectA[key], objectB[key], false);
+  const keysOfB = new Set(Object.keys(objectB));
+  keysOfA.forEach((key) => {
+    if (!keysOfB.has(key)) handler(key, objectA[key], objectB[key], false);
   });
   keysOfB.forEach((key) => {
     handler(key, objectA[key], objectB[key], true);

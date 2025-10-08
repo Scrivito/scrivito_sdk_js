@@ -2,13 +2,16 @@ import { InternalError } from 'scrivito_sdk/common';
 
 export type ObjSpaceId =
   | WorkspaceObjSpaceId
-  | ['revision', string]
+  | RevisionObjSpaceId
   | EmptySpaceId;
-export type WorkspaceObjSpaceId = ['workspace', string];
-type RevisionObjSpaceId = ['revision', string];
+
+export type WorkspaceObjSpaceId = ['workspace', WorkspaceId];
+export type RevisionObjSpaceId = ['revision', RevisionId];
 type EmptySpaceId = ['empty'];
 
-export const PUBLISHED_SPACE: WorkspaceObjSpaceId = ['workspace', 'published'];
+type WorkspaceId = string;
+type RevisionId = string;
+
 export const EMPTY_SPACE: EmptySpaceId = ['empty'];
 
 export function getWorkspaceId(spaceId: ObjSpaceId): string {

@@ -1,12 +1,10 @@
-import mapValues from 'lodash-es/mapValues';
-import pick from 'lodash-es/pick';
-
 import { absoluteUrl } from 'scrivito_sdk/app_support/absolute_url';
 import {
   CustomMenuItem,
   MenuBuilder,
   MenuItem,
   MenuPatch,
+  MenuPatchItem,
 } from 'scrivito_sdk/ui_interface';
 
 export class MenuPatchBuilder implements MenuBuilder {
@@ -25,17 +23,30 @@ export class MenuPatchBuilder implements MenuBuilder {
     this.patch.insertIds = Array.from(
       new Set(this.patch.insertIds).add(customMenuItem.id)
     );
+    const { description, group, position, title } = customMenuItem;
+    const item: MenuPatchItem = {};
+    if (description !== undefined) item.description = description;
+    if (group !== undefined) item.group = group;
+    if (position) item.position = position;
+    if (title !== undefined) item.title = title;
+    if ('enabled' in customMenuItem) item.enabled = !!customMenuItem.enabled;
+
     this.patch.items[customMenuItem.id] = {
-      ...pick(customMenuItem, 'description', 'group', 'position', 'title'),
-      ...mapValues(pick(customMenuItem, 'enabled'), (v?: boolean) => !!v),
+      ...item,
       ...iconPatch(customMenuItem.icon),
     };
   }
 
   modify(menuItem: MenuItem): void {
+    const { group, position, title } = menuItem;
+    const item: MenuPatchItem = {};
+    if (group !== undefined) item.group = group;
+    if (position) item.position = position;
+    if (title !== undefined) item.title = title;
+
     this.patch.modifyItems[menuItem.id] = {
       ...this.patch.modifyItems[menuItem.id],
-      ...pick(menuItem, 'group', 'position', 'title'),
+      ...item,
       ...iconPatch(menuItem.icon),
     };
   }

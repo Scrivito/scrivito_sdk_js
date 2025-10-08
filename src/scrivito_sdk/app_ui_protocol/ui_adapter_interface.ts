@@ -39,6 +39,7 @@ export const uiAdapterDescription = {
   getUiContext: GET,
   getUiLanguage: GET,
   getEditableArea: GET,
+  getHighlightedWidget: GET,
 
   // LinkResolution methods
   getResolvedUrl: GET,
@@ -139,6 +140,7 @@ export interface UiAdapterInterface
   getUiContext(): UiContext;
   getUiLanguage(): Locale | null;
   getEditableArea(): EditableArea | undefined;
+  getHighlightedWidget(): HighlightedWidget | null;
   windowFocusStream(): Streamable<void>;
 }
 
@@ -155,3 +157,8 @@ export interface UiAdapterOpenContentBrowserOptions {
 
 export type Locale = 'de' | 'fr' | 'en';
 export type EditableArea = 'everywhere' | 'layout' | 'page';
+export type HighlightedWidget = {
+  objId: string;
+  widgetId: string;
+  objSpaceId: ObjSpaceId;
+};

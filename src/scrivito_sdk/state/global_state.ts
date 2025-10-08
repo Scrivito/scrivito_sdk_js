@@ -4,8 +4,11 @@ import { StateTree } from 'scrivito_sdk/state/state_tree';
 import { resetSubscribers } from 'scrivito_sdk/state/subscribers';
 
 // this type described the shape of the global state tree, i.e. what's stored inside it
-export interface GlobalState {
+// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
+export interface GlobalState extends Object {
   // empty placeholder - this type is augmented by individual modules
+  // This placeholder ensures the interface is not empty to satisfy ESLint
+  [key: string]: unknown;
 }
 
 const stateTree = new StateTree<GlobalState>();

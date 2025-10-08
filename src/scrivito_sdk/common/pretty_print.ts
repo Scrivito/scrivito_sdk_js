@@ -1,5 +1,3 @@
-import isElement from 'lodash-es/isElement';
-
 import { isObject } from 'scrivito_sdk/common';
 import { Obj } from 'scrivito_sdk/realm';
 
@@ -10,26 +8,24 @@ export function prettyPrint(input: unknown): string {
     }
 
     if (isObject(input)) {
-      return printObject(input as {});
+      return printObject(input);
     }
 
     return printTruncated(input);
-  } catch (_e) {
+  } catch {
     return '';
   }
 }
 
-function printObject(object: {}): string {
+function printObject(object: object): string {
   const basicContent = (object as Obj)._scrivitoPrivateContent;
 
   if (basicContent && typeof basicContent.toPrettyPrint === 'function') {
     return basicContent.toPrettyPrint();
   }
 
-  if (isElement(object)) {
-    return `[object HTMLElement ${printTruncated(
-      (object as Element).outerHTML
-    )}]`;
+  if ('outerHTML' in object) {
+    return `[object HTMLElement ${printTruncated(object.outerHTML)}]`;
   }
 
   return printTruncated(object);
@@ -45,7 +41,7 @@ interface ReactComponent {
   prototype: { isReactComponent: boolean };
 }
 
-function printFunction(fn: {}): string {
+function printFunction(fn: object): string {
   if (isFnWithSchema(fn)) {
     const schema = fn._scrivitoPrivateSchema;
     return `[class ${schema.name()}]`;
@@ -59,11 +55,11 @@ function printFunction(fn: {}): string {
   return truncate(fn.toString());
 }
 
-function isFnWithSchema(fn: {}): fn is FnWithSchema {
+function isFnWithSchema(fn: object): fn is FnWithSchema {
   return !!(fn as FnWithSchema)._scrivitoPrivateSchema;
 }
 
-function isReactComponent(fn: {}): fn is ReactComponent {
+function isReactComponent(fn: object): fn is ReactComponent {
   const prototype = (fn as ReactComponent).prototype;
   return prototype && prototype.isReactComponent;
 }

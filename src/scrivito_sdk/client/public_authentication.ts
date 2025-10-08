@@ -99,7 +99,7 @@ async function computeVerification(
   return computation.promise;
 }
 
-function isChallenge(maybeChallenge: Object): maybeChallenge is Challenge {
+function isChallenge(maybeChallenge: object): maybeChallenge is Challenge {
   return !!(maybeChallenge as Challenge).verificator;
 }
 

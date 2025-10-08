@@ -1,10 +1,10 @@
 // @rewire
 import {
   ObjSpaceId,
-  getWorkspaceId,
-  isEmptySpaceId,
+  WorkspaceObjSpaceId,
+  isWorkspaceObjSpaceId,
 } from 'scrivito_sdk/client';
-import { onReset } from 'scrivito_sdk/common';
+import { computeCacheKey, onReset } from 'scrivito_sdk/common';
 import { WorkspaceContentUpdater } from 'scrivito_sdk/data/workspace_content_updater';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -15,7 +15,7 @@ interface ContentStateIds {
 const contentStateIds = createStateContainer<ContentStateIds>();
 
 export interface ContentUpdateHandler {
-  getContentStateId(workspaceId: string): string | undefined;
+  getContentStateId(objSpace: WorkspaceObjSpaceId): string | undefined;
 }
 
 let contentUpdateHandler: ContentUpdateHandler | undefined;
@@ -29,35 +29,38 @@ export function setContentUpdateHandler(handler: ContentUpdateHandler): void {
 }
 
 export function getContentStateId(objSpaceId: ObjSpaceId): string {
-  if (isEmptySpaceId(objSpaceId)) return '';
+  if (!isWorkspaceObjSpaceId(objSpaceId)) return '';
 
-  const workspaceId = getWorkspaceId(objSpaceId);
   const contentStateId = contentUpdateHandler
-    ? contentUpdateHandler.getContentStateId(workspaceId)
-    : getState(workspaceId).get();
+    ? contentUpdateHandler.getContentStateId(objSpaceId)
+    : getState(objSpaceId).get();
   return contentStateId || '';
 }
 
 export function setContentStateId(
-  workspaceId: string,
+  objSpace: WorkspaceObjSpaceId,
   contentStateId: string
 ): void {
   if (!contentUpdateHandler) {
-    workspaceContentUpdaterFor(workspaceId).setContentStateIdOrThrowIfTracking(
+    workspaceContentUpdaterFor(objSpace).setContentStateIdOrThrowIfTracking(
       contentStateId
     );
   }
 }
 
-export async function trackContentStateId(workspaceId: string): Promise<void> {
+export async function trackContentStateId(
+  objSpace: WorkspaceObjSpaceId
+): Promise<void> {
   if (!contentUpdateHandler) {
-    return workspaceContentUpdaterFor(workspaceId).trackContentStateId();
+    return workspaceContentUpdaterFor(objSpace).trackContentStateId();
   }
 }
 
-export async function updateContent(workspaceId: string): Promise<void> {
+export async function updateContent(
+  objSpace: WorkspaceObjSpaceId
+): Promise<void> {
   if (!contentUpdateHandler) {
-    return workspaceContentUpdaterFor(workspaceId).updateContent();
+    return workspaceContentUpdaterFor(objSpace).updateContent();
   }
 }
 
@@ -68,19 +71,20 @@ export function resetContentUpdater() {
 }
 
 function workspaceContentUpdaterFor(
-  workspaceId: string
+  objSpace: WorkspaceObjSpaceId
 ): WorkspaceContentUpdater {
-  if (!workspaceContentUpdaters[workspaceId]) {
-    workspaceContentUpdaters[workspaceId] = new WorkspaceContentUpdater(
-      workspaceId,
-      getState(workspaceId)
+  const workspaceKey = computeCacheKey(objSpace);
+  if (!workspaceContentUpdaters[workspaceKey]) {
+    workspaceContentUpdaters[workspaceKey] = new WorkspaceContentUpdater(
+      objSpace,
+      getState(objSpace)
     );
   }
-  return workspaceContentUpdaters[workspaceId]!;
+  return workspaceContentUpdaters[workspaceKey]!;
 }
 
-function getState(workspaceId: string) {
-  return contentStateIds.subState(workspaceId);
+function getState(objSpace: WorkspaceObjSpaceId) {
+  return contentStateIds.subState(computeCacheKey(objSpace));
 }
 
 onReset(resetContentUpdater);

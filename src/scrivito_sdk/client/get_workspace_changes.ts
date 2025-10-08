@@ -1,5 +1,10 @@
 // @rewire
-import { ObjJson, cmsRestApi } from 'scrivito_sdk/client';
+import {
+  ObjJson,
+  WorkspaceObjSpaceId,
+  cmsRestApi,
+  getWorkspaceId,
+} from 'scrivito_sdk/client';
 
 import { WorkspaceJson } from 'scrivito_sdk/client/workspace_json';
 
@@ -21,9 +26,10 @@ interface ChangesJsonWithChanges extends ChangesJsonBase {
 export type ChangesJson = ChangesJsonWithChanges | ChangesJsonWithoutChanges;
 
 export function getWorkspaceChanges(
-  workspaceId: string,
+  workspace: WorkspaceObjSpaceId,
   from?: string
 ): Promise<ChangesJson> {
+  const workspaceId = getWorkspaceId(workspace);
   return cmsRestApi.get(`workspaces/${workspaceId}/changes`, {
     from,
   }) as Promise<ChangesJson>;

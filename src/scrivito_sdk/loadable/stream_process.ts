@@ -1,5 +1,3 @@
-import once from 'lodash-es/once';
-
 import {
   Subject,
   Subscription,
@@ -97,14 +95,10 @@ export function flushLoadableStreams() {
   flushSubject.next();
 }
 
-function enqueueFlush(callback: () => void) {
-  const runCallbackOnce = once(callback);
+async function enqueueFlush(callback: () => void) {
+  const waitPromise = waitMs(UNSUBSCRIBE_DELAY);
+  const flushPromise = flushSubject.waitForFirst();
 
-  (async () => {
-    const waitPromise = waitMs(UNSUBSCRIBE_DELAY);
-    const flushPromise = flushSubject.waitForFirst();
-
-    await Promise.race([waitPromise, flushPromise]);
-    runCallbackOnce();
-  })();
+  await Promise.race([waitPromise, flushPromise]);
+  callback();
 }

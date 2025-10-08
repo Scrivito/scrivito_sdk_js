@@ -37,7 +37,6 @@ export type {
 export { clientConfig } from 'scrivito_sdk/client/config';
 export type { TokenFetcher } from 'scrivito_sdk/client/config';
 export {
-  PUBLISHED_SPACE,
   EMPTY_SPACE,
   getWorkspaceId,
   isEmptySpaceId,
@@ -54,6 +53,7 @@ export {
 export type {
   ObjSpaceId,
   WorkspaceObjSpaceId,
+  RevisionObjSpaceId,
 } from 'scrivito_sdk/client/obj_space_id';
 export { isComparisonRange } from 'scrivito_sdk/client/comparison_range';
 export type { ComparisonRange } from 'scrivito_sdk/client/comparison_range';

@@ -17,7 +17,7 @@ export interface HistoryState {
   isRevisit: boolean;
 }
 
-let history: HistoryV4 | HistoryV5 | undefined;
+let currentHistory: HistoryV4 | HistoryV5 | undefined;
 let unlistenToHistory: UnregisterCallback | undefined;
 let lastAction: undefined | Action;
 
@@ -36,13 +36,13 @@ export function useHistory(historyToUse: HistoryV4 | HistoryV5): void {
     );
   }
 
-  if (historyToUse === history) {
+  if (historyToUse === currentHistory) {
     return;
   }
 
-  const isFirstHistory = !history;
+  const isFirstHistory = !currentHistory;
   listenToHistory(historyToUse);
-  history = historyToUse;
+  currentHistory = historyToUse;
   if (!isFirstHistory) {
     historyHasChanged();
   }
@@ -89,7 +89,7 @@ export function isCurrentHistoryState(historyState: HistoryState): boolean {
 
 // For test purpose only.
 export function reset(): void {
-  history = undefined;
+  currentHistory = undefined;
   lastAction = undefined;
   unlistenToHistory = undefined;
   historyChangesCountState.clear();
@@ -101,14 +101,14 @@ export function createInitialHistory(): HistoryV4 | HistoryV5 {
 }
 
 function ensureHistory(): void {
-  if (!history) {
+  if (!currentHistory) {
     useHistory(createInitialHistory());
   }
 }
 
 function getHistory(): HistoryV4 | HistoryV5 {
   ensureHistory();
-  return history!;
+  return currentHistory!;
 }
 
 function listenToHistory(historyToListen: HistoryV4 | HistoryV5): void {

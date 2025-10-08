@@ -1,6 +1,6 @@
 // @rewire
 import { ObjSpaceId, withEachAttributeJson } from 'scrivito_sdk/client';
-import { InternalError, onReset } from 'scrivito_sdk/common';
+import { InternalError, computeCacheKey, onReset } from 'scrivito_sdk/common';
 import { ObjData, getObjData } from 'scrivito_sdk/data';
 import {
   isAnyLinkResolutionAttributeJson,
@@ -22,20 +22,20 @@ export function setupWriteMonitorNotification(
   notifyWriteMonitor = notification;
 }
 
-let linkResolutions: { [workspaceId: string]: LinkResolution | undefined } = {};
+let linkResolutions: { [objSpaceKey: string]: LinkResolution | undefined } = {};
 
 export function startLinkResolutionFor(
-  workspaceId: string,
+  objSpace: ObjSpaceId,
   objId: string
 ): void {
-  linkResolutionFor(workspaceId).start(objId);
+  linkResolutionFor(objSpace).start(objId);
 }
 
 export function finishLinkResolutionFor(
-  workspaceId: string,
+  objSpace: ObjSpaceId,
   objId: string
 ): Promise<void> {
-  return linkResolutionFor(workspaceId).finish(objId);
+  return linkResolutionFor(objSpace).finish(objId);
 }
 
 // For test purpose only.
@@ -44,15 +44,14 @@ export function reset() {
   linkResolutions = {};
 }
 
-function linkResolutionFor(workspaceId: string) {
-  if (!linkResolutions[workspaceId]) {
-    linkResolutions[workspaceId] = new LinkResolution([
-      'workspace',
-      workspaceId,
-    ]);
+function linkResolutionFor(objSpace: ObjSpaceId) {
+  const objSpaceKey = computeCacheKey(objSpace);
+
+  if (!linkResolutions[objSpaceKey]) {
+    linkResolutions[objSpaceKey] = new LinkResolution(objSpace);
   }
 
-  return linkResolutions[workspaceId]!;
+  return linkResolutions[objSpaceKey]!;
 }
 
 class LinkResolution {

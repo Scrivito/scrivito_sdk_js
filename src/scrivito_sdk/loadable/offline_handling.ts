@@ -67,7 +67,7 @@ async function storeIntoEntry<T>(
 ) {
   try {
     offlineEntry.write(loadable.getOrThrow());
-  } catch (e) {
+  } catch {
     offlineEntry.delete();
   }
 }

@@ -1,4 +1,3 @@
-import identity from 'lodash-es/identity';
 import isDate from 'lodash-es/isDate';
 
 import {
@@ -25,7 +24,7 @@ const serializers = {
   number: serializeNumberAttribute,
   reference: serializeReferenceAttribute,
   string: serializeStringAttribute,
-  unknown: identity,
+  unknown: (value: unknown) => value,
 };
 
 export function serializeDataAttribute({
@@ -194,7 +193,7 @@ const deserializers = {
   number: deserializeNumberAttribute,
   reference: deserializeReferenceAttribute,
   string: deserializeStringAttribute,
-  unknown: identity,
+  unknown: (value: unknown) => value,
 };
 
 function deserializeBooleanAttribute(

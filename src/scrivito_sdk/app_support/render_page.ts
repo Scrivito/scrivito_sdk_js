@@ -3,7 +3,6 @@ import { withCurrentPageContext } from 'scrivito_sdk/app_support/current_page_da
 import { ensureRoutingDataAvailable } from 'scrivito_sdk/app_support/routing';
 import { usePrerenderScaling } from 'scrivito_sdk/app_support/scale_down_binary';
 import { baseUrlForSite } from 'scrivito_sdk/app_support/site_mapping';
-import { getWorkspaceId } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   ScrivitoError,
@@ -44,11 +43,10 @@ export async function renderPage<T>(
 
   const objSpaceId = currentObjSpaceId();
   const page = unwrapAppClass(obj);
-  const workspaceId = getWorkspaceId(objSpaceId);
 
   ensureSiteIsPresent(page, ArgumentError);
 
-  await trackContentStateId(workspaceId);
+  await trackContentStateId(objSpaceId);
   const contentStateId = getContentStateId(objSpaceId);
   const siteId = ensureSiteIsPresent(page);
 

@@ -20,7 +20,7 @@ export function isPrimitiveObject(
   return isObject(value) && !instanceOfClass(value);
 }
 
-function instanceOfClass(object: {}): boolean {
+function instanceOfClass(object: object): boolean {
   // Instances of class have a prototype chain of length 2 or more, e.g.
   // Instance --> SomeClass --> Object
   //

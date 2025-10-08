@@ -36,7 +36,7 @@ import {
   useUnstableMultiSiteMode,
 } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
 import { getVisitorAuthenticationProvider } from 'scrivito_sdk/app_support/visitor_authentication';
-import { linkViaPort } from 'scrivito_sdk/bridge';
+import { toggleWidgetHighlighting } from 'scrivito_sdk/app_support/widget_highlighting';
 import {
   Priority,
   clientConfig,
@@ -115,6 +115,7 @@ export interface Configuration {
     trustedUiOrigins?: string[];
     initialContentDumpUrl?: string;
     allowOfflineMode?: boolean;
+    widgetHighlighting?: boolean;
   };
 }
 
@@ -184,6 +185,10 @@ export function configure(configuration: Readonly<Configuration>): void {
 
   if (unofficialConfiguration?.initialContentDumpUrl) {
     setInitialContentDumpUrl(unofficialConfiguration.initialContentDumpUrl);
+  }
+
+  if (unofficialConfiguration?.widgetHighlighting) {
+    toggleWidgetHighlighting(true);
   }
 }
 
@@ -264,7 +269,6 @@ function configureWithUi(tenant: string, uiAdapterClient: UiAdapterClient) {
 
 function configureWithoutUi({
   endpoint,
-  tenant,
   optimizedWidgetLoading,
   visitorAuthentication,
   priority,
@@ -274,7 +278,6 @@ function configureWithoutUi({
 
   configureCmsRestApi({
     endpoint,
-    tenant,
     visitorAuthentication,
     priority,
     apiKey,
@@ -283,13 +286,11 @@ function configureWithoutUi({
 
 function configureCmsRestApi({
   endpoint: configuredEndpoint,
-  tenant,
   visitorAuthentication,
   priority,
   apiKey,
 }: {
   endpoint?: string;
-  tenant: string;
   visitorAuthentication?: boolean;
   priority?: Priority;
   apiKey?: string | IamApiKey;
@@ -297,9 +298,7 @@ function configureCmsRestApi({
   const endpoint = configuredEndpoint || 'api.scrivito.com';
 
   cmsRestApi.init({
-    apiBaseUrl: `${
-      endpoint.startsWith('http') ? endpoint : `https://${endpoint}`
-    }/tenants/${tenant}`,
+    apiBaseUrl: endpoint.startsWith('http') ? endpoint : `https://${endpoint}`,
     authorizationProvider: getCmsAuthProvider(apiKey, visitorAuthentication),
     analyticsProvider: isRunningInBrowser()
       ? browserAnalyticsProvider
@@ -378,9 +377,8 @@ function configureConstraintsValidationCallback(configuration: Configuration) {
 
 async function setAppAdapter(uiAdapterClient: UiAdapterClient) {
   const { startAppAdapter } = await importUiInterface();
-  const channel = new MessageChannel();
-  startAppAdapter(linkViaPort(channel.port1));
-  uiAdapterClient.setAppAdapter(channel.port2);
+  const port = startAppAdapter();
+  uiAdapterClient.setAppAdapter(port);
 }
 
 /** exported for test purposes only */

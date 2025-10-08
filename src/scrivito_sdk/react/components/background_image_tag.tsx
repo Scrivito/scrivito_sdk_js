@@ -249,7 +249,7 @@ function isPlainBackground(
 
 function assertNoBackgroundRelatedProperties(style: unknown) {
   if (isObject(style)) {
-    for (const key of Object.keys(style as {})) {
+    for (const key of Object.keys(style as object)) {
       if (key.match(/^background.+/)) {
         throwNextTick(
           new ArgumentError(

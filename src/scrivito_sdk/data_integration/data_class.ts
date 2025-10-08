@@ -321,7 +321,7 @@ export function assertValidDataItemAttributes(
     throw new ArgumentError('Data item attributes must be an object');
   }
 
-  if (!Object.keys(attributes as Object).every(isValidDataIdentifier)) {
+  if (!Object.keys(attributes as object).every(isValidDataIdentifier)) {
     throw new ArgumentError(
       'Keys of data item attributes must be valid data identifiers'
     );

@@ -1,5 +1,6 @@
 import {
   ObjJson,
+  WorkspaceObjSpaceId,
   getWorkspaceChanges,
   isUnavailableObjJson,
 } from 'scrivito_sdk/client';
@@ -13,7 +14,7 @@ export class WorkspaceContentUpdater {
   private updating?: Promise<void>;
 
   constructor(
-    private readonly workspaceId: string,
+    private readonly objSpace: WorkspaceObjSpaceId,
     private readonly contentState: StateContainer<string>
   ) {}
 
@@ -42,13 +43,13 @@ export class WorkspaceContentUpdater {
     this.updating = promiseAndFinally(
       (async () => {
         const { to, current, objs } = await getWorkspaceChanges(
-          this.workspaceId,
+          this.objSpace,
           from
         );
         if (objs === '*' || (to && to !== current)) {
           // the backend was unable to send the complete list of changes
           // (for whatever reason)
-          invalidateAllLoadedObjsIn(['workspace', this.workspaceId]);
+          invalidateAllLoadedObjsIn(this.objSpace);
         } else if (Array.isArray(objs)) {
           this.applyChanges(objs);
         }
@@ -66,10 +67,7 @@ export class WorkspaceContentUpdater {
   private applyChanges(objs: ObjJson[]): void {
     objs.forEach((json) => {
       const objId = isUnavailableObjJson(json) ? json._deleted : json._id;
-      const objReplication = objReplicationPool.get(
-        ['workspace', this.workspaceId],
-        objId
-      );
+      const objReplication = objReplicationPool.get(this.objSpace, objId);
       objReplication.notifyBackendState(json);
     });
   }
@@ -77,7 +75,7 @@ export class WorkspaceContentUpdater {
   private async initializeContentStateId(): Promise<void> {
     if (this.getContentStateId()) return;
 
-    const response = await getWorkspaceChanges(this.workspaceId);
+    const response = await getWorkspaceChanges(this.objSpace);
     this.setContentStateId(response.current);
   }
 

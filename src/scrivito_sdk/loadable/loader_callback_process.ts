@@ -41,7 +41,9 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
     this.currentLoad = undefined;
 
     const onChange = this.onChange;
-    onChange && onChange();
+    if (onChange) {
+      onChange();
+    }
   }
 
   setTidyCallback() {
@@ -64,7 +66,9 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
         addBatchUpdate(() => {
           effect();
           this.currentLoad = undefined;
-          this.onChange && this.onChange();
+          if (this.onChange) {
+            this.onChange();
+          }
         });
       }
     };

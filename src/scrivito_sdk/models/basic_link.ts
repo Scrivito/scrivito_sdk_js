@@ -1,5 +1,4 @@
 import isEqual from 'lodash-es/isEqual';
-import omitBy from 'lodash-es/omitBy';
 import * as URI from 'urijs';
 
 import { ArgumentError, QueryParameters } from 'scrivito_sdk/common';
@@ -122,9 +121,10 @@ export class BasicLink {
   }
 
   protected attributesForComparison() {
-    return omitBy(
-      this.attributes,
-      (attribute) => attribute === null || attribute === undefined
+    return Object.fromEntries(
+      Object.entries(this.attributes).filter(
+        ([, attribute]) => attribute !== null && attribute !== undefined
+      )
     );
   }
 }

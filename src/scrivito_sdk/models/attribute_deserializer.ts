@@ -1,6 +1,3 @@
-import intersection from 'lodash-es/intersection';
-import pick from 'lodash-es/pick';
-
 import {
   AttributeJson,
   CustomAttributeJsonMapping,
@@ -156,7 +153,7 @@ function deserializeMultienumValue(
 ) {
   if (isBackendValueOfType('stringlist', value)) {
     const [, { values }] = typeInfo;
-    return intersection(value[1], values);
+    return value[1].filter((item) => values.includes(item));
   }
 
   return [];
@@ -205,20 +202,14 @@ function deserializeLinklistValue(value: BackendValue) {
 }
 
 function convertToLink(valueFromBackend: LinkJson) {
-  const linkParams: BasicLinkAttributes = pick(
-    valueFromBackend,
-    'query',
-    'rel',
-    'target',
-    'title',
-    'url'
-  );
+  const { query, rel, target, title, url } = valueFromBackend;
+  const linkParams: BasicLinkAttributes = { query, rel, target, title, url };
+
   if ('fragment' in valueFromBackend) {
     linkParams.hash = valueFromBackend.fragment;
   }
-  if ('obj_id' in valueFromBackend) {
-    linkParams.objId = valueFromBackend.obj_id;
-  }
+  if ('obj_id' in valueFromBackend) linkParams.objId = valueFromBackend.obj_id;
+
   return new BasicLink(linkParams);
 }
 

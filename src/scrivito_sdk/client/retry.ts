@@ -9,7 +9,7 @@ export async function requestWithRateLimitRetry(
   const backoff = new ExponentialBackoff();
 
   // note: using a loop instead of recursion avoids stack overflow
-  // eslint-disable-next-line no-constant-condition
+
   while (true) {
     const response = await request();
 
@@ -31,7 +31,7 @@ export async function retryOnRequestFailed<T>(
   const backoff = new ExponentialBackoff();
 
   // note: using a loop instead of recursion avoids stack overflow
-  // eslint-disable-next-line no-constant-condition
+
   while (true) {
     try {
       return await request();
@@ -39,7 +39,6 @@ export async function retryOnRequestFailed<T>(
       if (!(error instanceof RequestFailedError)) throw error;
       if (limitedRetries && backoff.numberOfRetries() > 5) throw error;
 
-      // eslint-disable-next-line no-console
       console.info(`"${String(error)}". Retrying the request...`);
 
       await backoff.nextDelay();

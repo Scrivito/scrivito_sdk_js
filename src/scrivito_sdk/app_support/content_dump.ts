@@ -6,7 +6,7 @@ import {
   generateRecording,
   loadRecording,
 } from 'scrivito_sdk/loadable';
-import { currentWorkspaceId } from 'scrivito_sdk/models';
+import { currentObjSpaceId } from 'scrivito_sdk/models';
 import { withBatchedUpdates } from 'scrivito_sdk/state';
 
 interface MaybeContentDump {
@@ -48,7 +48,7 @@ export function loadContentDump(contentDump: string): void {
   }
 
   withBatchedUpdates(() => {
-    setContentStateId(currentWorkspaceId(), parsed.csid);
+    setContentStateId(currentObjSpaceId(), parsed.csid);
     loadRecording(parsed.recording);
   });
 }
@@ -68,7 +68,7 @@ function parseJsonObject(text: string): object | undefined {
 
   try {
     return JSON.parse(text) as object;
-  } catch (error) {
+  } catch {
     return;
   }
 }

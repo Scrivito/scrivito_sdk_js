@@ -90,7 +90,7 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
     let fetchedTokenBefore = false;
 
     // note: using a loop instead of recursion avoids stack overflow
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
       if (!this.fetchTokenPromise) {
         this.fetchTokenPromise = (async () => {

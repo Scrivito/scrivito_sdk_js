@@ -62,7 +62,7 @@ function assertWidgetlistDefinition(
     throwInvalidArgumentsError(
       apiFunctionName,
       `invalid value "${maximum}" supplied to ${attributeName}: The "maximum" must be a positive integer.`,
-      { docPermalink: `'js-sdk/${apiFunctionName}'` }
+      { docPermalink: `js-sdk/${apiFunctionName}` }
     );
   }
 }
@@ -80,7 +80,7 @@ function assertEnumOrMultienumDefinition(
     throwInvalidArgumentsError(
       apiFunctionName,
       `invalid "values" config supplied for ${attributeName}: An empty string is not a valid enum or multienum value.`,
-      { docPermalink: `'js-sdk/${apiFunctionName}'` }
+      { docPermalink: `js-sdk/${apiFunctionName}` }
     );
   }
 }
@@ -91,7 +91,7 @@ function assertCustomAttributeName(name: string, target: string) {
   throwInvalidArgumentsError(
     target,
     `attribute name "${name}" is invalid. Must be a string (alphanumeric, starting with a lower-case character).`,
-    { docPermalink: `'js-sdk/${target}'` }
+    { docPermalink: `js-sdk/${target}` }
   );
 }
 

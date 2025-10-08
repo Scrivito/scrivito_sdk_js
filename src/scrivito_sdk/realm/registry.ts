@@ -1,4 +1,3 @@
-import pickBy from 'lodash-es/pickBy';
 import { onReset } from 'scrivito_sdk/common';
 
 import { AppClass, ObjClass, WidgetClass } from 'scrivito_sdk/realm';
@@ -37,15 +36,19 @@ function appClassFor(name: string, baseClass: AppClass): AppClass {
 }
 
 export function allObjClasses(): ObjClassesByName {
-  return pickBy(mapping as ObjClassesByName, (modelClass) =>
-    Obj.isPrototypeOf(modelClass)
-  );
+  return Object.fromEntries(
+    Object.entries(mapping).filter(([, modelClass]) =>
+      Obj.isPrototypeOf(modelClass)
+    )
+  ) as ObjClassesByName;
 }
 
 export function allWidgetClasses(): WidgetClassesByName {
-  return pickBy(mapping as WidgetClassesByName, (modelClass) =>
-    Widget.isPrototypeOf(modelClass)
-  );
+  return Object.fromEntries(
+    Object.entries(mapping).filter(([, modelClass]) =>
+      Widget.isPrototypeOf(modelClass)
+    )
+  ) as WidgetClassesByName;
 }
 
 export function objClassFor(name: string): AppClass {

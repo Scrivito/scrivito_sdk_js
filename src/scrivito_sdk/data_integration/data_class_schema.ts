@@ -43,7 +43,7 @@ export interface NormalizedDataAttributeDefinitions {
 }
 
 export type NormalizedDataAttributeDefinition =
-  | [DataAttributeDefinitionWithOptionalConfig, {}]
+  | [DataAttributeDefinitionWithOptionalConfig, object]
   | NormalizedDataAttributeDefinitionWithConfig;
 
 export type NormalizedDataAttributeDefinitionWithConfig = {
@@ -456,7 +456,7 @@ function isLocalizedAttributeConfig(
   );
 }
 
-function titleIsValidOrNotPresent(object: Object) {
+function titleIsValidOrNotPresent(object: object) {
   return !('title' in object) || typeof object.title === 'string';
 }
 

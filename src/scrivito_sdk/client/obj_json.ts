@@ -30,7 +30,7 @@ export interface ExistentObjJson extends ObjSystemAttributeJson {
     | undefined;
 }
 
-export interface ObjSystemAttributeJson extends Partial<ObjReplicationJson> {
+export interface ObjSystemAttributeJson extends ObjReplicationJson {
   _widget_pool?: WidgetPoolJson;
 
   _marked_deleted?: true;
@@ -64,7 +64,7 @@ export interface ObjSystemAttributeJson extends Partial<ObjReplicationJson> {
 }
 
 interface ObjReplicationJson {
-  _version: string;
+  _version?: string;
 }
 
 export interface WidgetPoolJson {

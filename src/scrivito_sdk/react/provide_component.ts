@@ -18,12 +18,12 @@ import {
   WidgetClass,
 } from 'scrivito_sdk/realm';
 
-export type SyncFunctionComponent<P = {}> = {
+export type SyncFunctionComponent<P = object> = {
   (props: P): React.ReactNode;
   displayName?: string | undefined;
 };
 
-export type ComponentType<P = {}> =
+export type ComponentType<P = object> =
   | React.ComponentClass<P>
   | SyncFunctionComponent<P>;
 
@@ -87,7 +87,7 @@ function wrapComponent(component: ComponentType) {
   return wrappedComponent;
 }
 
-function wrapFunctionComponent<Props extends {}>(
+function wrapFunctionComponent<Props extends object>(
   functionComponent: SyncFunctionComponent<Props>
 ): SyncFunctionComponent<Props> {
   return memo((props: Props) => {
@@ -107,7 +107,7 @@ function wrapClassComponent(component: React.ComponentClass) {
   };
 }
 
-function hasWidgetProp(props: {}) {
+function hasWidgetProp(props: object) {
   return !!(props as { widget?: unknown }).widget;
 }
 

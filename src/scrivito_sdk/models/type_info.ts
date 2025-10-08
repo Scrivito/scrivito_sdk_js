@@ -28,7 +28,7 @@ export type BasicTypeInfo<Type extends CmsAttributeType> =
 export type NormalizedTypeInfo<Type extends CmsAttributeType> =
   Type extends keyof NormalizedTypeConfigMapping
     ? [Type, NormalizedTypeConfigMapping[Type]]
-    : [Type, {}];
+    : [Type, object];
 
 type BasicTypeInfoWithConfig<Type extends keyof TypeConfigMapping> =
   Type extends AttributeTypeWithMandatoryConfig

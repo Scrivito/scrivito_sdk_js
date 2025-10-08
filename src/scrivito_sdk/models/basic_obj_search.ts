@@ -1,4 +1,3 @@
-import difference from 'lodash-es/difference';
 import isDate from 'lodash-es/isDate';
 
 import {
@@ -30,6 +29,7 @@ import {
   getObjQueryCount,
   suggest,
 } from 'scrivito_sdk/data';
+import { objSpaceFor } from 'scrivito_sdk/models';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicObjFacetValue } from 'scrivito_sdk/models/basic_obj_facet_value';
 
@@ -103,7 +103,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
     workspaceId: string,
     params: ObjSearchParams
   ): BasicObjSearch {
-    return new BasicObjSearch(['workspace', workspaceId], params);
+    return new BasicObjSearch(objSpaceFor(workspaceId), params);
   }
 
   constructor(
@@ -483,7 +483,9 @@ const VALID_FACET_OPTIONS = ['limit', 'includeObjs'];
 function assertValidFacetOptions(
   options: FacetQueryOptions
 ): FacetQueryOptions {
-  const invalidOptions = difference(Object.keys(options), VALID_FACET_OPTIONS);
+  const invalidOptions = Object.keys(options).filter(
+    (key) => !VALID_FACET_OPTIONS.includes(key)
+  );
   if (invalidOptions.length) {
     throw new ArgumentError(
       'Invalid facet options: ' +

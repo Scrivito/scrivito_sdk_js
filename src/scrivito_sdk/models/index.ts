@@ -80,6 +80,7 @@ export {
   setCopyObjHandler,
 } from 'scrivito_sdk/models/copy_obj_handler';
 export type { CopyObjHandler } from 'scrivito_sdk/models/copy_obj_handler';
+export { objSpaceFor } from 'scrivito_sdk/models/obj_space_for';
 export { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 export type { BinaryMetadataValue } from 'scrivito_sdk/models/metadata_collection';
 export {
@@ -124,3 +125,5 @@ export {
   isWrappingBasicObj,
   isWrappingBasicWidget,
 } from 'scrivito_sdk/models/is_wrapping_basic_content';
+export { comparisonFromPublished } from 'scrivito_sdk/models/comparison_from_published';
+export { publishedSpace } from 'scrivito_sdk/models/published_space';

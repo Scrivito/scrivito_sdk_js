@@ -1,18 +1,12 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import {
-  AppClass,
-  AttributeDefinitions,
-  Obj,
-  Schema,
-  Widget,
-} from 'scrivito_sdk/realm';
+import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 import { AttributeTypeOf } from 'scrivito_sdk/realm/schema';
 import {
   AttributeValueOf,
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
-import { objClassNameFor } from './registry';
+import { getRealmClass } from './registry';
 
 export function readAppAttribute<
   AttrDefs extends AttributeDefinitions,
@@ -33,9 +27,10 @@ export function updateAppAttributes(
   model: Obj | Widget,
   attributes: { [name: string]: unknown }
 ): void {
-  const appClassName = objClassNameFor(model.constructor as AppClass);
+  const objClass = model.objClass();
+  const appClass = getRealmClass(objClass);
 
-  if (!appClassName) {
+  if (!appClass) {
     let baseClass;
 
     if (model.constructor === Obj) {
@@ -56,13 +51,13 @@ export function updateAppAttributes(
     );
   }
 
-  // Bang: truthy appClassName implies that model is neither Obj nor Widget itself.
+  // Bang: truthy appClass implies that model is neither Obj nor Widget itself.
   // Every Subclass of Obj and Widget has a Schema.
   const schema = Schema.forInstance(model)!;
   const attributesWithTypeInfo = unwrapAppAttributes(
     attributes,
     schema,
-    appClassName
+    objClass
   );
 
   model._scrivitoPrivateContent.updateWithUnknownValues(attributesWithTypeInfo);

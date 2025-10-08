@@ -23,7 +23,7 @@ function isProbablyCloudUi(): boolean {
 function getFrameHost(frame: Window): string | undefined {
   try {
     return frame.location.host;
-  } catch (_ignore) {
+  } catch {
     // an error means that the frame is cross-origin,
     // and therefore we are not allowed to know the host.
   }

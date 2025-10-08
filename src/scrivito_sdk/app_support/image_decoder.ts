@@ -39,7 +39,9 @@ export class ImageDecoder {
     const promise = (async () => {
       const url = await decodeImage(imageUrl);
       this.decodedUrls[imageUrl] = url;
-      this.isOnUpdateCallbackActive && this.onUpdateCallback();
+      if (this.isOnUpdateCallbackActive) {
+        this.onUpdateCallback();
+      }
     })();
 
     this.loadingRegistry[imageUrl] = promiseAndFinally(

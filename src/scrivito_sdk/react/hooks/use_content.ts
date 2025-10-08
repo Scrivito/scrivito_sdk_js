@@ -330,7 +330,7 @@ function externalReferenceAttributeToBasicValue<T extends CmsAttributeType>(
       case 'linklist':
         return toList(itemToLink(unknownValue));
       default:
-        null;
+        return null;
     }
   }
 

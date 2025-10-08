@@ -5,7 +5,7 @@ interface PublishedWorkspaceJson {
 
   // always present properties, only optional to keep current fixtures simple
   auto_update?: false;
-  memberships?: {};
+  memberships?: Memberships;
   // effectively: ['read'], but could be subject to a future change
   user_permissions?: WorkspacePermissionVerb[];
 

@@ -64,7 +64,7 @@ export function uiAdapterCompatibleValue(value: unknown) {
   }
 }
 
-function uiCompatibleArrayValue<T extends unknown>(array: T[]) {
+function uiCompatibleArrayValue<T>(array: T[]) {
   const copy: Array<PrimitiveValue<T>> = [];
 
   array.forEach((item) => {

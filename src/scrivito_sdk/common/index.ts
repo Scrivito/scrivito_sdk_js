@@ -118,6 +118,7 @@ export {
 } from 'scrivito_sdk/common/register_async_task';
 export { scrollElementIntoView } from 'scrivito_sdk/common/scroll_element_into_view';
 export { setTimeout, setInterval } from 'scrivito_sdk/common/timeout';
+export type { TimeoutType } from 'scrivito_sdk/common/timeout';
 export { cdnAssetUrlBase } from 'scrivito_sdk/common/cdn_asset_url_base';
 export { isModifierClick } from 'scrivito_sdk/common/is_modifier_click';
 export {

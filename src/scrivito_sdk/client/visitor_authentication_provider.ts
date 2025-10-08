@@ -53,7 +53,7 @@ export class VisitorAuthenticationProvider implements AuthorizationProvider {
 
     try {
       session = await sessionRequest;
-    } catch (_error) {
+    } catch {
       return PublicAuthentication.authorize(request);
     }
 

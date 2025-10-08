@@ -1,5 +1,3 @@
-import uniqBy from 'lodash-es/uniqBy';
-
 import { ArgumentError, isValidInteger } from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
 import { PreviewSize } from 'scrivito_sdk/ui_interface/app_adapter';
@@ -14,7 +12,7 @@ export function configurePreviewSizes(previewSizes: PreviewSize[]): void {
     );
   }
 
-  if (uniqBy(previewSizes, 'width').length !== previewSizes.length) {
+  if (new Set(previewSizes.map((p) => p.width)).size !== previewSizes.length) {
     throw new ArgumentError('A "width" must be unique for sizes');
   }
 

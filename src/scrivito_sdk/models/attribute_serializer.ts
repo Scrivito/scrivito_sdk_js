@@ -1,4 +1,3 @@
-import difference from 'lodash-es/difference';
 import isDate from 'lodash-es/isDate';
 import isEmpty from 'lodash-es/isEmpty';
 
@@ -252,7 +251,8 @@ function serializeMultienumAttributeValue(
     );
   }
 
-  const forbiddenValues = difference(value, values);
+  const allowedValues = new Set(values);
+  const forbiddenValues = value.filter((v) => !allowedValues.has(v));
   if (forbiddenValues.length) {
     throwInvalidAttributeValue(
       value,
@@ -355,12 +355,18 @@ function isValidLinkInputValue(value: unknown): value is ValidLinkInputValue {
   if (!isObject(value)) return false;
   if (isEmpty(Object.values(value).filter(Boolean))) return false;
 
-  const invalidKeys = difference(
-    Object.keys(value as { [key: string]: unknown }),
-    ['hash', 'obj_id', 'query', 'rel', 'target', 'title', 'url']
-  );
-  return isEmpty(invalidKeys);
+  return Object.keys(value).every((key) => LINK_ATTRIBUTES.includes(key));
 }
+
+const LINK_ATTRIBUTES = [
+  'hash',
+  'obj_id',
+  'query',
+  'rel',
+  'target',
+  'title',
+  'url',
+];
 
 function convertCamelCasedAttributeName(name: string) {
   if (!isCamelCase(name)) {

@@ -64,7 +64,6 @@ import { Binary } from 'scrivito_sdk/models/binary';
 import { computeParentPath } from 'scrivito_sdk/models/compute_parent_path';
 import {
   currentObjSpaceId,
-  currentWorkspaceId,
   isCurrentWorkspacePublished,
 } from 'scrivito_sdk/models/current_workspace_id';
 import { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
@@ -597,12 +596,12 @@ export class BasicObj implements ContentValueProvider {
 
   startLinkResolution(): void {
     if (!isUsingInMemoryTenant()) {
-      startLinkResolutionFor(currentWorkspaceId(), this.id());
+      startLinkResolutionFor(currentObjSpaceId(), this.id());
     }
   }
 
   finishLinkResolution(): Promise<void> {
-    return finishLinkResolutionFor(currentWorkspaceId(), this.id());
+    return finishLinkResolutionFor(currentObjSpaceId(), this.id());
   }
 
   toPrettyPrint(): string {

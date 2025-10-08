@@ -55,7 +55,10 @@ export function connect<Props extends LoadingProps, LoadingProps>(
 ): ComponentType<Props>;
 
 /** @internal */
-export function connect<Props extends LoadingProps, LoadingProps extends {}>(
+export function connect<
+  Props extends LoadingProps,
+  LoadingProps extends object
+>(
   component: ComponentType<Props>,
   options?: ConnectOptions<LoadingProps>
 ): SyncFunctionComponent<Props> | React.ComponentClass<Props> {
@@ -86,7 +89,7 @@ type ConnectedFunctionComponent<Props> = ConnectedComponent &
 
 function connectClassComponent<
   Props extends LoadingProps,
-  LoadingProps extends {}
+  LoadingProps extends object
 >(
   classComponent: React.ComponentClass<Props>,
   options?: ConnectOptions<LoadingProps>
@@ -163,7 +166,7 @@ function connectClassComponent<
 
 function connectFunctionComponent<
   Props extends LoadingProps,
-  LoadingProps extends {}
+  LoadingProps extends object
 >(
   functionalComponent: SyncFunctionComponent<Props>,
   options?: ConnectOptions<LoadingProps>

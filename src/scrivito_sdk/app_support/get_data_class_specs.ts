@@ -1,5 +1,3 @@
-import union from 'lodash-es/union';
-
 import {
   AttributeEditingConfig,
   AttributesEditingConfig,
@@ -13,10 +11,10 @@ export function computeDataAttributeNames(
   attributes?: NormalizedDataAttributeDefinitions,
   editingConfig?: AttributesEditingConfig
 ): string[] {
-  return union(
-    attributes ? Object.keys(attributes) : [],
-    editingConfig ? Object.keys(editingConfig) : []
-  ).sort();
+  const set = new Set<string>();
+  if (attributes) Object.keys(attributes).forEach((k) => set.add(k));
+  if (editingConfig) Object.keys(editingConfig).forEach((k) => set.add(k));
+  return Array.from(set).sort();
 }
 
 export function getDataAttributeTitle(

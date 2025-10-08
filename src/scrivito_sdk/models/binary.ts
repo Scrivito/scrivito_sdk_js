@@ -6,7 +6,6 @@ import * as URI from 'urijs';
 import {
   BackendBinaryData,
   ObjSpaceId,
-  PUBLISHED_SPACE,
   cmsRetrieval,
 } from 'scrivito_sdk/client';
 import {
@@ -20,6 +19,7 @@ import {
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
 import { LoadableData, createLoadableCollection } from 'scrivito_sdk/loadable';
+import { publishedSpace } from 'scrivito_sdk/models';
 import { FutureBinary } from 'scrivito_sdk/models/future_binary';
 import { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 
@@ -66,7 +66,7 @@ export function storeBinary(
 
   loadableCollection.get([binaryId, transformation]).set(response);
 
-  const raw = new Binary(binaryId, PUBLISHED_SPACE).raw();
+  const raw = new Binary(binaryId, publishedSpace()).raw();
 
   if (transformation) {
     return raw.optimizeFor(transformation);
@@ -112,7 +112,7 @@ export class Binary {
     private readonly _id: string,
 
     /** @internal */
-    private readonly _objSpaceId: ObjSpaceId = PUBLISHED_SPACE,
+    private readonly _objSpaceId: ObjSpaceId = publishedSpace(),
     transformation: TransformationDefinition | null = {}
   ) {
     this._transformation = transformation || undefined;
@@ -133,7 +133,7 @@ export class Binary {
   }
 
   isPrivate(): boolean {
-    return !equals(this._objSpaceId, PUBLISHED_SPACE);
+    return !equals(this._objSpaceId, publishedSpace());
   }
 
   optimizeFor(transformation: TransformationDefinition): Binary {

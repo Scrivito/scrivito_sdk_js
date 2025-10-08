@@ -147,10 +147,9 @@ export class Streamable<T> {
    */
   takeUntil(until: Streamable<unknown>): Streamable<T> {
     return new Streamable<T>((subscriber) => {
-      let untilSubscription: Subscription | undefined;
-      let subscription: Subscription | undefined;
+      let untilSubscription: Subscription | undefined = undefined;
+      let subscription: Subscription | undefined = undefined;
 
-      // eslint-disable-next-line prefer-const
       subscription = this.subscribe({
         next(value) {
           subscriber.next(value);
@@ -163,7 +162,6 @@ export class Streamable<T> {
       // edge-case: stream that completes immediately
       if (subscription.isClosed()) return () => undefined;
 
-      // eslint-disable-next-line prefer-const
       untilSubscription = until.subscribe({
         next() {
           completeStream();

@@ -37,7 +37,7 @@ export interface AttributeValueProps<Type extends CmsAttributeType> {
     onClick?: <T>(e: React.MouseEvent<T>) => void;
   };
   field: BasicField<Type>;
-  onClick?: <T extends {}>(e: React.MouseEvent<T>) => void;
+  onClick?: <T extends object>(e: React.MouseEvent<T>) => void;
   tag: string;
   widgetProps?: WidgetProps;
   elementCallback?: (element?: HTMLElement) => void;

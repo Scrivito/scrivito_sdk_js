@@ -75,6 +75,8 @@ export interface AttributesEditingConfig {
   [attributeName: string]: AttributeEditingConfig;
 }
 
+export type AttributeEditor = 'colorPicker';
+
 export interface AttributeEditingConfig {
   title?: string;
   description?: string;
@@ -82,6 +84,7 @@ export interface AttributeEditingConfig {
   values?: readonly LocalizedValue[];
   options?: AttributeEditingOptions;
   iteratesOver?: IteratesOver;
+  editor?: AttributeEditor;
 }
 
 export type RestrictDataTo = Array<

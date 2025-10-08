@@ -142,7 +142,7 @@ function parseResultItem(resultItem: unknown): NormalExternalData {
   throw new ArgumentError('"_id" key missing');
 }
 
-function parseToExternalData(id: unknown, customData: {}) {
+function parseToExternalData(id: unknown, customData: object) {
   return {
     systemData: { _id: parseId(id) },
     customData: filterValidDataIdentifiers(customData),
@@ -311,7 +311,7 @@ export async function getViaDataConnection(
   };
 }
 
-function filterValidDataIdentifiers(data: {}) {
+function filterValidDataIdentifiers(data: object) {
   return Object.fromEntries(
     Object.entries(data).filter(([key]) => isValidDataIdentifier(key))
   );

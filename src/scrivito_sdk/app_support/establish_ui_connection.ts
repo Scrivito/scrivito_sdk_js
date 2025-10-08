@@ -3,11 +3,8 @@ import { UiAdapterClient } from 'scrivito_sdk/app_support/ui_adapter';
 import { uiAdapterDescription } from 'scrivito_sdk/app_ui_protocol';
 import {
   AdapterDescription,
-  anticipatedMessageLink,
   connectTo,
-  createAdapterClient,
-  createAdapterMessageClient,
-  linkViaPort,
+  initializeAdapterClient,
   postMessageLinkFor,
 } from 'scrivito_sdk/bridge';
 import { ScrivitoError, getScrivitoVersion } from 'scrivito_sdk/common';
@@ -33,11 +30,8 @@ export function establishUiConnection(uiWindow: Window): UiAdapterClient {
     return port;
   })();
 
-  return createAdapterClient(
-    uiAdapterDescription,
-    createAdapterMessageClient<
-      UiAdapterClient,
-      AdapterDescription<UiAdapterClient>
-    >(anticipatedMessageLink(promiseForMessagePort.then(linkViaPort)))
-  );
+  return initializeAdapterClient<
+    UiAdapterClient,
+    AdapterDescription<UiAdapterClient>
+  >(uiAdapterDescription, promiseForMessagePort);
 }

@@ -1,7 +1,6 @@
 import {
   BackendMetadataResponse,
   ObjSpaceId,
-  PUBLISHED_SPACE,
   cmsRetrieval,
 } from 'scrivito_sdk/client';
 import {
@@ -15,6 +14,7 @@ import {
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
 import { LoadableData, createLoadableCollection } from 'scrivito_sdk/loadable';
+import { publishedSpace } from 'scrivito_sdk/models';
 
 export type BinaryMetadataValue = string | string[] | number | Date;
 
@@ -45,7 +45,7 @@ export class MetadataCollection {
     private readonly _binaryId?: string,
 
     /** @internal */
-    private readonly objSpaceId: ObjSpaceId = PUBLISHED_SPACE
+    private readonly objSpaceId: ObjSpaceId = publishedSpace()
   ) {
     if (this._binaryId) {
       this.loadableData = loadableCollection.get(

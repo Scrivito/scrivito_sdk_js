@@ -8,6 +8,7 @@ import {
   Deferred,
   InternalError,
   ScrivitoError,
+  fetchConfiguredTenant,
   onReset,
   wait,
 } from 'scrivito_sdk/common';
@@ -83,19 +84,21 @@ export type AnalyticsData =
 
 type AnalyticsProvider = () => AnalyticsData;
 
+interface CmsRestApiConfig {
+  apiBaseUrl: string;
+  analyticsProvider?: AnalyticsProvider;
+  accessAsEditor?: boolean;
+  priority?: Priority;
+  authorizationProvider: AuthorizationProvider;
+}
+
 class CmsRestApi {
   // only public for test purposes
-  url!: string;
-  // only public for test purposes
-  priority?: Priority;
-
-  private authorizationProvider?: AuthorizationProvider;
-  private initDeferred: Deferred;
-  private accessAsEditor?: boolean;
-  private analyticsProvider?: AnalyticsProvider;
+  config?: CmsRestApiConfig;
+  private configDeferred: Deferred<CmsRestApiConfig>;
 
   constructor() {
-    this.initDeferred = new Deferred();
+    this.configDeferred = new Deferred();
   }
 
   init({
@@ -111,12 +114,14 @@ class CmsRestApi {
     accessAsEditor?: boolean;
     analyticsProvider?: AnalyticsProvider;
   }): void {
-    this.url = `${apiBaseUrl}/perform`;
-    this.authorizationProvider = authorizationProvider ?? PublicAuthentication;
-    this.priority = priority;
-    this.accessAsEditor = accessAsEditor;
-    this.analyticsProvider = analyticsProvider;
-    this.initDeferred.resolve();
+    this.config = {
+      apiBaseUrl,
+      analyticsProvider,
+      accessAsEditor,
+      priority,
+      authorizationProvider: authorizationProvider ?? PublicAuthentication,
+    };
+    this.configDeferred.resolve(this.config);
   }
 
   rejectRequests(): void {
@@ -176,22 +181,15 @@ class CmsRestApi {
 
   // For test purpose only.
   currentPublicAuthorizationState(): string {
-    if (this.authorizationProvider) {
-      if (this.authorizationProvider.currentState) {
-        return `[API] ${this.authorizationProvider.currentState() ?? 'null'}`;
+    if (this.config?.authorizationProvider) {
+      if (this.config?.authorizationProvider.currentState) {
+        return `[API] ${
+          this.config?.authorizationProvider.currentState() ?? 'null'
+        }`;
       }
       return '[API]: authorization provider without currentState()';
     }
     return '[API]: no authorization provider';
-  }
-
-  private async ensureEnabledAndInitialized(): Promise<void> {
-    if (requestsAreDisabled) {
-      // When connected to a UI, all communications of an SDK app with the backend
-      // must go through the UI adapter.
-      throw new InternalError('Unexpected CMS backend access.');
-    }
-    return this.initDeferred.promise;
   }
 
   private async requestWithTaskHandling({
@@ -219,23 +217,32 @@ class CmsRestApi {
     requestParams?: ParamsType;
     authorizationProvider?: AuthorizationProvider | null;
   }): Promise<BackendResponse> {
-    await this.ensureEnabledAndInitialized();
+    if (requestsAreDisabled) {
+      // When connected to a UI, all communications of an SDK app with the backend
+      // must go through the UI adapter.
+      throw new InternalError('Unexpected CMS backend access.');
+    }
+
+    const config = await this.configDeferred.promise;
+    const tenant = await fetchConfiguredTenant();
+    const url = `${config.apiBaseUrl}/tenants/${tenant}/perform`;
 
     try {
       return await withLoginHandler(
         loginRedirectHandler,
         () =>
-          fetchJson(this.url, {
+          fetchJson(url, {
             method: method === 'POST' ? 'POST' : 'PUT',
-            headers: this.getHeaders(),
+            headers: getHeaders(config),
             data: {
               path,
               verb: method,
               params: requestParams,
-              ...(this.analyticsProvider && this.analyticsProvider()),
+              ...(config.analyticsProvider && config.analyticsProvider()),
             },
-            authProvider: this.getAuthorizationProviderForRequest(
-              authorizationProvider
+            authProvider: getAuthorizationProviderForRequest(
+              authorizationProvider,
+              config
             ),
             credentials: 'omit',
           }) as Promise<Response>
@@ -246,30 +253,6 @@ class CmsRestApi {
         ? new MissingWorkspaceError()
         : error;
     }
-  }
-
-  private getHeaders() {
-    let headers: Record<string, string> = {
-      'Scrivito-Client': getClientVersion(),
-    };
-
-    const priorityWithFallback = this.priority || fallbackPriority;
-
-    if (priorityWithFallback === 'background') {
-      headers = {
-        ...headers,
-        'Scrivito-Priority': priorityWithFallback,
-      };
-    }
-
-    if (this.accessAsEditor) {
-      headers = {
-        ...headers,
-        'Scrivito-Access-As': 'editor',
-      };
-    }
-
-    return headers;
   }
 
   private async handleTask(task: TaskData): Promise<BackendResponse> {
@@ -290,19 +273,41 @@ class CmsRestApi {
         throw new RequestFailedError('Invalid task response (unknown status)');
     }
   }
+}
 
-  private getAuthorizationProviderForRequest(
-    authorizationProvider: AuthorizationProvider | null | undefined
-  ) {
-    if (authorizationProvider === undefined) {
-      if (!this.authorizationProvider) throw new InternalError();
-      return this.authorizationProvider;
-    }
+function getHeaders(config: CmsRestApiConfig) {
+  let headers: Record<string, string> = {
+    'Scrivito-Client': getClientVersion(),
+  };
 
-    if (authorizationProvider === null) return undefined;
-
-    return authorizationProvider;
+  const priorityWithFallback = config.priority || fallbackPriority;
+  if (priorityWithFallback === 'background') {
+    headers = {
+      ...headers,
+      'Scrivito-Priority': priorityWithFallback,
+    };
   }
+
+  if (config.accessAsEditor) {
+    headers = {
+      ...headers,
+      'Scrivito-Access-As': 'editor',
+    };
+  }
+
+  return headers;
+}
+
+function getAuthorizationProviderForRequest(
+  authorizationProvider: AuthorizationProvider | null | undefined,
+  config: CmsRestApiConfig
+) {
+  if (authorizationProvider === undefined) {
+    return config.authorizationProvider;
+  }
+  if (authorizationProvider === null) return undefined;
+
+  return authorizationProvider;
 }
 
 function isTaskResponse(result: unknown): result is TaskResponse {

@@ -1,4 +1,3 @@
-import difference from 'lodash-es/difference';
 import isEmpty from 'lodash-es/isEmpty';
 
 import {
@@ -95,7 +94,9 @@ const ALLOWED_ATTRIBUTES = [
 ];
 
 function assertValidPublicAttributes(attributes: LinkAttributes) {
-  const unknownAttrs = difference(Object.keys(attributes), ALLOWED_ATTRIBUTES);
+  const unknownAttrs = Object.keys(attributes).filter(
+    (key) => !ALLOWED_ATTRIBUTES.includes(key)
+  );
   if (!isEmpty(unknownAttrs)) {
     throw new ArgumentError(
       `Unexpected attributes ${prettyPrint(unknownAttrs)}.` +
