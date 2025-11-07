@@ -1,5 +1,3 @@
-import * as URI from 'urijs';
-
 import { getConfiguration } from 'scrivito_sdk/app_support/configure';
 
 export async function checkIfTrustedOrigin(origin: string): Promise<boolean> {
@@ -24,23 +22,19 @@ export async function checkIfTrustedOrigin(origin: string): Promise<boolean> {
 }
 
 function originMatches(origin: string, pattern: string): boolean {
-  const originUrl = new URI(origin);
-  const patternUrl = new URI(pattern);
+  const patternParts = pattern.split('//*');
+
+  if (patternParts.length !== 2) return origin === pattern;
+
+  const [patternUrlProtocol, hostSuffix] = patternParts;
+
+  const originUrl = new URL(origin);
 
   return (
-    originUrl.protocol() === patternUrl.protocol() &&
-    hostMatches(originUrl.host(), patternUrl.host())
+    originUrl.protocol === patternUrlProtocol &&
+    hostSuffix.startsWith('.') &&
+    originUrl.host.endsWith(hostSuffix)
   );
-}
-
-function hostMatches(host: string, hostPattern: string) {
-  if (hostPattern.substr(0, 2) === '*.') {
-    const postfix = hostPattern.substr(1);
-
-    return host.substr(-postfix.length) === postfix;
-  }
-
-  return host === hostPattern;
 }
 
 function getLocalOrigins() {

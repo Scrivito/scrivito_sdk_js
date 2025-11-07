@@ -1,5 +1,4 @@
 // @rewire
-import * as URI from 'urijs';
 import {
   getCurrentPageData,
   getCurrentRoute,
@@ -8,6 +7,7 @@ import {
   ContextContainer,
   QueryParameters,
   ScrivitoError,
+  parseQueryToQueryParameters,
   throwInvalidArgumentsError,
 } from 'scrivito_sdk/common';
 import { assertNotUsingInMemoryTenant } from 'scrivito_sdk/data';
@@ -34,8 +34,7 @@ export function isCurrentPage(page: Obj): boolean {
 /** @public */
 export function currentPageParams(): QueryParameters {
   assertNotUsingInMemoryTenant('Scrivito.currentPageParams');
-
-  return URI.parseQuery(getCurrentRoute()?.query || '');
+  return parseQueryToQueryParameters(getCurrentRoute()?.query || '');
 }
 
 const currentSiteContext = new ContextContainer<string>();

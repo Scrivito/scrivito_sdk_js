@@ -1,8 +1,8 @@
 import * as React from 'react';
-import * as URI from 'urijs';
 
 import { getCurrentPageData } from 'scrivito_sdk/app_support/current_page_data';
 import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
+import { parseQueryToQueryParameters } from 'scrivito_sdk/common';
 import { BasicObj } from 'scrivito_sdk/models';
 import { AutomaticDataContext } from 'scrivito_sdk/react/components/automatic_data_context';
 import { CurrentEditableArea } from 'scrivito_sdk/react/components/current_editable_area';
@@ -40,7 +40,9 @@ const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
   currentPage: BasicObj;
   navigationState: NavigationState;
 }) {
-  const params = URI.parseQuery(navigationState?.locationRoute?.query ?? '');
+  const params = parseQueryToQueryParameters(
+    navigationState?.locationRoute?.query ?? ''
+  );
 
   const layout = useLayout(currentPage, params);
   if (layout) return layout === 'loading' ? null : layout;

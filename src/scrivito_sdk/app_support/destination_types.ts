@@ -1,6 +1,4 @@
-import * as URI from 'urijs';
-
-import { QueryParameters } from 'scrivito_sdk/common';
+import { QueryParameters, buildQueryString } from 'scrivito_sdk/common';
 
 export interface RemoteDestination {
   type: 'remote';
@@ -46,21 +44,22 @@ export interface RecognizedDestinationUnavailable {
 }
 
 export function recognizeDestinationUnavailable(
-  fallbackUri: URI
+  fallbackUri: string
 ): RecognizedDestinationUnavailable | null {
-  if (fallbackUri.path() !== '') return null;
+  const fallbackUrl = new URL(fallbackUri, 'http://example.com');
+  if (fallbackUrl.pathname !== '/') return null;
 
-  const fallbackHash = fallbackUri.hash();
+  const fallbackHash = fallbackUrl.hash;
 
   if (fallbackHash.indexOf('#SCRIVITO_UNAVAILABLE_') === 0) {
     const encodedParams = fallbackHash.substr('#SCRIVITO_UNAVAILABLE_'.length);
-    const paramsUri = new URI(encodedParams);
+    const paramsUrl = new URL(encodedParams, 'http://example.com');
 
-    const objId = paramsUri.path();
+    const objId = paramsUrl.pathname.substring(1);
     const params: RecognizedDestinationUnavailable = { objId };
 
-    if (paramsUri.query()) params.query = paramsUri.query();
-    if (paramsUri.hash()) params.hash = paramsUri.hash();
+    if (paramsUrl.search) params.query = paramsUrl.search.substring(1);
+    if (paramsUrl.hash) params.hash = paramsUrl.hash;
 
     return params;
   }
@@ -68,16 +67,14 @@ export function recognizeDestinationUnavailable(
   return null;
 }
 
-function getDestinationUnavailableFallbackUrl(
-  params: GenerateDestinationUnavailableParams
-): string {
-  const paramsUri = new URI('').path(params.objId);
+function getDestinationUnavailableFallbackUrl({
+  hash,
+  objId,
+  query,
+}: GenerateDestinationUnavailableParams): string {
+  const search = query
+    ? `?${typeof query === 'string' ? query : buildQueryString(query)}`
+    : '';
 
-  if (params.query) paramsUri.query(params.query);
-  if (params.hash) paramsUri.hash(params.hash);
-
-  const encodedParams = paramsUri.toString();
-  const fallbackUri = new URI('').hash(`SCRIVITO_UNAVAILABLE_${encodedParams}`);
-
-  return fallbackUri.toString();
+  return `#SCRIVITO_UNAVAILABLE_${objId}${search}${hash || ''}`;
 }

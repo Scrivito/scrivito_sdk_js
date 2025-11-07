@@ -73,18 +73,20 @@ export function getAttributeEditingOptionsFor(
 ): AttributeEditingOptions | undefined {
   const attributes = getEditingConfigFor(className)?.attributes || {};
   const attribute = attributes[attributeName];
-  const options = attribute ? attribute.options : undefined;
 
-  if (!options) return;
-  let invalidOptions = options;
+  if (!attribute?.options) return;
+  let invalidOptions = attribute.options;
 
-  if (attributeType === 'html') {
-    const { allowedTags, showHtmlSource, toolbar, ...rest } = options;
+  if (attribute.editor === 'colorPicker') {
+    const { allowAlpha, ...rest } = attribute.options;
+    invalidOptions = rest;
+  } else if (attributeType === 'html') {
+    const { allowedTags, showHtmlSource, toolbar, ...rest } = attribute.options;
     invalidOptions = rest;
   } else if (attributeType === 'string') {
-    const { multiLine, ...rest } = options;
+    const { multiLine, ...rest } = attribute.options;
     invalidOptions = rest;
   }
 
-  if (Object.keys(invalidOptions).length === 0) return options;
+  if (Object.keys(invalidOptions).length === 0) return attribute.options;
 }

@@ -77,15 +77,24 @@ export interface AttributesEditingConfig {
 
 export type AttributeEditor = 'colorPicker';
 
-export interface AttributeEditingConfig {
+export type AttributeEditingConfig = {
   title?: string;
   description?: string;
   restrictDataTo?: RestrictDataTo;
   values?: readonly LocalizedValue[];
-  options?: AttributeEditingOptions;
   iteratesOver?: IteratesOver;
   editor?: AttributeEditor;
-}
+} & EditorSpecificAttributeEditingConfig;
+
+type EditorSpecificAttributeEditingConfig =
+  | {
+      editor: 'colorPicker';
+      options?: ColorPickerEditorAttributeEditingOptions;
+    }
+  | {
+      editor?: never;
+      options?: HtmlAttributeEditingOptions & StringAttributeEditingOptions;
+    };
 
 export type RestrictDataTo = Array<
   'scope' | 'item' | 'scopeAttribute' | 'itemAttribute'
@@ -93,16 +102,27 @@ export type RestrictDataTo = Array<
 
 export type IteratesOver = 'data';
 
-export interface AttributeEditingOptions {
+export type AttributeEditingOptions = HtmlAttributeEditingOptions &
+  StringAttributeEditingOptions &
+  ColorPickerEditorAttributeEditingOptions;
+
+interface HtmlAttributeEditingOptions {
   allowedTags?: readonly (keyof React.JSX.IntrinsicElements)[];
-  multiLine?: boolean;
   showHtmlSource?: boolean;
   toolbar?: readonly ToolbarButton[];
 }
 
+interface StringAttributeEditingOptions {
+  multiLine?: boolean;
+}
+
+interface ColorPickerEditorAttributeEditingOptions {
+  allowAlpha?: boolean;
+}
+
 export interface LivingComponentGroupDescription {
   title: string;
-  component: PropertiesGroupComponent;
+  component: ExtensionComponent;
   key: string;
   enabled?: boolean;
 }
@@ -120,7 +140,7 @@ export interface PropertiesGroupDescription {
 
 export interface DynamicComponentGroupDescription {
   title: string;
-  component: string | PropertiesGroupComponent | null;
+  component: string | ExtensionComponent | null;
   key: string;
   properties?: readonly GroupProperty[];
   enabled?: boolean;
@@ -141,7 +161,16 @@ export type PropertyGroup =
   | DynamicPropertyGroup;
 
 export type GroupPropertyWithConfig = readonly [string, { enabled: boolean }];
-export type GroupProperty = GroupPropertyWithConfig | string;
+
+export type GroupPropertyWithComponent = readonly [
+  string,
+  { component: ExtensionComponent | null }
+];
+
+export type GroupProperty =
+  | GroupPropertyWithConfig
+  | GroupPropertyWithComponent
+  | string;
 
 export interface RegisteredComponentGroupDescription {
   title: string;
@@ -179,7 +208,7 @@ type ToolbarButton =
 
 // This covers loadable components as well, see
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/loadable__component/index.d.ts
-type PropertiesGroupComponent =
+type ExtensionComponent =
   | React.ComponentType<{ obj: Obj }>
   | React.ComponentType<{ page: Obj }>
   | React.ComponentType<{ widget: Widget }>

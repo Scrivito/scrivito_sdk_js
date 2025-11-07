@@ -41,5 +41,6 @@ export interface EditController<Type extends CmsAttributeType> {
   setContent(val: BasicAttributeValueForUpdate<Type>): void;
   setDomMode(domMode: DomMode): void;
   validObjClasses(): readonly string[] | undefined;
+  isDataIntegrationActive(): boolean;
   options(): Readonly<EditingOptions> | undefined;
 }

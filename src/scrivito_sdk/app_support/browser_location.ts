@@ -1,14 +1,18 @@
 // @rewire
+import type { History as HistoryV5 } from 'history';
 import {
   Action,
   History as HistoryV4,
   UnregisterCallback,
   createBrowserHistory,
-} from 'history';
-import type { History as HistoryV5 } from 'history-5';
-import * as URI from 'urijs';
+} from 'history-4';
 
-import { ArgumentError, docUrl, onReset } from 'scrivito_sdk/common';
+import {
+  ArgumentError,
+  docUrl,
+  onReset,
+  urlResource,
+} from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
 
 export interface HistoryState {
@@ -57,8 +61,7 @@ export function getHistoryState(): HistoryState {
 }
 
 export function get(): string {
-  const location = getHistory().location;
-  return `${location.pathname}${location.search}${location.hash}`;
+  return urlResource(getHistory().location);
 }
 
 export function getHistoryChangesCount(): number {
@@ -66,21 +69,17 @@ export function getHistoryChangesCount(): number {
 }
 
 export function push(resource: string): void {
-  const uri = new URI(resource);
-  getHistory().push({
-    pathname: uri.pathname(),
-    search: uri.search(),
-    hash: uri.hash(),
-  });
+  getHistory().push(toLocation(resource));
 }
 
 export function replace(resource: string): void {
-  const uri = new URI(resource);
-  getHistory().replace({
-    pathname: uri.pathname(),
-    search: uri.search(),
-    hash: uri.hash(),
-  });
+  getHistory().replace(toLocation(resource));
+}
+
+function toLocation(resource: string) {
+  const url = new URL(get(), 'http://example.com');
+  const { pathname, search, hash } = new URL(resource, url);
+  return { pathname, search, hash };
 }
 
 export function isCurrentHistoryState(historyState: HistoryState): boolean {

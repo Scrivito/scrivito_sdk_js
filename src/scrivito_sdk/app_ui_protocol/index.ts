@@ -11,3 +11,4 @@ export { appAdapterDescription } from 'scrivito_sdk/app_ui_protocol/app_adapter_
 export type { AppAdapterClient } from 'scrivito_sdk/app_ui_protocol/app_adapter_description';
 export type { SelectedObjMessage } from 'scrivito_sdk/app_ui_protocol/selected_obj_message';
 export { isSelectedObjMessage } from 'scrivito_sdk/app_ui_protocol/selected_obj_message';
+export { GENERAL_GROUP_KEY } from 'scrivito_sdk/app_ui_protocol/general_group_key';

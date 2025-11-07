@@ -1,4 +1,3 @@
-import * as URI from 'urijs';
 import {
   SiteData,
   getCurrentRoute,
@@ -25,7 +24,9 @@ import {
 import {
   QueryParameters,
   ScrivitoError,
+  buildQueryString,
   currentOrigin,
+  urlResource,
 } from 'scrivito_sdk/common';
 import { BasicObj } from 'scrivito_sdk/models';
 
@@ -149,11 +150,13 @@ export function generateDestination(
   const baseUrl = currentSiteData?.baseUrl;
   if (!baseUrl) return unavailableFor(options);
 
-  const uri = joinUri(baseUrl, generateRoutingPath(obj, siteId), options);
+  const url = new URL(
+    joinUri(baseUrl, generateRoutingPath(obj, siteId), options)
+  );
 
-  return currentRoute?.sitePath || uri.origin() === currentOrigin()
-    ? { type: 'local', resource: uri.resource() }
-    : { type: 'crossSite', url: uri.toString() };
+  return currentRoute?.sitePath || url.origin === currentOrigin()
+    ? { type: 'local', resource: urlResource(url) }
+    : { type: 'crossSite', url: url.href };
 }
 
 /** generate an absolute URL for the given Obj, using the canonical origin
@@ -176,11 +179,7 @@ function canonicalUrlForSite(siteId: string, options: GenerateObjUrlOptions) {
 
   return (
     baseUrl &&
-    joinUri(
-      baseUrl,
-      generateRoutingPath(options.obj, siteId),
-      options
-    ).toString()
+    joinUri(baseUrl, generateRoutingPath(options.obj, siteId), options)
   );
 }
 
@@ -201,13 +200,15 @@ export function generateDestinationForId(
     return generateDestinationUnavailable({ objId, query, hash });
   }
 
-  const uri = joinUri(currentRoute.siteData.baseUrl, `/${objId}`, options);
-  return currentRoute.sitePath || uri.origin() === currentOrigin()
-    ? { type: 'local', resource: uri.resource() }
-    : { type: 'crossSite', url: uri.toString() };
+  const url = new URL(
+    joinUri(currentRoute.siteData.baseUrl, `/${objId}`, { query, hash })
+  );
+  return currentRoute.sitePath || url.origin === currentOrigin()
+    ? { type: 'local', resource: urlResource(url) }
+    : { type: 'crossSite', url: url.href };
 }
 
-/** join url components into a Uri
+/** join url components into a URL
  *
  * baseUrl is expected to be normalized (= has no trailing slash)
  * path is expected to be normalized (= has leading slash)
@@ -217,21 +218,23 @@ function joinUri(
   path: string,
   { query, hash }: GenerateUrlOptions
 ) {
-  const url = path === '/' ? baseUrl : `${baseUrl}${path}`;
-  const uri = new URI(url);
+  const urlString = path === '/' ? baseUrl : `${baseUrl}${path}`;
 
-  if (query) uri.query(query);
-  if (hash) uri.hash(hash);
+  if (!URL.canParse(urlString)) return urlString;
 
-  return uri;
+  const url = new URL(urlString);
+
+  if (typeof query === 'string' && query !== '?') url.search = query;
+  if (typeof query === 'object') url.search = buildQueryString(query);
+  if (hash && hash !== '#') url.hash = hash;
+
+  return url.href;
 }
 
 export function recognize(
-  url: string | URI
+  url: string
 ): Route | DestinationUnavailableRecognized {
-  const uri = typeof url === 'string' ? new URI(url) : url;
-
-  const destinationUnavailable = recognizeDestinationUnavailable(uri);
+  const destinationUnavailable = recognizeDestinationUnavailable(url);
   if (destinationUnavailable) {
     const { objId, query } = destinationUnavailable;
 
@@ -242,8 +245,8 @@ export function recognize(
     };
   }
 
-  const recognized = recognizeSiteAndPath(uri);
-  const query = uri.query();
+  const recognized = recognizeSiteAndPath(url);
+  const query = new URL(url, 'http://example.com').search.replace(/^\?/, '');
 
   if (recognized.sitePath === null) {
     return {
@@ -285,11 +288,11 @@ export function ensureRoutingDataAvailable(basicPage: BasicObj) {
   });
 }
 
-export function isOriginLocal(uri: URI): boolean {
-  return uri.is('relative') || uri.origin() === currentOrigin();
+export function isOriginLocal(url: string): boolean {
+  return !URL.canParse(url) || new URL(url).origin === currentOrigin();
 }
 
-export function isSiteLocal(uri: URI): boolean {
+export function isSiteLocal(url: string): boolean {
   const currentBaseUrl = getCurrentRoute()?.siteData?.baseUrl;
-  return !!currentBaseUrl && uri.toString().indexOf(currentBaseUrl) === 0;
+  return !!currentBaseUrl && url.indexOf(currentBaseUrl) === 0;
 }

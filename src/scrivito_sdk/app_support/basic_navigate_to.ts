@@ -1,5 +1,3 @@
-import * as URI from 'urijs';
-
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
 import { changeLocation } from 'scrivito_sdk/app_support/change_location';
 import {
@@ -16,7 +14,12 @@ import {
   isOriginLocal,
   isSiteLocal,
 } from 'scrivito_sdk/app_support/routing';
-import { QueryParameters, assignLocation, logError } from 'scrivito_sdk/common';
+import {
+  QueryParameters,
+  assignLocation,
+  logError,
+  urlResource,
+} from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
 import { isBinaryBasicObj } from 'scrivito_sdk/realm';
@@ -112,14 +115,14 @@ function isUrlRoutingTarget(
 }
 
 function destinationForUrl(url: string) {
-  const uri = URI(url);
+  if (!URL.canParse(url)) return { type: 'local' as const, resource: url };
 
-  if (uri.is('relative')) return { type: 'local' as const, resource: url };
-
-  if (isOriginLocal(uri)) {
-    return isSiteLocal(uri)
-      ? { type: 'local' as const, resource: uri.resource() }
-      : { type: 'crossSite' as const, url };
+  if (isOriginLocal(url)) {
+    if (!isSiteLocal(url)) return { type: 'crossSite' as const, url };
+    return {
+      type: 'local' as const,
+      resource: urlResource(new URL(url)),
+    };
   }
 
   return { type: 'remote' as const, url };

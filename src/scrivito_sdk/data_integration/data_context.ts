@@ -1,10 +1,10 @@
-import * as URI from 'urijs';
-
 import { ViaRef } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   QueryParameters,
+  buildQueryString,
   parameterizeDataClass,
+  parseQueryToQueryParameters,
   throwNextTick,
 } from 'scrivito_sdk/common';
 import {
@@ -59,8 +59,10 @@ export function getDataContextQuery(
   const parameters = getDataContextParameters(objOrLink, dataStack);
 
   if (parameters) {
-    return URI.buildQuery(
-      query ? Object.assign(parameters, URI.parseQuery(query)) : parameters
+    return buildQueryString(
+      query
+        ? { ...parameters, ...parseQueryToQueryParameters(query) }
+        : parameters
     );
   }
 

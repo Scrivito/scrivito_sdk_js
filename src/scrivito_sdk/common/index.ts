@@ -80,6 +80,10 @@ export { BatchRetrieval } from 'scrivito_sdk/common/batch_retrieval';
 export { computeCacheKey } from 'scrivito_sdk/common/compute_cache_key';
 export { clickPositionWithinElement } from 'scrivito_sdk/common/position';
 export type { Position } from 'scrivito_sdk/common/position';
+export {
+  buildQueryString,
+  parseQueryToQueryParameters,
+} from 'scrivito_sdk/common/query_parameters';
 export type { QueryParameters } from 'scrivito_sdk/common/query_parameters';
 export { Streamable, EndOfStreamError } from 'scrivito_sdk/common/streamable';
 export type { Subscription, Subscriber } from 'scrivito_sdk/common/streamable';
@@ -154,6 +158,7 @@ export {
   DATA_PLACEHOLDERS,
   SINGLE_DATA_PLACEHOLDER,
 } from 'scrivito_sdk/common/data_placeholders';
+export { urlResource } from 'scrivito_sdk/common/url_resource';
 export {
   observeWindowFocus,
   subscribeWindowFocus,

@@ -1,6 +1,4 @@
 // @rewire
-import * as URI from 'urijs';
-
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import {
   InternalError,
@@ -26,7 +24,7 @@ export function changeLocation(url: string): void {
 }
 
 export function openInNewWindow(url: string): void {
-  if (uiAdapter && isOriginLocal(URI(url))) {
+  if (uiAdapter && isOriginLocal(url)) {
     uiAdapter.openInNewUiWindow(convertToAbsoluteLocalUrl(url));
   } else {
     openWindow(url, '_blank');
@@ -36,5 +34,5 @@ export function openInNewWindow(url: string): void {
 function convertToAbsoluteLocalUrl(url: string) {
   const origin = currentOrigin();
   if (origin === undefined) throw new InternalError();
-  return new URI(url).origin(origin).toString();
+  return new URL(url, origin).href;
 }

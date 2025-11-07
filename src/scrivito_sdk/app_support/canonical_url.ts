@@ -1,5 +1,3 @@
-import * as URI from 'urijs';
-
 import * as BrowserLocation from 'scrivito_sdk/app_support/browser_location';
 import {
   PageDataWithPage,
@@ -7,7 +5,7 @@ import {
 } from 'scrivito_sdk/app_support/current_page_data';
 import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { generateLocalPath } from 'scrivito_sdk/app_support/routing';
-import { isPresent } from 'scrivito_sdk/common';
+import { isPresent, urlResource } from 'scrivito_sdk/common';
 import { capture, load } from 'scrivito_sdk/loadable';
 import { observe } from 'scrivito_sdk/state';
 
@@ -45,8 +43,10 @@ async function switchToCanonicalUrl(pageData: PageDataWithPage): Promise<void> {
   if (!canonicalPath) return;
   if (BrowserLocation.get() !== location) return;
 
-  const locationUri = new URI(location);
-  if (canonicalPath === locationUri.path()) return;
+  const locationUrl = new URL(location, 'http://example.com');
+  if (canonicalPath === locationUrl.pathname) return;
 
-  BrowserLocation.replace(locationUri.path(canonicalPath).toString());
+  locationUrl.pathname = canonicalPath;
+
+  BrowserLocation.replace(urlResource(locationUrl));
 }

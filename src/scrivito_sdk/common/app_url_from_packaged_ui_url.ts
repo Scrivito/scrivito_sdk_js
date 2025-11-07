@@ -1,22 +1,14 @@
-import * as URI from 'urijs';
-
 /**
  * Return an app URL, if the original uiUrl references a packaged UI URL.
  * Otherwise return null.
  * */
 export function appUrlFromPackagedUiUrl(uiUrl: string): string | null {
-  const uri = new URI(uiUrl);
-  let segment = uri.segment(0);
-  if (!isScrivitoSegment(segment)) return null;
+  const url = new URL(uiUrl);
 
-  while (isScrivitoSegment(segment)) {
-    uri.segment(0, '');
-    segment = uri.segment(0);
-  }
+  const pathname = url.pathname.replace(/^(\/scrivito(?=\/|$))+/i, '');
 
-  return uri.toString();
-}
+  if (pathname === url.pathname) return null;
 
-function isScrivitoSegment(segment?: string): boolean {
-  return segment?.toLowerCase() === 'scrivito';
+  url.pathname = pathname;
+  return url.href;
 }

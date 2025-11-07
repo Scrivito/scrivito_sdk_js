@@ -1,9 +1,8 @@
 // @rewire
 import { MouseEvent } from 'react';
-import * as URI from 'urijs';
 
 import { isOriginLocal } from 'scrivito_sdk/app_support/routing';
-import { isModifierClick } from 'scrivito_sdk/common';
+import { isModifierClick, urlResource } from 'scrivito_sdk/common';
 
 export type LinkTarget = OpenInCurrentWindow | OpenInNewWindow | null;
 
@@ -45,8 +44,7 @@ function findLinkTarget(
   if (isHTMLAnchorElement(currentNode)) {
     const url = currentNode.href;
 
-    const uri = URI(url);
-    if (!isOriginLocal(uri)) {
+    if (!isOriginLocal(url)) {
       return null;
     }
 
@@ -54,7 +52,7 @@ function findLinkTarget(
       return { openInNewWindow: url };
     }
 
-    return { openInCurrentWindow: uri.resource() };
+    return { openInCurrentWindow: urlResource(new URL(url)) };
   }
 
   if (!currentNode.parentNode) {

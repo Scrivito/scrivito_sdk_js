@@ -1,5 +1,4 @@
 import isEqual from 'lodash-es/isEqual';
-import * as URI from 'urijs';
 
 import { ArgumentError, QueryParameters } from 'scrivito_sdk/common';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
@@ -63,7 +62,10 @@ export class BasicLink {
   }
 
   queryParameters(): QueryParameters {
-    return URI.parseQuery(this.query() || '');
+    const params = new URLSearchParams(this.query() || '');
+    const result: QueryParameters = {};
+    for (const [key, value] of params.entries()) result[key] = value || null;
+    return result;
   }
 
   isExternal(): this is ExternalLink {

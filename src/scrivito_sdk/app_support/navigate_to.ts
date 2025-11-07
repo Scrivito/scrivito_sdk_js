@@ -1,6 +1,5 @@
 // @rewire
 import isEmpty from 'lodash-es/isEmpty';
-import * as URI from 'urijs';
 
 import {
   RoutingTarget,
@@ -203,7 +202,7 @@ function getRoutingTargetFromLink(
 }
 
 function assertAbsoluteUrl(url: string) {
-  if (URI(url).is('relative')) {
+  if (!URL.canParse(url)) {
     throw new ArgumentError(
       `Scrivito.navigateTo was called with a relative URL "${url}".` +
         ' When called with a string, Scrivito.navigateTo only accepts absolute URLs.'

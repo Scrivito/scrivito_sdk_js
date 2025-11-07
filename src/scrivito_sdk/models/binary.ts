@@ -1,8 +1,6 @@
 import isEmpty from 'lodash-es/isEmpty';
 import isEqual from 'lodash-es/isEqual';
 
-import * as URI from 'urijs';
-
 import {
   BackendBinaryData,
   ObjSpaceId,
@@ -191,7 +189,7 @@ export class Binary {
       return '';
     }
 
-    return URI(url).path().split('/').pop() || '';
+    return new URL(url, 'http://example.com').pathname.split('/').pop() || '';
   }
 
   metadata(): MetadataCollection {

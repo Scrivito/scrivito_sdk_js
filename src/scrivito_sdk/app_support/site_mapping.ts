@@ -1,5 +1,3 @@
-import * as URI from 'urijs';
-
 import { withForbiddenSiteContext } from 'scrivito_sdk/app_support/current_page';
 import { SiteData } from 'scrivito_sdk/app_support/current_page_data';
 import {
@@ -61,18 +59,17 @@ export function initSiteMapping(config: SiteMappingConfiguration = {}): void {
   };
 
   siteForUrlCallback = (url) => {
-    const uri = new URI(url);
+    const { origin } = new URL(url);
 
-    const origin = uri.origin();
     if (origin !== config.origin && origin !== currentOrigin()) return;
 
     if (!basePath) {
-      return { siteId: 'default', baseUrl: uri.origin() };
+      return { siteId: 'default', baseUrl: origin };
     }
 
     return {
       siteId: 'default',
-      baseUrl: new URI(uri.origin()).resource(basePath).toString(),
+      baseUrl: new URL(basePath, origin).href,
     };
   };
 }
@@ -94,12 +91,11 @@ export interface SiteDataAndPath {
 }
 
 export function recognizeSiteAndPath(
-  uriToRecognize: URI
+  uriToRecognize: string
 ): SiteDataAndPath | { siteData?: SiteData; sitePath: null } {
   if (!siteForUrlCallback) throwNotInitialized();
 
-  const uri = normalizeUri(uriToRecognize);
-  const url = uri.toString();
+  const url = normalizeUri(uriToRecognize);
   const result = siteForUrl(url);
   if (!result) return { sitePath: null };
 
@@ -126,19 +122,18 @@ function startsWith(prefix: string, input: string) {
 }
 
 function removeNonPathComponents(resource: string) {
-  return new URI('').resource(resource).path();
+  const { pathname } = new URL(resource, 'http://example.com');
+  return resource.startsWith('/') ? pathname : pathname.substring(1);
 }
 
-function normalizeUri(uri: URI) {
-  const normalizedUrl = uri.clone();
+function normalizeUri(url: string) {
+  const baseUrl = URL.canParse(url)
+    ? undefined
+    : currentOrigin() ?? throwNoOrigin();
 
-  if (normalizedUrl.is('relative')) {
-    normalizedUrl.origin(currentOrigin() ?? throwNoOrigin());
-  }
-
-  normalizedUrl.normalizePath();
-
-  return normalizedUrl;
+  const location = new URL(url, baseUrl);
+  location.pathname = location.pathname.replace(/\/+/g, '/');
+  return location.href;
 }
 
 function siteForUrl(url: string): SiteForUrlResult {
@@ -166,7 +161,10 @@ function siteForUrl(url: string): SiteForUrlResult {
 }
 
 function removeQueryAndHash(url: string) {
-  return new URI(url).query('').hash('').href();
+  const urlObj = new URL(url);
+  urlObj.search = '';
+  urlObj.hash = '';
+  return urlObj.href;
 }
 
 function removeTrailingSlashes(input: string) {
