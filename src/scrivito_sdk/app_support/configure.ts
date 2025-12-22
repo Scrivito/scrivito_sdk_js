@@ -36,7 +36,7 @@ import {
   useUnstableMultiSiteMode,
 } from 'scrivito_sdk/app_support/unstable_multi_site_mode';
 import { getVisitorAuthenticationProvider } from 'scrivito_sdk/app_support/visitor_authentication';
-import { toggleWidgetHighlighting } from 'scrivito_sdk/app_support/widget_highlighting';
+import type { ForcedEditorLanguage } from 'scrivito_sdk/app_ui_protocol';
 import {
   Priority,
   clientConfig,
@@ -73,7 +73,6 @@ import {
   setCurrentSiteIdHandler,
   unwrapAppClass,
 } from 'scrivito_sdk/realm';
-import type { ForcedEditorLanguage } from 'scrivito_sdk/ui_interface/app_adapter';
 import {
   ConstraintsValidationCallback,
   setConstraintsValidationCallback,
@@ -84,8 +83,22 @@ export interface IamApiKey {
   clientSecret: string;
 }
 
-export interface Configuration {
+/** @deprecated Use InstanceIdConfiguration instead */
+interface TenantConfiguration {
+  /** @deprecated Use `instanceId` instead */
   tenant: string;
+  instanceId?: never;
+}
+
+interface InstanceIdConfiguration {
+  tenant?: never;
+  instanceId: string;
+}
+
+export type Configuration = (TenantConfiguration | InstanceIdConfiguration) &
+  BaseConfiguration;
+
+interface BaseConfiguration {
   adoptUi?: boolean | string;
   autoConvertAttributes?: boolean;
   baseUrlForSite?: SiteMappingConfiguration['baseUrlForSite'];
@@ -115,7 +128,6 @@ export interface Configuration {
     trustedUiOrigins?: string[];
     initialContentDumpUrl?: string;
     allowOfflineMode?: boolean;
-    widgetHighlighting?: boolean;
   };
 }
 
@@ -139,13 +151,14 @@ export function configure(configuration: Readonly<Configuration>): void {
     setUnstableMultiSiteMode(getUnstableSiteIdForObj);
   }
 
-  if (configuration.tenant === IN_MEMORY_TENANT) {
+  const instanceId = getConfiguredInstanceId(configuration);
+
+  if (instanceId === IN_MEMORY_TENANT) {
     useInMemoryTenant();
     setCurrentSiteIdHandler(() => IN_MEMORY_TENANT);
     disableObjReplication();
   } else {
-    const tenant = configuration.tenant;
-    setConfiguredTenant(tenant);
+    setConfiguredTenant(instanceId);
 
     if (isRunningInBrowser()) initializeLoggedInState();
 
@@ -163,7 +176,7 @@ export function configure(configuration: Readonly<Configuration>): void {
     if (treatLocalhostLike) setTreatLocalhostLike(treatLocalhostLike);
 
     if (uiAdapter) {
-      configureWithUi(tenant, uiAdapter);
+      configureWithUi(instanceId, uiAdapter);
     } else {
       configureWithoutUi(configuration);
     }
@@ -185,10 +198,6 @@ export function configure(configuration: Readonly<Configuration>): void {
 
   if (unofficialConfiguration?.initialContentDumpUrl) {
     setInitialContentDumpUrl(unofficialConfiguration.initialContentDumpUrl);
-  }
-
-  if (unofficialConfiguration?.widgetHighlighting) {
-    toggleWidgetHighlighting(true);
   }
 }
 
@@ -212,8 +221,16 @@ export function resetConfiguration(): void {
 }
 
 function checkConfigure(configuration: Configuration) {
-  if (!configuration.tenant) {
-    throwInvalidConfigurationError("The param 'tenant' is required.");
+  if (
+    !(
+      configuration &&
+      typeof configuration == 'object' &&
+      getConfiguredInstanceId(configuration)
+    )
+  ) {
+    throwInvalidConfigurationError(
+      "The param 'tenant' or 'instanceId' is required."
+    );
   }
 
   if (configuration.apiKey && isRunningInBrowser()) {
@@ -408,6 +425,12 @@ function getIamAuthLocation(iamAuthLocation: string | undefined) {
   const origin = currentOrigin();
 
   return origin ? `${origin}/auth` : undefined;
+}
+
+export function getConfiguredInstanceId(configuration: Configuration) {
+  return 'tenant' in configuration && typeof configuration.tenant === 'string'
+    ? configuration.tenant
+    : configuration.instanceId;
 }
 
 onReset(resetConfiguration);

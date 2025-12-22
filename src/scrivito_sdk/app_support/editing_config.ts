@@ -75,7 +75,7 @@ export interface AttributesEditingConfig {
   [attributeName: string]: AttributeEditingConfig;
 }
 
-export type AttributeEditor = 'colorPicker';
+export type AttributeEditor = 'colorPicker' | 'dimensionPicker';
 
 export type AttributeEditingConfig = {
   title?: string;
@@ -92,6 +92,10 @@ type EditorSpecificAttributeEditingConfig =
       options?: ColorPickerEditorAttributeEditingOptions;
     }
   | {
+      editor: 'dimensionPicker';
+      options?: DimensionPickerEditorAttributeEditingOptions;
+    }
+  | {
       editor?: never;
       options?: HtmlAttributeEditingOptions & StringAttributeEditingOptions;
     };
@@ -104,7 +108,8 @@ export type IteratesOver = 'data';
 
 export type AttributeEditingOptions = HtmlAttributeEditingOptions &
   StringAttributeEditingOptions &
-  ColorPickerEditorAttributeEditingOptions;
+  ColorPickerEditorAttributeEditingOptions &
+  DimensionPickerEditorAttributeEditingOptions;
 
 interface HtmlAttributeEditingOptions {
   allowedTags?: readonly (keyof React.JSX.IntrinsicElements)[];
@@ -119,6 +124,12 @@ interface StringAttributeEditingOptions {
 interface ColorPickerEditorAttributeEditingOptions {
   allowAlpha?: boolean;
 }
+
+interface DimensionPickerEditorAttributeEditingOptions {
+  units?: DimensionPickerUnit[];
+}
+
+export type DimensionPickerUnit = 'px' | '%' | 'rem' | 'em' | 'vh' | 'vw';
 
 export interface LivingComponentGroupDescription {
   title: string;

@@ -80,6 +80,9 @@ export function getAttributeEditingOptionsFor(
   if (attribute.editor === 'colorPicker') {
     const { allowAlpha, ...rest } = attribute.options;
     invalidOptions = rest;
+  } else if (attribute.editor === 'dimensionPicker') {
+    const { units, ...rest } = attribute.options;
+    invalidOptions = rest;
   } else if (attributeType === 'html') {
     const { allowedTags, showHtmlSource, toolbar, ...rest } = attribute.options;
     invalidOptions = rest;

@@ -89,7 +89,7 @@ function destinationForTarget(target: RoutingTarget): NavigationDestination {
   if (!obj) return generateDestinationForId({ objId, query, hash });
 
   if (isBinaryBasicObj(obj)) {
-    const blob = obj.get('blob', ['binary']);
+    const blob = obj.blob();
     if (!blob) return generateDestinationUnavailable({ objId });
 
     return { type: 'remote', url: blob.url() };

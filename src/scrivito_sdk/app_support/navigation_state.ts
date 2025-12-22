@@ -85,7 +85,7 @@ function recognizeLocation(location: string) {
   if (!obj) return { ...route, objId: undefined };
 
   if (isBinaryBasicObj(obj)) {
-    return obj.get('blob', ['binary'])?.url() ?? { ...route, objId: undefined };
+    return obj.blob()?.url() ?? { ...route, objId: undefined };
   }
 
   return route;

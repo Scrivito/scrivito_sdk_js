@@ -213,7 +213,7 @@ function cssPropertiesForScrivitoBackground(
     const basicObj = unwrapAppClass(image)!;
 
     if (isBinaryBasicObj(basicObj)) {
-      const blob = basicObj.get('blob', ['binary']);
+      const blob = basicObj.blob();
 
       if (blob) {
         return cssPropertiesForBinary(blob, background, binaryToUrl);

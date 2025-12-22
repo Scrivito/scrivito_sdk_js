@@ -2,6 +2,7 @@ import { appUrlForRedirectToCloudUi } from 'scrivito_sdk/app_support/app_url_for
 import {
   Configuration,
   getConfiguration,
+  getConfiguredInstanceId,
 } from 'scrivito_sdk/app_support/configure';
 import { forceNavigationStateNotResponsible } from 'scrivito_sdk/app_support/navigation_state';
 import { assignLocationCloudUi } from 'scrivito_sdk/app_support/redirect_to_cloud_ui';
@@ -12,7 +13,9 @@ export async function initializeUiRedirect(): Promise<void> {
 }
 
 function handleAdoptUi(configuration: Configuration) {
-  const { tenant, adoptUi } = configuration;
+  const { adoptUi } = configuration;
+
+  const tenant = getConfiguredInstanceId(configuration);
 
   if (adoptUi) {
     const appUrlForUi = appUrlForRedirectToCloudUi();

@@ -48,7 +48,7 @@ function urlForBinaryObj(
   obj: BasicObj,
   withoutPlaceholder?: boolean
 ): string | undefined {
-  const blob = obj.get('blob', ['binary']);
+  const blob = obj.blob();
 
   if (blob) {
     return withoutPlaceholder ? blob.urlWithoutPlaceholder() : blob.url();

@@ -16,9 +16,11 @@ export function registerComponent<
 export interface CustomPageComponentProps {
   obj: Obj;
   page: Obj;
+  attributeName?: string;
 }
 
 /** @public */
 export interface CustomWidgetComponentProps {
   widget: Widget;
+  attributeName?: string;
 }

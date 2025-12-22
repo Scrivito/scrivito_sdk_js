@@ -187,7 +187,7 @@ function getBinary(content: Obj | Widget, attribute: string) {
 
     if (!(referenced instanceof BasicObj)) return null;
 
-    return referenced.get('blob', 'binary') || null;
+    return referenced.blob();
   }
 
   throwNextTick(

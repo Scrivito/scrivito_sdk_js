@@ -1,5 +1,5 @@
+import type { ForcedEditorLanguage } from 'scrivito_sdk/app_ui_protocol';
 import { createStateContainer } from 'scrivito_sdk/state';
-import type { ForcedEditorLanguage } from 'scrivito_sdk/ui_interface/app_adapter';
 
 const forcedEditorLanguage = createStateContainer<ForcedEditorLanguage>();
 

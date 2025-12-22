@@ -58,5 +58,5 @@ function assertTokenResponse(
     return;
   }
 
-  throw new InternalError();
+  throw new InternalError(JSON.stringify(response));
 }

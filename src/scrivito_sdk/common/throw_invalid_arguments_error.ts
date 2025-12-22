@@ -9,7 +9,7 @@ export function throwInvalidArgumentsError(
   errorMessage: string,
   { docPermalink, severity }: { docPermalink: string; severity?: 'warning' }
 ) {
-  const fullErrorMessage = `Invalid arguments for '${functionName}': ${errorMessage} Visit ${docUrl(
+  const fullErrorMessage = `Invalid arguments for '${functionName}': ${errorMessage}. Visit ${docUrl(
     docPermalink
   )} for more information.`;
 

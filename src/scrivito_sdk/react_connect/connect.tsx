@@ -107,7 +107,7 @@ function connectClassComponent<
       const initialLoaderComponent = options?.loading;
 
       const _scrivitoRenderWhileLoading = initialLoaderComponent
-        ? () => React.createElement(initialLoaderComponent, props)
+        ? () => React.createElement(initialLoaderComponent, this.props)
         : this._scrivitoRenderWhileLoading;
 
       this._scrivitoPrivateConnector = new ComponentConnector(
@@ -205,6 +205,8 @@ function useConnectedRender(
 
   const connector = connectorRef.current;
 
+  connector.updateLoaderComponent(initialLoaderComponent);
+
   React.useEffect(() => {
     connector.componentDidMount();
 
@@ -247,6 +249,10 @@ class ComponentConnector {
 
   constructor(private component: ConnectorComponentInferface) {
     this.loadingSubscriber = new LoadingSubscriber();
+  }
+
+  updateLoaderComponent(loaderComponent?: () => React.ReactNode) {
+    this.component._scrivitoRenderWhileLoading = loaderComponent;
   }
 
   componentDidMount() {

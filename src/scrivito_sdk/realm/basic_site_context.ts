@@ -165,16 +165,16 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
 
   toSiteContext(): SiteContext<AttrDefs> {
     return {
-      get: this.get.bind(this),
-      getIncludingDeleted: this.getIncludingDeleted.bind(this),
-      getByPath: this.getByPath.bind(this),
-      getByPermalink: this.getByPermalink.bind(this),
-      root: this.root.bind(this),
       all: this.all.bind(this),
-      where: this.where.bind(this),
-      whereFullTextOf: this.where.bind(this),
       create: this.create.bind(this),
       createFromFile: this.createFromFile.bind(this),
+      get: this.get.bind(this),
+      getByPath: this.getByPath.bind(this),
+      getByPermalink: this.getByPermalink.bind(this),
+      getIncludingDeleted: this.getIncludingDeleted.bind(this),
+      root: this.root.bind(this),
+      where: this.where.bind(this),
+      whereFullTextOf: this.whereFullTextOf.bind(this),
     };
   }
 

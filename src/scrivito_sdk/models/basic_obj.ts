@@ -629,7 +629,7 @@ export class BasicObj implements ContentValueProvider {
     this.objData.set(snapshot._data);
   }
 
-  private blob(): Binary | null {
+  blob(): Binary | null {
     return this.get('blob', ['binary']);
   }
 

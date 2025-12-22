@@ -1,6 +1,13 @@
 import { AdapterClient, GET, SEND, STREAM } from 'scrivito_sdk/bridge';
 import type { AppAdapter } from 'scrivito_sdk/ui_interface/app_adapter';
 
+export type ForcedEditorLanguage = 'en' | 'de' | 'fr' | null;
+export const FORCED_EDITOR_LANGUAGES: ForcedEditorLanguage[] = [
+  'en',
+  'de',
+  'fr',
+];
+
 export const appAdapterDescription = {
   getAdapterSpec: GET,
   getCapabilities: GET,
