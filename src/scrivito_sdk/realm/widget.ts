@@ -1,7 +1,6 @@
 import { ArgumentError, InternalError } from 'scrivito_sdk/common';
 import { BasicWidget } from 'scrivito_sdk/models';
 import { assertValidAttributeName } from 'scrivito_sdk/realm/assert_valid_attribute_name';
-
 import { AttrDict } from 'scrivito_sdk/realm/attribute_types';
 import { initialAttributesFor } from 'scrivito_sdk/realm/initial_attributes_for';
 import { Obj } from 'scrivito_sdk/realm/obj';
@@ -17,6 +16,7 @@ import {
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
+
 import { readAppAttribute, updateAppAttributes } from './app_model_accessor';
 
 /** @public */

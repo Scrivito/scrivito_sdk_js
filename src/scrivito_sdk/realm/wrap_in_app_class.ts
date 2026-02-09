@@ -24,6 +24,7 @@ import {
   Widget,
   WidgetClass,
 } from 'scrivito_sdk/realm';
+
 import { objClassFor, widgetClassFor } from './registry';
 import { AttributeTypeOf } from './schema';
 

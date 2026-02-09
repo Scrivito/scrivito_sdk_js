@@ -1,6 +1,5 @@
 // experimental, no unit tests cover this module
 import { getConfiguration } from 'scrivito_sdk/app_support/configure';
-
 import { getInstanceId } from 'scrivito_sdk/app_support/get_instance_id';
 import { isSelectedObjMessage } from 'scrivito_sdk/app_ui_protocol';
 import { postMessageLinkFor } from 'scrivito_sdk/bridge';

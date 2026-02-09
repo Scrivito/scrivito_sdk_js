@@ -3,7 +3,6 @@ import {
   BackendMetadataResponse,
   retrieveBinaryMetadata,
 } from 'scrivito_sdk/client/binary_metadata_retrieval';
-
 import { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
 import {
   BackendBinaryData,
@@ -23,13 +22,11 @@ import {
   QueryResponse,
   retrieveObjQuery,
 } from 'scrivito_sdk/client/obj_query_retrieval';
-
 import {
   BackendSuggestParams,
   BackendSuggestResponse,
   retrieveSuggest,
 } from 'scrivito_sdk/client/suggest_retrieval';
-
 import { TransformationDefinition } from 'scrivito_sdk/models';
 
 export interface CmsRetrieval {

@@ -13,6 +13,7 @@ export const appAdapterDescription = {
   getCapabilities: GET,
   getCropAspectRatios: GET,
   getPreviewSizes: GET,
+  getResponsiveBreakpoints: GET,
   descriptionForObj: GET,
   getClasses: GET,
   getContentBrowserConfiguration: GET,

@@ -1,5 +1,6 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import { BasicTypeInfo, CmsAttributeType } from 'scrivito_sdk/models';
+
 import { Schema } from './schema';
 
 const ATTRIBUTE_TYPES_WHITELIST = ['string', 'html', 'widget', 'widgetlist'];

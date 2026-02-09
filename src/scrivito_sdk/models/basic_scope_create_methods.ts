@@ -1,5 +1,4 @@
 import { BasicObj, BasicObjAttributes } from 'scrivito_sdk/models/basic_obj';
-
 import { Binary } from 'scrivito_sdk/models/binary';
 import { ObjScope } from 'scrivito_sdk/models/obj_scope';
 

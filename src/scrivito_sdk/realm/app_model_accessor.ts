@@ -6,6 +6,7 @@ import {
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
+
 import { getRealmClass } from './registry';
 
 export function readAppAttribute<

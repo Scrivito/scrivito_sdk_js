@@ -5,7 +5,6 @@ import {
   cmsRestApi,
   getWorkspaceId,
 } from 'scrivito_sdk/client';
-
 import { WorkspaceJson } from 'scrivito_sdk/client/workspace_json';
 
 interface ChangesJsonBase {

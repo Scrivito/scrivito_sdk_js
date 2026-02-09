@@ -1,4 +1,5 @@
 import { runAndCatchException } from 'scrivito_sdk/common';
+
 import { capture } from './load_handler';
 
 export type RunResult<T> = SuccessfulRun<T> | FailedRun;

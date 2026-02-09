@@ -22,6 +22,10 @@ import {
   isRunningInBrowser,
   nodeAdapter,
 } from 'scrivito_sdk/app_support/node_adapter';
+import {
+  type ResponsiveBreakpoints,
+  configureResponsiveBreakpoints,
+} from 'scrivito_sdk/app_support/responsive_breakpoints';
 import { initRouting } from 'scrivito_sdk/app_support/routing';
 import { SiteMappingConfiguration } from 'scrivito_sdk/app_support/site_mapping';
 import { setTreatLocalhostLike } from 'scrivito_sdk/app_support/treat_localhost_like';
@@ -73,6 +77,7 @@ import {
   setCurrentSiteIdHandler,
   unwrapAppClass,
 } from 'scrivito_sdk/realm';
+
 import {
   ConstraintsValidationCallback,
   setConstraintsValidationCallback,
@@ -118,6 +123,7 @@ interface BaseConfiguration {
   contentTagsForEmptyAttributes?: boolean;
   iamAuthLocation?: string;
   treatLocalhostLike?: string;
+  responsiveBreakpoints?: ResponsiveBreakpoints;
 
   activateDataIntegration?: boolean;
 
@@ -184,6 +190,10 @@ export function configure(configuration: Readonly<Configuration>): void {
 
   initRouting(routingConfiguration);
   configureConstraintsValidationCallback(configuration);
+
+  if (configuration.responsiveBreakpoints) {
+    configureResponsiveBreakpoints(configuration.responsiveBreakpoints);
+  }
 
   if (configuration.contentTagsForEmptyAttributes === false) {
     skipContentTagsForEmptyAttributes();

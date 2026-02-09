@@ -28,10 +28,12 @@ export type { DataRecording } from 'scrivito_sdk/loadable/data_recorder';
 export type { LoadableCollection } from 'scrivito_sdk/loadable/loadable_collection';
 export { createLoadableCollection } from 'scrivito_sdk/loadable/loadable_collection';
 export { loadAndObserve } from 'scrivito_sdk/loadable/load_and_observe';
+export { observeSyncAndLoad } from 'scrivito_sdk/loadable/observe_sync_and_load';
 export { flushLoadableStreams } from 'scrivito_sdk/loadable/stream_process';
 export { loadableFunction } from 'scrivito_sdk/loadable/loadable_function';
 export { loadEntireIterable } from 'scrivito_sdk/loadable/load_entire_iterable';
 export { withoutLoading } from 'scrivito_sdk/loadable/without_loading';
+export { withOptionalLoading } from 'scrivito_sdk/loadable/with_optional_loading';
 export {
   setOfflineMode,
   NotAvailableOfflineError,

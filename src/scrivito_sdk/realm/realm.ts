@@ -15,6 +15,7 @@ import {
   isAppClass,
 } from 'scrivito_sdk/realm/schema';
 import { Widget, WidgetClass } from 'scrivito_sdk/realm/widget';
+
 import {
   assertValidObjExtractTextAttributes,
   assertValidWidgetExtractTextAttributes,

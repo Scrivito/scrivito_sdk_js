@@ -8,6 +8,7 @@ import {
   getCSSCanvasContext,
   hasGetCSSCanvasContext,
 } from 'scrivito_sdk/app_support/decode/get_css_canvas_context';
+
 import { decodeOrLoadImg, hasDecodeImg } from './decode/decode_or_load_img';
 
 export interface DecodedBackgroundImage {

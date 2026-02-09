@@ -1,6 +1,5 @@
 import { ObjJson, ObjSpaceId } from 'scrivito_sdk/client';
 import { Streamable } from 'scrivito_sdk/common';
-
 import { objDataFor } from 'scrivito_sdk/data/obj_data_store';
 import { threeWayMergeObjs } from 'scrivito_sdk/data/obj_patch';
 import { loadAndObserve, loadableWithDefault } from 'scrivito_sdk/loadable';

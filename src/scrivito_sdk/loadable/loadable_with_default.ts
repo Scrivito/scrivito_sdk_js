@@ -1,8 +1,4 @@
-import {
-  capture,
-  isCurrentlyCapturing,
-  loadWithDefault,
-} from 'scrivito_sdk/loadable';
+import { loadWithDefault, withOptionalLoading } from 'scrivito_sdk/loadable';
 
 /** Evaluate the loadableFunction and return its result, if fully loaded.
  * Otherwise, return the default.
@@ -14,11 +10,7 @@ export function loadableWithDefault<T, S>(
   theDefault: T,
   loadableFunction: () => S
 ): T | S {
-  const captured = capture(() => loadWithDefault(theDefault, loadableFunction));
-
-  if (isCurrentlyCapturing()) {
-    captured.forwardToCurrent();
-  }
-
-  return captured.result;
+  return withOptionalLoading(() =>
+    loadWithDefault(theDefault, loadableFunction)
+  );
 }

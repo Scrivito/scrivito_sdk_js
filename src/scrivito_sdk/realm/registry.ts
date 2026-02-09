@@ -1,5 +1,4 @@
 import { onReset } from 'scrivito_sdk/common';
-
 import { AppClass, ObjClass, WidgetClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
 import { Widget } from 'scrivito_sdk/realm/widget';
