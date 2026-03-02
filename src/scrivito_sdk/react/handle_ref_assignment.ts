@@ -1,6 +1,6 @@
 export function handleRefAssignment(
   e: Element | null,
-  ref: React.Ref<Element> | undefined
+  ref: React.Ref<Element> | undefined,
 ) {
   if (typeof ref === 'function') {
     ref(e);

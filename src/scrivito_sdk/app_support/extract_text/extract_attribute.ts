@@ -13,7 +13,7 @@ export function extractAttribute(
   objOrWidget: BasicObj | BasicWidget,
   schema: Schema,
   attribute: string,
-  collector: ExtractCollector
+  collector: ExtractCollector,
 ): void {
   if (attribute === 'blob:text') {
     return collector.push(extractBlobText(objOrWidget));

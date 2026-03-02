@@ -51,7 +51,7 @@ export function serializeDataAttribute({
         value,
         dataClassName,
         attributeName,
-        attributeDefinition
+        attributeDefinition,
       );
     }
   }
@@ -83,7 +83,7 @@ export function deserializeDataAttribute({
         value,
         dataClassName,
         attributeName,
-        attributeDefinition
+        attributeDefinition,
       );
     }
   }
@@ -94,7 +94,7 @@ export function deserializeDataAttribute({
 function serializeBooleanAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (typeof value === 'boolean') return value;
   throwTypeMismatch(dataClassName, attributeName, 'a boolean', value);
@@ -103,7 +103,7 @@ function serializeBooleanAttribute(
 function serializeDateAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (value === null || (typeof value === 'string' && isISO8601(value))) {
     return value;
@@ -115,7 +115,7 @@ function serializeDateAttribute(
     dataClassName,
     attributeName,
     'an instance of Date, an ISO8601 date string or null',
-    value
+    value,
   );
 }
 
@@ -123,7 +123,7 @@ function serializeEnumAttribute(
   value: unknown,
   dataClassName: string,
   attributeName: string,
-  attributeDefinition: DataAttributeDefinition
+  attributeDefinition: DataAttributeDefinition,
 ) {
   const enumValues = getEnumValues(getAttributeConfig(attributeDefinition));
 
@@ -138,14 +138,14 @@ function serializeEnumAttribute(
     dataClassName,
     attributeName,
     `one of ${JSON.stringify(enumValues)} or null`,
-    value
+    value,
   );
 }
 
 function serializeNumberAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (value === null || typeof value === 'number') return value;
   throwTypeMismatch(dataClassName, attributeName, 'a number or null', value);
@@ -155,7 +155,7 @@ function serializeReferenceAttribute(
   value: unknown,
   dataClassName: string,
   attributeName: string,
-  attributeDefinition: DataAttributeDefinition
+  attributeDefinition: DataAttributeDefinition,
 ) {
   if (value === null || isValidDataId(value)) return value;
 
@@ -171,7 +171,7 @@ function serializeReferenceAttribute(
     dataClassName,
     attributeName,
     `an instance of DataItem of data class "${dataClassName}", a valid data ID or null`,
-    value
+    value,
   );
 
   return null;
@@ -180,7 +180,7 @@ function serializeReferenceAttribute(
 function serializeStringAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (typeof value === 'string') return value;
   throwTypeMismatch(dataClassName, attributeName, 'a string', value);
@@ -199,7 +199,7 @@ const deserializers = {
 function deserializeBooleanAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (typeof value === 'boolean') {
     return value;
@@ -213,7 +213,7 @@ function deserializeBooleanAttribute(
 function deserializeDateAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (isEmptyStringOrNull(value)) return null;
 
@@ -225,7 +225,7 @@ function deserializeDateAttribute(
     dataClassName,
     attributeName,
     'an ISO8601 date string',
-    value
+    value,
   );
 
   return null;
@@ -235,7 +235,7 @@ function deserializeEnumAttribute(
   value: unknown,
   dataClassName: string,
   attributeName: string,
-  attributeDefinition: DataAttributeDefinition
+  attributeDefinition: DataAttributeDefinition,
 ) {
   if (isEmptyStringOrNull(value)) return null;
 
@@ -249,7 +249,7 @@ function deserializeEnumAttribute(
     dataClassName,
     attributeName,
     `one of ${JSON.stringify(enumValues)}`,
-    value
+    value,
   );
 
   return null;
@@ -259,14 +259,14 @@ function deserializeReferenceAttribute(
   value: unknown,
   dataClassName: string,
   attributeName: string,
-  attributeDefinition: DataAttributeDefinition
+  attributeDefinition: DataAttributeDefinition,
 ) {
   if (isEmptyStringOrNull(value)) return null;
 
   if (isValidDataId(value)) {
     return (
       getDataClassOrThrow(
-        getReferencedClassName(getAttributeConfig(attributeDefinition))
+        getReferencedClassName(getAttributeConfig(attributeDefinition)),
       ).get(value) || null
     );
   }
@@ -279,7 +279,7 @@ function deserializeReferenceAttribute(
 function deserializeNumberAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (typeof value === 'number') {
     return value;
@@ -293,7 +293,7 @@ function deserializeNumberAttribute(
 function deserializeStringAttribute(
   value: unknown,
   dataClassName: string,
-  attributeName: string
+  attributeName: string,
 ) {
   if (typeof value === 'string') {
     return value;
@@ -323,12 +323,12 @@ function getAttributeConfig(attributeDefinition: DataAttributeDefinition) {
 function getEnumValues(attributeConfig?: DataAttributeConfig) {
   if (isEnumAttributeConfig(attributeConfig)) {
     return attributeConfig.values.map((valueOrConfig) =>
-      typeof valueOrConfig === 'string' ? valueOrConfig : valueOrConfig.value
+      typeof valueOrConfig === 'string' ? valueOrConfig : valueOrConfig.value,
     );
   }
 
   throw new ArgumentError(
-    'Enum attribute config is missing the "values" property'
+    'Enum attribute config is missing the "values" property',
   );
 }
 
@@ -338,12 +338,12 @@ function getReferencedClassName(attributeConfig?: DataAttributeConfig) {
   }
 
   throw new ArgumentError(
-    'Reference attribute config is missing the "to" property'
+    'Reference attribute config is missing the "to" property',
   );
 }
 
 export function isReferenceAttributeConfig(
-  attributeConfig?: DataAttributeConfig
+  attributeConfig?: DataAttributeConfig,
 ): attributeConfig is ReferenceAttributeConfig {
   return !!(
     attributeConfig &&
@@ -355,7 +355,7 @@ export function isReferenceAttributeConfig(
 function assertNoTypedObject(
   dataClassName: string,
   attributeName: string,
-  value: unknown
+  value: unknown,
 ) {
   if (Array.isArray(value)) {
     assertNoTypedObject(dataClassName, attributeName, value[0]);
@@ -363,7 +363,7 @@ function assertNoTypedObject(
 
   if (isObject(value) && value.hasOwnProperty('_type')) {
     throw new ArgumentError(
-      `Value for attribute "${attributeName}" of data class "${dataClassName}" contains an object with property "_type"`
+      `Value for attribute "${attributeName}" of data class "${dataClassName}" contains an object with property "_type"`,
     );
   }
 }
@@ -372,7 +372,7 @@ function logTypeMismatch(
   dataClassName: string,
   attributeName: string,
   expected: string,
-  actual: unknown
+  actual: unknown,
 ) {
   if (actual === null || actual === undefined) return;
   logError(typeMismatchMessage(dataClassName, attributeName, expected, actual));
@@ -382,10 +382,10 @@ function throwTypeMismatch(
   dataClassName: string,
   attributeName: string,
   expected: string,
-  actual: unknown
+  actual: unknown,
 ) {
   throw new ArgumentError(
-    typeMismatchMessage(dataClassName, attributeName, expected, actual)
+    typeMismatchMessage(dataClassName, attributeName, expected, actual),
   );
 }
 
@@ -393,7 +393,7 @@ function typeMismatchMessage(
   dataClassName: string,
   attributeName: string,
   expected: string,
-  actual: unknown
+  actual: unknown,
 ) {
   return (
     `Expected attribute "${attributeName}" of data class "${dataClassName}" ` +

@@ -6,7 +6,7 @@ type UnsubscribeFunction = () => void;
  * It returns an UnsubscribeFunction, to cancel the subscription.
  */
 type SubscribeFunction<T> = (
-  subscriber: Subscriber<T>
+  subscriber: Subscriber<T>,
 ) => Subscription | UnsubscribeFunction;
 
 export interface Subscriber<T> {
@@ -39,12 +39,12 @@ export class Streamable<T> {
 
   /** subscribe this Streamable, streaming values into the provided function. */
   subscribe(
-    nextOrSubscriber: Partial<Subscriber<T>> | ((value: T) => void)
+    nextOrSubscriber: Partial<Subscriber<T>> | ((value: T) => void),
   ): Subscription {
     const intermediary = new Intermediary(
       typeof nextOrSubscriber === 'object'
         ? nextOrSubscriber
-        : { next: nextOrSubscriber }
+        : { next: nextOrSubscriber },
     );
 
     const subscriptionOrUnsubscribe = this.subscribeFunction(intermediary);
@@ -52,7 +52,7 @@ export class Streamable<T> {
     intermediary.setUnsubscribeCallback(
       typeof subscriptionOrUnsubscribe === 'object'
         ? () => subscriptionOrUnsubscribe.unsubscribe()
-        : subscriptionOrUnsubscribe
+        : subscriptionOrUnsubscribe,
     );
 
     return intermediary;
@@ -63,7 +63,7 @@ export class Streamable<T> {
       this.subscribe({
         next: (value: T) => subscriber.next(fn(value)),
         complete: () => subscriber.complete(),
-      })
+      }),
     );
   }
 
@@ -78,7 +78,7 @@ export class Streamable<T> {
           }
         },
         complete: () => subscriber.complete(),
-      })
+      }),
     );
   }
 

@@ -6,6 +6,6 @@ export function getInstanceId(): string {
   if (configuredTenant) return configuredTenant;
 
   throw new ScrivitoError(
-    "Function invoked before calling 'Scrivito.configure'"
+    "Function invoked before calling 'Scrivito.configure'",
   );
 }

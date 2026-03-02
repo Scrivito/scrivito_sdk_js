@@ -7,7 +7,7 @@ import { Obj, Widget } from 'scrivito_sdk/realm';
 export function registerComponent<
   P extends
     | Partial<CustomPageComponentProps>
-    | Partial<CustomWidgetComponentProps>
+    | Partial<CustomWidgetComponentProps>,
 >(componentId: string, component: ComponentType<P>): void {
   registerComponentForId(componentId, connect(component));
 }

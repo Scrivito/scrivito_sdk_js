@@ -33,7 +33,7 @@ export function basicUrlFor(target: Target, options: Options): string {
 
 export function basicUrlForObj(
   obj: BasicObj,
-  options: Options & { preserveObjId?: boolean }
+  options: Options & { preserveObjId?: boolean },
 ): string {
   if (isBinaryBasicObj(obj)) {
     const binaryUrl = urlForBinaryObj(obj, options.preserveObjId);
@@ -46,7 +46,7 @@ export function basicUrlForObj(
 
 function urlForBinaryObj(
   obj: BasicObj,
-  withoutPlaceholder?: boolean
+  withoutPlaceholder?: boolean,
 ): string | undefined {
   const blob = obj.blob();
 
@@ -68,7 +68,7 @@ function urlForLink(link: BasicLink, options: Options): string {
 
 function urlForNonBinaryObj(
   obj: BasicObj,
-  { query: queryString, queryParameters, withoutOriginIfLocal, hash }: Options
+  { query: queryString, queryParameters, withoutOriginIfLocal, hash }: Options,
 ): string {
   const query = queryParameters ?? queryString;
 

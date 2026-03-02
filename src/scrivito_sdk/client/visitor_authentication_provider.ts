@@ -45,7 +45,7 @@ export class VisitorAuthenticationProvider implements AuthorizationProvider {
   }
 
   async authorize(
-    request: (authorization: string | undefined) => Promise<Response>
+    request: (authorization: string | undefined) => Promise<Response>,
   ): Promise<Response> {
     const sessionRequest = this.sessionRequest;
 
@@ -79,8 +79,8 @@ export class VisitorAuthenticationProvider implements AuthorizationProvider {
     } catch (error) {
       throwNextTick(
         new ScrivitoError(
-          `Failed to establish visitor session: ${(error as Error).message}`
-        )
+          `Failed to establish visitor session: ${(error as Error).message}`,
+        ),
       );
 
       throw error;

@@ -15,7 +15,7 @@ interface StringAttributes {
 }
 
 export function allCustomAttributesOfTypeString(
-  obj: BasicObj
+  obj: BasicObj,
 ): StringAttributes | undefined {
   const schema = schemaFromBasicObjOrWidget(obj);
   if (!schema) return;

@@ -36,7 +36,7 @@ export function useHistory(historyToUse: HistoryV4 | HistoryV5): void {
   if (historyToUse.createHref({ pathname: '/' }) !== '/') {
     throw new ArgumentError(
       'Expected a history without a preconfigured basename.' +
-        ` For further details, see: ${docUrl('js-sdk/useHistory')}`
+        ` For further details, see: ${docUrl('js-sdk/useHistory')}`,
     );
   }
 
@@ -133,7 +133,7 @@ function historyHasChanged(action?: Action) {
 const historyChangesCountState = createStateContainer<number>();
 
 function isHistoryV4(
-  historyToCheck: HistoryV4 | HistoryV5
+  historyToCheck: HistoryV4 | HistoryV5,
 ): historyToCheck is HistoryV4 {
   return historyToCheck.hasOwnProperty('length');
 }

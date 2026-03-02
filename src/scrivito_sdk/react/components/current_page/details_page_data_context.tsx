@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import { QueryParameters } from 'scrivito_sdk/common';
 import { dataContextFromQueryParams } from 'scrivito_sdk/data_integration';
@@ -14,7 +14,7 @@ export const DetailsPageDataContext = connect(function DetailsPageDataContext({
 }: {
   page: BasicObj | null;
   params: QueryParameters;
-  children: React.ReactElement;
+  children: ReactElement;
 }) {
   if (!page) return children;
 

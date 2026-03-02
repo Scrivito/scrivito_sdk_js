@@ -14,7 +14,7 @@ let provider: VisitorAuthenticationProvider | undefined;
 let cancelMissingTokenNotification: undefined | (() => void);
 
 export function getVisitorAuthenticationProvider(
-  visitorAuthentication?: boolean
+  visitorAuthentication?: boolean,
 ): VisitorAuthenticationProvider | undefined {
   if (!uiAdapter && visitorAuthentication) {
     return enableVisitorAuthentication();
@@ -27,7 +27,7 @@ function enableVisitorAuthentication() {
   const timeoutId = setTimeout(() => {
     throw new ScrivitoError(
       'Scrivito.setVisitorIdToken was not called within 30 seconds.' +
-        ` Visit ${docUrl(DOC_LINK)} for more information.`
+        ` Visit ${docUrl(DOC_LINK)} for more information.`,
     );
   }, 30000);
   cancelMissingTokenNotification = () => clearTimeout(timeoutId);
@@ -47,7 +47,7 @@ export function setVisitorIdToken(token: string): void {
       'Scrivito needs to be configured to use visitor authentication before' +
         ' Scrivito.setVisitorIdToken can be called.' +
         ` Visit ${docUrl('js-sdk/configure')}` +
-        ` and ${docUrl(DOC_LINK)} for more information.`
+        ` and ${docUrl(DOC_LINK)} for more information.`,
     );
   }
   cancelAndForgetMissingTokenNotification();

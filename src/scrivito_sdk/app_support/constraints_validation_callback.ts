@@ -3,13 +3,13 @@ import { ScrivitoError, onReset } from 'scrivito_sdk/common';
 import { Obj, Widget } from 'scrivito_sdk/realm';
 
 export type ConstraintsValidationCallback = (
-  constraints: object
+  constraints: object,
 ) => AttributeValidationCallback<Obj | Widget>;
 
 let constraintsValidationCallback: ConstraintsValidationCallback | undefined;
 
 export function setConstraintsValidationCallback(
-  callback: ConstraintsValidationCallback
+  callback: ConstraintsValidationCallback,
 ): void {
   constraintsValidationCallback = callback;
 }
@@ -21,7 +21,7 @@ export function getConstraintsValidationCallback(): ConstraintsValidationCallbac
 
   throw new ScrivitoError(
     'Constraints validation callback is not configured. ' +
-      'Forgot to call Scrivito.configure with the "constraintsCallback" option?'
+      'Forgot to call Scrivito.configure with the "constraintsCallback" option?',
   );
 }
 

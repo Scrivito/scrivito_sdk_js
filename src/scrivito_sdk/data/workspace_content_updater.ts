@@ -15,7 +15,7 @@ export class WorkspaceContentUpdater {
 
   constructor(
     private readonly objSpace: WorkspaceObjSpaceId,
-    private readonly contentState: StateContainer<string>
+    private readonly contentState: StateContainer<string>,
   ) {}
 
   setContentStateIdOrThrowIfTracking(contentStateId: string): void {
@@ -44,7 +44,7 @@ export class WorkspaceContentUpdater {
       (async () => {
         const { to, current, objs } = await getWorkspaceChanges(
           this.objSpace,
-          from
+          from,
         );
         if (objs === '*' || (to && to !== current)) {
           // the backend was unable to send the complete list of changes
@@ -58,7 +58,7 @@ export class WorkspaceContentUpdater {
       })(),
       () => {
         this.updating = undefined;
-      }
+      },
     );
 
     return this.updating;

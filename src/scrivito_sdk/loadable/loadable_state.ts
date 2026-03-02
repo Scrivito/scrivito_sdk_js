@@ -34,19 +34,19 @@ export function getValueOrThrowError<T>(state: LoadableState<T>): T {
 }
 
 export function isAvailableState<T>(
-  state: LoadableState<T>
+  state: LoadableState<T>,
 ): state is StateAvailable<T> {
   return state.meta.error === undefined;
 }
 
 function throwIfErrorState<T>(
-  state: LoadableState<T>
+  state: LoadableState<T>,
 ): asserts state is StateAvailable<T> {
   throwIfErrorMeta(state.meta);
 }
 
 export function throwIfErrorMeta(
-  meta: LoadableMeta
+  meta: LoadableMeta,
 ): asserts meta is AvailableMeta {
   if (meta.error !== undefined) throw meta.error;
 }

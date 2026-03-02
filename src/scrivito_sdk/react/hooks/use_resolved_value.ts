@@ -25,6 +25,6 @@ function useResolvedValue(text: string, transform?: (text: string) => string) {
       placeholders,
       transform,
     }),
-    { dataStack }
+    { dataStack },
   );
 }

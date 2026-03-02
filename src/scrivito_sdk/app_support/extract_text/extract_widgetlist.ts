@@ -5,7 +5,7 @@ import { extractTextFromBasicObjOrWidget } from './extract_text_from_basic_obj_o
 
 export function extractWidgetlist(
   widgetlist: BasicWidget[],
-  collector: ExtractCollector
+  collector: ExtractCollector,
 ): void {
   for (const widget of widgetlist) {
     extractTextFromBasicObjOrWidget(widget, collector);

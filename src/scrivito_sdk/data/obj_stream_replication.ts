@@ -10,7 +10,7 @@ let objReplicationEndpoint: ObjStreamReplicationEndpoint | undefined;
 export interface ObjStreamReplicationEndpoint {
   objReplicationMessageStream(
     objSpaceId: ObjSpaceId,
-    objId: string
+    objId: string,
   ): Streamable<ObjReplicationMessage>;
 
   finishSavingObj(objSpaceId: ObjSpaceId, objId: string): Promise<void>;
@@ -20,7 +20,7 @@ export interface ObjStreamReplicationEndpoint {
  * (usually, the UiAdapter is used as the endpoint)
  */
 export function setObjStreamReplicationEndpoint(
-  endpoint: ObjStreamReplicationEndpoint
+  endpoint: ObjStreamReplicationEndpoint,
 ) {
   objReplicationEndpoint = endpoint;
 }
@@ -31,13 +31,13 @@ export class ObjStreamReplication implements ObjReplication {
 
   constructor(
     private readonly objSpaceId: ObjSpaceId,
-    private readonly objId: string
+    private readonly objId: string,
   ) {
     this.replicationProcess = createObjReplicationProcess(
       objSpaceId,
       objId,
       getEndpoint().objReplicationMessageStream(objSpaceId, objId),
-      'consumer'
+      'consumer',
     );
   }
 

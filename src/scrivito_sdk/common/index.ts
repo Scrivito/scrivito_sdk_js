@@ -20,7 +20,7 @@ export {
 } from 'scrivito_sdk/common/next_tick';
 export { prettyPrint } from 'scrivito_sdk/common/pretty_print';
 export { runAndCatchException } from 'scrivito_sdk/common/run_and_catch_exception';
-export { logError } from 'scrivito_sdk/common/error_logging';
+export { logError, logInfo } from 'scrivito_sdk/common/logging';
 export { getScrivitoVersion } from 'scrivito_sdk/common/get_scrivito_version';
 export { loadCss, loadJs } from 'scrivito_sdk/common/asset_loading';
 export { isPresent } from 'scrivito_sdk/common/is_present';

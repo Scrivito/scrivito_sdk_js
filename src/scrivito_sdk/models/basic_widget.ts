@@ -47,7 +47,7 @@ export class BasicWidget implements ContentValueProvider {
   }
 
   static newWithSerializedAttributes(
-    attributes: SerializedWidgetAttributes
+    attributes: SerializedWidgetAttributes,
   ): BasicWidget {
     const unserializedAttributes: NormalizedBasicAttributeDict = {};
     const serializedAttributes: SerializedWidgetAttributes = {};
@@ -92,7 +92,7 @@ export class BasicWidget implements ContentValueProvider {
       undefined,
       undefined,
       unserializedAttributes,
-      serializedAttributes
+      serializedAttributes,
     );
   }
 
@@ -100,12 +100,12 @@ export class BasicWidget implements ContentValueProvider {
     return new BasicWidget(
       undefined,
       undefined,
-      normalizeAttributes(attributes)
+      normalizeAttributes(attributes),
     );
   }
 
   static createWithUnknownValues(
-    attributes: NormalizedBasicAttributesWithUnknownValues
+    attributes: NormalizedBasicAttributesWithUnknownValues,
   ): BasicWidget {
     return new BasicWidget(undefined, undefined, attributes);
   }
@@ -117,28 +117,28 @@ export class BasicWidget implements ContentValueProvider {
     id: undefined,
     obj: undefined,
     attributes: NormalizedBasicAttributesWithUnknownValues,
-    preserializedAttributes?: SerializedWidgetAttributes
+    preserializedAttributes?: SerializedWidgetAttributes,
   );
 
   constructor(
     id: string,
     obj: BasicObj,
     attributes?: undefined,
-    preserializedAttributes?: undefined
+    preserializedAttributes?: undefined,
   );
 
   constructor(
     private _id?: string,
     private _obj?: BasicObj,
     attributesToBeSaved?: NormalizedBasicAttributesWithUnknownValues,
-    private readonly preserializedAttributes?: SerializedWidgetAttributes
+    private readonly preserializedAttributes?: SerializedWidgetAttributes,
   ) {
     if (!_obj) {
       if (attributesToBeSaved && isAttributesToBeSaved(attributesToBeSaved)) {
         this.attributesToBeSaved = attributesToBeSaved;
       } else {
         throw new ArgumentError(
-          'Please provide a widget class as the "_objClass" property.'
+          'Please provide a widget class as the "_objClass" property.',
         );
       }
     }
@@ -179,21 +179,21 @@ export class BasicWidget implements ContentValueProvider {
 
   get<Type extends CmsAttributeType>(
     attributeName: string,
-    typeInfo: TypeInfo<Type>
+    typeInfo: TypeInfo<Type>,
   ): BasicAttributeValue<Type> {
     return getContentValue(this, attributeName, typeInfo);
   }
 
   getValueOrConnection<Type extends CmsAttributeType>(
     attributeName: string,
-    typeInfo: TypeInfo<Type>
+    typeInfo: TypeInfo<Type>,
   ): ContentValueOrConnection<Type> {
     return getContentValueOrConnection(this, attributeName, typeInfo);
   }
 
   container(): BasicObj | BasicWidget {
     failIfPerformanceConstraint(
-      'for performance reasons, avoid this method when rendering'
+      'for performance reasons, avoid this method when rendering',
     );
 
     const containingField = this.containingField();
@@ -207,7 +207,7 @@ export class BasicWidget implements ContentValueProvider {
   }
 
   updateWithUnknownValues(
-    attributes: NormalizedBasicAttributesWithUnknownValues
+    attributes: NormalizedBasicAttributesWithUnknownValues,
   ): void {
     withBatchedUpdates(() => {
       persistWidgets(this.obj(), attributes);
@@ -262,7 +262,7 @@ export class BasicWidget implements ContentValueProvider {
   onDidPersist(callback: DidPersistCallback): void {
     if (this.isPersisted()) {
       throw new ScrivitoError(
-        'Cannot call "onDidPersist" of an already persisted widget'
+        'Cannot call "onDidPersist" of an already persisted widget',
       );
     }
 
@@ -298,7 +298,7 @@ export class BasicWidget implements ContentValueProvider {
   }
 
   getAttributeData<Key extends keyof WidgetJson & string>(
-    attributeName: Key
+    attributeName: Key,
   ): WidgetJson[Key] | undefined {
     return this.obj().getWidgetAttribute(this.id(), attributeName);
   }
@@ -315,7 +315,7 @@ export class BasicWidget implements ContentValueProvider {
   private failIfNotPersisted() {
     if (!this.isPersisted()) {
       throw new ScrivitoError(
-        'Can not access a new widget before it has been saved.'
+        'Can not access a new widget before it has been saved.',
       );
     }
   }
@@ -341,7 +341,7 @@ export class BasicWidget implements ContentValueProvider {
     const copy = new BasicWidget(
       undefined,
       undefined,
-      mapValues(this.attributesToBeSaved, copyNormalizedValue)
+      mapValues(this.attributesToBeSaved, copyNormalizedValue),
     );
 
     if (this.onDidPersistCallback) {
@@ -353,7 +353,7 @@ export class BasicWidget implements ContentValueProvider {
 }
 
 function copyNormalizedValue(
-  valueAndType: NormalizedUnknownAttributeValue
+  valueAndType: NormalizedUnknownAttributeValue,
 ): NormalizedUnknownAttributeValue {
   if (isWidgetAttributeValueAndType(valueAndType)) {
     const [widget, typeInfo] = valueAndType;
@@ -371,13 +371,12 @@ function copyNormalizedValue(
   return valueAndType.slice(0) as typeof valueAndType;
 }
 
-interface AttributesToBeSaved
-  extends NormalizedBasicAttributesWithUnknownValues {
+interface AttributesToBeSaved extends NormalizedBasicAttributesWithUnknownValues {
   _objClass: [string];
 }
 
 function isAttributesToBeSaved(
-  attributes: NormalizedBasicAttributesWithUnknownValues
+  attributes: NormalizedBasicAttributesWithUnknownValues,
 ): attributes is AttributesToBeSaved {
   const value = attributes._objClass;
   if (!value) return false;

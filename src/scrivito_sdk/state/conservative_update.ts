@@ -28,7 +28,7 @@ export function conservativeUpdate<T>(current: T | undefined, next: T): T {
 
 function updateValue<T extends PrimitiveValue>(
   current: T | undefined,
-  next: T
+  next: T,
 ): T {
   if (current === next) {
     // performance optimization, avoid deep comparison
@@ -42,7 +42,7 @@ function updateValue<T extends PrimitiveValue>(
   if (isPrimitiveValueArray(next)) {
     return updateArray(
       isPrimitiveValueArray(current) ? current : undefined,
-      next
+      next,
     );
   }
 
@@ -50,14 +50,14 @@ function updateValue<T extends PrimitiveValue>(
 }
 
 function isPrimitiveValueArray(
-  value: PrimitiveValue
+  value: PrimitiveValue,
 ): value is PrimitiveValue[] {
   return Array.isArray(value);
 }
 
 function updateObject<T extends PrimitiveObject>(
   current: T | undefined,
-  next: T
+  next: T,
 ): T {
   const updated: Partial<T> = {};
   let foundDiff = false;
@@ -101,7 +101,7 @@ function updateObject<T extends PrimitiveObject>(
 
 function updateArray<T extends S[], S extends PrimitiveValue>(
   current: T | undefined,
-  next: T
+  next: T,
 ): T {
   let foundDiff = false;
 

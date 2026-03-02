@@ -1,5 +1,5 @@
 // @rewire
-import * as React from 'react';
+import type { ReactElement, Ref } from 'react';
 
 import { shouldContentTagsForEmptyAttributesBeSkipped } from 'scrivito_sdk/app_support/content_tags_for_empty_attributes';
 import {
@@ -34,7 +34,7 @@ import {
 } from 'scrivito_sdk/realm';
 
 export interface ContentTagProps<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   tag?: string;
   content: Obj<AttrDefs> | Widget<AttrDefs> | null;
@@ -43,15 +43,15 @@ export interface ContentTagProps<
   widgetProps?: WidgetProps;
   renderEmptyAttribute?: boolean;
 
-  ref?: React.Ref<Element>;
+  ref?: Ref<Element>;
 
   [key: string]: unknown;
 }
 
 type ContentTagType = {
   <AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
-    props: ContentTagProps<AttrDefs>
-  ): React.ReactElement | null;
+    props: ContentTagProps<AttrDefs>,
+  ): ReactElement | null;
 
   /** @internal */
   displayName?: string;
@@ -74,7 +74,7 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
     ...customProps
   }: ContentTagWithElementCallbackProps) {
     const isInPlaceEditingEnabled = useInPlaceEditing(
-      unwrapAppClass(content)?.obj() ?? null
+      unwrapAppClass(content)?.obj() ?? null,
     );
 
     if (!content) return null;
@@ -112,7 +112,7 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
 
     const AttributeValueWithEditing = importFrom(
       'reactEditing',
-      'AttributeValueWithEditing'
+      'AttributeValueWithEditing',
     );
 
     const AttributeValueComponent = AttributeValueWithEditing || AttributeValue;
@@ -124,8 +124,8 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
     ) {
       throwNextTick(
         new ArgumentError(
-          'The object provided via "dataContext" prop must not contain keys "_class" and "_id"'
-        )
+          'The object provided via "dataContext" prop must not contain keys "_class" and "_id"',
+        ),
       );
 
       return attributeValue;
@@ -142,7 +142,7 @@ export const ContentTagWithElementCallback: ComponentType<ContentTagWithElementC
 
 function getField<AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
   content: Obj<AttrDefs> | Widget<AttrDefs>,
-  attribute: keyof AttrDefs & string
+  attribute: keyof AttrDefs & string,
 ) {
   const field = Schema.basicFieldFor(content, attribute);
   if (field) return field;
@@ -150,22 +150,22 @@ function getField<AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
   throwNextTick(
     new ArgumentError(
       'Component "Scrivito.ContentTag" received prop "attribute" with invalid value: ' +
-        `Attribute "${attribute}" is not defined for content specified in prop "content".`
-    )
+        `Attribute "${attribute}" is not defined for content specified in prop "content".`,
+    ),
   );
 
   return null;
 }
 
 function getFieldsForComparison<T extends CmsAttributeType>(
-  field: BasicField<T>
+  field: BasicField<T>,
 ) {
   return getComparisonRange().map((objSpace) => field.inObjSpace(objSpace));
 }
 
 function assertWidgetPropsAreAllowed<T extends CmsAttributeType>(
   widgetProps: WidgetProps | undefined,
-  field: BasicField<T>
+  field: BasicField<T>,
 ) {
   if (!widgetProps) return;
 
@@ -174,8 +174,8 @@ function assertWidgetPropsAreAllowed<T extends CmsAttributeType>(
   if (!(fieldType === 'widget' || fieldType === 'widgetlist')) {
     throwNextTick(
       new ArgumentError(
-        'The prop "widgetProps" is only allowed for widget and widgetlist attributes'
-      )
+        'The prop "widgetProps" is only allowed for widget and widgetlist attributes',
+      ),
     );
   }
 }
@@ -183,7 +183,7 @@ function assertWidgetPropsAreAllowed<T extends CmsAttributeType>(
 function shouldComparisonBeSkipped<T extends CmsAttributeType>(
   fromField: BasicField<T> | null,
   toField?: BasicField<T> | null,
-  renderEmptyAttribute?: boolean
+  renderEmptyAttribute?: boolean,
 ) {
   return (
     isEmptyValue(fromField?.get()) &&
@@ -194,12 +194,12 @@ function shouldComparisonBeSkipped<T extends CmsAttributeType>(
 
 /** @public */
 export const ContentTag = connect(
-  ContentTagWithElementCallback
+  ContentTagWithElementCallback,
 ) as ContentTagType;
 ContentTag.displayName = 'Scrivito.ContentTag';
 
 function isDataContextObject(
-  dataContext: DataContext | DataScope | DataItem | Obj | null | undefined
+  dataContext: DataContext | DataScope | DataItem | Obj | null | undefined,
 ): dataContext is DataContext {
   return (
     !!dataContext &&

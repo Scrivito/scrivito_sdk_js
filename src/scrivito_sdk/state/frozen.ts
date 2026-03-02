@@ -11,7 +11,7 @@ const frozenContextContainer = new ContextContainer<
 
 export function withFrozenState<T>(
   frozenContext: FrozenContext,
-  fn: () => T
+  fn: () => T,
 ): T {
   return frozenContextContainer.runWith(frozenContext, fn);
 }
@@ -31,12 +31,12 @@ export function failIfFrozen(operationName: string): void {
 export class StateChangePreventedError extends ScrivitoError {
   constructor(
     readonly frozenContext: FrozenContext,
-    readonly operationName: string
+    readonly operationName: string,
   ) {
     super(
       `${operationName} is not permitted ` +
         `inside '${frozenContext.contextName}'. ` +
-        (frozenContext.message || '')
+        (frozenContext.message || ''),
     );
   }
 }

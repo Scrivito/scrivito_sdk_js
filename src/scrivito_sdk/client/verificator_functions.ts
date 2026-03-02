@@ -3,7 +3,7 @@ import { Deferred, loadJs, onReset } from 'scrivito_sdk/common';
 
 export type VerificationForChallenge = (
   data: unknown,
-  capture: VerificationCapture
+  capture: VerificationCapture,
 ) => void;
 
 export interface Verification {
@@ -24,7 +24,7 @@ let registry: {
 
 export function fetch(
   verificatorId: string,
-  verificatorUrl: string
+  verificatorUrl: string,
 ): Promise<VerificationForChallenge> {
   let deferred = registry[verificatorId];
 
@@ -42,7 +42,7 @@ export function setupRegisterVerificator() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any)._scrivitoRegisterVerificator = (
     verificatorId: string,
-    verificatorFunction: VerificationForChallenge
+    verificatorFunction: VerificationForChallenge,
   ) => registry[verificatorId].resolve(verificatorFunction);
 }
 

@@ -55,7 +55,7 @@ export type LoadableData<T> = InstanceType<typeof LoadableDataImpl<T>>;
 const singletonStore = new OfflineStore('singleton');
 
 export function createLoadableData<T>(
-  params: LoadableDataParams<T>
+  params: LoadableDataParams<T>,
 ): LoadableData<T> {
   return new LoadableDataImpl(params);
 }
@@ -82,7 +82,7 @@ export class LoadableDataImpl<LoadableType> {
       return createLoaderProcess(
         this,
         params.loader ? { ...params, offlineEntry } : params,
-        this.stateContainer
+        this.stateContainer,
       );
     };
   }
@@ -188,7 +188,7 @@ export class LoadableDataImpl<LoadableType> {
   }
 
   private checkIfAvailableState(
-    state: LoadableState<LoadableType> | undefined
+    state: LoadableState<LoadableType> | undefined,
   ): state is StateAvailable<LoadableType> {
     return this.checkIfAvailableMeta(state?.meta);
   }
@@ -210,7 +210,7 @@ export class LoadableDataImpl<LoadableType> {
 
     LoadHandler.notifyDataRequired(
       loadingStateFromMeta(meta, this.invalidation),
-      this
+      this,
     );
 
     throwIfErrorMeta(meta);
@@ -225,7 +225,7 @@ export class LoadableDataImpl<LoadableType> {
 
 function loadingStateFromMeta(
   meta: LoadableMeta,
-  invalidation?: InvalidationCallback
+  invalidation?: InvalidationCallback,
 ) {
   if (metaHasBeenInvalidated(meta, invalidation)) return 'outdated';
 

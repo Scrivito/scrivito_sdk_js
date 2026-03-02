@@ -7,7 +7,7 @@ export type ErrorResponse = {
 };
 
 export function isErrorResponse(
-  parsedResponse: unknown
+  parsedResponse: unknown,
 ): parsedResponse is ErrorResponse {
   if (!isObject(parsedResponse)) return false;
 

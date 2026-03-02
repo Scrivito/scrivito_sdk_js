@@ -25,7 +25,7 @@ export class TokenAuthorizationError extends ScrivitoError {
     readonly message: string,
     readonly code: string | undefined,
     readonly httpStatus: number,
-    readonly requestDetails: ClientErrorRequestDetails = {}
+    readonly requestDetails: ClientErrorRequestDetails = {},
   ) {
     super(message);
   }
@@ -37,7 +37,7 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
   constructor(private fetchToken: () => Promise<string | null>) {}
 
   async authorize(
-    request: (auth?: string) => Promise<Response>
+    request: (auth?: string) => Promise<Response>,
   ): Promise<Response> {
     return this.authorizeAbstract<Response>(
       async (auth: string | undefined) => {
@@ -79,12 +79,12 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
             details: authenticationFailed.details,
           },
         };
-      }
+      },
     );
   }
 
   async authorizeAbstract<T>(
-    callback: (auth?: string) => Promise<ResultOrFail<T>>
+    callback: (auth?: string) => Promise<ResultOrFail<T>>,
   ): Promise<T> {
     const backoff = new ExponentialBackoff();
     let fetchedTokenBefore = false;
@@ -105,7 +105,7 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
                 error.message,
                 error.code,
                 error.httpStatus,
-                error.requestDetails
+                error.requestDetails,
               );
             }
 

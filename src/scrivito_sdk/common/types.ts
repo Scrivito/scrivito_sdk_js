@@ -38,7 +38,7 @@ export function deserializeAsDate(value: unknown): Date | null {
 }
 
 export function parseStringToDate(
-  dateString: string | null | undefined
+  dateString: string | null | undefined,
 ): Date | null {
   if (!dateString) return null;
 
@@ -68,7 +68,7 @@ export function formatDateToString(date: Date): string {
   const yearMonth = `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}`;
   const dateHours = `${pad(date.getUTCDate())}${pad(date.getUTCHours())}`;
   const minutesSeconds = `${pad(date.getUTCMinutes())}${pad(
-    date.getUTCSeconds()
+    date.getUTCSeconds(),
   )}`;
   return `${yearMonth}${dateHours}${minutesSeconds}`;
 }
@@ -82,7 +82,7 @@ function pad(num: number): string | number {
 }
 
 export function convertToInteger(
-  valueFromBackend: number | string
+  valueFromBackend: number | string,
 ): number | null {
   const intValue = parseInt(valueFromBackend.toString(), 10);
 

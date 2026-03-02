@@ -5,7 +5,7 @@ export interface QueryParameters {
 export function buildQueryString(params: QueryParameters): string {
   return Object.entries(params)
     .flatMap(([key, v]) =>
-      (Array.isArray(v) ? v : [v]).map((value) => encodeParam(key, value))
+      (Array.isArray(v) ? v : [v]).map((value) => encodeParam(key, value)),
     )
     .join('&');
 }
@@ -21,7 +21,7 @@ export function parseQueryToQueryParameters(query: string): QueryParameters {
   const result: QueryParameters = {};
 
   for (const [encodedKey, encodedValue] of new URLSearchParams(
-    normalizedQuery
+    normalizedQuery,
   )) {
     const key = decodeParam(encodedKey);
     const value = decodeParamValue(encodedValue);

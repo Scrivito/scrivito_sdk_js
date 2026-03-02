@@ -47,7 +47,7 @@ type _WidgetJsonPatch = {
 export function threeWayMergeObjs(
   mainVersion: ObjJson,
   otherVersion: ObjJson | undefined,
-  baseVersion: ObjJson | undefined
+  baseVersion: ObjJson | undefined,
 ): ObjJson;
 
 // if all three versions are potentially undefined,
@@ -55,13 +55,13 @@ export function threeWayMergeObjs(
 export function threeWayMergeObjs(
   mainVersion: ObjJson | undefined,
   otherVersion: ObjJson | undefined,
-  baseVersion: ObjJson | undefined
+  baseVersion: ObjJson | undefined,
 ): ObjJson | undefined;
 
 export function threeWayMergeObjs(
   mainVersion: ObjJson | undefined,
   otherVersion: ObjJson | undefined,
-  baseVersion: ObjJson | undefined
+  baseVersion: ObjJson | undefined,
 ): ObjJson | undefined {
   // if one version is "unknown", there's no merge to be done
   if (otherVersion === undefined) return mainVersion;
@@ -85,7 +85,7 @@ export function threeWayMergeObjs(
 
 export function patchObjJson(
   primitiveObj: ObjJson,
-  patch: ObjJsonPatch
+  patch: ObjJsonPatch,
 ): // Usually, required keys are not removed, therefore the same flavour of ObjJson is returned.
 // If required keys were removed, then the patch hopefully adds all required keys for a new
 // flavour of ObjJson. To express that in a way  that typescript believes it automatically is
@@ -94,14 +94,14 @@ ObjJson;
 
 export function patchObjJson(
   primitiveObj: ObjJson,
-  patch: ObjJsonPatch
+  patch: ObjJsonPatch,
 ): ObjJsonPatch {
   return patchJson(primitiveObj, patch);
 }
 
 export function diffObjJson(
   fromObjJson: ObjJson | null | undefined,
-  toObjJson: ObjJson
+  toObjJson: ObjJson,
 ): ObjJsonPatch {
   if (!fromObjJson) return toObjJson;
 
@@ -110,14 +110,14 @@ export function diffObjJson(
 
 export function diffWidgetJson(
   fromWidgetJson: WidgetJson,
-  toWidgetJson: WidgetJson
+  toWidgetJson: WidgetJson,
 ): WidgetJsonPatch {
   return diffJson(fromWidgetJson, toWidgetJson);
 }
 
 function diffMaybeWidgetJson(
   fromWidgetJson: WidgetJson | undefined,
-  toWidgetJson: WidgetJson | undefined
+  toWidgetJson: WidgetJson | undefined,
 ): WidgetJsonPatch | null {
   if (!fromWidgetJson) return toWidgetJson || null;
 
@@ -128,7 +128,7 @@ function diffMaybeWidgetJson(
 
 export function hasObjContentDiff(
   objJsonA: ObjJson,
-  objJsonB: ObjJson
+  objJsonB: ObjJson,
 ): boolean {
   const patch = diffObjJson(objJsonA, objJsonB);
 
@@ -137,7 +137,7 @@ export function hasObjContentDiff(
 
 export function hasWidgetContentDiff(
   widgetJsonBefore: WidgetJson,
-  widgetJsonAfter: WidgetJson
+  widgetJsonAfter: WidgetJson,
 ): boolean {
   const patch = diffWidgetJson(widgetJsonBefore, widgetJsonAfter);
 
@@ -163,8 +163,8 @@ function eachKeyFrom<T1, T2>(
     key: string,
     valueInA: T1 | undefined,
     valueInB: T2 | undefined,
-    isAttributeOfPatch: boolean
-  ) => void
+    isAttributeOfPatch: boolean,
+  ) => void,
 ) {
   const keysOfA = Object.keys(objectA);
   const keysOfB = new Set(Object.keys(objectB));
@@ -178,7 +178,7 @@ function eachKeyFrom<T1, T2>(
 
 function buildUpdatedWidgetPool(
   widgetPool: WidgetPoolJson,
-  widgetPoolPatch: WidgetPoolJsonPatch | undefined
+  widgetPoolPatch: WidgetPoolJsonPatch | undefined,
 ): WidgetPoolJson {
   if (!widgetPoolPatch || isEmpty(widgetPoolPatch)) return widgetPool;
 
@@ -203,7 +203,7 @@ function buildUpdatedWidgetPool(
       } else {
         updatedWidgetPool[id] = widget;
       }
-    }
+    },
   );
 
   return updatedWidgetPool;
@@ -212,7 +212,7 @@ function buildUpdatedWidgetPool(
 function buildPatchEntry<T, Resolution>(
   valueA: T | undefined,
   valueB: T | undefined,
-  fnHandleBoth: () => Resolution
+  fnHandleBoth: () => Resolution,
 ): T | RemoveThisKey | Resolution {
   // Note: the return type `undefined` is actually impossible,
   // because `valueA` and `valueB` are not both undefined
@@ -224,7 +224,7 @@ function buildPatchEntry<T, Resolution>(
 
 function buildWidgetPoolPatch(
   widgetPoolA: WidgetPoolJson | undefined,
-  widgetPoolB: WidgetPoolJson | undefined
+  widgetPoolB: WidgetPoolJson | undefined,
 ): WidgetPoolJsonPatch | undefined {
   if (widgetPoolA === widgetPoolB) return undefined;
 
@@ -251,7 +251,7 @@ function diffJson(fromJson: ObjJson, toJson: ObjJson): ObjJsonPatch;
 function diffJson(fromJson: WidgetJson, toJson: WidgetJson): WidgetJsonPatch;
 function diffJson(
   fromJson: ObjJson | WidgetJson,
-  toJson: ObjJson | WidgetJson
+  toJson: ObjJson | WidgetJson,
 ): ObjJsonPatch | WidgetJsonPatch {
   const patch: ObjJsonPatch | WidgetJsonPatch = {};
 
@@ -259,7 +259,7 @@ function diffJson(
     if (attribute === '_widget_pool') {
       const widgetPoolPatch = buildWidgetPoolPatch(
         valueInA as WidgetPoolJson | undefined,
-        valueInB as WidgetPoolJson | undefined
+        valueInB as WidgetPoolJson | undefined,
       );
 
       if (!isEmpty(widgetPoolPatch)) {
@@ -281,7 +281,7 @@ function diffJson(
 
 function patchWidgetJson(
   primitiveWidget: WidgetJson,
-  patch: WidgetJsonPatch
+  patch: WidgetJsonPatch,
 ): WidgetJson {
   return patchJson(primitiveWidget, patch);
 }
@@ -289,11 +289,11 @@ function patchWidgetJson(
 function patchJson(primitiveObj: ObjJson, patch: ObjJsonPatch): ObjJson;
 function patchJson(
   primitiveObj: WidgetJson,
-  patch: WidgetJsonPatch
+  patch: WidgetJsonPatch,
 ): WidgetJson;
 function patchJson(
   primitiveObj: ObjJson | WidgetJson,
-  patch: ObjJsonPatch | WidgetJsonPatch
+  patch: ObjJsonPatch | WidgetJsonPatch,
 ) {
   const updatedPrimitiveObj: Partial<ObjJson> | Partial<WidgetJson> = {};
 
@@ -304,7 +304,7 @@ function patchJson(
       if (attribute === '_widget_pool') {
         updatedPrimitiveObj._widget_pool = buildUpdatedWidgetPool(
           (objValue as WidgetPoolJson | null | undefined) || {},
-          patchValue as WidgetPoolJson | undefined
+          patchValue as WidgetPoolJson | undefined,
         );
       } else if (isAttributeOfPatch) {
         const simplePatchValue = patchValue as Exclude<
@@ -317,7 +317,7 @@ function patchJson(
       } else {
         updatedPrimitiveObj[attribute] = objValue;
       }
-    }
+    },
   );
 
   return updatedPrimitiveObj;

@@ -2,7 +2,7 @@ import { FinishedWithOptionalValueIterator as Iterator } from 'scrivito_sdk/comm
 
 export function extractFromIterator<T>(
   iterator: Iterator<T>,
-  size: number | undefined
+  size: number | undefined,
 ) {
   const result = [];
 

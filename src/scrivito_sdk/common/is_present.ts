@@ -2,7 +2,7 @@
  * (helps typescript infer the typing when used with higher-order functions)
  */
 export function isPresent<T>(
-  maybeValue: T | null | undefined
+  maybeValue: T | null | undefined,
 ): maybeValue is T {
   return maybeValue !== null && maybeValue !== undefined;
 }

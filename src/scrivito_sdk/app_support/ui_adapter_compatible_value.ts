@@ -26,12 +26,12 @@ type OmitByValue<T, ValueType> = Pick<
 type PrimitiveValue<T> = T extends ObjSearch
   ? ObjSearchParams
   : T extends string | number | boolean | null | Date
-  ? T
-  : T extends unknown[]
-  ? PrimitiveArrayValue<T>
-  : T extends ObjectValue
-  ? OmitByValue<PrimitiveObjectValue<T>, never>
-  : undefined;
+    ? T
+    : T extends unknown[]
+      ? PrimitiveArrayValue<T>
+      : T extends ObjectValue
+        ? OmitByValue<PrimitiveObjectValue<T>, never>
+        : undefined;
 
 type PrimitiveObjectValue<T> = {
   [key in keyof T]: PrimitiveEntryValue<T[key]>;

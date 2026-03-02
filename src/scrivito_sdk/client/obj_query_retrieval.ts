@@ -70,12 +70,12 @@ interface BackendQueryResponse {
 
 export async function retrieveObjQuery(
   workspaceId: string,
-  params: BackendQueryRetrievalParams
+  params: BackendQueryRetrievalParams,
 ): Promise<QueryResponse> {
   try {
     const { results, total, continuation, objs } = (await cmsRestApi.get(
       `workspaces/${workspaceId}/objs/search`,
-      params
+      params,
     )) as BackendQueryResponse;
 
     return {

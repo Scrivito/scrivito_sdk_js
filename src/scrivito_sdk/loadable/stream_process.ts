@@ -19,7 +19,7 @@ export class StreamProcess<LoadableType> implements LoaderProcess {
     private readonly stateContainer: StateContainer<
       LoadableState<LoadableType>
     >,
-    private readonly stream: StateStream<LoadableType>
+    private readonly stream: StateStream<LoadableType>,
   ) {}
 
   notifyDataRequired() {
@@ -50,13 +50,13 @@ export class StreamProcess<LoadableType> implements LoaderProcess {
       if (!this.isStreamOpen()) return;
 
       this.stateContainer.set(state);
-    }
+    },
   );
 
   private enqueueStreamRequired = collectAndSchedule(
     nextTick,
     (streamRequired: boolean) =>
-      streamRequired ? this.ensureStreamIsOpen() : this.ensureStreamIsClosed()
+      streamRequired ? this.ensureStreamIsOpen() : this.ensureStreamIsClosed(),
   );
 
   private isStreamOpen() {
@@ -66,7 +66,7 @@ export class StreamProcess<LoadableType> implements LoaderProcess {
   private ensureStreamIsOpen() {
     if (!this.subscription) {
       this.subscription = this.stream.subscribe((state) =>
-        this.scheduleNextState(state)
+        this.scheduleNextState(state),
       );
     }
   }

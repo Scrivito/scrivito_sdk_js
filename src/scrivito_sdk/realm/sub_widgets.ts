@@ -20,7 +20,7 @@ export function subWidgets(content: BasicObj | BasicWidget): BasicWidget[] {
 
       return Array.prototype.concat(
         memo,
-        ...widgets.map((widget) => [widget, ...subWidgets(widget)])
+        ...widgets.map((widget) => [widget, ...subWidgets(widget)]),
       );
     }
 

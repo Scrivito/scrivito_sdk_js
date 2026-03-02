@@ -26,7 +26,7 @@ let filters: ContentBrowserFilters | undefined | undefined;
 let filtersBuilder: FilterBuilder | undefined;
 
 export function getContentBrowserConfiguration(
-  validObjClasses?: string[]
+  validObjClasses?: string[],
 ): ContentBrowserFilterDefinition | undefined {
   if (filtersBuilder) {
     const context: FilterContext = {};
@@ -44,7 +44,7 @@ export function getContentBrowserConfiguration(
 
 /** @public */
 export function configureContentBrowser(
-  configuration: Readonly<Partial<Configuration>>
+  configuration: Readonly<Partial<Configuration>>,
 ): void {
   if (!uiAdapter) {
     return;
@@ -65,20 +65,20 @@ export function configureContentBrowser(
     const baseQuery = baseFilter.query;
     if (baseQuery) {
       uiAdapter.configureContentBrowser(
-        uiAdapterCompatibleValue({ baseQuery })
+        uiAdapterCompatibleValue({ baseQuery }),
       );
     }
   }
 }
 
 function isFilterBuilder(
-  maybeFilterBuilder: ContentBrowserFilters | FilterBuilder | undefined
+  maybeFilterBuilder: ContentBrowserFilters | FilterBuilder | undefined,
 ): maybeFilterBuilder is FilterBuilder {
   return typeof maybeFilterBuilder === 'function';
 }
 
 function copyWithAbsoluteUrls(
-  contentBrowserFilters: ContentBrowserFilters | undefined
+  contentBrowserFilters: ContentBrowserFilters | undefined,
 ): typeof contentBrowserFilters {
   return mapValues(contentBrowserFilters, ({ ...item }) => {
     const { icon, options } = item;

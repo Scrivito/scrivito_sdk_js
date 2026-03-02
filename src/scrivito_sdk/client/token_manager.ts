@@ -8,7 +8,7 @@ import { computeCacheKey, onReset } from 'scrivito_sdk/common';
 let providerCache: Record<string, TokenAuthorizationProvider | undefined> = {};
 
 export function getTokenProvider(
-  params: BrowserTokenParams
+  params: BrowserTokenParams,
 ): TokenAuthorizationProvider {
   const cacheKey = computeCacheKey(params);
 
@@ -31,7 +31,7 @@ export function getTokenProvider(
 /** for test purposes */
 export function injectBrowserToken(
   params: BrowserTokenParams,
-  token: string
+  token: string,
 ): void {
   getTokenProvider(params).injectToken(token);
 }

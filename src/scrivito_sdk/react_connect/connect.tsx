@@ -1,4 +1,12 @@
-import * as React from 'react';
+import {
+  type ComponentClass,
+  type ReactElement,
+  type ReactNode,
+  createContext,
+  createElement,
+  useEffect,
+  useRef,
+} from 'react';
 
 import {
   ArgumentError,
@@ -39,32 +47,32 @@ export interface ConnectOptions<LoadingProps> {
 /** @public */
 export function connect<Props extends LoadingProps, LoadingProps>(
   component: SyncFunctionComponent<Props>,
-  options?: ConnectOptions<LoadingProps>
+  options?: ConnectOptions<LoadingProps>,
 ): SyncFunctionComponent<Props>;
 
 /** @public */
 export function connect<Props extends LoadingProps, LoadingProps>(
-  component: React.ComponentClass<Props>,
-  options?: ConnectOptions<LoadingProps>
-): React.ComponentClass<Props>;
+  component: ComponentClass<Props>,
+  options?: ConnectOptions<LoadingProps>,
+): ComponentClass<Props>;
 
 /** @public */
 export function connect<Props extends LoadingProps, LoadingProps>(
   component: ComponentType<Props>,
-  options?: ConnectOptions<LoadingProps>
+  options?: ConnectOptions<LoadingProps>,
 ): ComponentType<Props>;
 
 /** @internal */
 export function connect<
   Props extends LoadingProps,
-  LoadingProps extends object
+  LoadingProps extends object,
 >(
   component: ComponentType<Props>,
-  options?: ConnectOptions<LoadingProps>
-): SyncFunctionComponent<Props> | React.ComponentClass<Props> {
+  options?: ConnectOptions<LoadingProps>,
+): SyncFunctionComponent<Props> | ComponentClass<Props> {
   if (typeof component !== 'function') {
     throw new ArgumentError(
-      'Scrivito.connect expects either a plain function or a subclass of React.Component'
+      'Scrivito.connect expects either a plain function or a subclass of React.Component',
     );
   }
 
@@ -83,23 +91,23 @@ interface ConnectedComponent {
 }
 
 type ConnectedComponentClass<Props> = ConnectedComponent &
-  React.ComponentClass<Props>;
+  ComponentClass<Props>;
 type ConnectedFunctionComponent<Props> = ConnectedComponent &
   SyncFunctionComponent<Props>;
 
 function connectClassComponent<
   Props extends LoadingProps,
-  LoadingProps extends object
+  LoadingProps extends object,
 >(
-  classComponent: React.ComponentClass<Props>,
-  options?: ConnectOptions<LoadingProps>
+  classComponent: ComponentClass<Props>,
+  options?: ConnectOptions<LoadingProps>,
 ): ConnectedComponentClass<Props> {
   const connectedComponent = class extends classComponent {
     static _isScrivitoConnectedComponent: boolean = true;
 
     private _scrivitoPrivateConnector: ComponentConnector;
 
-    private _scrivitoRenderWhileLoading: React.ReactNode;
+    private _scrivitoRenderWhileLoading: ReactNode;
 
     constructor(props: Props) {
       super(props);
@@ -107,11 +115,11 @@ function connectClassComponent<
       const initialLoaderComponent = options?.loading;
 
       const _scrivitoRenderWhileLoading = initialLoaderComponent
-        ? () => React.createElement(initialLoaderComponent, this.props)
+        ? () => createElement(initialLoaderComponent, this.props)
         : this._scrivitoRenderWhileLoading;
 
       this._scrivitoPrivateConnector = new ComponentConnector(
-        Object.assign(this, { _scrivitoRenderWhileLoading })
+        Object.assign(this, { _scrivitoRenderWhileLoading }),
       );
 
       const { componentDidMount, componentWillUnmount } = this;
@@ -166,10 +174,10 @@ function connectClassComponent<
 
 function connectFunctionComponent<
   Props extends LoadingProps,
-  LoadingProps extends object
+  LoadingProps extends object,
 >(
   functionalComponent: SyncFunctionComponent<Props>,
-  options?: ConnectOptions<LoadingProps>
+  options?: ConnectOptions<LoadingProps>,
 ): ConnectedFunctionComponent<Props> {
   const initialLoaderComponent = options?.loading;
 
@@ -178,8 +186,8 @@ function connectFunctionComponent<
     useConnectedRender(
       () => functionalComponent(props),
       initialLoaderComponent
-        ? () => React.createElement(initialLoaderComponent, props)
-        : undefined
+        ? () => createElement(initialLoaderComponent, props)
+        : undefined,
     );
 
   connectedComponent._isScrivitoConnectedComponent = true;
@@ -190,12 +198,12 @@ function connectFunctionComponent<
 }
 
 function useConnectedRender(
-  originalRender: () => React.ReactNode,
-  initialLoaderComponent?: () => React.ReactNode
-): React.ReactElement {
+  originalRender: () => ReactNode,
+  initialLoaderComponent?: () => ReactNode,
+): ReactElement {
   const forceUpdate = useForceUpdate();
 
-  const connectorRef = React.useRef<ComponentConnector | undefined>(undefined);
+  const connectorRef = useRef<ComponentConnector | undefined>(undefined);
   if (!connectorRef.current) {
     connectorRef.current = new ComponentConnector({
       forceUpdate,
@@ -207,7 +215,7 @@ function useConnectedRender(
 
   connector.updateLoaderComponent(initialLoaderComponent);
 
-  React.useEffect(() => {
+  useEffect(() => {
     connector.componentDidMount();
 
     return () => connector.componentWillUnmount();
@@ -218,7 +226,7 @@ function useConnectedRender(
 }
 
 function isConnectedComponent<Props>(
-  component: ComponentType<Props>
+  component: ComponentType<Props>,
 ): component is ConnectedComponentClass<Props> {
   return (
     (component as ConnectedComponentClass<Props>)
@@ -231,7 +239,7 @@ interface ConnectContext {
   awakeness?: Streamable<boolean>;
 }
 
-export const ReactConnectContext = React.createContext<ConnectContext>({
+export const ReactConnectContext = createContext<ConnectContext>({
   hierarchyLevel: 0,
 });
 
@@ -251,7 +259,7 @@ class ComponentConnector {
     this.loadingSubscriber = new LoadingSubscriber();
   }
 
-  updateLoaderComponent(loaderComponent?: () => React.ReactNode) {
+  updateLoaderComponent(loaderComponent?: () => ReactNode) {
     this.component._scrivitoRenderWhileLoading = loaderComponent;
   }
 
@@ -262,11 +270,11 @@ class ComponentConnector {
 
     this.stateSubscriber = createSyncSubscriber(
       () => withUnfrozenState(() => this.component.forceUpdate()),
-      this.context.hierarchyLevel
+      this.context.hierarchyLevel,
     );
 
     this.awakeSubscription = this.context.awakeness?.subscribe((awake) =>
-      this.stateSubscriber?.setAwake(awake)
+      this.stateSubscriber?.setAwake(awake),
     );
 
     if (this.lastRenderedState) this.subscribeState(this.lastRenderedState);
@@ -278,7 +286,7 @@ class ComponentConnector {
     this.stateSubscriber = undefined;
   }
 
-  render(originalRender: () => React.ReactNode) {
+  render(originalRender: () => ReactNode) {
     const reactElement = this.renderLoadingAware(originalRender);
 
     return (
@@ -311,7 +319,7 @@ class ComponentConnector {
     return this.childContext;
   }
 
-  private renderLoadingAware(originalRender: () => React.ReactNode) {
+  private renderLoadingAware(originalRender: () => ReactNode) {
     if (isCurrentlyCapturing()) {
       // we are inside a capture - no need to load anything ourselves
       // (this usually means the caller is prerendering, e.g. renderToString)
@@ -320,8 +328,8 @@ class ComponentConnector {
 
     const captured = capture(() =>
       trackStateAccess(() =>
-        runWithPerformanceConstraint(() => runWithFrozenState(originalRender))
-      )
+        runWithPerformanceConstraint(() => runWithFrozenState(originalRender)),
+      ),
     );
 
     this.lastRenderedState = captured;
@@ -356,7 +364,7 @@ class ComponentConnector {
     this.loadingSubscriber.unsubscribe();
   }
 
-  private handleLoading(preliminaryResult: React.ReactNode) {
+  private handleLoading(preliminaryResult: ReactNode) {
     if (this.component._scrivitoRenderWhileLoading && !this.wasComponentShown) {
       return this.component._scrivitoRenderWhileLoading();
     }
@@ -381,20 +389,18 @@ class ComponentConnector {
 
 interface ConnectorComponentInferface {
   forceUpdate(): void;
-  _scrivitoRenderWhileLoading?: () => React.ReactNode;
+  _scrivitoRenderWhileLoading?: () => ReactNode;
 }
 
-function runWithFrozenState(
-  originalRender: () => React.ReactNode
-): React.ReactNode {
+function runWithFrozenState(originalRender: () => ReactNode): ReactNode {
   const run = runAndCatchErrorsWhileLoading(() =>
     withFrozenState(
       {
         contextName: 'React.Component#render',
         message: 'Use one of the React lifecycle hooks.',
       },
-      originalRender
-    )
+      originalRender,
+    ),
   );
 
   return run.success ? run.result : null;

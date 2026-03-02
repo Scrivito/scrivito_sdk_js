@@ -10,6 +10,7 @@ import {
   registerExternalDataClass,
 } from 'scrivito_sdk/data_integration';
 import { createRestApiSchema } from 'scrivito_sdk/data_integration/create_rest_api_schema';
+import { addDataClassPrefix } from 'scrivito_sdk/data_integration/data_class_name_prefix';
 import { LazyAsyncDataClassTitle } from 'scrivito_sdk/data_integration/data_class_schema';
 import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
@@ -43,38 +44,60 @@ type ProvideDataClassParams =
 
 /** @public */
 export function provideDataClass(
+  params: FuncOrAsyncOrSync<
+    | ProvideDataClassParamsWithRestApi
+    | ({
+        connection: AsyncOrSync<Partial<DataConnection>>;
+      } & CommonProvideDataClassParams)
+  >,
+): DataClass;
+
+/** @internal */
+export function provideDataClass(
+  params: FuncOrAsyncOrSync<ProvideDataClassParamsWithUncheckedConnection>,
+): DataClass;
+
+/** @public */
+export function provideDataClass(
   name: string,
   params: FuncOrAsyncOrSync<
     | ProvideDataClassParamsWithRestApi
     | ({
         connection: AsyncOrSync<Partial<DataConnection>>;
       } & CommonProvideDataClassParams)
-  >
+  >,
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
   name: string,
-  params: FuncOrAsyncOrSync<ProvideDataClassParamsWithUncheckedConnection>
+  params: FuncOrAsyncOrSync<ProvideDataClassParamsWithUncheckedConnection>,
 ): DataClass;
 
 /** @internal */
 export function provideDataClass(
-  name: string,
-  params: FuncOrAsyncOrSync<ProvideDataClassParams>
+  nameOrParams: string | FuncOrAsyncOrSync<ProvideDataClassParams>,
+  maybeParams?: FuncOrAsyncOrSync<ProvideDataClassParams>,
 ): DataClass {
+  const name = typeof nameOrParams === 'string' ? nameOrParams : null;
+  const params = typeof nameOrParams === 'string' ? maybeParams! : nameOrParams;
+
   if (name === 'Obj') {
     throw new ArgumentError('"Obj" is not a valid data class name');
   }
 
-  if (getRealmClass(name)) {
-    throw new ArgumentError(`Class with name "${name}" already exists`);
+  if (name) {
+    assertValidDataIdentifier(name);
+
+    if (getRealmClass(name)) {
+      throw new ArgumentError(`Class with name "${name}" already exists`);
+    }
   }
 
-  assertValidDataIdentifier(name);
-  registerExternalDataClass(name, mapLazyAsync(params, desugar));
+  const internalName = addDataClassPrefix(name);
+  registerExternalDataClass(internalName, mapLazyAsync(params, desugar));
 
-  return new ExternalDataClass(name);
+  return new ExternalDataClass(internalName);
 }
 
 async function desugar(params: ProvideDataClassParams) {
@@ -85,7 +108,7 @@ async function desugar(params: ProvideDataClassParams) {
       connection: Promise.resolve(createRestApiConnectionForClass(apiClient)),
       schema: createRestApiSchema(
         { attributes: params.attributes, title: params.title },
-        apiClient
+        apiClient,
       ),
       refetchOnWindowFocus: params.refetchOnWindowFocus,
     };

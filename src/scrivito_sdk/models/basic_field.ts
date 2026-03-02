@@ -27,7 +27,7 @@ export class BasicField<Type extends CmsAttributeType> {
   constructor(
     private readonly container: BasicObj | BasicWidget,
     private readonly attributeName: string,
-    private readonly typeInfo: BasicTypeInfo<Type>
+    private readonly typeInfo: BasicTypeInfo<Type>,
   ) {
     if (container instanceof BasicWidget) this.widgetId = container.id();
   }
@@ -39,7 +39,7 @@ export class BasicField<Type extends CmsAttributeType> {
   getValueOrConnection(): ContentValueOrConnection<Type> {
     return this.container.getValueOrConnection(
       this.attributeName,
-      this.typeInfo
+      this.typeInfo,
     );
   }
 

@@ -11,7 +11,7 @@ export function hasDecodeImg(img: HTMLImageElement): boolean {
 // For test purpose only
 export async function decodeImg(
   img: HTMLImageElement,
-  imageUrl: string
+  imageUrl: string,
 ): Promise<HTMLImageElement> {
   if (!hasDecodeImg(img)) {
     throw new Error('Browser does not support decode!');
@@ -30,7 +30,7 @@ export function imgDecode(img: HTMLImageElement) {
 // For test purpose only
 export function loadImg(
   img: HTMLImageElement,
-  imageUrl: string
+  imageUrl: string,
 ): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     img.onload = () => resolve(img);

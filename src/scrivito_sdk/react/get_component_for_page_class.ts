@@ -8,14 +8,14 @@ import { AttributeDefinitions, Obj } from 'scrivito_sdk/realm';
 
 /** @public */
 export interface PageComponentProps<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   page: Obj<AttrDefs>;
   params?: QueryParameters;
 }
 
 export function getComponentForPageClass(
-  pageClassName: string
+  pageClassName: string,
 ): React.ComponentType<PageComponentProps> | undefined {
   const pageComponent = getComponentForAppClass(pageClassName);
 
@@ -25,7 +25,7 @@ export function getComponentForPageClass(
 
   throwNextTick(
     new ArgumentError(
-      `No component registered for obj class "${pageClassName}"`
-    )
+      `No component registered for obj class "${pageClassName}"`,
+    ),
   );
 }

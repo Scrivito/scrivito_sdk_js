@@ -5,7 +5,7 @@ export interface Position {
 
 export function clickPositionWithinElement<T extends HTMLElement>(
   clickEvent: React.MouseEvent<T>,
-  element: T
+  element: T,
 ): Position {
   const { clientX: mouseX, clientY: mouseY } = clickEvent;
   const { left: elementX, top: elementY } = element.getBoundingClientRect();

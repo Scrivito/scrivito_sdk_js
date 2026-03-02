@@ -67,7 +67,7 @@ function generatePermalinkPath(obj: BasicObj, siteId: string) {
 
 function recognizePermalink(
   path: string,
-  siteId: string
+  siteId: string,
 ): BasicObj | undefined {
   const scope = currentAppSpace().and(restrictToSiteAndGlobal(siteId));
 

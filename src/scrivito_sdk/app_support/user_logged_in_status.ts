@@ -12,7 +12,7 @@ export function startPollingLoggedInUser(): void {
 }
 
 export async function fetchLoggedInUser(
-  params?: EnsureUserIsLoggedInParams
+  params?: EnsureUserIsLoggedInParams,
 ): Promise<void> {
   await JrRestApi.get(await getUserInfoPath(), params);
 }

@@ -67,7 +67,7 @@ export async function initializeSdk() {
     setBinaryHandler(uiAdapterClient);
     setCopyObjHandler(uiAdapterClient);
     setUrlResolutionHandler(
-      (url) => uiAdapterClient.getResolvedUrl(url) || null
+      (url) => uiAdapterClient.getResolvedUrl(url) || null,
     );
     setupWriteMonitorNotification(() => undefined);
     setContentUpdateHandler(uiAdapterClient);

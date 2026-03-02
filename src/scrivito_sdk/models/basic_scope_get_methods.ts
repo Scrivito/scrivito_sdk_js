@@ -13,7 +13,7 @@ export function getObjFrom(scope: ObjScope, id: string): BasicObj | null {
 
 export function getObjIncludingUnavailableFrom(
   scope: ObjScope,
-  id: string
+  id: string,
 ): BasicObj | ObjUnavailable {
   return scope.get(id);
 }
@@ -26,7 +26,7 @@ export function getObjIncludingUnavailableFrom(
 export function getObjBy(
   scope: ObjScope,
   attribute: string,
-  value: string
+  value: string,
 ): BasicObj | null {
   const query = scope.search().and(attribute, 'equals', value);
   const foundObj = query.first();
@@ -41,7 +41,7 @@ export function getObjBy(
 export function getAllObjsByValueFrom(
   scope: ObjScope,
   attribute: string,
-  value: string
+  value: string,
 ): BasicObj[] {
   return scope
     .search()

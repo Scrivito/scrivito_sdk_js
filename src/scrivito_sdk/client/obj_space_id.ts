@@ -25,19 +25,19 @@ export function isEmptySpaceId(spaceId: ObjSpaceId): spaceId is EmptySpaceId {
 }
 
 export function isWorkspaceObjSpaceId(
-  spaceId: ObjSpaceId
+  spaceId: ObjSpaceId,
 ): spaceId is WorkspaceObjSpaceId {
   return spaceId[0] === 'workspace';
 }
 
 export function isRevisionObjSpaceId(
-  spaceId: ObjSpaceId
+  spaceId: ObjSpaceId,
 ): spaceId is RevisionObjSpaceId {
   return spaceId[0] === 'revision';
 }
 
 export function isObjSpaceId(
-  maybeObjSpaceId: ObjSpaceId | unknown
+  maybeObjSpaceId: ObjSpaceId | unknown,
 ): maybeObjSpaceId is ObjSpaceId {
   if (!Array.isArray(maybeObjSpaceId)) return false;
 
@@ -55,7 +55,7 @@ export function asBackendObjSpaceId(objSpaceId: ObjSpaceId): string {
 
 export function objSpaceIdsEqual(
   objSpaceId1: ObjSpaceId,
-  objSpaceId2: ObjSpaceId
+  objSpaceId2: ObjSpaceId,
 ): boolean {
   return objSpaceId1[0] === objSpaceId2[0] && objSpaceId1[1] === objSpaceId2[1];
 }

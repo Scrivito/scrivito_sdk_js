@@ -21,7 +21,7 @@ let offlineMode: boolean | undefined;
 
 export function initOfflineMode(): void {
   setOfflineMode(
-    (async () => determineOfflineMode(await getConfiguration()))()
+    (async () => determineOfflineMode(await getConfiguration()))(),
   );
 }
 
@@ -30,7 +30,7 @@ export function enterOfflineMode(): void {
   if (!isInOfflineMode()) {
     if (!isOfflineStoreEnabled()) {
       throw new ScrivitoError(
-        'Offline store has not been enabled: Forgot to call Scrivito.enabledOfflineStore()?'
+        'Offline store has not been enabled: Forgot to call Scrivito.enabledOfflineStore()?',
       );
     }
 
@@ -56,7 +56,7 @@ export function leaveOfflineMode(): void {
 export function isInOfflineMode(): boolean {
   if (offlineMode === undefined) {
     throw new ScrivitoError(
-      'Offline mode has not been allowed in the editing config'
+      'Offline mode has not been allowed in the editing config',
     );
   }
 

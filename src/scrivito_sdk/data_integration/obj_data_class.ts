@@ -61,12 +61,16 @@ const SUPPORTED_ATTRIBUTE_TYPES = [
 export const SUBPAGES_CHILD_ORDER_LIMIT = 200;
 
 export class ObjDataClass extends DataClass {
-  constructor(private readonly _name: string) {
+  constructor(private readonly _internalName: string) {
     super();
   }
 
+  internalName(): string {
+    return this._internalName;
+  }
+
   name(): string {
-    return this._name;
+    return this._internalName;
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
@@ -87,7 +91,7 @@ export class ObjDataClass extends DataClass {
   }
 
   attributeDefinitions(): NormalizedDataAttributeDefinitions {
-    return attributeDefinitions(this._name);
+    return attributeDefinitions(this._internalName);
   }
 }
 
@@ -99,7 +103,7 @@ export class ObjDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
     private readonly _attributeName?: string,
-    private readonly _params: NormalizedDataScopeParams = {}
+    private readonly _params: NormalizedDataScopeParams = {},
   ) {
     super();
   }
@@ -108,14 +112,18 @@ export class ObjDataScope extends DataScope {
     return this._dataClass;
   }
 
+  internalDataClassName(): string {
+    return this._dataClass.internalName();
+  }
+
   dataClassName(): string {
-    return this._dataClass.name();
+    return this._dataClass.internalName();
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
     if (this.isBuiltInClass()) {
       throw new ArgumentError(
-        'Cannot create data items using the built-in Obj class'
+        'Cannot create data items using the built-in Obj class',
       );
     }
 
@@ -123,8 +131,8 @@ export class ObjDataScope extends DataScope {
       this.objClassScope(),
       prepareAttributes(
         { ...attributes, ...this.attributesFromFilters(this._params.filters) },
-        this._dataClass.name()
-      )
+        this._dataClass.internalName(),
+      ),
     );
 
     // Important: Wait for saving to finish
@@ -154,7 +162,7 @@ export class ObjDataScope extends DataScope {
     ) {
       objs = parentObj
         .sortByChildOrder(
-          search.take(Math.max(limit, SUBPAGES_CHILD_ORDER_LIMIT))
+          search.take(Math.max(limit, SUBPAGES_CHILD_ORDER_LIMIT)),
         )
         .slice(0, limit);
     } else {
@@ -196,12 +204,12 @@ export class ObjDataScope extends DataScope {
       {
         filters: combineFilters(
           this._params.filters,
-          this.normalizeFilters(filters)
+          this.normalizeFilters(filters),
         ),
         search: combineSearches(this._params.search, search),
         order: order || this._params.order,
         limit: limit ?? this._params.limit,
-      }
+      },
     );
   }
 
@@ -246,7 +254,7 @@ export class ObjDataScope extends DataScope {
       .filter((name) => !!name)
       .reduce(
         (search, name) => this.applyFilter(search, name, filters[name]),
-        initialSearch
+        initialSearch,
       );
   }
 
@@ -257,13 +265,13 @@ export class ObjDataScope extends DataScope {
   }
 
   private isBuiltInClass() {
-    return isBuiltInClass(this.dataClassName());
+    return isBuiltInClass(this.internalDataClassName());
   }
 
   private applyFilter(
     search: BasicObjSearch,
     attributeName: string,
-    operatorSpec: OperatorSpec | AndOperatorSpec
+    operatorSpec: OperatorSpec | AndOperatorSpec,
   ): BasicObjSearch {
     const { operator, value } = operatorSpec;
 
@@ -271,7 +279,7 @@ export class ObjDataScope extends DataScope {
       return value.reduce(
         (currentSearch, spec) =>
           this.applyFilter(currentSearch, attributeName, spec),
-        search
+        search,
       );
     }
 
@@ -349,7 +357,7 @@ export class ObjDataItem extends DataItem {
 
   constructor(
     private readonly _dataClass: DataClass,
-    private readonly _dataId: string
+    private readonly _dataId: string,
   ) {
     super();
   }
@@ -362,8 +370,12 @@ export class ObjDataItem extends DataItem {
     return this._dataClass;
   }
 
+  internalDataClassName(): string {
+    return this._dataClass.internalName();
+  }
+
   dataClassName(): string {
-    return this._dataClass.name();
+    return this._dataClass.internalName();
   }
 
   obj(): Obj {
@@ -404,7 +416,7 @@ export class ObjDataItem extends DataItem {
 
   update(attributes: DataItemAttributes): Promise<void> {
     const obj = this.getOrThrow();
-    obj.update(prepareAttributes(attributes, this.dataClassName()));
+    obj.update(prepareAttributes(attributes, this.internalDataClassName()));
 
     return obj.finishSaving();
   }
@@ -455,7 +467,7 @@ function getSchema(className: string) {
 
 function objClassScope(dataClass: DataClass) {
   const dataScope = currentObjScope();
-  const dataClassName = dataClass.name();
+  const dataClassName = dataClass.internalName();
 
   return dataClassName === 'Obj'
     ? dataScope
@@ -475,7 +487,7 @@ function prepareAttributes(attributes: DataItemAttributes, className: string) {
 
       if (!typeInfo) {
         throw new ArgumentError(
-          `Attribute ${attributeName} of class ${className} does not exist`
+          `Attribute ${attributeName} of class ${className} does not exist`,
         );
       }
 
@@ -483,7 +495,7 @@ function prepareAttributes(attributes: DataItemAttributes, className: string) {
 
       if (!SUPPORTED_ATTRIBUTE_TYPES.includes(attributeType)) {
         throw new ArgumentError(
-          `Attribute ${attributeName} of class ${className} has unsupported type ${attributeType}`
+          `Attribute ${attributeName} of class ${className} has unsupported type ${attributeType}`,
         );
       }
 
@@ -502,7 +514,7 @@ function prepareAttributes(attributes: DataItemAttributes, className: string) {
 function getReference(
   obj: BasicObj,
   attributeName: string,
-  attributeConfig?: { validClasses: readonly string[] }
+  attributeConfig?: { validClasses: readonly string[] },
 ) {
   if (!attributeConfig) return null;
 
@@ -522,7 +534,7 @@ function getReference(
 
 function prepareReferenceValue(
   attributeValue: unknown,
-  attributeConfig?: { validClasses: readonly string[] }
+  attributeConfig?: { validClasses: readonly string[] },
 ) {
   return attributeValue instanceof DataItem &&
     attributeValue.dataClassName() === getValidReferenceClass(attributeConfig)
@@ -547,7 +559,7 @@ function attributeDefinitions(dataClassName: string) {
 
   Object.keys(normalizedAttributes).forEach((attributeName) => {
     const dataAttributeDefinition = toDataAttributeDefinition(
-      normalizedAttributes[attributeName]
+      normalizedAttributes[attributeName],
     );
 
     if (dataAttributeDefinition) {

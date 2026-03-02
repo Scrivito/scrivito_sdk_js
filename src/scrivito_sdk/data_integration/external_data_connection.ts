@@ -34,12 +34,12 @@ export interface UncheckedDataConnection {
 
 /** @public */
 export type IndexCallback = (
-  params: DataConnectionIndexParams
+  params: DataConnectionIndexParams,
 ) => Promise<IndexResult | DataConnectionError>;
 
 /** @internal */
 type UncheckedIndexCallback = (
-  params: DataConnectionIndexParams
+  params: DataConnectionIndexParams,
 ) => Promise<unknown>;
 
 /** @public */
@@ -47,7 +47,7 @@ export type GetCallback = (id: string) => Promise<unknown | null>;
 
 /** @public */
 export type CreateCallback = (
-  data: ExternalData
+  data: ExternalData,
 ) => Promise<DataConnectionResultItem>;
 
 type UncheckedCreateCallback = (data: ExternalData) => Promise<unknown>;
@@ -55,7 +55,7 @@ type UncheckedCreateCallback = (data: ExternalData) => Promise<unknown>;
 /** @public */
 export type UpdateCallback = (
   id: string,
-  data: ExternalData
+  data: ExternalData,
 ) => Promise<unknown>;
 
 /** @public */
@@ -119,7 +119,7 @@ export interface ResultItemData {
 function assertValidNumericId(id: number) {
   if (id < 0 || !Number.isSafeInteger(id)) {
     throw new ArgumentError(
-      `Numeric IDs must be a non-negative "safe" integer: ${id.toString()}`
+      `Numeric IDs must be a non-negative "safe" integer: ${id.toString()}`,
     );
   }
 }
@@ -188,12 +188,12 @@ function parseIndexResult(result: unknown): NormalIndexResult {
   if (typeof continuation === 'string') {
     if (continuation.length === 0) {
       throw new ArgumentError(
-        'Continuation of an index result must be a non-empty string, null or undefined'
+        'Continuation of an index result must be a non-empty string, null or undefined',
       );
     }
   } else if (isPresent(continuation)) {
     throw new ArgumentError(
-      'Continuation of an index result must be a string, null or undefined'
+      'Continuation of an index result must be a string, null or undefined',
     );
   }
 
@@ -205,13 +205,13 @@ function parseIndexResult(result: unknown): NormalIndexResult {
 }
 
 function parseCount(
-  resultCount: IndexResultCount | undefined
+  resultCount: IndexResultCount | undefined,
 ): number | undefined {
   if (resultCount === undefined || resultCount === null) return;
 
   if (typeof resultCount !== 'number' && typeof resultCount !== 'string') {
     throw new ArgumentError(
-      'Count of an index result must be a non-negative integer, null or undefined'
+      'Count of an index result must be a non-negative integer, null or undefined',
     );
   }
 
@@ -219,14 +219,14 @@ function parseCount(
   if (count >= 0 && isValidInteger(count)) return count;
 
   throw new ArgumentError(
-    'Count of an index result must be a non-negative integer'
+    'Count of an index result must be a non-negative integer',
   );
 }
 
 function assertValidDataId(dataId: string): asserts dataId is DataId {
   if (!isValidDataId(dataId)) {
     throw new ArgumentError(
-      'Strings in results of an index result must be valid data IDs'
+      'Strings in results of an index result must be valid data IDs',
     );
   }
 }
@@ -241,7 +241,7 @@ export function resetExternalDataConnections(): void {
 
 export function setExternalDataConnection(
   name: string,
-  partialConnection: LazyAsync<Partial<UncheckedDataConnection>>
+  partialConnection: LazyAsync<Partial<UncheckedDataConnection>>,
 ): void {
   const connection = anticipatedDataConnection(partialConnection, name);
 
@@ -256,7 +256,7 @@ export function hasExternalDataConnection(name: string): boolean {
 }
 
 function getExternalDataConnection(
-  name: string
+  name: string,
 ): UncheckedDataConnection | undefined {
   const connections = connectionsState.get();
   if (connections) return connections[name];
@@ -268,7 +268,7 @@ export function getExternalDataConnectionNames(): string[] {
 }
 
 function getExternalDataConnectionOrThrow(
-  name: string
+  name: string,
 ): UncheckedDataConnection {
   const connection = getExternalDataConnection(name);
 
@@ -281,7 +281,7 @@ function getExternalDataConnectionOrThrow(
 
 export async function getViaDataConnection(
   name: string,
-  id: string
+  id: string,
 ): Promise<NormalExternalData | null> {
   if (!isValidDataId(id)) {
     throw new ArgumentError(`Invalid data ID "${id}"`);
@@ -313,13 +313,13 @@ export async function getViaDataConnection(
 
 function filterValidDataIdentifiers(data: object) {
   return Object.fromEntries(
-    Object.entries(data).filter(([key]) => isValidDataIdentifier(key))
+    Object.entries(data).filter(([key]) => isValidDataIdentifier(key)),
   );
 }
 
 export async function indexViaDataConnection(
   name: string,
-  params: DataConnectionIndexParams
+  params: DataConnectionIndexParams,
 ): Promise<NormalIndexResult> {
   const result = await getExternalDataConnectionOrThrow(name).index(params);
 
@@ -330,7 +330,7 @@ export async function indexViaDataConnection(
 
 export async function createViaDataConnection(
   name: string,
-  data: ExternalData
+  data: ExternalData,
 ): Promise<NormalExternalData> {
   const response = await getExternalDataConnectionOrThrow(name).create(data);
 
@@ -345,11 +345,11 @@ export async function createViaDataConnection(
 export async function updateViaDataConnection(
   name: string,
   id: string,
-  data: ExternalData
+  data: ExternalData,
 ): Promise<ExternalData> {
   const response = await getExternalDataConnectionOrThrow(name).update(
     id,
-    data
+    data,
   );
 
   const updatedData = response ?? {};
@@ -365,7 +365,7 @@ export async function updateViaDataConnection(
 
 export function deleteViaDataConnection(
   name: string,
-  id: string
+  id: string,
 ): Promise<unknown> {
   return getExternalDataConnectionOrThrow(name).delete(id);
 }

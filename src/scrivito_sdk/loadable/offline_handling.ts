@@ -32,7 +32,7 @@ onReset(() => {
 
 export function applyOfflineHandling<T>(
   loadable: LoadableData<T>,
-  params: ParamsWithLoader<T>
+  params: ParamsWithLoader<T>,
 ): {
   loader: () => Promise<T>;
   onChange?: () => void;
@@ -63,7 +63,7 @@ export function applyOfflineHandling<T>(
 
 async function storeIntoEntry<T>(
   loadable: LoadableData<T>,
-  offlineEntry: StoreEntry<T>
+  offlineEntry: StoreEntry<T>,
 ) {
   try {
     offlineEntry.write(loadable.getOrThrow());
@@ -78,7 +78,7 @@ async function loadFromEntry<T>(offlineEntry: StoreEntry<T>) {
   const data = await offlineEntry.read();
   if (data === undefined) {
     throw new NotAvailableOfflineError(
-      `missing: ${offlineEntry.debugIdentifier()})}`
+      `missing: ${offlineEntry.debugIdentifier()})}`,
     );
   }
   return data;

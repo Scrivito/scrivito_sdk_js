@@ -1,7 +1,7 @@
-import * as React from 'react';
+import type { ComponentType } from 'react';
 
 export function displayNameFromComponent<Props>(
-  component: React.ComponentType<Props>
+  component: ComponentType<Props>,
 ): string {
   return component.displayName || component.name;
 }

@@ -17,7 +17,7 @@ export type PlacementModification = null | 'new' | 'deleted';
 export function getPlacementModificationInfos(
   field: BasicField<'widgetlist'>,
   comparisonRange: ComparisonRange,
-  containerPlacementModification: PlacementModification
+  containerPlacementModification: PlacementModification,
 ): PlacementModificationInfo[] {
   const widgets = field.get();
 
@@ -38,7 +38,7 @@ export function getPlacementModificationInfos(
       field,
       comparisonRange,
       widgetlistModification,
-      widgetId
+      widgetId,
     );
 
     if (info) infos.push(info);
@@ -55,13 +55,13 @@ function getPlacementModificationInfo(
   field: BasicField<'widgetlist'>,
   comparisonRange: ComparisonRange,
   widgetlistModification: WidgetlistModification,
-  widgetId: string
+  widgetId: string,
 ): PlacementModificationInfo | null {
   if (widgetlistModification === '-') {
     const vanishedWidget = getVanishedWidget(
       comparisonRange,
       field.obj().id(),
-      widgetId
+      widgetId,
     );
 
     if (!vanishedWidget) return null;
@@ -85,7 +85,7 @@ function getPlacementModificationInfo(
 function getVanishedWidget(
   [from]: ComparisonRange,
   objId: string,
-  widgetId: string
+  widgetId: string,
 ) {
   const fromObj = getObjFrom(objSpaceScopeExcludingDeleted(from), objId);
   return fromObj?.widget(widgetId);

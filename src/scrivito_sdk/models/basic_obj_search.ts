@@ -101,14 +101,14 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
 
   static fromParams(
     workspaceId: string,
-    params: ObjSearchParams
+    params: ObjSearchParams,
   ): BasicObjSearch {
     return new BasicObjSearch(objSpaceFor(workspaceId), params);
   }
 
   constructor(
     private readonly _objSpaceId: ObjSpaceId,
-    params?: ObjSearchParams
+    params?: ObjSearchParams,
   ) {
     this._query = params ? [...params.query] : [];
     this._boost = params?.boost || [];
@@ -124,14 +124,14 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
     field: SearchField,
     operator: SearchOperator,
     value: BasicSearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): this;
 
   and(
     attributeOrSearch: SearchField | BasicObjSearch,
     operator?: SearchOperator,
     value?: BasicSearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): this {
     if (attributeOrSearch instanceof BasicObjSearch) {
       this._query = [...this._query, ...attributeOrSearch._query];
@@ -141,7 +141,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
       }
       if (value === undefined) {
         throw new ArgumentError(
-          'Missing value to search (specify "null" for missing)'
+          'Missing value to search (specify "null" for missing)',
         );
       }
       const field = attributeOrSearch;
@@ -161,7 +161,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
   andNot(
     attribute: SearchField,
     operator: SearchOperator,
-    value: BasicSearchValue
+    value: BasicSearchValue,
   ): this {
     const subQuery = buildSubQuery(attribute, operator, value);
     assertNegatableOperator(operator);
@@ -193,7 +193,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
     field: SearchField,
     operator: SearchOperator,
     value: BasicSearchValue,
-    factor: number
+    factor: number,
   ): this {
     const subQuery = buildSubQuery(field, operator, value);
     this._boost.push({ condition: [subQuery], factor });
@@ -209,7 +209,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
   order(attributes: OrderAttributes): this;
   order(
     attributeOrAttributes: string | OrderAttributes,
-    direction?: 'asc' | 'desc'
+    direction?: 'asc' | 'desc',
   ): this {
     const attributes: OrderAttributes = Array.isArray(attributeOrAttributes)
       ? attributeOrAttributes
@@ -272,11 +272,11 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
     const objDataQuery = getObjQuery(
       this.objSpaceId(),
       this.queryParams(),
-      this.getBatchSize()
+      this.getBatchSize(),
     );
 
     return transformContinueIterable(objDataQuery, (iterator) =>
-      iterator.map((data) => new BasicObj(data))
+      iterator.map((data) => new BasicObj(data)),
     );
   }
 
@@ -291,7 +291,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
       this.objSpaceId(),
       prefix,
       { attributes, limit },
-      this.queryParams()
+      this.queryParams(),
     );
   }
 
@@ -306,7 +306,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
       this.objSpaceId(),
       underscoreAttribute(attribute),
       facetOptions,
-      this._query
+      this._query,
     );
     return facetQuery
       .result()
@@ -359,7 +359,7 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
 function buildSubQuery(
   fieldInput: SearchField,
   operatorInput: SearchOperator,
-  valueInput: BasicSearchValue
+  valueInput: BasicSearchValue,
 ): Query {
   const field = convertAttribute(fieldInput);
   const operator = convertOperator(operatorInput);
@@ -372,8 +372,8 @@ function assertBoostableOperator(operator: SearchOperator) {
   if (!BOOSTABLE_OPERATORS.includes(operator)) {
     throw new ArgumentError(
       `Boosting operator "${operator}" is invalid. ${explainValidOperators(
-        BOOSTABLE_OPERATORS
-      )}`
+        BOOSTABLE_OPERATORS,
+      )}`,
     );
   }
 }
@@ -382,15 +382,15 @@ function assertNegatableOperator(operator: SearchOperator) {
   if (!NEGATABLE_OPERATORS.includes(operator)) {
     throw new ArgumentError(
       `Negating operator "${operator}" is invalid. ${explainValidOperators(
-        NEGATABLE_OPERATORS
-      )}`
+        NEGATABLE_OPERATORS,
+      )}`,
     );
   }
 }
 
 function convertValue(
   value: BasicSearchValue,
-  operator: BackendSearchOperator
+  operator: BackendSearchOperator,
 ) {
   if (Array.isArray(value)) {
     return value.map((v) => convertSingleValue(v, operator));
@@ -401,7 +401,7 @@ function convertValue(
 
 function convertSingleValue(
   value: SingleBasicSearchValue,
-  operator: BackendSearchOperator
+  operator: BackendSearchOperator,
 ): SingleBackendSearchValue {
   if (isDate(value)) return convertDate(value, operator);
 
@@ -430,7 +430,7 @@ function roundToNearestMinute(value: Date) {
 function convertOperator(operator: SearchOperator): BackendSearchOperator {
   if (!OPERATORS.includes(operator)) {
     throw new ArgumentError(
-      `Operator "${operator}" is invalid. ${explainValidOperators(OPERATORS)}`
+      `Operator "${operator}" is invalid. ${explainValidOperators(OPERATORS)}`,
     );
   }
 
@@ -463,7 +463,7 @@ function underscoreBoostAttributes(boost: FieldBoost) {
 function underscoreAttribute(attributeName: string) {
   if (!isCamelCase(attributeName)) {
     throw new ArgumentError(
-      `Attribute name "${attributeName}" is not camel case.`
+      `Attribute name "${attributeName}" is not camel case.`,
     );
   }
 
@@ -472,7 +472,7 @@ function underscoreAttribute(attributeName: string) {
 
 function normalizeOrderByItem(
   attribute: string,
-  direction: 'asc' | 'desc' | undefined = 'asc'
+  direction: 'asc' | 'desc' | undefined = 'asc',
 ): OrderByItem {
   const sortBy = underscoreAttribute(attribute);
   return [sortBy, direction];
@@ -481,17 +481,17 @@ function normalizeOrderByItem(
 const VALID_FACET_OPTIONS = ['limit', 'includeObjs'];
 
 function assertValidFacetOptions(
-  options: FacetQueryOptions
+  options: FacetQueryOptions,
 ): FacetQueryOptions {
   const invalidOptions = Object.keys(options).filter(
-    (key) => !VALID_FACET_OPTIONS.includes(key)
+    (key) => !VALID_FACET_OPTIONS.includes(key),
   );
   if (invalidOptions.length) {
     throw new ArgumentError(
       'Invalid facet options: ' +
         `${prettyPrint(
-          invalidOptions
-        )}. Valid options: ${VALID_FACET_OPTIONS.join()}`
+          invalidOptions,
+        )}. Valid options: ${VALID_FACET_OPTIONS.join()}`,
     );
   }
   return options;

@@ -15,7 +15,7 @@ export interface OpenInNewWindow {
 }
 
 export function isOpenInNewWindow(
-  target: LinkTarget
+  target: LinkTarget,
 ): target is OpenInNewWindow {
   if (target) {
     return !!(target as OpenInNewWindow).openInNewWindow;
@@ -35,7 +35,7 @@ export function findClickTarget(e: MouseEvent<HTMLElement>): LinkTarget {
 function findLinkTarget(
   currentNode: Node,
   outermostNode: Node,
-  isModifier: boolean
+  isModifier: boolean,
 ): LinkTarget {
   if (currentNode === outermostNode) {
     return null;

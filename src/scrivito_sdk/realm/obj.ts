@@ -74,7 +74,7 @@ type ReferenceMapping = (refId: string) => string | undefined;
 
 /** @public */
 export interface ObjClass<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   /** @internal */
   readonly _scrivitoPrivateSchema?: Schema;
@@ -99,21 +99,21 @@ export interface ObjClass<
     attribute: SearchField,
     operator: SearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch<AttrDefs>;
 
   whereFullTextOf(
     attribute: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch<AttrDefs>;
 
   create(attributes?: ObjAttributes<AttrDefs>): Obj<AttrDefs>;
 
   createFromFile(
     file: File,
-    attributes?: ObjAttributes<AttrDefs>
+    attributes?: ObjAttributes<AttrDefs>,
   ): Promise<Obj<AttrDefs>>;
 
   onAllSites(): SiteContext<AttrDefs>;
@@ -132,14 +132,14 @@ function currentSiteContext(objClass: ObjClass) {
 
 function getSiteContext(
   objClass: ObjClass,
-  transformation: ScopeTransformation
+  transformation: ScopeTransformation,
 ) {
   return getBasicSiteContext(objClass, transformation).toSiteContext();
 }
 
 function getBasicSiteContext(
   objClass: ObjClass,
-  transformation: ScopeTransformation
+  transformation: ScopeTransformation,
 ) {
   const scope = objSpaceScope(currentObjSpaceId()).and(transformation);
 
@@ -183,7 +183,7 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
     attribute: SearchField,
     operator: SearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch {
     if (areStrictSearchOperatorsEnabled()) {
       checkNonFullTextSearchOperator('Obj.where', operator, 'js-sdk/Obj-where');
@@ -196,31 +196,31 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
     attribute: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch {
     checkFullTextSearchOperator(
       'Obj.whereFullTextOf',
       operator,
-      'js-sdk/Obj-whereFullTextOf'
+      'js-sdk/Obj-whereFullTextOf',
     );
 
     return currentSiteContext(this).whereFullTextOf(
       attribute,
       operator,
       value,
-      boost
+      boost,
     );
   }
 
   static create(
-    attributes?: Partial<ObjAttributes<AttributeDefinitions>>
+    attributes?: Partial<ObjAttributes<AttributeDefinitions>>,
   ): Obj {
     return currentSiteContext(this).create(attributes);
   }
 
   static createFromFile(
     file: File,
-    attributes?: Partial<ObjAttributes<AttributeDefinitions>>
+    attributes?: Partial<ObjAttributes<AttributeDefinitions>>,
   ): Promise<Obj> {
     return currentSiteContext(this).createFromFile(file, attributes);
   }
@@ -249,7 +249,7 @@ export class Obj<AttrDefs extends AttributeDefinitions = AttributeDefinitions> {
   }
 
   get<AttributeName extends keyof AttrDefs & string>(
-    attributeName: AttributeName
+    attributeName: AttributeName,
   ): AttributeValueOf<AttrDefs, AttributeName> {
     assertValidAttributeName(attributeName);
 

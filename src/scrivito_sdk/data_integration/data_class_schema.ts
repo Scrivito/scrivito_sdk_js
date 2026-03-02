@@ -49,7 +49,7 @@ export type NormalizedDataAttributeDefinition =
 export type NormalizedDataAttributeDefinitionWithConfig = {
   [T in keyof NormalizedDataAttributeConfigs]: [
     T,
-    NormalizedDataAttributeConfigs[T]
+    NormalizedDataAttributeConfigs[T],
   ];
 }[keyof NormalizedDataAttributeConfigs];
 
@@ -111,7 +111,7 @@ type LocalizedEnumValueConfig = { value: string; title: string };
 type DataClassName = string;
 
 function isDataAttributeType(
-  attributeType: unknown
+  attributeType: unknown,
 ): attributeType is DataAttributeType {
   return (
     typeof attributeType === 'string' &&
@@ -129,7 +129,7 @@ function isDataAttributeType(
 
 export function registerDataClassSchema(
   dataClassName: string,
-  schema: LazyAsyncDataClassSchema
+  schema: LazyAsyncDataClassSchema,
 ): void {
   const schemata = { ...schemataState.get() };
   schemata[dataClassName] = normalizeLazyAsync(schema);
@@ -139,7 +139,7 @@ export function registerDataClassSchema(
 }
 
 export function getDataAttributeDefinitions(
-  dataClassName: string
+  dataClassName: string,
 ): DataAttributeDefinitions | undefined {
   return schemataCollection.get(dataClassName).get()?.attributes;
 }
@@ -149,11 +149,11 @@ export function getDataClassTitle(dataClassName: string): DataClassTitle {
 }
 
 export function getNormalizedDataAttributeDefinitions(
-  dataClassName: string
+  dataClassName: string,
 ): NormalizedDataAttributeDefinitions {
   return mapValues(
     getDataAttributeDefinitions(dataClassName),
-    normalizeDataAttributeDefinition
+    normalizeDataAttributeDefinition,
   );
 }
 
@@ -207,7 +207,7 @@ function getCounter() {
 }
 
 function normalizeDataAttributeDefinition(
-  definition: DataAttributeDefinition
+  definition: DataAttributeDefinition,
 ): NormalizedDataAttributeDefinition {
   if (typeof definition === 'string') return [definition, {}];
 
@@ -220,7 +220,7 @@ function normalizeDataAttributeDefinition(
 function normalizeEnumValueConfig({ title, values }: EnumAttributeConfig) {
   const config: LocalizedEnumAttributeConfig = {
     values: values.map((value) =>
-      typeof value === 'string' ? { value, title: value } : value
+      typeof value === 'string' ? { value, title: value } : value,
     ),
   };
 
@@ -230,7 +230,7 @@ function normalizeEnumValueConfig({ title, values }: EnumAttributeConfig) {
 }
 
 export function extractDataClassSchemaResponse(
-  input: unknown
+  input: unknown,
 ): DataClassSchemaResponse {
   const response: DataClassSchemaResponse = {
     attributes: {},
@@ -239,7 +239,7 @@ export function extractDataClassSchemaResponse(
 
   if (!isObject(input)) {
     logError(
-      `Invalid schema response: expected an object: ${JSON.stringify(input)}`
+      `Invalid schema response: expected an object: ${JSON.stringify(input)}`,
     );
 
     return response;
@@ -247,7 +247,7 @@ export function extractDataClassSchemaResponse(
 
   if (!('attributes' in input)) {
     logError(
-      `Invalid schema response: no "attributes" key: ${JSON.stringify(input)}`
+      `Invalid schema response: no "attributes" key: ${JSON.stringify(input)}`,
     );
 
     return response;
@@ -263,15 +263,15 @@ export function extractDataClassSchemaResponse(
 }
 
 function extractDataAttributeDefinitions(
-  input: unknown
+  input: unknown,
 ): DataAttributeDefinitions {
   const attributes: DataAttributeDefinitions = {};
 
   if (!isObject(input)) {
     logError(
       `Invalid schema response: expected "attributes" to be an object: ${JSON.stringify(
-        input
-      )}`
+        input,
+      )}`,
     );
 
     return attributes;
@@ -282,7 +282,7 @@ function extractDataAttributeDefinitions(
       logSchemaError(
         attributeName,
         maybeDefinition,
-        'Key "_id" is not allowed in schema attributes'
+        'Key "_id" is not allowed in schema attributes',
       );
     } else {
       if (typeof maybeDefinition === 'string') {
@@ -292,13 +292,13 @@ function extractDataAttributeDefinitions(
           logSchemaError(
             attributeName,
             maybeDefinition,
-            'Unknown attribute type.'
+            'Unknown attribute type.',
           );
         }
       } else if (Array.isArray(maybeDefinition)) {
         const definition = extractDefinitionWithConfig(
           attributeName,
-          maybeDefinition
+          maybeDefinition,
         );
 
         if (definition) {
@@ -308,7 +308,7 @@ function extractDataAttributeDefinitions(
         logSchemaError(
           attributeName,
           maybeDefinition,
-          'Expected an array or a string'
+          'Expected an array or a string',
         );
       }
     }
@@ -318,7 +318,7 @@ function extractDataAttributeDefinitions(
 }
 
 function isDataAttributeDefinitionWithOptionalConfig(
-  definition: unknown
+  definition: unknown,
 ): definition is DataAttributeDefinitionWithOptionalConfig {
   return (
     typeof definition === 'string' &&
@@ -328,13 +328,13 @@ function isDataAttributeDefinitionWithOptionalConfig(
 
 function extractDefinitionWithConfig(
   attributeName: string,
-  definition: unknown[]
+  definition: unknown[],
 ): DataAttributeDefinitionWithConfig | undefined {
   if (definition.length < 2) {
     logSchemaError(
       attributeName,
       definition,
-      'Expected an array with two elements.'
+      'Expected an array with two elements.',
     );
 
     return;
@@ -356,7 +356,7 @@ function extractDefinitionWithConfig(
       return extractLocalizedAttributeConfig(
         attributeName,
         attributeType,
-        maybeConfig
+        maybeConfig,
       );
   }
 }
@@ -364,7 +364,7 @@ function extractDefinitionWithConfig(
 function extractLocalizedAttributeConfig(
   attributeName: string,
   attributeType: Exclude<DataAttributeType, 'enum' | 'reference'>,
-  maybeConfig: unknown
+  maybeConfig: unknown,
 ): DataAttributeDefinitionWithConfig | undefined {
   const config = isLocalizedAttributeConfig(maybeConfig)
     ? maybeConfig
@@ -376,7 +376,7 @@ function extractLocalizedAttributeConfig(
 }
 
 export function isEnumAttributeConfig(
-  config: unknown
+  config: unknown,
 ): config is EnumAttributeConfig {
   return (
     isObject(config) &&
@@ -386,14 +386,14 @@ export function isEnumAttributeConfig(
     config.values.every(
       (valueOrConfig) =>
         (typeof valueOrConfig === 'string' && valueOrConfig.length) ||
-        isLocalizedEnumValueConfig(valueOrConfig)
+        isLocalizedEnumValueConfig(valueOrConfig),
     )
   );
 }
 
 function extractEnumDefinitionWithConfig(
   attributeName: string,
-  maybeConfig: unknown
+  maybeConfig: unknown,
 ): DataAttributeDefinitionWithConfig | undefined {
   if (isEnumAttributeConfig(maybeConfig)) {
     return ['enum', maybeConfig];
@@ -402,13 +402,13 @@ function extractEnumDefinitionWithConfig(
   logSchemaError(
     attributeName,
     maybeConfig,
-    'Invalid "enum" attribute config.'
+    'Invalid "enum" attribute config.',
   );
 }
 
 function extractReferenceDefinitionWithConfig(
   attributeName: string,
-  maybeConfig: unknown
+  maybeConfig: unknown,
 ): DataAttributeDefinitionWithConfig | undefined {
   const config = isReferenceAttributeConfig(maybeConfig)
     ? maybeConfig
@@ -419,12 +419,12 @@ function extractReferenceDefinitionWithConfig(
   logSchemaError(
     attributeName,
     maybeConfig,
-    'Invalid "reference" attribute config.'
+    'Invalid "reference" attribute config.',
   );
 }
 
 function isLocalizedEnumValueConfig(
-  config: unknown
+  config: unknown,
 ): config is LocalizedEnumValueConfig {
   return (
     isObject(config) &&
@@ -436,7 +436,7 @@ function isLocalizedEnumValueConfig(
 }
 
 function isReferenceAttributeConfig(
-  config: unknown
+  config: unknown,
 ): config is ReferenceAttributeConfig {
   return (
     isObject(config) &&
@@ -448,7 +448,7 @@ function isReferenceAttributeConfig(
 }
 
 function isLocalizedAttributeConfig(
-  config: unknown
+  config: unknown,
 ): config is LocalizedAttributeConfig {
   return (
     isObject(config) &&
@@ -463,11 +463,11 @@ function titleIsValidOrNotPresent(object: object) {
 function logSchemaError(
   attributeName: string,
   actual: unknown,
-  details?: string
+  details?: string,
 ) {
   logError(
     `Invalid schema definition for attribute "${attributeName}": ${JSON.stringify(
-      actual
-    )}${details ? `\nDetails: ${details}` : ''}`
+      actual,
+    )}${details ? `\nDetails: ${details}` : ''}`,
   );
 }

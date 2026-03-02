@@ -15,7 +15,7 @@ type Scheduler = (fn: () => void) => void;
  */
 export function collectAndSchedule<Args extends unknown[]>(
   scheduler: Scheduler,
-  fn: (...args: Args) => void
+  fn: (...args: Args) => void,
 ): (...args: Args) => void {
   let isScheduled = false;
   let lastArgs: Args | undefined;
@@ -51,7 +51,7 @@ export function collectAndSchedule<Args extends unknown[]>(
  */
 export function collectInListAndSchedule<T>(
   scheduler: Scheduler,
-  fn: (list: T[]) => T[]
+  fn: (list: T[]) => T[],
 ): (value: T) => void {
   let list: T[] = [];
   let isScheduled = false;

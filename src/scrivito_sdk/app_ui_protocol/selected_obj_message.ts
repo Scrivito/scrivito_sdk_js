@@ -5,7 +5,7 @@ export interface SelectedObjMessage {
 }
 
 export function isSelectedObjMessage(
-  data: unknown
+  data: unknown,
 ): data is SelectedObjMessage {
   return (
     !!data &&

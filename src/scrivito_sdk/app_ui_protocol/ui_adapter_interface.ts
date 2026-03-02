@@ -83,7 +83,8 @@ export const uiAdapterDescription = {
 };
 
 export interface UiAdapterInterface
-  extends CmsRetrieval,
+  extends
+    CmsRetrieval,
     CopyObjHandler,
     BinaryHandler,
     ContentUpdateHandler,
@@ -103,20 +104,20 @@ export interface UiAdapterInterface
     elementId: number,
     objId: string,
     widgetId: string,
-    options?: { objSpaceId: ObjSpaceId }
+    options?: { objSpaceId: ObjSpaceId },
   ): void;
   showWidgetlistMenu(
     elementId: number,
     relativePosition: Position,
     objId: string,
     attributeName: string,
-    widgetId?: string
+    widgetId?: string,
   ): void;
   showChildListMenu(elementId: number, objId: string): void;
   insertWidget(
     objId: string,
     widgetId: string,
-    position: OptionMarkerPosition
+    position: OptionMarkerPosition,
   ): void;
   startDrag(objId: string, widgetId: string): void;
   endDrag(): void;
@@ -126,7 +127,7 @@ export interface UiAdapterInterface
   openInNewUiWindow(url: string): void;
   configureContentBrowser({ baseQuery }: { baseQuery: ObjSearchParams }): void;
   openContentBrowser(
-    options: UiAdapterOpenContentBrowserOptions
+    options: UiAdapterOpenContentBrowserOptions,
   ): Promise<ContentBrowserResult>;
   configureTenant(configuration: TenantConfiguration): void;
   openCustomDialog(name: string): void;

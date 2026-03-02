@@ -31,7 +31,7 @@ export function repairDanglingWidgets(obj: ObjJson, oldState?: ObjJson) {
   if (danglingWidgetIds.length === 0) return obj;
 
   const restoredWidgets = Object.fromEntries(
-    danglingWidgetIds.map((id) => [id, oldState._widget_pool?.[id]])
+    danglingWidgetIds.map((id) => [id, oldState._widget_pool?.[id]]),
   );
 
   return {

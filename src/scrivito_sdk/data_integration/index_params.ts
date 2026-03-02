@@ -28,7 +28,7 @@ export type DataConnectionFilters = Record<string, FilterSpec | AndFilterSpec>;
 export class DataConnectionIndexParams {
   constructor(
     private readonly _continuation: string | undefined,
-    private readonly _params: Params
+    private readonly _params: Params,
   ) {}
 
   continuation(): string | undefined {
@@ -56,7 +56,7 @@ export class DataConnectionIndexParams {
               },
         };
       },
-      {}
+      {},
     );
   }
 
@@ -66,7 +66,7 @@ export class DataConnectionIndexParams {
 
   order(): OrderSpec {
     return (this._params.order || []).filter(
-      ([attributeName]) => !!attributeName
+      ([attributeName]) => !!attributeName,
     );
   }
 
@@ -89,7 +89,7 @@ export const operatorToOpCode: Record<FilterOperator, OpCode> = {
 };
 
 export function isAndFilterSpec(
-  spec: FilterSpec | AndFilterSpec
+  spec: FilterSpec | AndFilterSpec,
 ): spec is AndFilterSpec {
   return spec.operator === 'and';
 }

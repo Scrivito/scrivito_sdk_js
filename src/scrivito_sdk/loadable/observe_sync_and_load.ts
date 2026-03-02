@@ -10,7 +10,7 @@ interface SyncAndLoadObservation {
 
 export function observeSyncAndLoad<T>(
   observedExpression: () => T,
-  listener: (value: T) => void
+  listener: (value: T) => void,
 ): SyncAndLoadObservation {
   const loadingSubscriber = new LoadingSubscriber();
 
@@ -30,7 +30,7 @@ export function observeSyncAndLoad<T>(
         listener(nextResult);
         lastResult = nextResult;
       }
-    }
+    },
   );
 
   return {

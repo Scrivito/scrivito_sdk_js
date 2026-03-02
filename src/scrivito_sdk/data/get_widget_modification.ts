@@ -10,7 +10,7 @@ export function getWidgetModification(
   fromObjSpaceId: ObjSpaceId,
   toObjSpaceId: ObjSpaceId,
   objId: string,
-  widgetId: string
+  widgetId: string,
 ): Modification {
   const objDataBefore = getObjData(fromObjSpaceId, objId);
   const objDataAfter = getObjData(toObjSpaceId, objId);
@@ -37,7 +37,7 @@ export function getWidgetModification(
 function getModificationForWidget(
   objDataBefore: ObjData,
   objDataAfter: ObjData,
-  widgetId: string
+  widgetId: string,
 ): Modification {
   const widgetJsonBefore = objDataBefore.getWidgetWithBadPerformance(widgetId);
   const widgetJsonAfter = objDataAfter.getWidgetWithBadPerformance(widgetId);

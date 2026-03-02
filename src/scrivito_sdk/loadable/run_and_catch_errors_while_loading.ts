@@ -17,7 +17,7 @@ interface FailedRun {
 }
 
 export function runAndCatchErrorsWhileLoading<T>(
-  loadableFunction: () => T
+  loadableFunction: () => T,
 ): RunResult<T> {
   const captured = capture(() => runAndCatchException(loadableFunction));
 

@@ -18,20 +18,20 @@ interface DataClassParams {
 
 export function registerExternalDataClass(
   name: string,
-  params: LazyAsync<DataClassParams>
+  params: LazyAsync<DataClassParams>,
 ): void {
   setExternalDataConnection(
     name,
-    mapLazyAsync(params, (eagerParams) => eagerParams.connection)
+    mapLazyAsync(params, (eagerParams) => eagerParams.connection),
   );
 
   configureExternalDataInvalidation(
     name,
-    mapLazyAsync(params, (eagerParams) => eagerParams.refetchOnWindowFocus)
+    mapLazyAsync(params, (eagerParams) => eagerParams.refetchOnWindowFocus),
   );
 
   registerDataClassSchema(
     name,
-    mapLazyAsync(params, (eagerParams) => eagerParams.schema)
+    mapLazyAsync(params, (eagerParams) => eagerParams.schema),
   );
 }

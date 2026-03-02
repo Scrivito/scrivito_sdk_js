@@ -15,7 +15,7 @@ export interface PrimitiveObject {
 }
 
 export function isPrimitiveObject(
-  value: PrimitiveValue
+  value: PrimitiveValue,
 ): value is PrimitiveObject {
   return isObject(value) && !instanceOfClass(value);
 }

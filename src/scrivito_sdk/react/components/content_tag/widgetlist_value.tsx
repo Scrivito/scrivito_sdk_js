@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { createContext, useContext } from 'react';
 
 import { canEditObjWithId } from 'scrivito_sdk/app_support/can_edit';
 import {
@@ -65,18 +65,18 @@ const WidgetlistValueContentForComparison = connect(
     widgetProps?: WidgetProps;
   }) {
     const { placementModification: containerPlacementModification } =
-      React.useContext(WidgetTagContext);
+      useContext(WidgetTagContext);
 
     // Circular diffs should never happen, due to how we fetch the content
     // However, a circular diff will cause an infinite loop and crash the browser
     // This circuit breaker avoids crashing the browser in case we have an internal bug
-    const renderingDepth = React.useContext(WidgetlistRenderingDepth) + 1;
+    const renderingDepth = useContext(WidgetlistRenderingDepth) + 1;
     if (renderingDepth >= 100) throw new InternalError();
 
     const infos = getPlacementModificationInfos(
       field,
       getComparisonRange(),
-      containerPlacementModification ?? null
+      containerPlacementModification ?? null,
     );
 
     return (
@@ -98,10 +98,10 @@ const WidgetlistValueContentForComparison = connect(
     function calculateKey(widgetId: string, modification: string | null) {
       return `${widgetId}-${modification ?? 'unmodified'}`;
     }
-  }
+  },
 );
 
-const WidgetlistRenderingDepth = React.createContext<number>(0);
+const WidgetlistRenderingDepth = createContext<number>(0);
 
 const WidgetlistValueContent = connect(function WidgetlistValueContent({
   field,
@@ -133,7 +133,7 @@ const WidgetlistValueContent = connect(function WidgetlistValueContent({
 
   const WidgetlistPlaceholder = importFrom(
     'reactEditing',
-    'WidgetlistPlaceholder'
+    'WidgetlistPlaceholder',
   );
 
   return WidgetlistPlaceholder ? <WidgetlistPlaceholder field={field} /> : null;

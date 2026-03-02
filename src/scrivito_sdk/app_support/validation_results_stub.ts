@@ -5,7 +5,7 @@ import { Obj, Widget } from 'scrivito_sdk/realm';
 /** @public */
 export function validationResultsFor(
   model: Obj | Widget,
-  attributeName: string
+  attributeName: string,
 ): ValidationResultObject[] {
   const loadedFn = importFrom('editingSupport', 'validationResultsFor');
   if (!loadedFn) return [];

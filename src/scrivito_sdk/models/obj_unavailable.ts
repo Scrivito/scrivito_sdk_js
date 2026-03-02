@@ -7,7 +7,7 @@ export type ObjUnavailableReason =
 export class ObjUnavailable {
   constructor(
     private readonly _id: string,
-    private readonly _reason: ObjUnavailableReason
+    private readonly _reason: ObjUnavailableReason,
   ) {}
 
   id(): string {

@@ -8,7 +8,7 @@ export function setInitialContentDumpUrl(url: string): void {
     new URL(url);
   } catch {
     throw new ArgumentError(
-      "'initialContentDumpUrl' must be an absolute URL with protocol"
+      "'initialContentDumpUrl' must be an absolute URL with protocol",
     );
   }
 

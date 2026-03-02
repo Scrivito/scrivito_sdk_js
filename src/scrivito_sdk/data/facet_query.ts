@@ -27,7 +27,7 @@ const loadableCollection = createLoadableCollection<
     loader: () =>
       cmsRetrieval.retrieveFacetQuery(
         getWorkspaceId(objSpaceId),
-        buildRequestParams(facet, query)
+        buildRequestParams(facet, query),
       ),
     invalidation: () =>
       loadableWithDefault(undefined, () => getContentStateId(objSpaceId)) || '',
@@ -56,7 +56,7 @@ export class FacetQuery {
     objSpaceId: ObjSpaceId,
     attribute: string,
     options: FacetQueryOptions,
-    query: Query
+    query: Query,
   ) {
     if (!isEmptySpaceId(objSpaceId)) {
       this.loadableData = getData(objSpaceId, attribute, options, query);
@@ -86,11 +86,11 @@ export function storeFacetQuery(
   attribute: string,
   options: FacetQueryOptions,
   query: QueryParams['query'],
-  response: BackendFacetQueryResponse
+  response: BackendFacetQueryResponse,
 ): void {
   if (!isWorkspaceObjSpaceId(objSpaceId)) {
     throw new Error(
-      `Cannot store facet data for space id ${JSON.stringify(objSpaceId)}`
+      `Cannot store facet data for space id ${JSON.stringify(objSpaceId)}`,
     );
   }
   getData(objSpaceId, attribute, options, query).set(response);
@@ -100,7 +100,7 @@ function getData(
   objSpaceId: ObjSpaceId,
   attribute: string,
   options: FacetQueryOptions,
-  query: Query
+  query: Query,
 ) {
   const facet = {
     attribute,

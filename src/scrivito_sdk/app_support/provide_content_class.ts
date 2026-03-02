@@ -1,5 +1,8 @@
 import { ArgumentError } from 'scrivito_sdk/common';
-import { isExternalDataClassProvided } from 'scrivito_sdk/data_integration';
+import {
+  addDataClassPrefix,
+  isExternalDataClassProvided,
+} from 'scrivito_sdk/data_integration';
 import {
   AttributeDefinitions,
   ExtendObjClassDefinition,
@@ -18,38 +21,38 @@ import {
 
 /** @public */
 export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(name: string, definition: SimpleObjClassDefinition<Attrs>): ObjClass<Attrs>;
 
 /** @public */
 export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(name: string, definition: ObjClass<Attrs>): ObjClass<Attrs>;
 
 /** @public */
 export function provideObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(name: string, definition: ExtendObjClassDefinition<Attrs>): ObjClass<Attrs>;
 
 /** @public */
 export function provideObjClass<
   Attrs extends AttributeDefinitions = AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions,
 >(
   name: string,
-  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>
+  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>,
 ): ObjClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function provideObjClass(
   name: string,
-  definition: ObjClassDefinition | ObjClass
+  definition: ObjClassDefinition | ObjClass,
 ): ObjClass {
   if (name === 'Obj') {
     throw new ArgumentError('"Obj" is not a valid Obj class name');
   }
 
-  if (isExternalDataClassProvided(name)) {
+  if (isExternalDataClassProvided(addDataClassPrefix(name))) {
     throw new ArgumentError(`Class with name ${name} already exists`);
   }
 
@@ -58,38 +61,38 @@ export function provideObjClass(
 
 /** @public */
 export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(
   name: string,
-  definition: SimpleWidgetClassDefinition<Attrs>
-): WidgetClass<Attrs>;
-
-/** @public */
-export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(name: string, definition: WidgetClass<Attrs>): WidgetClass<Attrs>;
-
-/** @public */
-export function provideWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
->(
-  name: string,
-  definition: ExtendWidgetClassDefinition<Attrs>
+  definition: SimpleWidgetClassDefinition<Attrs>,
 ): WidgetClass<Attrs>;
 
 /** @public */
 export function provideWidgetClass<
   Attrs extends AttributeDefinitions = AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+>(name: string, definition: WidgetClass<Attrs>): WidgetClass<Attrs>;
+
+/** @public */
+export function provideWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(
   name: string,
-  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>
+  definition: ExtendWidgetClassDefinition<Attrs>,
+): WidgetClass<Attrs>;
+
+/** @public */
+export function provideWidgetClass<
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions,
+>(
+  name: string,
+  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>,
 ): WidgetClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function provideWidgetClass(
   name: string,
-  definition: WidgetClassDefinition | WidgetClass
+  definition: WidgetClassDefinition | WidgetClass,
 ): WidgetClass {
   return registerWidgetClass(name, definition);
 }

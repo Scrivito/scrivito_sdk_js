@@ -23,7 +23,7 @@ type BackendSingleSearchValue = string | number | boolean | null;
 
 /** @public */
 export class ObjSearch<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   /** @internal */
   readonly _scrivitoPrivateContent: BasicObjSearch;
@@ -37,7 +37,7 @@ export class ObjSearch<
     field: SearchField,
     operator: SearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): this;
 
   /** @internal */
@@ -48,7 +48,7 @@ export class ObjSearch<
     fieldOrSearchToExtendBy: SearchField | ObjSearch,
     operator?: SearchOperator,
     value?: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): this {
     if (fieldOrSearchToExtendBy instanceof ObjSearch) {
       const search = fieldOrSearchToExtendBy;
@@ -59,7 +59,7 @@ export class ObjSearch<
       }
       if (value === undefined) {
         throw new ArgumentError(
-          'Missing value to search (specify "null" for missing)'
+          'Missing value to search (specify "null" for missing)',
         );
       }
 
@@ -67,7 +67,7 @@ export class ObjSearch<
         checkNonFullTextSearchOperator(
           'objSearch.and',
           operator,
-          'js-sdk/ObjSearch-and'
+          'js-sdk/ObjSearch-and',
         );
       }
 
@@ -82,12 +82,12 @@ export class ObjSearch<
     field: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): this {
     checkFullTextSearchOperator(
       'objSearch.andFullTextOf',
       operator,
-      'js-sdk/ObjSearch-andFullTextOf'
+      'js-sdk/ObjSearch-andFullTextOf',
     );
 
     const unwrappedValue = unwrapAppClassValue(value);
@@ -99,7 +99,7 @@ export class ObjSearch<
   andNot(
     field: SearchField,
     operator: SearchOperator,
-    value: SearchValue
+    value: SearchValue,
   ): this {
     const unwrappedValue = unwrapAppClassValue(value);
     this._scrivitoPrivateContent.andNot(field, operator, unwrappedValue);
@@ -120,13 +120,13 @@ export class ObjSearch<
     field: SearchField,
     operator: SearchOperator,
     value: SearchValue,
-    factor: number
+    factor: number,
   ): this {
     this._scrivitoPrivateContent.boost(
       field,
       operator,
       unwrapAppClassValue(value),
-      factor
+      factor,
     );
 
     return this;
@@ -176,12 +176,12 @@ export class ObjSearch<
   /** @internal */
   order(
     attributeOrAttributes: string | OrderAttributes,
-    direction?: 'asc' | 'desc'
+    direction?: 'asc' | 'desc',
   ): this {
     if (Array.isArray(attributeOrAttributes)) {
       if (direction !== undefined) {
         throw new ArgumentError(
-          'Direction can not be set independent of attributes.'
+          'Direction can not be set independent of attributes.',
         );
       }
       this._scrivitoPrivateContent.order(attributeOrAttributes);
@@ -237,15 +237,15 @@ function unwrapAppClassValue(value: SearchValue) {
 export function checkNonFullTextSearchOperator(
   functionName: string,
   operator: SearchOperator,
-  docPermalink: string
+  docPermalink: string,
 ) {
   if (FULL_TEXT_OPERATORS.indexOf(operator as FullTextSearchOperator) !== -1) {
     throwInvalidArgumentsError(
       functionName,
       `operator '${operator}' must be a search operator except: ${FULL_TEXT_OPERATORS.join(
-        ', '
+        ', ',
       )}`,
-      { docPermalink }
+      { docPermalink },
     );
   }
 }
@@ -253,15 +253,15 @@ export function checkNonFullTextSearchOperator(
 export function checkFullTextSearchOperator(
   functionName: string,
   operator: SearchOperator,
-  docPermalink: string
+  docPermalink: string,
 ) {
   if (FULL_TEXT_OPERATORS.indexOf(operator as FullTextSearchOperator) === -1) {
     throwInvalidArgumentsError(
       functionName,
       `operator '${operator}' must be a full text search operator: ${FULL_TEXT_OPERATORS.join(
-        ', '
+        ', ',
       )}`,
-      { docPermalink }
+      { docPermalink },
     );
   }
 }

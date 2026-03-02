@@ -30,7 +30,7 @@ let verification: Verification | undefined;
 
 export const PublicAuthentication: AuthorizationProvider = {
   async authorize(
-    request: (authorization: string | undefined) => Promise<Response>
+    request: (authorization: string | undefined) => Promise<Response>,
   ): Promise<Response> {
     const response = await request(currentAuthorization());
 
@@ -38,7 +38,7 @@ export const PublicAuthentication: AuthorizationProvider = {
       // response.text is a macrotask in firefox.
       // it needs to be registered explicitly, to work with flushPromises.
       const responseText = await registerAsyncTask(() =>
-        response.clone().text()
+        response.clone().text(),
       );
       const { details, code } = parseErrorResponse(responseText);
 
@@ -64,7 +64,7 @@ export const PublicAuthentication: AuthorizationProvider = {
     if (computation) {
       const challenge = computation.challenge;
       return `Pending computation: ${challenge.verificator.id} with ${String(
-        challenge.data
+        challenge.data,
       )}`;
     }
 
@@ -73,7 +73,7 @@ export const PublicAuthentication: AuthorizationProvider = {
 };
 
 async function computeVerification(
-  challenge: Challenge
+  challenge: Challenge,
 ): Promise<Verification> {
   if (!computation) {
     // note that further request's challenges are ignored (intentionally)
@@ -81,7 +81,7 @@ async function computeVerification(
     const promise = (async () => {
       const compute: VerificationForChallenge = await fetchVerificatorFunction(
         verificator.id,
-        verificator.url
+        verificator.url,
       );
 
       return new Promise<Verification>((resolve) => {

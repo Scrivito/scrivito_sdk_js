@@ -1,17 +1,17 @@
-import * as React from 'react';
+import type { ComponentProps, ComponentType, PropsWithChildren } from 'react';
 
 import { equalsBestEffort } from 'scrivito_sdk/common';
 
 export function propsAreEqual<P extends object>(
-  prevProps: Readonly<React.PropsWithChildren<P>>,
-  nextProps: Readonly<React.PropsWithChildren<P>>
+  prevProps: Readonly<PropsWithChildren<P>>,
+  nextProps: Readonly<PropsWithChildren<P>>,
 ): boolean;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function propsAreEqual<T extends React.ComponentType<any>>(
-  prevProps: Readonly<React.ComponentProps<T>>,
-  nextProps: Readonly<React.ComponentProps<T>>
+export function propsAreEqual<T extends ComponentType<any>>(
+  prevProps: Readonly<ComponentProps<T>>,
+  nextProps: Readonly<ComponentProps<T>>,
 ): boolean {
   return Object.keys(prevProps).every((key) =>
-    equalsBestEffort(prevProps[key], nextProps[key])
+    equalsBestEffort(prevProps[key], nextProps[key]),
   );
 }

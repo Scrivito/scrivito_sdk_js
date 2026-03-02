@@ -9,7 +9,7 @@ import {
 
 export function connectAndMemoize<P extends object>(
   component: ComponentType<P>,
-  options?: ConnectOptions<P>
+  options?: ConnectOptions<P>,
 ): React.ComponentType<P> {
   const connectedComponent = connect(component, options);
   // Memoizing class components using `React.memo` does not work properly.

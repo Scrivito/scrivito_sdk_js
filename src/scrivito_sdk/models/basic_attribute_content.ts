@@ -63,7 +63,7 @@ export type NormalizedUnknownAttributeValue =
 export function getContentValue<Type extends CmsAttributeType>(
   content: ContentValueProvider,
   attributeName: string,
-  typeInfo: TypeInfo<Type>
+  typeInfo: TypeInfo<Type>,
 ): BasicAttributeValue<Type> {
   if (typeof typeInfo === 'string') {
     const normalizedTypeInfo = [typeInfo] as TypeInfo<Type>;
@@ -73,14 +73,14 @@ export function getContentValue<Type extends CmsAttributeType>(
   return getContentValueUsingInternalName(
     content,
     underscore(attributeName),
-    typeInfo
+    typeInfo,
   );
 }
 
 function getContentValueUsingInternalName<Type extends CmsAttributeType>(
   content: ContentValueProvider,
   internalAttributeName: string,
-  typeInfo: BasicTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>,
 ): BasicAttributeValue<Type> {
   const rawValue = content.getAttributeData(internalAttributeName, typeInfo[0]);
   return AttributeDeserializer.deserialize(content, rawValue, typeInfo);
@@ -94,7 +94,7 @@ export type ContentValueOrConnection<Type extends CmsAttributeType> =
 export function getContentValueOrConnection<Type extends CmsAttributeType>(
   content: ContentValueProvider,
   attributeName: string,
-  typeInfo: TypeInfo<Type>
+  typeInfo: TypeInfo<Type>,
 ): ContentValueOrConnection<Type> {
   const internalAttributeName = underscore(attributeName);
   const attributeData = content.getAttributeData(internalAttributeName);
@@ -105,17 +105,17 @@ export function getContentValueOrConnection<Type extends CmsAttributeType>(
 }
 
 export function isContentConnection<Type extends CmsAttributeType>(
-  valueOrConnection: ContentValueOrConnection<Type>
+  valueOrConnection: ContentValueOrConnection<Type>,
 ): valueOrConnection is ContentConnection {
   return valueOrConnection[0] === 'connection';
 }
 
 export function serializeAttributes(content: BasicObj): SerializedObjAttributes;
 export function serializeAttributes(
-  content: BasicWidget
+  content: BasicWidget,
 ): SerializedWidgetAttributes;
 export function serializeAttributes(
-  content: ContentValueProvider
+  content: ContentValueProvider,
 ): SerializedObjAttributes | SerializedWidgetAttributes {
   return mapValues(content.getData(), (value, name) => {
     if (value && !isSystemAttribute(name) && typeof value === 'object') {
@@ -142,7 +142,7 @@ export function serializeAttributes(
 
 export function persistWidgets(
   obj: BasicObj,
-  attributes: NormalizedBasicAttributesWithUnknownValues
+  attributes: NormalizedBasicAttributesWithUnknownValues,
 ): void {
   Object.keys(attributes).forEach((key) => {
     const valueAndType = attributes[key];
@@ -163,7 +163,7 @@ export function persistWidgets(
 }
 
 export function isWidgetAttributeValueAndType(
-  valueAndType: NormalizedUnknownAttributeValue
+  valueAndType: NormalizedUnknownAttributeValue,
 ): valueAndType is [BasicWidget, BasicTypeInfo<'widget'>] {
   if (valueAndType.length < 2) return false;
 
@@ -175,7 +175,7 @@ export function isWidgetAttributeValueAndType(
 }
 
 export function isWidgetlistAttributeValueAndType(
-  valueAndType: NormalizedUnknownAttributeValue
+  valueAndType: NormalizedUnknownAttributeValue,
 ): valueAndType is [BasicWidget | BasicWidget[], BasicTypeInfo<'widgetlist'>] {
   if (valueAndType.length < 2) return false;
 
@@ -191,7 +191,7 @@ export function isWidgetlistAttributeValueAndType(
 }
 
 export function normalizeAttributes(
-  attributes: BasicObjAttributes | BasicWidgetAttributes
+  attributes: BasicObjAttributes | BasicWidgetAttributes,
 ): NormalizedBasicAttributeDict {
   return mapValues(attributes, (attributeValue, name) => {
     // Note: System attribute value normalization for public API input is
@@ -228,7 +228,7 @@ export function normalizeAttributes(
 
 /** Get the restriction from a _restriction attribute value. */
 export function normalizedRestriction(
-  restrictionAttribute?: string[] | null
+  restrictionAttribute?: string[] | null,
 ): string {
   return restrictionAttribute ? restrictionAttribute[0] : '_public';
 }

@@ -45,7 +45,7 @@ type WidgetId = string;
 export async function retrieveObjFieldDiffs(
   from: ObjSpaceId,
   to: ObjSpaceId,
-  objId: string
+  objId: string,
 ): Promise<ObjFieldDiffs> {
   try {
     const response = await cmsRestApi.get(`objs/${objId}/diff`, {

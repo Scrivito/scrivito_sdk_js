@@ -1,16 +1,16 @@
 import { docUrl } from 'scrivito_sdk/common';
-import { logError } from 'scrivito_sdk/common/error_logging';
 import { ArgumentError } from 'scrivito_sdk/common/errors';
+import { logError } from 'scrivito_sdk/common/logging';
 
 export type TypeCheck = (...givenArguments: unknown[]) => void;
 
 export function throwInvalidArgumentsError(
   functionName: string,
   errorMessage: string,
-  { docPermalink, severity }: { docPermalink: string; severity?: 'warning' }
+  { docPermalink, severity }: { docPermalink: string; severity?: 'warning' },
 ) {
   const fullErrorMessage = `Invalid arguments for '${functionName}': ${errorMessage}. Visit ${docUrl(
-    docPermalink
+    docPermalink,
   )} for more information.`;
 
   if (severity === 'warning') {

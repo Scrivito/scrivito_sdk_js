@@ -26,7 +26,7 @@ export function throwNoLoadingContext() {
   throw new ScrivitoError(
     'Content not yet loaded. ' +
       'Forgot to use Scrivito.load or Scrivito.connect? ' +
-      `See ${docUrl('content-not-yet-loaded-error')}`
+      `See ${docUrl('content-not-yet-loaded-error')}`,
   );
 }
 
@@ -38,7 +38,7 @@ type LoadingState = 'outdated' | 'available' | 'incomplete';
 
 export function notifyDataRequired(
   loadingState: LoadingState,
-  data: LoadableData<unknown>
+  data: LoadableData<unknown>,
 ) {
   const captureList = currentCaptureList();
   if (captureList) {
@@ -113,7 +113,7 @@ export class CaptureReport<T> {
    */
   subscribeLoading(subscriber: LoadingSubscriber) {
     const unsubscribes = this.captureList.datas.map((data) =>
-      data.subscribeLoading()
+      data.subscribeLoading(),
     );
 
     subscriber.unsubscribe();

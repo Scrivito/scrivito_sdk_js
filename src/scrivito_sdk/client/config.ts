@@ -2,7 +2,7 @@ import { BrowserTokenParams } from 'scrivito_sdk/client';
 import { ConfigStore } from 'scrivito_sdk/common';
 
 export type TokenFetcher = (
-  params: BrowserTokenParams
+  params: BrowserTokenParams,
 ) => Promise<string | null>;
 
 interface ClientConfig {

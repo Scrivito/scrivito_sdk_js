@@ -9,7 +9,7 @@ import {
 } from 'scrivito_sdk/data_integration/index_params';
 
 export function createRestApiConnectionForClass(
-  apiClient: ApiClient
+  apiClient: ApiClient,
 ): UncheckedDataConnection {
   return {
     create: async (data) => apiClient.fetch('', { method: 'post', data }),
@@ -39,7 +39,7 @@ interface ClientFilterParams {
 }
 
 function toClientFilterParam(
-  filters: DataConnectionFilters
+  filters: DataConnectionFilters,
 ): ClientFilterParams {
   const params: ClientFilterParams = {};
 
@@ -86,14 +86,14 @@ function assertNoConflicts(specs: FilterSpec[]) {
         .some(
           (innerSpec) =>
             innerSpec.operator === outerSpec.operator &&
-            innerSpec.value !== outerSpec.value
-        )
+            innerSpec.value !== outerSpec.value,
+        ),
     )
   ) {
     throw new ArgumentError(
       `Multiple filters on the same attribute with the same operator but different values are currently not supported: ${JSON.stringify(
-        specs
-      )}`
+        specs,
+      )}`,
     );
   }
 }

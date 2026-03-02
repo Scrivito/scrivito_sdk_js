@@ -27,12 +27,12 @@ import {
 import { objClassNameFor } from './registry';
 
 export interface SiteContext<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   create(params?: ObjAttributes<AttrDefs>): Obj<AttrDefs>;
   createFromFile(
     file: File,
-    attributes?: ObjAttributes<AttrDefs>
+    attributes?: ObjAttributes<AttrDefs>,
   ): Promise<Obj<AttrDefs>>;
   get(objId: string): Obj<AttrDefs> | null;
   getIncludingDeleted(objId: string): Obj<AttrDefs> | null;
@@ -44,22 +44,22 @@ export interface SiteContext<
     fields: SearchField,
     operator: SearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch<AttrDefs>;
   whereFullTextOf(
     fields: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch<AttrDefs>;
 }
 
-export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
-  implements SiteContext<AttrDefs>
-{
+export class BasicSiteContext<
+  AttrDefs extends AttributeDefinitions,
+> implements SiteContext<AttrDefs> {
   constructor(
     private readonly objClass: ObjClass,
-    private readonly scopeIncludingDeletedObjs: ObjScope
+    private readonly scopeIncludingDeletedObjs: ObjScope,
   ) {}
 
   get(id: string): Obj<AttrDefs> | null {
@@ -92,7 +92,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
     attribute: SearchField,
     operator: SearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch<AttrDefs> {
     return this.getSearch().and(attribute, operator, value, boost);
   }
@@ -101,7 +101,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
     attribute: SearchField,
     operator: FullTextSearchOperator,
     value: SearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): ObjSearch<AttrDefs> {
     return this.getSearch().andFullTextOf(attribute, operator, value, boost);
   }
@@ -115,11 +115,11 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
       attributes,
       objClassName,
       // Bang: objClassNameForCreate above ensures that it's a subclass of Obj
-      Schema.forClass(this.objClass)!
+      Schema.forClass(this.objClass)!,
     );
     const basicObj = createObjIn(
       this.scope().and(restrictToObjClass(objClassName)),
-      attributesForCreate
+      attributesForCreate,
     );
 
     return wrapInAppClass<AttrDefs>(basicObj);
@@ -127,7 +127,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
 
   async createFromFile(
     file: File,
-    attributes: ObjAttributes<AttrDefs> = {}
+    attributes: ObjAttributes<AttrDefs> = {},
   ): Promise<Obj<AttrDefs>> {
     const objClassName = this.objClassNameForCreate();
 
@@ -137,7 +137,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
     if (Object.prototype.hasOwnProperty.call(attributes, 'blob')) {
       throw new ArgumentError(
         'Setting attribute "blob" is not allowed when creating CMS objects from file, ' +
-          'because the file will be assigned to that attribute'
+          'because the file will be assigned to that attribute',
       );
     }
 
@@ -145,20 +145,20 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
     const schema = Schema.forClass(this.objClass)!;
     if (!schema.isBinary()) {
       throw new ArgumentError(
-        'Creating CMS objects from file is only available for classes with a binary attribute "blob"'
+        'Creating CMS objects from file is only available for classes with a binary attribute "blob"',
       );
     }
 
     const attributesForCreate = prepareAttributesForCreate(
       attributes,
       objClassName,
-      schema
+      schema,
     );
 
     const basicObj = await createObjFromFileIn(
       this.scope().and(restrictToObjClass(objClassName)),
       file,
-      attributesForCreate
+      attributesForCreate,
     );
     return wrapInAppClass<AttrDefs>(basicObj);
   }
@@ -180,7 +180,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
 
   private getObj(id: string, scope: ObjScope) {
     return wrapInAppClass<AttrDefs>(
-      getObjFrom(this.getScopeRestrictedToSameClass(scope), id)
+      getObjFrom(this.getScopeRestrictedToSameClass(scope), id),
     );
   }
 
@@ -206,7 +206,7 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
 
     if (!objClassName) {
       throw new ArgumentError(
-        'Use a specific class (like Page or Image) in order to create an Obj.'
+        'Use a specific class (like Page or Image) in order to create an Obj.',
       );
     }
 
@@ -221,12 +221,12 @@ export class BasicSiteContext<AttrDefs extends AttributeDefinitions>
 function prepareAttributesForCreate(
   appAttributes: { [key: string]: unknown },
   appClassName: string,
-  schema: Schema
+  schema: Schema,
 ) {
   const initialAttributes = initialAttributesFor(
     appAttributes,
     schema,
-    appClassName
+    appClassName,
   );
   const createAttributes = {
     ...appAttributes,
@@ -240,7 +240,7 @@ function assertValidCreateAttributes(attributes: { [key: string]: unknown }) {
   if (attributes.constructor !== Object) {
     throw new ArgumentError(
       'The provided attributes are invalid. They have ' +
-        'to be an Object with valid Scrivito attribute values.'
+        'to be an Object with valid Scrivito attribute values.',
     );
   }
 
@@ -248,9 +248,9 @@ function assertValidCreateAttributes(attributes: { [key: string]: unknown }) {
     throw new ArgumentError(
       'Invalid attribute "_objClass". ' +
         `"${String(
-          attributes._objClass
+          attributes._objClass,
         )}.create" will automatically set the CMS object class ` +
-        'correctly.'
+        'correctly.',
     );
   }
 }
@@ -260,12 +260,12 @@ function assertValidFile(file: unknown) {
     if (isBlob(file)) {
       throw new ArgumentError(
         'Creating CMS objects from file is only available with instances of "File", ' +
-          'but an instance of "Blob" is given'
+          'but an instance of "Blob" is given',
       );
     }
 
     throw new ArgumentError(
-      'Creating CMS objects from file is only available with instances of "File"'
+      'Creating CMS objects from file is only available with instances of "File"',
     );
   }
 }

@@ -67,7 +67,7 @@ export class Link {
 
   copy(attributes: LinkAttributes): Link {
     const basicLink = this._scrivitoPrivateContent.copy(
-      toBasicAttributes(attributes)
+      toBasicAttributes(attributes),
     );
     const link = Object.create(Link.prototype);
     link._scrivitoPrivateContent = basicLink;
@@ -95,12 +95,12 @@ const ALLOWED_ATTRIBUTES = [
 
 function assertValidPublicAttributes(attributes: LinkAttributes) {
   const unknownAttrs = Object.keys(attributes).filter(
-    (key) => !ALLOWED_ATTRIBUTES.includes(key)
+    (key) => !ALLOWED_ATTRIBUTES.includes(key),
   );
   if (!isEmpty(unknownAttrs)) {
     throw new ArgumentError(
       `Unexpected attributes ${prettyPrint(unknownAttrs)}.` +
-        ` Available attributes: ${prettyPrint(ALLOWED_ATTRIBUTES)}`
+        ` Available attributes: ${prettyPrint(ALLOWED_ATTRIBUTES)}`,
     );
   }
 }

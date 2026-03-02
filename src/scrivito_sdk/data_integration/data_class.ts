@@ -3,6 +3,7 @@ import mapValues from 'lodash-es/mapValues';
 
 import { FilterValue } from 'scrivito_sdk/client';
 import { ArgumentError, ScrivitoError, isObject } from 'scrivito_sdk/common';
+import { removeDataClassPrefix } from 'scrivito_sdk/data_integration/data_class_name_prefix';
 import {
   NormalizedDataAttributeDefinition,
   NormalizedDataAttributeDefinitions,
@@ -24,17 +25,22 @@ export abstract class DataClass {
   /** @beta */
   abstract getUnchecked(id: string): DataItem;
 
+  /** @internal */
+  abstract internalName(): string;
+
   /** @public */
-  abstract name(): string;
+  name(): string | null {
+    return removeDataClassPrefix(this.internalName());
+  }
 
   /** @public */
   attributeDefinitions(): NormalizedDataAttributeDefinitions {
-    return getNormalizedDataAttributeDefinitions(this.name());
+    return getNormalizedDataAttributeDefinitions(this.internalName());
   }
 
   /** @internal */
   title(): string | undefined {
-    return getDataClassTitle(this.name());
+    return getDataClassTitle(this.internalName());
   }
 
   /** @internal */
@@ -47,8 +53,15 @@ export abstract class DataClass {
 export abstract class DataScope {
   /** @public */
   abstract dataClass(): DataClass | null;
+  /** @internal */
+  abstract internalDataClassName(): string | null;
+
   /** @public */
-  abstract dataClassName(): string | null;
+  dataClassName(): string | null {
+    const internal = this.internalDataClassName();
+    return internal ? removeDataClassPrefix(internal) : null;
+  }
+
   /** @beta */
   abstract get(id: string): DataItem | null;
 
@@ -100,7 +113,7 @@ export abstract class DataScope {
 
   /** @internal */
   normalizeFilters(
-    filters?: DataScopeFilters
+    filters?: DataScopeFilters,
   ): NormalizedDataScopeFilters | undefined {
     if (!filters) return;
 
@@ -131,8 +144,8 @@ export abstract class DataScope {
 
       throw new ArgumentError(
         `Invalid filter value for "${attributeName}": ${JSON.stringify(
-          valueOrSpec
-        )}`
+          valueOrSpec,
+        )}`,
       );
     });
   }
@@ -158,14 +171,18 @@ export abstract class DataScope {
 export class DataItemAttribute {
   constructor(
     private readonly _dataItem: DataItem,
-    private readonly _attributeName: string
+    private readonly _attributeName: string,
   ) {}
 
   dataClass(): DataClass {
     return this._dataItem.dataClass();
   }
 
-  dataClassName(): string {
+  internalDataClassName(): string {
+    return this._dataItem.internalDataClassName();
+  }
+
+  dataClassName(): string | null {
     return this._dataItem.dataClassName();
   }
 
@@ -274,8 +291,14 @@ export abstract class DataItem {
   abstract id(): string;
   /** @public */
   abstract dataClass(): DataClass;
+  /** @internal */
+  abstract internalDataClassName(): string;
+
   /** @public */
-  abstract dataClassName(): string;
+  dataClassName(): string | null {
+    return removeDataClassPrefix(this.internalDataClassName());
+  }
+
   /** @public */
   abstract obj(): Obj | undefined;
   /** @public */
@@ -315,7 +338,7 @@ export class DataScopeError extends ScrivitoError {
 }
 
 export function assertValidDataItemAttributes(
-  attributes: unknown
+  attributes: unknown,
 ): asserts attributes is DataItemAttributes {
   if (!isObject(attributes)) {
     throw new ArgumentError('Data item attributes must be an object');
@@ -323,14 +346,14 @@ export function assertValidDataItemAttributes(
 
   if (!Object.keys(attributes as object).every(isValidDataIdentifier)) {
     throw new ArgumentError(
-      'Keys of data item attributes must be valid data identifiers'
+      'Keys of data item attributes must be valid data identifiers',
     );
   }
 }
 
 export function combineFilters(
   currFilters: NormalizedDataScopeFilters | undefined,
-  nextFilters: NormalizedDataScopeFilters | undefined
+  nextFilters: NormalizedDataScopeFilters | undefined,
 ): NormalizedDataScopeFilters | undefined {
   if (!currFilters) return nextFilters;
   if (!nextFilters) return currFilters;
@@ -369,7 +392,7 @@ export function combineFilters(
 
 export function combineSearches(
   currSearch: string | undefined,
-  nextSearch: string | undefined
+  nextSearch: string | undefined,
 ): string | undefined {
   return currSearch && nextSearch
     ? `${currSearch} ${nextSearch}`
@@ -392,14 +415,14 @@ export function scopePojoToItemPojo({
 }
 
 export function itemIdFromFilters(
-  filters: NormalizedDataScopeFilters | undefined
+  filters: NormalizedDataScopeFilters | undefined,
 ): string | undefined {
   const id = filters?._id?.value;
   if (typeof id === 'string') return id;
 }
 
 export function isFilterOperator(
-  operator: unknown
+  operator: unknown,
 ): operator is FilterOperator {
   return (
     typeof operator === 'string' &&

@@ -23,7 +23,7 @@ function loadDataFromRecord([name, key, value]: DataRecord): void {
 }
 
 export function generateRecording(
-  datas: Array<LoadableData<unknown>>
+  datas: Array<LoadableData<unknown>>,
 ): DataRecording {
   return datas.map(generateRecord);
 }

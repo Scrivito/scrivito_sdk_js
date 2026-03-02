@@ -8,17 +8,17 @@ export const OBJ_ID_PATTERN = /\bobjid:[a-f0-9]{16}\b/g;
 
 const INTERNAL_LINK_URL_PATTERN = new RegExp(
   `${OBJ_ID_PATTERN.source}[^"']*`,
-  'g'
+  'g',
 );
 
 export function formatInternalLinks(
   htmlString: string,
-  format: (url: InternalUrl) => string | null
+  format: (url: InternalUrl) => string | null,
 ): string {
   return htmlString.replace(
     INTERNAL_LINK_URL_PATTERN,
     (internalLinkUrl) =>
-      format(parseInternalUrl(internalLinkUrl)) ?? internalLinkUrl
+      format(parseInternalUrl(internalLinkUrl)) ?? internalLinkUrl,
   );
 }
 

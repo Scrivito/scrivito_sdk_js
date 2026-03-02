@@ -9,7 +9,7 @@ let comparisonActive = false;
  * returns true if an editing context was found and initialized
  */
 export function initializeEditingContextFromBrowsingContext(
-  browsingContextName: string
+  browsingContextName: string,
 ): boolean {
   const editingContext = editingContextFromBrowsingContext(browsingContextName);
 
@@ -26,13 +26,13 @@ export function initializeEditingContextFromBrowsingContext(
 }
 
 function editingContextFromBrowsingContext(
-  browsingContextName: string
+  browsingContextName: string,
 ): EditingContext {
   const markerIndex = browsingContextName.indexOf(' _scrivito {');
   if (markerIndex === -1) return {};
 
   const { editing, comparison, workspaceId } = JSON.parse(
-    browsingContextName.substring(markerIndex + 11)
+    browsingContextName.substring(markerIndex + 11),
   );
 
   return {

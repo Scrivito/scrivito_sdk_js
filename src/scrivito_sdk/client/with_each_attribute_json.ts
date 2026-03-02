@@ -8,12 +8,12 @@ import { isSystemAttribute } from 'scrivito_sdk/common';
 type AttributeCallback = (
   value: NonNullable<AttributeJson>,
   attributeName: string,
-  widgetId?: string
+  widgetId?: string,
 ) => void;
 
 export function withEachAttributeJson(
   objJson: ObjJson,
-  fn: AttributeCallback
+  fn: AttributeCallback,
 ): void {
   if (!isExistentObjJson(objJson)) return;
 

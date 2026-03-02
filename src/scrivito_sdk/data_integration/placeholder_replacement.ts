@@ -26,7 +26,7 @@ export function replacePlaceholdersWithData(
     placeholders?: DataContext;
     dataStack?: DataStack;
     transform?: (rawValue: string) => string;
-  } = {}
+  } = {},
 ): string {
   if (!isDataIntegrationActive()) return text;
 
@@ -88,7 +88,7 @@ function getDataItem(dataClassName: string, dataStack: DataStack) {
   return loadableWithDefault('loading', () => {
     const element = findItemElementInDataStackAndGlobalData(
       dataClassName,
-      dataStack
+      dataStack,
     );
 
     if (element) return getDataClass(dataClassName)?.get(element._id);

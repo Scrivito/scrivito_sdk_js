@@ -11,7 +11,7 @@ export function drawImgOnCanvas(img: HTMLImageElement): HTMLCanvasElement {
 // For test purpose only
 export function drawOnCanvasContext(
   img: HTMLImageElement,
-  ctx: CanvasRenderingContext2D
+  ctx: CanvasRenderingContext2D,
 ): void {
   ctx.drawImage(img, 0, 0);
 }

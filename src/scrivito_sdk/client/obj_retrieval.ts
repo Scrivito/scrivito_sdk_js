@@ -30,7 +30,7 @@ let batchRetrievals: BatchRetrievals = {};
 export async function retrieveObj(
   objSpaceId: ObjSpaceId,
   id: string,
-  format: ObjFormat
+  format: ObjFormat,
 ): Promise<ObjJson> {
   if (isEmptySpaceId(objSpaceId)) return buildNonexistentObjJson(id);
 
@@ -69,7 +69,7 @@ function buildBatchRetrieval(objSpaceId: ObjSpaceId): ObjBatchRetrieval {
       })) as ObjMgetJson;
 
       return response.results.map(
-        (result, index) => result || buildNonexistentObjJson(keys[index][0])
+        (result, index) => result || buildNonexistentObjJson(keys[index][0]),
       );
     },
 
@@ -78,7 +78,7 @@ function buildBatchRetrieval(objSpaceId: ObjSpaceId): ObjBatchRetrieval {
     // With a batchSize of 17, this leads to 6 concurrent requests, which is
     // the concurrent request limit in many browsers for HTTP/1.
     // This ensures maximum parallel loading.
-    { batchSize: 17 }
+    { batchSize: 17 },
   );
 }
 

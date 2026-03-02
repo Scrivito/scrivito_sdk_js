@@ -26,7 +26,7 @@ export type ChangesJson = ChangesJsonWithChanges | ChangesJsonWithoutChanges;
 
 export function getWorkspaceChanges(
   workspace: WorkspaceObjSpaceId,
-  from?: string
+  from?: string,
 ): Promise<ChangesJson> {
   const workspaceId = getWorkspaceId(workspace);
   return cmsRestApi.get(`workspaces/${workspaceId}/changes`, {

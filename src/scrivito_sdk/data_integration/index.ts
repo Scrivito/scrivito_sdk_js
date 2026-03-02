@@ -101,4 +101,9 @@ export type {
 export { setCurrentLanguageHandler } from 'scrivito_sdk/data_integration/current_language';
 export { provideDataClass } from 'scrivito_sdk/data_integration/provide_data_class';
 export { provideDataItem } from 'scrivito_sdk/data_integration/provide_data_item';
+export { provideDataService } from 'scrivito_sdk/data_integration/provide_data_service';
 export { invalidateExternalData } from 'scrivito_sdk/data_integration/external_data_invalidation';
+export {
+  addDataClassPrefix,
+  removeDataClassPrefix,
+} from 'scrivito_sdk/data_integration/data_class_name_prefix';

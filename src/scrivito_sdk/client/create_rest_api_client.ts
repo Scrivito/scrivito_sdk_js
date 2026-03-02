@@ -17,11 +17,11 @@ import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler
 /** @public */
 export function createRestApiClient(
   baseUrl: string,
-  options?: ApiClientOptions
+  options?: ApiClientOptions,
 ): ApiClient {
   return new ApiClient(
     async (url, fetchOptions?) => fetch(joinPaths(baseUrl, url), fetchOptions),
-    options
+    options,
   );
 }
 
@@ -38,7 +38,7 @@ async function fetch(
     authViaAccount,
     authViaInstance,
     credentials,
-  }: FetchOptions = {}
+  }: FetchOptions = {},
 ) {
   const method = verb?.toUpperCase() ?? 'GET';
   const authorization =
@@ -68,7 +68,7 @@ async function fetch(
   if (method === 'GET') {
     return withLoginHandler(
       await calculateLoginHandler({ loginHandler, idp }),
-      fetchFn
+      fetchFn,
     );
   }
 
@@ -113,6 +113,6 @@ function calculateAuthProvider({
 
 function removeNullValues(headers: ApiClientHeaders = {}) {
   return Object.fromEntries(
-    Object.entries(headers).filter(([, v]) => v !== null)
+    Object.entries(headers).filter(([, v]) => v !== null),
   );
 }

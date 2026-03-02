@@ -8,7 +8,7 @@ import { runAndCatchErrorsWhileLoading } from 'scrivito_sdk/loadable';
  */
 export function loadWithDefault<T, S>(
   theDefault: T,
-  loadableFunction: () => S
+  loadableFunction: () => S,
 ): T | S {
   const run = runAndCatchErrorsWhileLoading(loadableFunction);
 

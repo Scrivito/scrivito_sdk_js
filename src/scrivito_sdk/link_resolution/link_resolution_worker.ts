@@ -21,7 +21,7 @@ export type AnyLinkResolutionAttributeJson =
   | LinklistAttributeJson;
 
 export function isAnyLinkResolutionAttributeJson(
-  attributeData: AttributeJson
+  attributeData: AttributeJson,
 ): attributeData is AnyLinkResolutionAttributeJson {
   return ['html', 'link', 'linklist'].includes(attributeData[0]);
 }
@@ -30,12 +30,12 @@ export async function runWorker(
   attributeDataToConvert: AnyLinkResolutionAttributeJson,
   objData: ObjData,
   attributeName: string,
-  widgetId?: string
+  widgetId?: string,
 ): Promise<void> {
   const convertValue = getConversion(attributeDataToConvert);
   const convertedDataWithoutLoading = loadableWithDefault(
     undefined,
-    convertValue
+    convertValue,
   );
   if (convertedDataWithoutLoading !== undefined) {
     if (!isEqual(convertedDataWithoutLoading, attributeDataToConvert)) {
@@ -53,7 +53,7 @@ export async function runWorker(
       attributeDataToConvert,
       objData,
       attributeName,
-      widgetId
+      widgetId,
     )
   ) {
     return;
@@ -66,7 +66,7 @@ function hasDataToConvertBeenChangedConcurrently(
   attributeData: AnyLinkResolutionAttributeJson,
   objData: ObjData,
   attributeName: string,
-  widgetId: string | undefined
+  widgetId: string | undefined,
 ) {
   const currentAttributeData = widgetId
     ? objData.getWidgetAttribute(widgetId, attributeName)
@@ -79,7 +79,7 @@ function update(
   objData: ObjData,
   attributeName: string,
   widgetId: string | undefined,
-  newData: AnyLinkResolutionAttributeJson
+  newData: AnyLinkResolutionAttributeJson,
 ) {
   const patch = { [attributeName]: newData };
 
@@ -97,7 +97,7 @@ function update(
 // The precise type is getConversion<T extends_oneof AnyLinkResolutionAttributeJson>(attributeData: T): () => T
 // See https://github.com/microsoft/TypeScript/issues/27808
 function getConversion(
-  attributeData: AnyLinkResolutionAttributeJson
+  attributeData: AnyLinkResolutionAttributeJson,
 ): () => typeof attributeData {
   switch (attributeData[0]) {
     case 'html': {

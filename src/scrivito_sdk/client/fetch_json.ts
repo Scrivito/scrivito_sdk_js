@@ -30,7 +30,7 @@ interface FetchApiOptions extends RequestInit {
  */
 export async function fetchJson(
   url: string,
-  options?: FetchApiOptions
+  options?: FetchApiOptions,
 ): Promise<unknown> {
   const data = options?.data;
   if (data) {
@@ -52,7 +52,7 @@ export async function fetchJson(
       await throwOnError(await requestWithRateLimitRetry(authorizedRequest), {
         url,
         method: options?.method,
-      })
+      }),
     );
 
   return isIdempotent
@@ -62,7 +62,7 @@ export async function fetchJson(
 
 function calculateDataFetchOptions(
   data: FetchData | FormData,
-  options: FetchApiOptions
+  options: FetchApiOptions,
 ) {
   const isFormData = data instanceof FormData;
 
@@ -97,7 +97,7 @@ function calculatePlainRequest(url: string, options?: FetchApiOptions) {
 
 function calculatePlainRequestOptions(
   authorization?: string,
-  options?: FetchApiOptions
+  options?: FetchApiOptions,
 ) {
   const credentials = calculateRequestCredentials(authorization, options);
 
@@ -114,7 +114,7 @@ function calculatePlainRequestOptions(
 
 function calculateRequestCredentials(
   authorization?: string,
-  options?: FetchApiOptions
+  options?: FetchApiOptions,
 ) {
   const credentials = options?.credentials;
   if (credentials) return credentials;

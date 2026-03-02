@@ -191,7 +191,7 @@ export type DataLocatorOperatorOrValueFilter =
   | DataLocatorValueFilter;
 
 export function isDataLocatorOperatorFilter(
-  filter: unknown
+  filter: unknown,
 ): filter is DataLocatorOperatorFilter {
   return (
     isObject(filter) &&
@@ -205,7 +205,7 @@ export function isDataLocatorOperatorFilter(
 }
 
 export function isDataLocatorOperatorCode(
-  opCode: unknown
+  opCode: unknown,
 ): opCode is OperatorFilterOpCode {
   return (
     typeof opCode === 'string' &&
@@ -215,7 +215,7 @@ export function isDataLocatorOperatorCode(
 
 export function isRelationalOpCode(opCode: OpCode): opCode is RelationalOpCode {
   return RELATIONAL_OPERATOR_FILTER_OP_CODES.includes(
-    opCode as RelationalOpCode
+    opCode as RelationalOpCode,
   );
 }
 
@@ -236,7 +236,7 @@ export interface DataLocatorValueFilter {
 }
 
 export function isDataLocatorValueFilter(
-  filter: unknown
+  filter: unknown,
 ): filter is DataLocatorValueFilter {
   const { value, field } = filter as DataLocatorValueFilter;
 
@@ -259,7 +259,7 @@ export interface DataLocatorValueVia {
 }
 
 export function buildNonexistentObjJson(
-  id: string
+  id: string,
 ): UnavailableObjJsonWithIndex {
   return { _deleted: id, _version: '' };
 }
@@ -269,19 +269,19 @@ export function isExistentObjJson(data: ObjJson): data is ExistentObjJson {
 }
 
 export function isUnavailableObjJson(
-  data: ObjJson | UnavailableObjJson
+  data: ObjJson | UnavailableObjJson,
 ): data is UnavailableObjJson {
   return !!data._deleted;
 }
 
 export function isWidgetAttributeJson(
-  attributeJson: AttributeJson
+  attributeJson: AttributeJson,
 ): attributeJson is WidgetAttributeJson {
   return attributeJson[0] === 'widget';
 }
 
 export function isWidgetlistAttributeJson(
-  attributeJson: AttributeJson
+  attributeJson: AttributeJson,
 ): attributeJson is WidgetlistAttributeJson {
   return attributeJson[0] === 'widgetlist';
 }

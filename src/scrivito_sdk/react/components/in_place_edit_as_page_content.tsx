@@ -1,10 +1,10 @@
-import * as React from 'react';
+import type { FC, PropsWithChildren } from 'react';
 
 import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
 import { EditAsPageContentContext } from 'scrivito_sdk/react/edit_as_page_content_context';
 
 /** @public */
-export const InPlaceEditAsPageContent: React.FC<React.PropsWithChildren> = ({
+export const InPlaceEditAsPageContent: FC<PropsWithChildren> = ({
   children,
 }) =>
   isInPlaceEditingActive() ? (

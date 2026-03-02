@@ -37,7 +37,7 @@ export async function fetchBrowserToken({
 
 function resolveLocationInAuthError(
   error: unknown,
-  authLocation: string
+  authLocation: string,
 ): unknown {
   if (!isAuthError(error)) return error;
 
@@ -47,7 +47,7 @@ function resolveLocationInAuthError(
 }
 
 function assertTokenResponse(
-  response: unknown
+  response: unknown,
 ): asserts response is { access_token: string } {
   if (
     response &&

@@ -10,7 +10,7 @@ export class Deferred<ValueType = void> implements PromiseLike<ValueType> {
     this.promise = new Promise(
       (
         resolveFn: (value: ValueType) => void,
-        rejectFn: (error: Error) => void
+        rejectFn: (error: Error) => void,
       ) => {
         this.resolve = (value) => {
           this.settled = true;
@@ -21,7 +21,7 @@ export class Deferred<ValueType = void> implements PromiseLike<ValueType> {
           this.settled = true;
           rejectFn(error);
         };
-      }
+      },
     );
   }
 
@@ -37,7 +37,7 @@ export class Deferred<ValueType = void> implements PromiseLike<ValueType> {
     onrejected?:
       | ((reason: unknown) => TResult2 | PromiseLike<TResult2>)
       | undefined
-      | null
+      | null,
   ): Promise<TResult1 | TResult2> {
     return this.promise.then(onfulfilled, onrejected);
   }

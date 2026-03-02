@@ -24,7 +24,7 @@ export interface SyncObservation<T> {
  */
 export function observeSync<T>(
   observedExpression: () => T,
-  listener: (value: T) => void
+  listener: (value: T) => void,
 ): SyncObservation<T> {
   const firstReport = trackStateAccess(() =>
     withFrozenState(
@@ -32,8 +32,8 @@ export function observeSync<T>(
         contextName: 'observeSync',
         message: 'Use non-sync observe or nextTick',
       },
-      observedExpression
-    )
+      observedExpression,
+    ),
   );
 
   let lastResult = firstReport.result;

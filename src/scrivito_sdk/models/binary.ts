@@ -27,7 +27,7 @@ const loadableCollection = createLoadableCollection({
   name: 'binary',
   loadElement: (
     [binaryId, transformation]: CollectionKey,
-    objSpaceId: ObjSpaceId
+    objSpaceId: ObjSpaceId,
   ) => ({
     loader: () =>
       cmsRetrieval.retrieveBinaryUrls(binaryId, transformation, {
@@ -58,7 +58,7 @@ interface BinaryStoreOptions extends BinaryUploadOptions {
 export function storeBinary(
   binaryId: string,
   options: BinaryStoreOptions,
-  response: BackendBinaryData
+  response: BackendBinaryData,
 ): Binary {
   const transformation = options.transformation;
 
@@ -77,20 +77,20 @@ export function storeBinary(
 export class Binary {
   static upload(
     source: Blob | File,
-    options?: BinaryUploadOptions
+    options?: BinaryUploadOptions,
   ): FutureBinary;
 
   /** @internal */
   static upload(
     source: Blob | File,
-    options?: BinaryUploadOptions
+    options?: BinaryUploadOptions,
   ): FutureBinary {
     checkUpload(source, options);
 
     if (!isFile(source)) {
       if (!(options && options.filename)) {
         throw new ArgumentError(
-          'Expected a filename to be passed with Blob as the source.'
+          'Expected a filename to be passed with Blob as the source.',
         );
       }
     }
@@ -111,13 +111,13 @@ export class Binary {
 
     /** @internal */
     private readonly _objSpaceId: ObjSpaceId = publishedSpace(),
-    transformation: TransformationDefinition | null = {}
+    transformation: TransformationDefinition | null = {},
   ) {
     this._transformation = transformation || undefined;
 
     this._loadableData = loadableCollection.get(
       [this._id, this._transformation],
-      this._objSpaceId
+      this._objSpaceId,
     );
   }
 
@@ -269,7 +269,7 @@ export class Binary {
     if (this.isTransformed()) {
       throw new ScrivitoError(
         `"${fieldName}" is not available for transformed images.` +
-          ' Use "Scrivito.Binary#raw" to access the untransformed version of the image.'
+          ' Use "Scrivito.Binary#raw" to access the untransformed version of the image.',
       );
     }
   }
@@ -285,7 +285,7 @@ function checkUpload(source: Blob | File, options?: BinaryUploadOptions) {
     throwInvalidArgumentsError(
       'Binary.upload',
       "'source' must be a 'Blob' or a 'File'.",
-      { docPermalink: 'js-sdk/Binary-static-upload' }
+      { docPermalink: 'js-sdk/Binary-static-upload' },
     );
   }
 
@@ -293,7 +293,7 @@ function checkUpload(source: Blob | File, options?: BinaryUploadOptions) {
     throwInvalidArgumentsError(
       'Binary.upload',
       "'options.contentType' must be a 'String'.",
-      { docPermalink: 'js-sdk/Binary-static-upload' }
+      { docPermalink: 'js-sdk/Binary-static-upload' },
     );
   }
 
@@ -301,7 +301,7 @@ function checkUpload(source: Blob | File, options?: BinaryUploadOptions) {
     throwInvalidArgumentsError(
       'Binary.upload',
       "'options.filename' must be a 'String'.",
-      { docPermalink: 'js-sdk/Binary-static-upload' }
+      { docPermalink: 'js-sdk/Binary-static-upload' },
     );
   }
 }

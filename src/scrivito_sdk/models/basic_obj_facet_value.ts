@@ -6,7 +6,7 @@ import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_sco
 export class BasicObjFacetValue {
   constructor(
     private readonly objSpaceId: ObjSpaceId,
-    private readonly facet: FacetValueData
+    private readonly facet: FacetValueData,
   ) {}
 
   name(): string {

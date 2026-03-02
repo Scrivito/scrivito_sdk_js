@@ -9,7 +9,7 @@ interface Attributes {
 export function initialAttributesFor(
   providedAttributes: object,
   schema: Schema,
-  appClassName: string
+  appClassName: string,
 ): Attributes {
   const initialAttributes: Attributes = {};
 

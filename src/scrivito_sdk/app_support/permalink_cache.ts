@@ -20,7 +20,7 @@ const cacheDisabled = new ContextContainer<boolean>();
 export function cacheObjForPermalink(
   obj: BasicObj,
   permalink: string,
-  siteId: string
+  siteId: string,
 ): void {
   if (cacheDisabled.current()) return;
   // throws, because clearIfOutdated observes only the current obj space
@@ -40,7 +40,7 @@ export function cacheObjForPermalink(
 
 export function objIdForPermalink(
   permalink: string,
-  siteId: string
+  siteId: string,
 ): string | undefined {
   if (cacheDisabled.current()) return;
 
@@ -62,7 +62,7 @@ export function clearPermalinkCache(): void {
 function clearIfOutdated(): void {
   const worldContentStateId =
     loadableWithDefault(undefined, () =>
-      getContentStateId(currentObjSpaceId())
+      getContentStateId(currentObjSpaceId()),
     ) || '';
   if (worldContentStateId !== cacheContentStateId) {
     cache = {};

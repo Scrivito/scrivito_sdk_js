@@ -39,7 +39,7 @@ export const batchCollection = new IdBatchCollection({
   loadOffline: queryExternalDataOfflineStore,
   invalidation: ([dataClass]) =>
     loadableWithDefault(undefined, () =>
-      getWriteCounter(dataClass).toString()
+      getWriteCounter(dataClass).toString(),
     ) || '',
 });
 
@@ -47,7 +47,7 @@ export function countExternalData(
   dataClass: string,
   filters: NormalizedDataScopeFilters | undefined,
   search: string | undefined,
-  attributes: DataAttributeDefinitions
+  attributes: DataAttributeDefinitions,
 ): number | null {
   validateFilters(dataClass, filters, attributes);
 
@@ -64,7 +64,7 @@ export function countExternalData(
 
 export function getExternalDataQuery(
   { _class: dataClass, filters, search, order, limit }: PresentDataScopePojo,
-  attributes: DataAttributeDefinitions
+  attributes: DataAttributeDefinitions,
 ): DataQuery<DataId> {
   if (isExternalDataLoadingDisabled()) return new EmptyContinueIterable();
 
@@ -82,8 +82,8 @@ export function getExternalDataQuery(
         false, // Never ask the backend about total count when fetching actual result data
       ],
       batchSize,
-      batchNumber
-    )
+      batchNumber,
+    ),
   );
 
   return transformContinueIterable(idQuery, (iterator) =>
@@ -91,14 +91,14 @@ export function getExternalDataQuery(
       .map((idOrItem) => toDataResult(idOrItem, dataClass))
       .takeWhile(({ data }) => data !== undefined)
       .filter(({ data }) => data !== null)
-      .map(({ id }) => id)
+      .map(({ id }) => id),
   );
 }
 
 function validateFilters(
   dataClassName: string,
   filters: NormalizedDataScopeFilters | undefined,
-  attributes: DataAttributeDefinitions
+  attributes: DataAttributeDefinitions,
 ) {
   mapValues(filters, (filterValue, filterName) => {
     const operatorSpecs = isOperatorSpec(filterValue)
@@ -132,10 +132,10 @@ async function loadBatch(
     NormalizedDataScopeFilters | undefined,
     string | undefined,
     OrderSpec | undefined,
-    boolean | undefined
+    boolean | undefined,
   ],
   continuation: string | undefined,
-  batchSize: number
+  batchSize: number,
 ) {
   const result = await indexViaDataConnection(
     dataClass,
@@ -145,7 +145,7 @@ async function loadBatch(
       order,
       limit: batchSize,
       count: !!count,
-    })
+    }),
   );
 
   const dataIds = handleResults(result.results, dataClass);
@@ -159,7 +159,7 @@ async function loadBatch(
 
 function handleResults(
   results: Array<DataId | number | NormalExternalData>,
-  dataClass: string
+  dataClass: string,
 ) {
   return results.map((idOrItem) => {
     if (typeof idOrItem === 'number') {
@@ -215,7 +215,7 @@ interface DataResult {
 
 function toDataResult(
   idOrItem: DataId | NormalExternalData,
-  dataClass: string
+  dataClass: string,
 ): DataResult {
   if (typeof idOrItem === 'string') {
     return { id: idOrItem, data: getExternalData(dataClass, idOrItem) };

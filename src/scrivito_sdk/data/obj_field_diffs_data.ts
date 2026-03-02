@@ -26,7 +26,7 @@ export function getFieldDiff(
   to: ObjSpaceId,
   attributeName: string,
   objId: string,
-  widgetId?: string
+  widgetId?: string,
 ): FieldDiff | null {
   const fieldDiffs = getFieldDiffs(from, to, objId, widgetId);
 
@@ -40,7 +40,7 @@ function getFieldDiffs(
   from: ObjSpaceId,
   to: ObjSpaceId,
   objId: string,
-  widgetId?: string
+  widgetId?: string,
 ): FieldDiffs {
   if (equals(from, to)) return {};
 
@@ -57,7 +57,7 @@ function getFieldDiffs(
 }
 
 export function isWidgetlistDiff(
-  diff: FieldDiff | null
+  diff: FieldDiff | null,
 ): diff is WidgetlistDiff {
   return !!diff && diff.format === 'widgetlist_diff';
 }
@@ -66,7 +66,7 @@ export function isWidgetlistDiff(
 export function storeObjFieldDiffs(
   diffs: ObjFieldDiffs,
   objId: string,
-  [from, to]: ComparisonRange
+  [from, to]: ComparisonRange,
 ): void {
   loadableCollection.get([from, to, objId]).set(diffs);
 }

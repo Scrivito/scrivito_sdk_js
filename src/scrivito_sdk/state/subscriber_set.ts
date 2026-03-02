@@ -24,7 +24,7 @@ type SubscriberStore = Subscriber[];
 export class SubscriberSet {
   private readonly subscribersStore = new CopyOnWriteStore<SubscriberStore>(
     [],
-    (subscribers) => subscribers.slice()
+    (subscribers) => subscribers.slice(),
   );
 
   /** This method is exposed to other packages as
@@ -75,7 +75,7 @@ class Subscriber implements StateSubscriber {
   constructor(
     private readonly subscriberSet: SubscriberSet,
     private readonly listener: () => void,
-    readonly rank = 0
+    readonly rank = 0,
   ) {}
 
   /** This method is exposed to other packages as

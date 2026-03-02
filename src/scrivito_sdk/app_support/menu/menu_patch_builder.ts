@@ -21,7 +21,7 @@ export class MenuPatchBuilder implements MenuBuilder {
 
   insert(customMenuItem: CustomMenuItem): void {
     this.patch.insertIds = Array.from(
-      new Set(this.patch.insertIds).add(customMenuItem.id)
+      new Set(this.patch.insertIds).add(customMenuItem.id),
     );
     const { description, group, position, title } = customMenuItem;
     const item: MenuPatchItem = {};

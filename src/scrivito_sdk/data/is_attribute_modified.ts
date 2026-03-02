@@ -12,7 +12,7 @@ export function isAttributeModified<A extends keyof ObjJson & string>(
   attribute: A,
   comparison: ComparisonRange,
   objId: string,
-  widgetId?: string
+  widgetId?: string,
 ): boolean {
   return widgetId
     ? isWidgetAttributeModified(attribute, comparison, objId, widgetId)
@@ -22,7 +22,7 @@ export function isAttributeModified<A extends keyof ObjJson & string>(
 function isObjAttributeModified<A extends keyof ObjJson & string>(
   attribute: A,
   [fromObjSpaceId, toObjSpaceId]: ComparisonRange,
-  objId: string
+  objId: string,
 ): boolean {
   const objDataBefore = getObjDataIfExistent(fromObjSpaceId, objId);
   const objDataAfter = getObjDataIfExistent(toObjSpaceId, objId);
@@ -30,7 +30,7 @@ function isObjAttributeModified<A extends keyof ObjJson & string>(
 
   return !isEqual(
     objDataBefore.getAttribute(attribute),
-    objDataAfter.getAttribute(attribute)
+    objDataAfter.getAttribute(attribute),
   );
 }
 
@@ -38,7 +38,7 @@ function isWidgetAttributeModified<A extends keyof WidgetJson & string>(
   attribute: A,
   [fromObjSpaceId, toObjSpaceId]: ComparisonRange,
   objId: string,
-  widgetId: string
+  widgetId: string,
 ): boolean {
   const objDataBefore = getObjDataIfExistent(fromObjSpaceId, objId);
   const objDataAfter = getObjDataIfExistent(toObjSpaceId, objId);
@@ -53,7 +53,7 @@ function isWidgetAttributeModified<A extends keyof WidgetJson & string>(
 
   return !isEqual(
     objDataBefore.getWidgetAttribute(widgetId, attribute),
-    objDataAfter.getWidgetAttribute(widgetId, attribute)
+    objDataAfter.getWidgetAttribute(widgetId, attribute),
   );
 }
 

@@ -6,7 +6,7 @@ import {
 
 export function getDetailsPageForDataParam(
   dataParam: string,
-  siteId: string | null
+  siteId: string | null,
 ): BasicObj | null {
   return objSpaceScopeExcludingDeleted(currentObjSpaceId())
     .search()

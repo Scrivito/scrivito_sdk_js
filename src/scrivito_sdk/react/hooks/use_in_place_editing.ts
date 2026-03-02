@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useContext } from 'react';
 
 import { currentPage } from 'scrivito_sdk/app_support/current_page';
 import { getEditableArea } from 'scrivito_sdk/app_support/editable_area';
@@ -10,8 +10,8 @@ import { InPlaceEditingEnabledContext } from 'scrivito_sdk/react/in_place_editin
 export function useInPlaceEditing(page: BasicObj | null): boolean {
   const currentEditableArea = useCurrentEditableArea();
 
-  const inPlaceEditingEnabled = React.useContext(InPlaceEditingEnabledContext);
-  const editAsPageContent = React.useContext(EditAsPageContentContext);
+  const inPlaceEditingEnabled = useContext(InPlaceEditingEnabledContext);
+  const editAsPageContent = useContext(EditAsPageContentContext);
 
   if (!inPlaceEditingEnabled) return false;
   if (page === null) return false;

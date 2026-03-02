@@ -4,7 +4,7 @@ export class ReplicationCache<T> {
   private cache: CmsWideReplicationCache<T> = {};
 
   constructor(
-    private readonly factory: (objSpaceId: ObjSpaceId, objId: string) => T
+    private readonly factory: (objSpaceId: ObjSpaceId, objId: string) => T,
   ) {}
 
   get(objSpaceId: ObjSpaceId, objId: string): T {
@@ -23,7 +23,7 @@ export class ReplicationCache<T> {
   }
 
   private getObjSpaceCache(
-    objSpaceId: ObjSpaceId
+    objSpaceId: ObjSpaceId,
   ): ObjSpaceReplicationCache<T> {
     const cacheKey = objSpaceId.join(':');
     const existingCache = this.cache[cacheKey];

@@ -1,5 +1,12 @@
 // @rewire
-import * as React from 'react';
+import {
+  type CSSProperties,
+  type ComponentType,
+  type JSX,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react';
 
 import { BackgroundImageDecoder } from 'scrivito_sdk/app_support/background_image_decoder';
 import { scaleDownBinary } from 'scrivito_sdk/app_support/scale_down_binary';
@@ -48,25 +55,25 @@ interface BackgroundProperties {
 type BinaryToUrl = (binary: Binary) => string;
 
 /** @public */
-export const BackgroundImageTag: React.ComponentType<BackgroundImageTagProps> =
+export const BackgroundImageTag: ComponentType<BackgroundImageTagProps> =
   connect(function BackgroundImageTag({
     style,
     tag,
     ...passThroughProps
   }: BackgroundImageTagProps) {
-    const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
-    const decoder = React.useMemo(
+    const decoder = useMemo(
       () => createBackgroundImageDecoder(forceUpdate),
-      []
+      [],
     );
 
-    React.useEffect(() => {
+    useEffect(() => {
       decoder.resumeUpdateCallback();
       return () => decoder.clear();
     }, [decoder]);
 
-    const Tag = (tag || 'div') as keyof React.JSX.IntrinsicElements;
+    const Tag = (tag || 'div') as keyof JSX.IntrinsicElements;
 
     assertNoBackgroundRelatedProperties(style);
 
@@ -88,13 +95,13 @@ export const BackgroundImageTag: React.ComponentType<BackgroundImageTagProps> =
 
 // For test purpose only
 export function createBackgroundImageDecoder(
-  onUpdateCallback: () => void
+  onUpdateCallback: () => void,
 ): BackgroundImageDecoder {
   return new BackgroundImageDecoder(onUpdateCallback);
 }
 
 type BackgroundCSSProperties = Pick<
-  React.CSSProperties,
+  CSSProperties,
   | 'backgroundAttachment'
   | 'backgroundClip'
   | 'backgroundColor'
@@ -107,7 +114,7 @@ type BackgroundCSSProperties = Pick<
 
 function calculateCSSProperties(
   style: BackgroundImageTagStyle | string,
-  binaryToUrl: BinaryToUrl
+  binaryToUrl: BinaryToUrl,
 ): BackgroundCSSProperties {
   if (isObject(style)) {
     const { background, ...otherStyles } = style as BackgroundImageTagStyle;
@@ -123,7 +130,7 @@ function calculateCSSProperties(
 
 function calculateBackgroundCSSProperties(
   background: Background | Background[] | undefined,
-  binaryToUrl: BinaryToUrl
+  binaryToUrl: BinaryToUrl,
 ): BackgroundCSSProperties {
   if (background === undefined) {
     return {};
@@ -131,7 +138,7 @@ function calculateBackgroundCSSProperties(
 
   if (Array.isArray(background)) {
     return mergeBackgroundCSSProperties(
-      background.map((b) => cssPropertiesFor(b, binaryToUrl))
+      background.map((b) => cssPropertiesFor(b, binaryToUrl)),
     );
   }
 
@@ -139,7 +146,7 @@ function calculateBackgroundCSSProperties(
 }
 
 function mergeBackgroundCSSProperties(
-  properties: BackgroundCSSProperties[]
+  properties: BackgroundCSSProperties[],
 ): BackgroundCSSProperties {
   return {
     backgroundImage: mergeCSSProperty(properties, 'backgroundImage'),
@@ -157,13 +164,13 @@ function mergeBackgroundCSSProperties(
 
 function mergeCSSProperty(
   properties: BackgroundCSSProperties[],
-  name: keyof BackgroundCSSProperties
+  name: keyof BackgroundCSSProperties,
 ) {
   return properties.map((property) => property[name]).join(', ');
 }
 
 function lastBackgroundColor(
-  properties: BackgroundCSSProperties[]
+  properties: BackgroundCSSProperties[],
 ): string | undefined {
   const lastBackground = properties[properties.length - 1];
 
@@ -174,7 +181,7 @@ function lastBackgroundColor(
 
 function cssPropertiesFor(
   background: Background,
-  binaryToUrl: BinaryToUrl
+  binaryToUrl: BinaryToUrl,
 ): BackgroundCSSProperties {
   if (isPlainBackground(background)) {
     return cssPropertiesForPlainBackground(background);
@@ -184,7 +191,7 @@ function cssPropertiesFor(
 }
 
 function cssPropertiesForPlainBackground(
-  background: PlainBackground
+  background: PlainBackground,
 ): BackgroundCSSProperties {
   return {
     backgroundImage: background.image,
@@ -201,7 +208,7 @@ function cssPropertiesForPlainBackground(
 
 function cssPropertiesForScrivitoBackground(
   background: ScrivitoBackground,
-  binaryToUrl: BinaryToUrl
+  binaryToUrl: BinaryToUrl,
 ): BackgroundCSSProperties {
   const image = background.image;
 
@@ -227,7 +234,7 @@ function cssPropertiesForScrivitoBackground(
 function cssPropertiesForBinary(
   binary: Binary,
   background: ScrivitoBackground,
-  binaryToUrl: BinaryToUrl
+  binaryToUrl: BinaryToUrl,
 ): BackgroundCSSProperties {
   return {
     backgroundImage: binaryToUrl(binary),
@@ -242,7 +249,7 @@ function cssPropertiesForBinary(
 }
 
 function isPlainBackground(
-  background: Background
+  background: Background,
 ): background is PlainBackground {
   return typeof background.image === 'string';
 }
@@ -255,8 +262,8 @@ function assertNoBackgroundRelatedProperties(style: unknown) {
           new ArgumentError(
             `Invalid background related CSS property "${key}". ` +
               'Expected property "background" alongside with any non-background properties' +
-              `For further details, see ${docUrl('js-sdk/BackgroundImageTag')}`
-          )
+              `For further details, see ${docUrl('js-sdk/BackgroundImageTag')}`,
+          ),
         );
       }
     }

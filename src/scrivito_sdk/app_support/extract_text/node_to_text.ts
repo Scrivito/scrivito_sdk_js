@@ -11,7 +11,7 @@ export function nodeToText(node: Node): string {
     .map((child) =>
       INLINE_NODES.includes(child.nodeName)
         ? nodeToText(child)
-        : ` ${nodeToText(child)} `
+        : ` ${nodeToText(child)} `,
     )
     .join('');
 }

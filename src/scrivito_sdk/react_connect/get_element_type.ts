@@ -16,7 +16,7 @@ export function getElementType(node: ReactNode): ElementType | undefined {
 }
 
 export function forwardElementTypeProps(
-  node: ReactNode
+  node: ReactNode,
 ): ForwardElementTypeProps {
   return { __scrivitoForwardElementType: getElementType(node) };
 }

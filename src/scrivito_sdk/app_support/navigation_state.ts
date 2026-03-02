@@ -56,7 +56,7 @@ function calculateNavigationState(): NavigationState | string {
 }
 
 function handleRedirectToBinary(
-  maybeBinaryUrl: NavigationState | string
+  maybeBinaryUrl: NavigationState | string,
 ): maybeBinaryUrl is NavigationState {
   if (typeof maybeBinaryUrl === 'string') {
     redirectToUrl(maybeBinaryUrl);
@@ -79,7 +79,7 @@ function recognizeLocation(location: string) {
 
   const obj = getObjFrom(
     currentAppSpace().and(restrictToSiteAndGlobal(route.siteData.siteId)),
-    route.objId
+    route.objId,
   );
 
   if (!obj) return { ...route, objId: undefined };
@@ -104,7 +104,7 @@ function handleMovedCurrentPage(newState: NavigationState) {
     null,
     () =>
       lastNavigationState &&
-      detectMovedCurrentPage(lastNavigationState, newState)
+      detectMovedCurrentPage(lastNavigationState, newState),
   );
 
   if (movedCurrentPage) {
@@ -123,7 +123,7 @@ function handleMovedCurrentPage(newState: NavigationState) {
 
 function detectMovedCurrentPage(
   oldState: NavigationState,
-  newState: NavigationState
+  newState: NavigationState,
 ) {
   return (
     // if the browser URL is unchanged

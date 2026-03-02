@@ -20,48 +20,48 @@ import {
 
 /** @public */
 export function provideEditingConfig<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 >(
   objClass: ObjClass<AttrDefs>,
-  editingConfig: ObjEditingConfig<AttrDefs>
+  editingConfig: ObjEditingConfig<AttrDefs>,
 ): void;
 
 /** @public */
 export function provideEditingConfig(
   objClassName: string,
-  editingConfig: ObjEditingConfig
+  editingConfig: ObjEditingConfig,
 ): void;
 
 /** @public */
 export function provideEditingConfig<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 >(
   widgetClass: WidgetClass<AttrDefs>,
-  editingConfig: WidgetEditingConfig<AttrDefs>
+  editingConfig: WidgetEditingConfig<AttrDefs>,
 ): void;
 
 /** @public */
 export function provideEditingConfig(
   dataClass: DataClass,
-  editingConfig: DataClassEditingConfig
+  editingConfig: DataClassEditingConfig,
 ): void;
 
 /** @public */
 export function provideEditingConfig(
   dataItem: DataItem,
-  editingConfig: DataClassEditingConfig
+  editingConfig: DataClassEditingConfig,
 ): void;
 
 /** @public */
 export function provideEditingConfig(
   widgetClassName: string,
-  editingConfig: WidgetEditingConfig
+  editingConfig: WidgetEditingConfig,
 ): void;
 
 /** @internal */
 export function provideEditingConfig(
   subject: string | ObjClass | WidgetClass | DataClass | DataItem,
-  editingConfig: EditingConfig
+  editingConfig: EditingConfig,
 ): void {
   setEditingConfigFor(getClassName(subject), editingConfig);
 }
@@ -69,7 +69,7 @@ export function provideEditingConfig(
 export function getAttributeEditingOptionsFor(
   className: string,
   attributeName: string,
-  attributeType: CmsAttributeType
+  attributeType: CmsAttributeType,
 ): AttributeEditingOptions | undefined {
   const attributes = getEditingConfigFor(className)?.attributes || {};
   const attribute = attributes[attributeName];

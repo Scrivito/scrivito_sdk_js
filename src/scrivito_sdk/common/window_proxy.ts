@@ -46,7 +46,7 @@ export function replaceLocation(newLocation: string): void {
 export function replaceHistoryState(
   state: object,
   title: string,
-  url?: string
+  url?: string,
 ): void {
   window.history.replaceState(state, title, url);
 }

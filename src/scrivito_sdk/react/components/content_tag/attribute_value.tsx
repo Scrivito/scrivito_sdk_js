@@ -74,7 +74,7 @@ export const AttributeValue = connect(
           : undefined,
         props.customProps.onClick,
         props.widgetProps,
-        dataContextContainer
+        dataContextContainer,
       );
 
       const editingProps = props.onClick
@@ -97,8 +97,8 @@ export const AttributeValue = connect(
         element.current = e;
         if (props.elementCallback) props.elementCallback(e);
       }
-    }
-  )
+    },
+  ),
 );
 
 interface CustomInnerHtml {
@@ -106,7 +106,7 @@ interface CustomInnerHtml {
 }
 
 function isCustomInnerHtml(
-  maybeCustomInnerHtml: unknown
+  maybeCustomInnerHtml: unknown,
 ): maybeCustomInnerHtml is CustomInnerHtml {
   return (
     isObject(maybeCustomInnerHtml) &&
@@ -120,7 +120,7 @@ function renderPropsForField(
   customInnerHtml: { __html: string } | undefined,
   customOnClick: (<T>(e: React.MouseEvent<T>) => void) | undefined,
   widgetProps: WidgetProps | undefined,
-  dataContextContainer: DataContextContainer | undefined
+  dataContextContainer: DataContextContainer | undefined,
 ): React.DOMAttributes<HTMLElement> {
   const dataStack = dataContextContainer?.dataStack;
 
@@ -144,14 +144,14 @@ function renderPropsForField(
         field as BasicField<'html'>,
         customChildren,
         customOnClick,
-        dataContextContainer
+        dataContextContainer,
       );
 
     case 'string':
       return renderPropsForString(
         field as BasicField<'string'>,
         customChildren,
-        dataContextContainer
+        dataContextContainer,
       );
 
     case 'float':
@@ -192,7 +192,7 @@ function renderPropsForHtml(
   field: BasicField<'html'>,
   customChildren?: { children: React.ReactNode },
   customOnClick?: (e: React.MouseEvent) => unknown,
-  dataContextContainer?: DataContextContainer
+  dataContextContainer?: DataContextContainer,
 ) {
   const diffContent = isComparisonActive()
     ? field.getHtmlDiffContent(getComparisonRange())
@@ -231,7 +231,7 @@ function renderPropsForHtml(
           dataStack,
           transform: escape,
         }),
-        { dataStack }
+        { dataStack },
       ),
     },
     onClick: handleClickOnHtml,
@@ -241,7 +241,7 @@ function renderPropsForHtml(
 function renderPropsForString(
   field: BasicField<'string'>,
   customChildren?: { children: React.ReactNode },
-  dataContextContainer?: DataContextContainer
+  dataContextContainer?: DataContextContainer,
 ) {
   const diffContent = isComparisonActive()
     ? field.getHtmlDiffContent(getComparisonRange())
@@ -290,7 +290,7 @@ function isSameSite(url: string) {
 
 function handleOpenInNewWindow<T>(
   e: React.MouseEvent<T>,
-  { openInNewWindow: url }: OpenInNewWindow
+  { openInNewWindow: url }: OpenInNewWindow,
 ) {
   if (uiAdapter) {
     e.preventDefault();
@@ -301,7 +301,7 @@ function handleOpenInNewWindow<T>(
 
 function handleOpenInCurrentWindow<T>(
   e: React.MouseEvent<T>,
-  { openInCurrentWindow: resource }: OpenInCurrentWindow
+  { openInCurrentWindow: resource }: OpenInCurrentWindow,
 ) {
   e.preventDefault();
 

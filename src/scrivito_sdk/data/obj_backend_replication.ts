@@ -37,13 +37,13 @@ export class ObjBackendReplication implements ObjReplication {
 
   constructor(
     private readonly objSpaceId: ObjSpaceId,
-    private readonly objId: string
+    private readonly objId: string,
   ) {
     this.replicationActive = false;
     this.scheduledReplication = false;
     this.performThrottledReplication = throttle(
       () => this.performReplication(),
-      1000
+      1000,
     );
   }
 
@@ -92,8 +92,8 @@ export class ObjBackendReplication implements ObjReplication {
       threeWayMergeObjs(
         notifiedBackendState,
         this.localState,
-        this.backendState
-      )
+        this.backendState,
+      ),
     );
     this.backendState = notifiedBackendState;
   }
@@ -177,7 +177,7 @@ export class ObjBackendReplication implements ObjReplication {
   }
 
   private async replicateLocalStateToBackend(
-    localState: ObjJson
+    localState: ObjJson,
   ): Promise<ObjJson> {
     const patch = diffObjJson(this.backendState, localState);
 
@@ -216,8 +216,8 @@ export class ObjBackendReplication implements ObjReplication {
       threeWayMergeObjs(
         this.getLocalObjJson(),
         this.backendState,
-        replicatedState
-      )
+        replicatedState,
+      ),
     );
   }
 

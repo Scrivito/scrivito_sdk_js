@@ -6,7 +6,7 @@ import {
 
 export function validateAttributeDefinitions(
   attributeDefinitions: AttributeDefinitions,
-  apiFunctionName: string
+  apiFunctionName: string,
 ) {
   Object.entries(attributeDefinitions).forEach(
     ([attributeName, definition]) => {
@@ -21,7 +21,7 @@ export function validateAttributeDefinitions(
         assertWidgetlistDefinition(
           attributeName,
           attributeTypeOptions,
-          apiFunctionName
+          apiFunctionName,
         );
       }
 
@@ -32,10 +32,10 @@ export function validateAttributeDefinitions(
         assertEnumOrMultienumDefinition(
           attributeName,
           attributeTypeOptions,
-          apiFunctionName
+          apiFunctionName,
         );
       }
-    }
+    },
   );
 }
 
@@ -52,7 +52,7 @@ type WidgetlistOptions =
 function assertWidgetlistDefinition(
   attributeName: string,
   options: WidgetlistOptions,
-  apiFunctionName: string
+  apiFunctionName: string,
 ) {
   if (options.maximum !== undefined) {
     const { maximum } = options;
@@ -62,7 +62,7 @@ function assertWidgetlistDefinition(
     throwInvalidArgumentsError(
       apiFunctionName,
       `invalid value "${maximum}" supplied to ${attributeName}: The "maximum" must be a positive integer.`,
-      { docPermalink: `js-sdk/${apiFunctionName}` }
+      { docPermalink: `js-sdk/${apiFunctionName}` },
     );
   }
 }
@@ -74,13 +74,13 @@ function assertEnumOrMultienumDefinition(
   }:
     | AttributeTypeToConfigMapping['enum']
     | AttributeTypeToConfigMapping['multienum'],
-  apiFunctionName: string
+  apiFunctionName: string,
 ) {
   if (values.includes('')) {
     throwInvalidArgumentsError(
       apiFunctionName,
       `invalid "values" config supplied for ${attributeName}: An empty string is not a valid enum or multienum value.`,
-      { docPermalink: `js-sdk/${apiFunctionName}` }
+      { docPermalink: `js-sdk/${apiFunctionName}` },
     );
   }
 }
@@ -91,7 +91,7 @@ function assertCustomAttributeName(name: string, target: string) {
   throwInvalidArgumentsError(
     target,
     `attribute name "${name}" is invalid. Must be a string (alphanumeric, starting with a lower-case character).`,
-    { docPermalink: `js-sdk/${target}` }
+    { docPermalink: `js-sdk/${target}` },
   );
 }
 

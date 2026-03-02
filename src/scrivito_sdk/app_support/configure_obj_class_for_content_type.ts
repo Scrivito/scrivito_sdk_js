@@ -16,18 +16,18 @@ export function getObjClassForContentTypeMapping():
 
 /** @public */
 export function configureObjClassForContentType(
-  configuration: ObjClassForContentTypeMapping
+  configuration: ObjClassForContentTypeMapping,
 ): void {
   checkConfigureObjClassForContentType(configuration);
 
   if (!configuration['*/*']) {
     throw new ArgumentError(
-      'No ObjClass has been configured for the contentType "*/*"'
+      'No ObjClass has been configured for the contentType "*/*"',
     );
   }
   if (state.get() !== undefined) {
     throw new ScrivitoError(
-      'configureObjClassForContentType must be called only once'
+      'configureObjClassForContentType must be called only once',
     );
   }
 
@@ -35,14 +35,14 @@ export function configureObjClassForContentType(
 }
 
 function checkConfigureObjClassForContentType(
-  configuration: ObjClassForContentTypeMapping
+  configuration: ObjClassForContentTypeMapping,
 ) {
   Object.keys(configuration).forEach((contentType) => {
     if (!/^(\*\/\*|[^\/\*]+\/(\*|[^\*;]+))$/.test(contentType)) {
       throwInvalidArgumentsError(
         'configureObjClassForContentType',
         `Content type '${contentType}' is not valid.`,
-        { docPermalink: 'js-sdk/configureObjClassForContentType' }
+        { docPermalink: 'js-sdk/configureObjClassForContentType' },
       );
     }
   });

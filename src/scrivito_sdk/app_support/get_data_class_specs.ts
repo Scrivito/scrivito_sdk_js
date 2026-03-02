@@ -9,7 +9,7 @@ import {
 
 export function computeDataAttributeNames(
   attributes?: NormalizedDataAttributeDefinitions,
-  editingConfig?: AttributesEditingConfig
+  editingConfig?: AttributesEditingConfig,
 ): string[] {
   const set = new Set<string>();
   if (attributes) Object.keys(attributes).forEach((k) => set.add(k));
@@ -19,7 +19,7 @@ export function computeDataAttributeNames(
 
 export function getDataAttributeTitle(
   editingConfig?: AttributeEditingConfig,
-  config?: DataAttributeConfig
+  config?: DataAttributeConfig,
 ): string | undefined {
   return editingConfig?.title ?? config?.title;
 }

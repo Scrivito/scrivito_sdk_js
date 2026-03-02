@@ -37,8 +37,8 @@ export function observe<T>(observedExpression: () => T): Streamable<T> {
             contextName: 'observe',
             message: 'Extract all side-effects into the listener function',
           },
-          observedExpression
-        )
+          observedExpression,
+        ),
       );
 
       stateSubscriber.subscribeChanges(report.accessedState);

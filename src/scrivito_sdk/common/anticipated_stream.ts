@@ -2,7 +2,7 @@ import { Streamable, Subscription } from 'scrivito_sdk/common';
 
 /** Convert a Promise to a Stream into the promised Stream. */
 export function anticipatedStream<T>(
-  streamPromise: Promise<Streamable<T>>
+  streamPromise: Promise<Streamable<T>>,
 ): Streamable<T> {
   return new Streamable((subscriber) => {
     let subscription: Subscription | undefined;

@@ -9,5 +9,5 @@ export const addBatchUpdate = collectInListAndSchedule<Callback>(
     withBatchedUpdates(() => callbacks.forEach((callback) => callback()));
 
     return [];
-  }
+  },
 );

@@ -1,5 +1,6 @@
 import { ArgumentError } from 'scrivito_sdk/common';
 import { DataClass } from 'scrivito_sdk/data_integration/data_class';
+import { addDataClassPrefix } from 'scrivito_sdk/data_integration/data_class_name_prefix';
 import {
   ExternalDataClass,
   isExternalDataClassProvided,
@@ -32,7 +33,9 @@ export function getObjDataClass(dataClassName: string) {
 }
 
 function getExternalDataClass(dataClassName: string) {
-  if (isExternalDataClassProvided(dataClassName)) {
-    return new ExternalDataClass(dataClassName);
+  const internalName = addDataClassPrefix(dataClassName);
+
+  if (isExternalDataClassProvided(internalName)) {
+    return new ExternalDataClass(internalName);
   }
 }

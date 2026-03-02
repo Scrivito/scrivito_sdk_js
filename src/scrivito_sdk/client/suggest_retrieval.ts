@@ -20,12 +20,12 @@ export interface BackendSuggestResponse {
 
 export async function retrieveSuggest(
   workspaceId: string,
-  params: BackendSuggestParams
+  params: BackendSuggestParams,
 ): Promise<BackendSuggestResponse> {
   try {
     const response = await cmsRestApi.put(
       `workspaces/${workspaceId}/objs/search/suggest`,
-      params
+      params,
     );
     return response as BackendSuggestResponse;
   } catch (error) {

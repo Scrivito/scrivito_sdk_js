@@ -81,7 +81,7 @@ export class BasicLink {
       otherLink instanceof BasicLink &&
       isEqual(
         otherLink.attributesForComparison(),
-        this.attributesForComparison()
+        this.attributesForComparison(),
       )
     );
   }
@@ -91,7 +91,7 @@ export class BasicLink {
     if (attributes.objId && attributes.url) {
       throw new ArgumentError(
         'Link#copy refused: both "objId" and "url" have been' +
-          ' specified with truthy values'
+          ' specified with truthy values',
       );
     }
     if (attributes.objId) {
@@ -125,8 +125,8 @@ export class BasicLink {
   protected attributesForComparison() {
     return Object.fromEntries(
       Object.entries(this.attributes).filter(
-        ([, attribute]) => attribute !== null && attribute !== undefined
-      )
+        ([, attribute]) => attribute !== null && attribute !== undefined,
+      ),
     );
   }
 }

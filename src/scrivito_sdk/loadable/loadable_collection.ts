@@ -15,13 +15,13 @@ interface LoadableCollectionState<LoadableType> {
 
 type LoadElementCallback<LoadableType, KeyType, LoaderHintType> = (
   key: KeyType,
-  hint?: LoaderHintType
+  hint?: LoaderHintType,
 ) => LoaderProcessParams<LoadableType>;
 
 export type LoadableCollection<
   LoadableType,
   KeyType = string,
-  LoaderHintType = undefined
+  LoaderHintType = undefined,
 > = InstanceType<
   typeof LoadableCollectionImpl<LoadableType, KeyType, LoaderHintType>
 >;
@@ -29,7 +29,7 @@ export type LoadableCollection<
 export function createLoadableCollection<
   LoadableType,
   KeyType = string,
-  LoaderHintType = undefined
+  LoaderHintType = undefined,
 >(params: {
   name?: string;
   loadElement: LoadElementCallback<LoadableType, KeyType, LoaderHintType>;
@@ -41,7 +41,7 @@ export function createLoadableCollection<
 class LoadableCollectionImpl<
   LoadableType,
   KeyType = string,
-  LoaderHintType = undefined
+  LoaderHintType = undefined,
 > {
   private state: StateContainer<LoadableCollectionState<LoadableType>>;
   private name?: string;
@@ -111,7 +111,7 @@ class LoadableCollectionImpl<
   }
 
   async findValuesInOfflineStore(
-    selector: (data: LoadableType, key: KeyType) => boolean
+    selector: (data: LoadableType, key: KeyType) => boolean,
   ): Promise<Array<[LoadableType, KeyType]>> {
     if (!this.offlineStore) throw new InternalError();
 

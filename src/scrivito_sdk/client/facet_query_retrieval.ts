@@ -31,12 +31,12 @@ export interface BackendFacetQueryResponse {
 
 export async function retrieveFacetQuery(
   workspaceId: string,
-  params: BackendFacetRequestParams
+  params: BackendFacetRequestParams,
 ): Promise<BackendFacetQueryResponse> {
   try {
     return (await cmsRestApi.get(
       `workspaces/${workspaceId}/objs/search`,
-      params
+      params,
     )) as BackendFacetQueryResponse;
   } catch (error) {
     if (error instanceof MissingWorkspaceError) return { facets: [[]] };

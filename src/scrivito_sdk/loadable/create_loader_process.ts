@@ -48,12 +48,12 @@ interface ParamsWithLoadableStream<T> {
 export function createLoaderProcess<T>(
   loadable: LoadableData<T>,
   params: LoaderProcessParams<T>,
-  stateContainer: StateContainer<LoadableState<T>>
+  stateContainer: StateContainer<LoadableState<T>>,
 ) {
   if (params.stream) {
     return new StreamProcess(
       stateContainer,
-      params.stream.map((value) => ({ meta: {}, value }))
+      params.stream.map((value) => ({ meta: {}, value })),
     );
   }
 
@@ -67,6 +67,6 @@ export function createLoaderProcess<T>(
     stateContainer,
     loader,
     params.invalidation,
-    onChange
+    onChange,
   );
 }

@@ -13,7 +13,7 @@ export type ValidationsConfig<T extends Obj | Widget> = ReadonlyArray<
 >;
 
 export type ContentValidationCallback<T extends Obj | Widget> = (
-  content: T
+  content: T,
 ) => ValidationResult;
 
 type AttributeValidationName = string;
@@ -28,25 +28,25 @@ interface AttributeValidationOptions {
 
 type AttributeValidationConstraintsWithOptions = [
   AttributeValidationOptions,
-  object
+  object,
 ];
 
 export type AttributeValidations<T extends Obj | Widget> = readonly [
   AttributeValidationName,
-  ...Array<AttributeValidationConstraints | AttributeValidationCallback<T>>
+  ...Array<AttributeValidationConstraints | AttributeValidationCallback<T>>,
 ];
 
 export function getValidationCallback(
   callbackOrConstraints:
     | AttributeValidationCallback<Obj | Widget>
-    | AttributeValidationConstraints
+    | AttributeValidationConstraints,
 ): AttributeValidationCallback<Obj | Widget> {
   if (isAttributeValidationCallback(callbackOrConstraints)) {
     return callbackOrConstraints;
   }
 
   const constraints = isAttributeValidationConstraintsWithOptions(
-    callbackOrConstraints
+    callbackOrConstraints,
   )
     ? callbackOrConstraints[1]
     : callbackOrConstraints;
@@ -56,7 +56,7 @@ export function getValidationCallback(
 export function isContentValidationCallback(
   maybeContentValidationCallback:
     | ContentValidationCallback<Obj | Widget>
-    | AttributeValidations<Obj | Widget>
+    | AttributeValidations<Obj | Widget>,
 ): maybeContentValidationCallback is ContentValidationCallback<Obj | Widget> {
   return typeof maybeContentValidationCallback === 'function';
 }
@@ -64,7 +64,7 @@ export function isContentValidationCallback(
 export function isAttributeValidationCallback(
   maybeAttributeValidationCallback:
     | AttributeValidationCallback<Obj | Widget>
-    | AttributeValidationConstraints
+    | AttributeValidationConstraints,
 ): maybeAttributeValidationCallback is AttributeValidationCallback<
   Obj | Widget
 > {
@@ -75,7 +75,7 @@ export function isAttributeValidationConstraintsWithOptions(
   candidate:
     | AttributeValidationCallback<Obj | Widget>
     | AttributeValidationConstraints
-    | object[]
+    | object[],
 ): candidate is AttributeValidationConstraintsWithOptions {
   if (!Array.isArray(candidate)) return false;
 
@@ -86,7 +86,7 @@ export function isAttributeValidationConstraintsWithOptions(
 }
 
 function isAttributeValidationOptions(
-  maybeAttributeValidationOptions: AttributeValidationOptions | unknown
+  maybeAttributeValidationOptions: AttributeValidationOptions | unknown,
 ): maybeAttributeValidationOptions is AttributeValidationOptions {
   if (!maybeAttributeValidationOptions) return false;
   if (typeof maybeAttributeValidationOptions !== 'object') return false;
@@ -119,5 +119,5 @@ export type AttributeValidationCallback<T extends Obj | Widget> = (
     obj: T extends Obj ? T : never;
     widget: T extends Widget ? T : never;
     content: T;
-  }
+  },
 ) => ValidationResult;

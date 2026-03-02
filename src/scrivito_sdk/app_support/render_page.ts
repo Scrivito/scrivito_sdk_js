@@ -30,13 +30,13 @@ export interface RenderResult<T> {
 /** @public */
 export function renderPage<T>(
   obj: Obj,
-  render: () => T
+  render: () => T,
 ): Promise<RenderResult<T>>;
 
 /** @internal */
 export async function renderPage<T>(
   obj: Obj,
-  render: () => T
+  render: () => T,
 ): Promise<RenderResult<T>> {
   assertNotUsingInMemoryTenant('Scrivito.renderPage');
   checkRenderPage(obj, render);
@@ -56,7 +56,7 @@ export async function renderPage<T>(
         const baseUrl = baseUrlForSite(siteId);
         if (!baseUrl) {
           throw new ScrivitoError(
-            `The obj "${page.id()}" cannot be rendered because the baseUrlForSite callback did not return a URL for its site "${siteId}".`
+            `The obj "${page.id()}" cannot be rendered because the baseUrlForSite callback did not return a URL for its site "${siteId}".`,
           );
         }
 
@@ -70,10 +70,10 @@ export async function renderPage<T>(
             ensureRoutingDataAvailable(page);
 
             return usePrerenderScaling(render);
-          }
+          },
         );
-      })
-    )
+      }),
+    ),
   );
 
   return {
@@ -87,7 +87,7 @@ function ensureSiteIsPresent(page: BasicObj, errorClass = ScrivitoError) {
   if (siteId) return siteId;
 
   throw new errorClass(
-    `The obj "${page.id()}" cannot be rendered because it does not have a site ID.`
+    `The obj "${page.id()}" cannot be rendered because it does not have a site ID.`,
   );
 }
 
@@ -96,7 +96,7 @@ function checkRenderPage<T>(obj: Obj, render: () => T) {
     throwInvalidArgumentsError(
       'renderPage',
       "'obj' must be an instance of 'Obj'.",
-      { docPermalink: 'js-sdk/renderPage' }
+      { docPermalink: 'js-sdk/renderPage' },
     );
   }
 

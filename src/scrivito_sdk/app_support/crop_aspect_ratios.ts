@@ -5,7 +5,7 @@ let cropAspectRatioConfig: CropAspectRatio[] | undefined;
 
 /** @public */
 export function configureCropAspectRatios(
-  cropAspectRatios: CropAspectRatio[]
+  cropAspectRatios: CropAspectRatio[],
 ): void {
   cropAspectRatioConfig = [...cropAspectRatios];
 }

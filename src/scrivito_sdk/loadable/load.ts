@@ -32,8 +32,8 @@ export async function load<T>(loadableFunction: () => T): Promise<T> {
         contextName: 'Scrivito.load',
         message: 'Use an async callback: await Scrivito.load(/* ... */)',
       },
-      loadableFunction
-    )
+      loadableFunction,
+    ),
   )
     .filter((o) => !o.meta.incomplete && !o.meta.outdated)
     .waitForFirst();
@@ -46,7 +46,7 @@ function checkLoad<T>(loadableFunction: () => T) {
     throwInvalidArgumentsError(
       'Scrivito.load',
       'Use an async callback: await Scrivito.load(/* ... */)',
-      { docPermalink: 'js-sdk/load' }
+      { docPermalink: 'js-sdk/load' },
     );
   }
 }
