@@ -2,6 +2,7 @@
 import { pruneString } from 'scrivito_sdk/common';
 import { BasicObj, BasicWidget } from 'scrivito_sdk/models';
 import { Schema } from 'scrivito_sdk/realm';
+
 import { extractBlobText } from './extract_blob_text';
 import { ExtractCollector } from './extract_collector';
 import { extractTextFromBasicObjOrWidget } from './extract_text_from_basic_obj_or_widget';

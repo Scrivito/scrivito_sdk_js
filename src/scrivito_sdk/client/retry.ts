@@ -39,6 +39,7 @@ export async function retryOnRequestFailed<T>(
       if (!(error instanceof RequestFailedError)) throw error;
       if (limitedRetries && backoff.numberOfRetries() > 5) throw error;
 
+      // eslint-disable-next-line no-console
       console.info(`"${String(error)}". Retrying the request...`);
 
       await backoff.nextDelay();

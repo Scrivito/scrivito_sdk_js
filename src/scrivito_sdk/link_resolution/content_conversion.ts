@@ -1,5 +1,6 @@
 import { LinkJson } from 'scrivito_sdk/client';
 import { resolveUrl } from 'scrivito_sdk/link_resolution/resolve_url';
+
 import { resolveHtmlUrl } from './content_conversion/resolve_html_url';
 
 export function convertHtml(input: string): string {

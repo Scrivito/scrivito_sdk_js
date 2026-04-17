@@ -1,6 +1,5 @@
 // @rewire
 import { InternalError } from 'scrivito_sdk/common';
-
 import { LoadableData } from 'scrivito_sdk/loadable';
 import { getCollection } from 'scrivito_sdk/loadable/loadable_collection';
 import { withBatchedUpdates } from 'scrivito_sdk/state';

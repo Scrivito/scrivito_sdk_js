@@ -1,5 +1,4 @@
 import { isObject } from 'scrivito_sdk/common';
-
 import { registerExternalDataClass } from 'scrivito_sdk/data_integration';
 import { throwMissingCallbackError } from 'scrivito_sdk/data_integration/add_missing_data_connection_handlers';
 import { LazyAsyncDataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';

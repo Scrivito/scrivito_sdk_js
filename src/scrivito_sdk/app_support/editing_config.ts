@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import { ValidationsConfig } from 'scrivito_sdk/app_support/validations_config';
 import { Binary } from 'scrivito_sdk/models';
 import {
@@ -126,7 +127,7 @@ interface ColorPickerEditorAttributeEditingOptions {
 }
 
 interface DimensionPickerEditorAttributeEditingOptions {
-  units?: DimensionPickerUnit[];
+  units?: readonly DimensionPickerUnit[];
 }
 
 export type DimensionPickerUnit = 'px' | '%' | 'rem' | 'em' | 'vh' | 'vw';
@@ -171,11 +172,14 @@ export type PropertyGroup =
   | PropertiesGroupDescription
   | DynamicPropertyGroup;
 
-export type GroupPropertyWithConfig = readonly [string, { enabled: boolean }];
+export type GroupPropertyWithConfig = readonly [
+  string,
+  { enabled: boolean; component?: never }
+];
 
 export type GroupPropertyWithComponent = readonly [
   string,
-  { component: ExtensionComponent | null }
+  { component: ExtensionComponent | null; enabled?: never }
 ];
 
 export type GroupProperty =

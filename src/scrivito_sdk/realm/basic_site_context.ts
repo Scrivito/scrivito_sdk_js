@@ -14,7 +14,6 @@ import {
   getRootObjFrom,
   restrictToObjClass,
 } from 'scrivito_sdk/models';
-
 import { AttributeDefinitions, Obj, ObjClass } from 'scrivito_sdk/realm';
 import { initialAttributesFor } from 'scrivito_sdk/realm/initial_attributes_for';
 import { ObjAttributes } from 'scrivito_sdk/realm/obj';
@@ -24,6 +23,7 @@ import {
   unwrapAppAttributes,
   wrapInAppClass,
 } from 'scrivito_sdk/realm/wrap_in_app_class';
+
 import { objClassNameFor } from './registry';
 
 export interface SiteContext<

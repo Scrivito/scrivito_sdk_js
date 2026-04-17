@@ -1,7 +1,6 @@
 import { ObjJson, ObjSpaceId } from 'scrivito_sdk/client';
 import { InternalError, Streamable } from 'scrivito_sdk/common';
 import { ObjReplicationMessage } from 'scrivito_sdk/data';
-
 import { ObjReplication } from 'scrivito_sdk/data/obj_replication';
 import { createObjReplicationProcess } from 'scrivito_sdk/data/obj_replication_process';
 import { ReplicationProcess } from 'scrivito_sdk/replication';

@@ -1,4 +1,5 @@
 import isEmpty from 'lodash-es/isEmpty';
+
 import {
   ObjJson,
   ObjSpaceId,

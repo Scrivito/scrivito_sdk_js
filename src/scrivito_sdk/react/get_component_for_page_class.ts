@@ -4,7 +4,6 @@ import {
   throwNextTick,
 } from 'scrivito_sdk/common';
 import { getComponentForAppClass } from 'scrivito_sdk/react/component_registry';
-
 import { AttributeDefinitions, Obj } from 'scrivito_sdk/realm';
 
 /** @public */

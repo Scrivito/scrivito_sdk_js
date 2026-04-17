@@ -4,6 +4,7 @@ import {
   BasicAttributeValueForUpdate,
   CmsAttributeType,
 } from 'scrivito_sdk/models';
+
 import { AttributeEditingOptions } from './editing_config';
 
 export type { CmsAttributeType } from 'scrivito_sdk/models';

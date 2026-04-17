@@ -1,5 +1,4 @@
 import { InternalError } from 'scrivito_sdk/common';
-
 import {
   LoadableMeta,
   LoadableState,

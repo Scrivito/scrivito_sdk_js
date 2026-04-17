@@ -2,6 +2,7 @@ import { throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { isWrappingBasicObj } from 'scrivito_sdk/models';
 import { unwrapAppClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
+
 import { extractTextFromBasicObj } from './extract_text_from_basic_obj';
 
 /** @public */

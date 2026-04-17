@@ -1,4 +1,5 @@
 import { promiseAndFinally } from 'scrivito_sdk/common';
+
 import { decodeImage } from './decode_image';
 
 export class ImageDecoder {
