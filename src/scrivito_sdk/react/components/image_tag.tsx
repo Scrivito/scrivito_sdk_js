@@ -1,13 +1,4 @@
-import {
-  type ImgHTMLAttributes,
-  type ReactElement,
-  type Ref,
-  type SyntheticEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import * as React from 'react';
 
 import { ImageDecoder } from 'scrivito_sdk/app_support/image_decoder';
 import {
@@ -25,23 +16,23 @@ import { imagePlaceholder } from 'scrivito_sdk/react/image_placeholder';
 import { connect } from 'scrivito_sdk/react_connect';
 import { AttributeDefinitions, Obj, Schema, Widget } from 'scrivito_sdk/realm';
 
-type Width = ImgHTMLAttributes<HTMLImageElement>['width'];
+type Width = React.ImgHTMLAttributes<HTMLImageElement>['width'];
 
 interface ImageTagProps<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > {
   attribute?: keyof AttrDefs & string;
   content?: Binary | Obj<AttrDefs> | Widget<AttrDefs> | null;
   width?: Width;
-  onLoad?: ImgHTMLAttributes<HTMLImageElement>['onLoad'];
-  ref?: Ref<Element>;
+  onLoad?: React.ImgHTMLAttributes<HTMLImageElement>['onLoad'];
+  ref?: React.Ref<Element>;
   [key: string]: unknown;
 }
 
 type ImageTagType = {
   <AttrDefs extends AttributeDefinitions = AttributeDefinitions>(
-    props: ImageTagProps<AttrDefs>,
-  ): ReactElement | null;
+    props: ImageTagProps<AttrDefs>
+  ): React.ReactElement | null;
 };
 
 /** @public */
@@ -53,33 +44,33 @@ export const ImageTag = connect(function ImageTag({
   ref,
   ...htmlOptions
 }: ImageTagProps) {
-  const [isLazy, setIsLazy] = useState(htmlOptions.loading === 'lazy');
+  const [isLazy, setIsLazy] = React.useState(htmlOptions.loading === 'lazy');
 
-  const load = useCallback(
-    (event: SyntheticEvent<HTMLImageElement, Event>) => {
+  const load = React.useCallback(
+    (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
       setIsLazy(false);
       return onLoad?.call(null, event);
     },
-    [onLoad],
+    [onLoad]
   );
 
-  const setEagerIfComplete = useCallback((node: HTMLImageElement) => {
+  const setEagerIfComplete = React.useCallback((node: HTMLImageElement) => {
     if (isComplete(node)) setIsLazy(false);
   }, []);
 
-  const [, setImageDecoderUpdateCounter] = useState(0);
+  const [, setImageDecoderUpdateCounter] = React.useState(0);
 
-  const decoder = useMemo(
+  const decoder = React.useMemo(
     () =>
       isLazy
         ? undefined
         : new ImageDecoder(() =>
-            setImageDecoderUpdateCounter((counter) => counter + 1),
+            setImageDecoderUpdateCounter((counter) => counter + 1)
           ),
-    [isLazy],
+    [isLazy]
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     decoder?.resumeUpdateCallback();
     return () => decoder?.cancelUpdateCallback();
   }, [decoder]);
@@ -157,7 +148,7 @@ function scaledSrc(decoder: ImageDecoder | undefined, binary: Binary): string {
 function getFullWidth(
   binary: Binary,
   width: Width,
-  isLazy: boolean,
+  isLazy: boolean
 ): Width | null {
   if (isLazy && !isInitialUrlAvailable(binary)) return null;
   if (width !== undefined) return width;
@@ -180,8 +171,8 @@ function getBinary(content: Obj | Widget, attribute: string) {
       throwNextTick(
         new ArgumentError(
           'Component "Scrivito.ImageTag" received prop "content"' +
-            ` with an object missing attribute "${attribute}".`,
-        ),
+            ` with an object missing attribute "${attribute}".`
+        )
       );
     }
 
@@ -204,8 +195,8 @@ function getBinary(content: Obj | Widget, attribute: string) {
       'Component "Scrivito.ImageTag" received prop "content"' +
         ` with an object, whose attribute "${attribute}"` +
         ` is of unexpected type "${attributeType}".` +
-        ' Valid attribute types are "binary" and "reference".',
-    ),
+        ' Valid attribute types are "binary" and "reference".'
+    )
   );
 }
 

@@ -5,6 +5,7 @@ import {
   cmsRestApi,
   getWorkspaceId,
 } from 'scrivito_sdk/client';
+
 import { WorkspaceJson } from 'scrivito_sdk/client/workspace_json';
 
 interface ChangesJsonBase {
@@ -26,7 +27,7 @@ export type ChangesJson = ChangesJsonWithChanges | ChangesJsonWithoutChanges;
 
 export function getWorkspaceChanges(
   workspace: WorkspaceObjSpaceId,
-  from?: string,
+  from?: string
 ): Promise<ChangesJson> {
   const workspaceId = getWorkspaceId(workspace);
   return cmsRestApi.get(`workspaces/${workspaceId}/changes`, {

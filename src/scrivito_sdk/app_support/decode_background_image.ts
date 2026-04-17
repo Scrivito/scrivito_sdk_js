@@ -8,7 +8,6 @@ import {
   getCSSCanvasContext,
   hasGetCSSCanvasContext,
 } from 'scrivito_sdk/app_support/decode/get_css_canvas_context';
-
 import { decodeOrLoadImg, hasDecodeImg } from './decode/decode_or_load_img';
 
 export interface DecodedBackgroundImage {
@@ -17,7 +16,7 @@ export interface DecodedBackgroundImage {
 }
 
 export async function decodeBackgroundImage(
-  imageUrl: string,
+  imageUrl: string
 ): Promise<DecodedBackgroundImage> {
   try {
     const img = await decodeOrLoadImg(imageUrl);
@@ -35,7 +34,7 @@ function webkitCanvas(img: HTMLImageElement): DecodedBackgroundImage {
     '2d',
     webkitCanvasIdentifier,
     img.width,
-    img.height,
+    img.height
   );
   drawOnCanvasContext(img, ctx);
   return {

@@ -1,5 +1,4 @@
 import { runAndCatchException } from 'scrivito_sdk/common';
-
 import { capture } from './load_handler';
 
 export type RunResult<T> = SuccessfulRun<T> | FailedRun;
@@ -17,7 +16,7 @@ interface FailedRun {
 }
 
 export function runAndCatchErrorsWhileLoading<T>(
-  loadableFunction: () => T,
+  loadableFunction: () => T
 ): RunResult<T> {
   const captured = capture(() => runAndCatchException(loadableFunction));
 

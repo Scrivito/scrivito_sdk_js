@@ -1,9 +1,4 @@
-import {
-  Component,
-  type ComponentType,
-  createContext,
-  createElement,
-} from 'react';
+import * as React from 'react';
 
 import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
 import { ArgumentError, throwNextTick } from 'scrivito_sdk/common';
@@ -31,7 +26,7 @@ interface WidgetContentProps {
 
 type WidgetContentFieldType = 'widget' | 'widgetlist';
 
-export const WidgetContent: ComponentType<WidgetContentProps> =
+export const WidgetContent: React.ComponentType<WidgetContentProps> =
   connectAndMemoize(function WidgetContent({
     fieldType,
     placementModification,
@@ -40,8 +35,8 @@ export const WidgetContent: ComponentType<WidgetContentProps> =
   }: WidgetContentProps) {
     const widgetClass = widget.objClass();
     const widgetComponent = getComponentForAppClass(
-      widgetClass,
-    ) as ComponentType<WidgetComponentProps> | null;
+      widgetClass
+    ) as React.ComponentType<WidgetComponentProps> | null;
 
     return (
       <WidgetTagContext.Provider
@@ -58,7 +53,7 @@ export const WidgetContent: ComponentType<WidgetContentProps> =
   });
 WidgetContent.displayName = 'Scrivito.ContentTag.WidgetContent';
 
-class WidgetContentErrorBoundary extends Component<
+class WidgetContentErrorBoundary extends React.Component<
   AppWidgetWrapperProps,
   { hasError: boolean }
 > {
@@ -104,13 +99,13 @@ class WidgetContentErrorBoundary extends Component<
 interface AppWidgetWrapperProps {
   widget: BasicWidget;
   widgetClass: string;
-  widgetComponent: ComponentType<WidgetComponentProps> | null;
+  widgetComponent: React.ComponentType<WidgetComponentProps> | null;
   widgetProps?: WidgetProps;
 }
 
 /** @public */
 export interface WidgetComponentProps<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > {
   widget: Widget<AttrDefs>;
 }
@@ -123,15 +118,13 @@ function AppWidgetWrapper({
 }: AppWidgetWrapperProps) {
   if (!widgetComponent) {
     throw new ArgumentError(
-      `No component registered for widget class "${widgetClass}"`,
+      `No component registered for widget class "${widgetClass}"`
     );
   }
 
   if (widgetProps?.hasOwnProperty('widget')) {
     throwNextTick(
-      new ArgumentError(
-        'The prop "widget" is not allowed inside "widgetProps"',
-      ),
+      new ArgumentError('The prop "widget" is not allowed inside "widgetProps"')
     );
   }
   const widgetComponentProps: WidgetComponentProps = {
@@ -141,9 +134,9 @@ function AppWidgetWrapper({
 
   return (
     <AutomaticDataContext content={widget}>
-      {createElement<WidgetComponentProps>(
+      {React.createElement<WidgetComponentProps>(
         widgetComponent,
-        widgetComponentProps,
+        widgetComponentProps
       )}
     </AutomaticDataContext>
   );
@@ -155,4 +148,4 @@ interface WidgetTagContextValue {
   fieldType?: WidgetContentFieldType;
 }
 
-export const WidgetTagContext = createContext<WidgetTagContextValue>({});
+export const WidgetTagContext = React.createContext<WidgetTagContextValue>({});

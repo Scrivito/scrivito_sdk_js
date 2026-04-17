@@ -1,4 +1,5 @@
 import { InternalError } from 'scrivito_sdk/common';
+
 import {
   LoadableMeta,
   LoadableState,
@@ -24,7 +25,7 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
     >,
     private readonly loader: LoaderCallback<LoadableType>,
     private readonly invalidation?: InvalidationCallback,
-    private readonly onChange?: () => void,
+    private readonly onChange?: () => void
   ) {}
 
   notifyDataRequired() {
@@ -80,13 +81,13 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
         this.stateContainer.set({
           value: result,
           meta: { version: versionWhenLoadingStarted },
-        }),
+        })
       );
     } catch (error) {
       finishLoader(() =>
         this.stateContainer.set({
           meta: { error, version: versionWhenLoadingStarted },
-        }),
+        })
       );
     }
   }
@@ -112,7 +113,7 @@ export class LoaderCallbackProcess<LoadableType> implements LoaderProcess {
 
 export function metaHasBeenInvalidated(
   meta: LoadableMeta | undefined,
-  callback?: InvalidationCallback,
+  callback?: InvalidationCallback
 ) {
   if (!callback || meta === undefined) return false;
 

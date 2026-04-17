@@ -1,5 +1,6 @@
 import { ObjJson, ObjSpaceId } from 'scrivito_sdk/client';
 import { Streamable } from 'scrivito_sdk/common';
+
 import { objDataFor } from 'scrivito_sdk/data/obj_data_store';
 import { threeWayMergeObjs } from 'scrivito_sdk/data/obj_patch';
 import { loadAndObserve, loadableWithDefault } from 'scrivito_sdk/loadable';
@@ -33,19 +34,19 @@ export function createObjReplicationProcess(
   objSpaceId: ObjSpaceId,
   objId: string,
   incomingMessages: Streamable<ObjReplicationMessage>,
-  role: ReplicationRole,
+  role: ReplicationRole
 ): ReplicationProcess<ObjJson | undefined> {
   const batchedMessages = new Streamable<ObjReplicationMessage>((subscriber) =>
     incomingMessages.subscribe((message) =>
-      addBatchUpdate(() => subscriber.next(message)),
-    ),
+      addBatchUpdate(() => subscriber.next(message))
+    )
   );
 
   return new ReplicationProcess(
     localStateForObj(objSpaceId, objId),
     batchedMessages,
     mergeStrategyForRole(role),
-    role === 'source',
+    role === 'source'
   );
 }
 
@@ -58,7 +59,7 @@ function mergeStrategyForRole(role: ReplicationRole) {
 
 function localStateForObj(
   objSpaceId: ObjSpaceId,
-  objId: string,
+  objId: string
 ): LocalStateForReplication<ObjJson | undefined> {
   const objData = objDataFor(objSpaceId, objId);
 
@@ -76,7 +77,7 @@ function localStateForObj(
 function assertiveThreeWayMergeObjs(
   myVersion: ObjJson | undefined,
   otherVersion: ObjJson | undefined,
-  baseVersion: ObjJson | undefined,
+  baseVersion: ObjJson | undefined
 ): ObjJson | undefined {
   return threeWayMergeObjs(myVersion, otherVersion, baseVersion);
 }
@@ -85,7 +86,7 @@ function assertiveThreeWayMergeObjs(
 function humbleThreeWayMergeObjs(
   myVersion: ObjJson | undefined,
   otherVersion: ObjJson | undefined,
-  baseVersion: ObjJson | undefined,
+  baseVersion: ObjJson | undefined
 ): ObjJson | undefined {
   return threeWayMergeObjs(otherVersion, myVersion, baseVersion);
 }

@@ -1,5 +1,4 @@
-import type { ComponentType, JSX } from 'react';
-
+import * as React from 'react';
 import { ValidationsConfig } from 'scrivito_sdk/app_support/validations_config';
 import { Binary } from 'scrivito_sdk/models';
 import {
@@ -11,7 +10,7 @@ import {
 
 /** @public */
 export type ObjEditingConfig<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > = SharedEditingConfig<Obj<AttrDefs>> & ObjOnlyEditingConfig<AttrDefs>;
 
 /** @public */
@@ -28,7 +27,7 @@ export type ObjEditingConfigValidations =
 
 /** @public */
 export type WidgetEditingConfig<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > = SharedEditingConfig<Widget<AttrDefs>>;
 
 /** @public */
@@ -113,7 +112,7 @@ export type AttributeEditingOptions = HtmlAttributeEditingOptions &
   DimensionPickerEditorAttributeEditingOptions;
 
 interface HtmlAttributeEditingOptions {
-  allowedTags?: readonly (keyof JSX.IntrinsicElements)[];
+  allowedTags?: readonly (keyof React.JSX.IntrinsicElements)[];
   showHtmlSource?: boolean;
   toolbar?: readonly ToolbarButton[];
 }
@@ -127,7 +126,7 @@ interface ColorPickerEditorAttributeEditingOptions {
 }
 
 interface DimensionPickerEditorAttributeEditingOptions {
-  units?: readonly DimensionPickerUnit[];
+  units?: DimensionPickerUnit[];
 }
 
 export type DimensionPickerUnit = 'px' | '%' | 'rem' | 'em' | 'vh' | 'vw';
@@ -158,7 +157,8 @@ export interface DynamicComponentGroupDescription {
   enabled?: boolean;
 }
 
-export interface DynamicPropertiesGroupDescription extends PropertiesGroupDescription {
+export interface DynamicPropertiesGroupDescription
+  extends PropertiesGroupDescription {
   key: string;
 }
 
@@ -171,14 +171,11 @@ export type PropertyGroup =
   | PropertiesGroupDescription
   | DynamicPropertyGroup;
 
-export type GroupPropertyWithConfig = readonly [
-  string,
-  { enabled: boolean; component?: never },
-];
+export type GroupPropertyWithConfig = readonly [string, { enabled: boolean }];
 
 export type GroupPropertyWithComponent = readonly [
   string,
-  { component: ExtensionComponent | null; enabled?: never },
+  { component: ExtensionComponent | null }
 ];
 
 export type GroupProperty =
@@ -223,10 +220,10 @@ type ToolbarButton =
 // This covers loadable components as well, see
 // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/loadable__component/index.d.ts
 type ExtensionComponent =
-  | ComponentType<{ obj: Obj }>
-  | ComponentType<{ page: Obj }>
-  | ComponentType<{ widget: Widget }>
-  | ComponentType<{ obj: Obj } | { page: Obj } | { widget: Widget }>;
+  | React.ComponentType<{ obj: Obj }>
+  | React.ComponentType<{ page: Obj }>
+  | React.ComponentType<{ widget: Widget }>
+  | React.ComponentType<{ obj: Obj } | { page: Obj } | { widget: Widget }>;
 
 interface InitialContent {
   [attributeName: string]: AttributeValue | AttributeValueFunction;
@@ -235,11 +232,11 @@ interface InitialContent {
 type InitializeCallback<T extends Obj | Widget> = (instance: T) => void;
 
 type PropertiesGroupsCallback<T extends Obj | Widget> = (
-  content: T,
+  content: T
 ) => readonly DynamicPropertyGroup[];
 
 type PropertiesCallback<T extends Obj | Widget> = (
-  content: T,
+  content: T
 ) => readonly GroupProperty[];
 
 type ForContentCallback<T extends Obj | Widget> = (content: T) => string;
@@ -261,10 +258,10 @@ interface SharedEditingConfig<T extends Obj | Widget> {
 }
 
 interface ObjOnlyEditingConfig<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions
 > {
   descriptionForContent?: ForContentCallback<Obj<AttrDefs>>;
   thumbnailForContent?: (
-    content: Obj<AttrDefs>,
+    content: Obj<AttrDefs>
   ) => Obj | Binary | undefined | null;
 }

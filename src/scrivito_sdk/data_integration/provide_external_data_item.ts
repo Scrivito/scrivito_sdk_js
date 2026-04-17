@@ -1,4 +1,5 @@
 import { isObject } from 'scrivito_sdk/common';
+
 import { registerExternalDataClass } from 'scrivito_sdk/data_integration';
 import { throwMissingCallbackError } from 'scrivito_sdk/data_integration/add_missing_data_connection_handlers';
 import { LazyAsyncDataClassSchema } from 'scrivito_sdk/data_integration/data_class_schema';
@@ -34,16 +35,16 @@ export function provideExternalDataItem(
   params: Promise<{
     connection: LazyAsyncExternalDataItemConnection;
     schema: LazyAsyncDataClassSchema;
-  }>,
+  }>
 ): void {
-  const name = dataClass.internalName();
+  const name = dataClass.name();
 
   registerExternalDataClass(
     name,
     mapLazyAsync(params, ({ connection, schema }) => ({
       connection: desugarConnection(connection, dataClass),
       schema,
-    }))(),
+    }))()
   );
 
   registerSingletonDataClass(name);
@@ -56,7 +57,7 @@ function isSingletonDataId(id: string) {
 
 function desugarConnection(
   connection: LazyAsyncExternalDataItemConnection,
-  dataClass: ExternalDataClass,
+  dataClass: ExternalDataClass
 ) {
   const getCallback = async () =>
     (await normalizeLazyAsync(connection)()).get();
@@ -65,7 +66,7 @@ function desugarConnection(
     const { update } = await normalizeLazyAsync(connection)();
 
     if (update) return update(data);
-    throwMissingCallbackError('update', dataClass.internalName())();
+    throwMissingCallbackError('update', dataClass.name())();
   };
 
   const dataConnection: Partial<UncheckedDataConnection> = {

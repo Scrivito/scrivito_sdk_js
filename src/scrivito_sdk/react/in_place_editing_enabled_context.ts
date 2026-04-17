@@ -1,3 +1,3 @@
-import { createContext } from 'react';
+import * as React from 'react';
 
-export const InPlaceEditingEnabledContext = createContext(true);
+export const InPlaceEditingEnabledContext = React.createContext(true);

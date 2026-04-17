@@ -4,7 +4,6 @@ import { ClientError } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   InternalError,
-  assumeString,
   extractFromIterator,
   transformContinueIterable,
 } from 'scrivito_sdk/common';
@@ -53,12 +52,12 @@ import { load } from 'scrivito_sdk/loadable';
 
 /** @beta */
 export class ExternalDataClass extends DataClass {
-  constructor(private readonly _internalName: string) {
+  constructor(private readonly _name: string) {
     super();
   }
 
-  internalName(): string {
-    return this._internalName;
+  name(): string {
+    return this._name;
   }
 
   async create(attributes: DataItemAttributes): Promise<DataItem> {
@@ -70,7 +69,7 @@ export class ExternalDataClass extends DataClass {
   }
 
   get(id: string): DataItem | null {
-    return getExternalData(this._internalName, id)
+    return getExternalData(this._name, id)
       ? ExternalDataItem.build(this, id)
       : null;
   }
@@ -86,7 +85,7 @@ export function isExternalDataClassProvided(name: string): boolean {
 
 export function allExternalDataClasses(): ExternalDataClass[] {
   return getExternalDataConnectionNames().map(
-    (name) => new ExternalDataClass(name),
+    (name) => new ExternalDataClass(name)
   );
 }
 
@@ -95,7 +94,7 @@ export class ExternalDataScope extends DataScope {
   constructor(
     private readonly _dataClass: DataClass,
     private readonly _attributeName?: string,
-    private readonly _params: NormalizedDataScopeParams = {},
+    private readonly _params: NormalizedDataScopeParams = {}
   ) {
     super();
   }
@@ -104,11 +103,7 @@ export class ExternalDataScope extends DataScope {
     return this._dataClass;
   }
 
-  internalDataClassName(): string {
-    return this._dataClass.internalName();
-  }
-
-  dataClassName(): string | null {
+  dataClassName(): string {
     return this._dataClass.name();
   }
 
@@ -117,13 +112,13 @@ export class ExternalDataScope extends DataScope {
     assertValidDataItemAttributes(attributes);
 
     const { filters } = this._params;
-    const dataClassName = this.internalDataClassName();
+    const dataClassName = this.dataClassName();
     const dataAttributeDefinitions = await loadAttributesOrThrow(dataClassName);
 
     const serializedAttributes = serializeAttributes(
       dataClassName,
       attributes,
-      dataAttributeDefinitions,
+      dataAttributeDefinitions
     );
 
     const dataForCallback = {
@@ -141,7 +136,7 @@ export class ExternalDataScope extends DataScope {
     return ExternalDataItem.buildWithLoadedAttributes(
       this._dataClass,
       id,
-      dataAttributeDefinitions,
+      dataAttributeDefinitions
     );
   }
 
@@ -171,9 +166,7 @@ export class ExternalDataScope extends DataScope {
   }
 
   take(): DataItem[] {
-    const attributes = getDataAttributeDefinitions(
-      this.internalDataClassName(),
-    );
+    const attributes = getDataAttributeDefinitions(this.dataClassName());
     if (!attributes) return [];
 
     const id = this.itemIdFromFilters();
@@ -200,12 +193,12 @@ export class ExternalDataScope extends DataScope {
       {
         filters: combineFilters(
           this._params.filters,
-          this.normalizeFilters(filters),
+          this.normalizeFilters(filters)
         ),
         search: combineSearches(this._params.search, search),
         order: order || this._params.order,
         limit: limit ?? this._params.limit,
-      },
+      }
     );
   }
 
@@ -215,12 +208,12 @@ export class ExternalDataScope extends DataScope {
 
   count(): number | null {
     const { filters, search } = this._params;
-    const dataClassName = this.internalDataClassName();
+    const dataClassName = this.dataClassName();
     const attributes = getDataAttributeDefinitions(dataClassName);
     if (!attributes) return null;
 
     return handleCommunicationError(() =>
-      countExternalData(dataClassName, filters, search, attributes),
+      countExternalData(dataClassName, filters, search, attributes)
     );
   }
 
@@ -231,7 +224,7 @@ export class ExternalDataScope extends DataScope {
   /** @internal */
   toPojo(): PresentDataScopePojo {
     return {
-      _class: assumeString(this.dataClassName()),
+      _class: this.dataClassName(),
       _attribute: this._attributeName,
       ...this._params,
     };
@@ -240,28 +233,21 @@ export class ExternalDataScope extends DataScope {
   private takeUnsafe(attributes: DataAttributeDefinitions) {
     return extractFromIterator(
       this.getIterator(attributes),
-      this._params.limit,
+      this._params.limit
     );
   }
 
   private getIterator(attributes: DataAttributeDefinitions) {
     return transformContinueIterable(
-      getExternalDataQuery(
-        {
-          _class: this.internalDataClassName(),
-          _attribute: this._attributeName,
-          ...this._params,
-        },
-        attributes,
-      ),
+      getExternalDataQuery(this.toPojo(), attributes),
       (iterator) =>
         iterator.map((dataId) =>
           ExternalDataItem.buildWithLoadedAttributes(
             this._dataClass,
             dataId,
-            attributes,
-          ),
-        ),
+            attributes
+          )
+        )
     ).iterator();
   }
 
@@ -270,7 +256,7 @@ export class ExternalDataScope extends DataScope {
 
     if (filters && Object.keys(filters).includes('_id')) {
       throw new ArgumentError(
-        `Cannot create a ${this.internalDataClassName()} from a scope that includes "_id" in its filters`,
+        `Cannot create a ${this.dataClassName()} from a scope that includes "_id" in its filters`
       );
     }
   }
@@ -290,7 +276,7 @@ export class ExternalDataItem extends DataItem {
   /** Returns an item if its schema is loaded. Returns null otherwise. */
   /** Triggers schema loading, thus requires a loading context. */
   static build(dataClass: DataClass, dataId: string): ExternalDataItem | null {
-    const attributes = getDataAttributeDefinitions(dataClass.internalName());
+    const attributes = getDataAttributeDefinitions(dataClass.name());
     return attributes ? new ExternalDataItem(dataClass, dataId) : null;
   }
 
@@ -298,7 +284,7 @@ export class ExternalDataItem extends DataItem {
   static buildWithLoadedAttributes(
     dataClass: DataClass,
     dataId: string,
-    attributes: DataAttributeDefinitions,
+    attributes: DataAttributeDefinitions
   ): ExternalDataItem {
     if (!attributes) throw new InternalError();
     return new ExternalDataItem(dataClass, dataId);
@@ -307,14 +293,14 @@ export class ExternalDataItem extends DataItem {
   /** Only for DataClass#getUnchecked */
   static buildUnchecked(
     dataClass: DataClass,
-    dataId: string,
+    dataId: string
   ): ExternalDataItem {
     return new ExternalDataItem(dataClass, dataId);
   }
 
   private constructor(
     private readonly _dataClass: DataClass,
-    private readonly _dataId: string,
+    private readonly _dataId: string
   ) {
     super();
   }
@@ -327,8 +313,8 @@ export class ExternalDataItem extends DataItem {
     return this._dataClass;
   }
 
-  internalDataClassName(): string {
-    return this._dataClass.internalName();
+  dataClassName(): string {
+    return this._dataClass.name();
   }
 
   obj(): undefined {
@@ -339,7 +325,7 @@ export class ExternalDataItem extends DataItem {
     const externalData = this.getExternalData();
     if (!externalData) return null;
 
-    const dataClassName = this.internalDataClassName();
+    const dataClassName = this.dataClassName();
     const attributes = getDataAttributeDefinitions(dataClassName);
 
     const { customData } = externalData;
@@ -371,7 +357,7 @@ export class ExternalDataItem extends DataItem {
     const [attributeType, attributeConfig] = attributeDefinition;
     if (attributeType === 'enum') {
       const valueConfig = attributeConfig.values.find(
-        (config) => config.value === attributeValue,
+        (config) => config.value === attributeValue
       );
 
       if (!valueConfig) throw new InternalError();
@@ -392,19 +378,19 @@ export class ExternalDataItem extends DataItem {
       throw new ArgumentError(`Missing data with ID ${this._dataId}`);
     }
 
-    const dataClassName = this.internalDataClassName();
+    const dataClassName = this.dataClassName();
     const dataAttributeDefinitions = await loadAttributesOrThrow(dataClassName);
 
     const serializedAttributes = serializeAttributes(
       dataClassName,
       attributes,
-      dataAttributeDefinitions,
+      dataAttributeDefinitions
     );
 
     const updatedData = await updateViaDataConnection(
-      this.internalDataClassName(),
+      this.dataClassName(),
       this._dataId,
-      serializedAttributes,
+      serializedAttributes
     );
 
     setExternalData(dataClassName, this._dataId, {
@@ -419,9 +405,9 @@ export class ExternalDataItem extends DataItem {
   }
 
   async delete(): Promise<void> {
-    await deleteViaDataConnection(this.internalDataClassName(), this._dataId);
+    await deleteViaDataConnection(this.dataClassName(), this._dataId);
 
-    setExternalData(this.internalDataClassName(), this._dataId, null);
+    setExternalData(this.dataClassName(), this._dataId, null);
 
     this.notifyWrite();
   }
@@ -432,7 +418,7 @@ export class ExternalDataItem extends DataItem {
   }
 
   private getExternalData(): NormalExternalData | null | undefined {
-    return getExternalData(this.internalDataClassName(), this._dataId);
+    return getExternalData(this.dataClassName(), this._dataId);
   }
 
   private getSystemOrCustom(attributeName: string) {
@@ -441,14 +427,14 @@ export class ExternalDataItem extends DataItem {
   }
 
   private notifyWrite() {
-    notifyExternalDataWrite(this.internalDataClassName());
+    notifyExternalDataWrite(this.dataClassName());
   }
 }
 
 function serializeAttributes(
   dataClassName: string,
   attributes: DataItemAttributes,
-  dataAttributeDefinitions: DataAttributeDefinitions,
+  dataAttributeDefinitions: DataAttributeDefinitions
 ) {
   return mapValues(attributes, (value, attributeName) =>
     serializeDataAttribute({
@@ -456,12 +442,12 @@ function serializeAttributes(
       attributeName,
       value,
       attributes: dataAttributeDefinitions,
-    }),
+    })
   );
 }
 
 function isCommunicationError(
-  error: unknown,
+  error: unknown
 ): error is ClientError | DataConnectionError {
   return error instanceof ClientError || error instanceof DataConnectionError;
 }
@@ -477,7 +463,7 @@ function handleCommunicationError<T>(request: () => T) {
 
 async function loadAttributesOrThrow(dataClassName: string) {
   const attributes = await load(() =>
-    getDataAttributeDefinitions(dataClassName),
+    getDataAttributeDefinitions(dataClassName)
   );
 
   // A schema must be stored first

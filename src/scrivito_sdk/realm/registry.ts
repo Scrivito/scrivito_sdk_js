@@ -1,4 +1,5 @@
 import { onReset } from 'scrivito_sdk/common';
+
 import { AppClass, ObjClass, WidgetClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
 import { Widget } from 'scrivito_sdk/realm/widget';
@@ -37,16 +38,16 @@ function appClassFor(name: string, baseClass: AppClass): AppClass {
 export function allObjClasses(): ObjClassesByName {
   return Object.fromEntries(
     Object.entries(mapping).filter(([, modelClass]) =>
-      Obj.isPrototypeOf(modelClass),
-    ),
+      Obj.isPrototypeOf(modelClass)
+    )
   ) as ObjClassesByName;
 }
 
 export function allWidgetClasses(): WidgetClassesByName {
   return Object.fromEntries(
     Object.entries(mapping).filter(([, modelClass]) =>
-      Widget.isPrototypeOf(modelClass),
-    ),
+      Widget.isPrototypeOf(modelClass)
+    )
   ) as WidgetClassesByName;
 }
 

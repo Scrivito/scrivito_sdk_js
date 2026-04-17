@@ -22,10 +22,6 @@ import {
   isRunningInBrowser,
   nodeAdapter,
 } from 'scrivito_sdk/app_support/node_adapter';
-import {
-  type ResponsiveBreakpoints,
-  configureResponsiveBreakpoints,
-} from 'scrivito_sdk/app_support/responsive_breakpoints';
 import { initRouting } from 'scrivito_sdk/app_support/routing';
 import { SiteMappingConfiguration } from 'scrivito_sdk/app_support/site_mapping';
 import { setTreatLocalhostLike } from 'scrivito_sdk/app_support/treat_localhost_like';
@@ -77,7 +73,6 @@ import {
   setCurrentSiteIdHandler,
   unwrapAppClass,
 } from 'scrivito_sdk/realm';
-
 import {
   ConstraintsValidationCallback,
   setConstraintsValidationCallback,
@@ -123,7 +118,6 @@ interface BaseConfiguration {
   contentTagsForEmptyAttributes?: boolean;
   iamAuthLocation?: string;
   treatLocalhostLike?: string;
-  responsiveBreakpoints?: ResponsiveBreakpoints;
 
   activateDataIntegration?: boolean;
 
@@ -169,7 +163,7 @@ export function configure(configuration: Readonly<Configuration>): void {
     if (isRunningInBrowser()) initializeLoggedInState();
 
     configureAssetUrlBase(
-      unofficialConfiguration?.assetUrlBase ?? cdnAssetUrlBase(),
+      unofficialConfiguration?.assetUrlBase ?? cdnAssetUrlBase()
     );
 
     clientConfig.set({
@@ -190,10 +184,6 @@ export function configure(configuration: Readonly<Configuration>): void {
 
   initRouting(routingConfiguration);
   configureConstraintsValidationCallback(configuration);
-
-  if (configuration.responsiveBreakpoints) {
-    configureResponsiveBreakpoints(configuration.responsiveBreakpoints);
-  }
 
   if (configuration.contentTagsForEmptyAttributes === false) {
     skipContentTagsForEmptyAttributes();
@@ -239,19 +229,19 @@ function checkConfigure(configuration: Configuration) {
     )
   ) {
     throwInvalidConfigurationError(
-      "The param 'tenant' or 'instanceId' is required.",
+      "The param 'tenant' or 'instanceId' is required."
     );
   }
 
   if (configuration.apiKey && isRunningInBrowser()) {
     throwInvalidConfigurationError(
-      "The option 'apiKey' is only available under Node.js.",
+      "The option 'apiKey' is only available under Node.js."
     );
   }
 
   if (configuration.origin && !isOrigin(configuration.origin)) {
     throwInvalidConfigurationError(
-      "The option 'origin' is must be a valid origin string.",
+      "The option 'origin' is must be a valid origin string."
     );
   }
 
@@ -263,7 +253,7 @@ function checkConfigure(configuration: Configuration) {
     )
   ) {
     throwInvalidConfigurationError(
-      "The option 'adoptUi' is must be an origin string.",
+      "The option 'adoptUi' is must be an origin string."
     );
   }
 }
@@ -336,7 +326,7 @@ function configureCmsRestApi({
 
 function getCmsAuthProvider(
   apiKey?: string | IamApiKey,
-  visitorAuthentication?: boolean,
+  visitorAuthentication?: boolean
 ) {
   if (nodeAdapter && apiKey) {
     return new nodeAdapter.ApiKeyAuthorizationProvider(apiKey);
@@ -365,7 +355,7 @@ function getCheckedRoutingConfiguration({
       const presentKey = routingBasePath ? 'routingBasePath' : 'origin';
 
       throwInvalidConfigurationError(
-        `The '${presentKey}' cannot be combined with the "baseUrlForSite" option`,
+        `The '${presentKey}' cannot be combined with the "baseUrlForSite" option`
       );
     }
 
@@ -381,13 +371,13 @@ function getCheckedRoutingConfiguration({
     const missingKey = siteForUrl ? 'baseUrlForSite' : 'siteForUrl';
 
     throwInvalidConfigurationError(
-      `Unexpected value for argument 'configuration': a value for '${missingKey}' is required if '${presentKey}' is present.`,
+      `Unexpected value for argument 'configuration': a value for '${missingKey}' is required if '${presentKey}' is present.`
     );
   }
 
   if (origin !== undefined && !isOrigin(origin)) {
     throwInvalidConfigurationError(
-      `Unexpected value: '${origin}' is not a valid origin.`,
+      `Unexpected value: '${origin}' is not a valid origin.`
     );
   }
 
@@ -420,7 +410,7 @@ async function warnIfNoSiteIdSelection() {
       logError(
         'Warning: No site ID was selected within 30 seconds.' +
           ' In the multi-site mode a site ID must be selected before Scrivito can render content.' +
-          ' Forgot to use Scrivito.unstable_selectSiteId?',
+          ' Forgot to use Scrivito.unstable_selectSiteId?'
       );
     }
   }, 30000);

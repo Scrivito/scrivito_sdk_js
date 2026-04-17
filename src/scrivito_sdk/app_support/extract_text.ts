@@ -2,7 +2,6 @@ import { throwInvalidArgumentsError } from 'scrivito_sdk/common';
 import { isWrappingBasicObj } from 'scrivito_sdk/models';
 import { unwrapAppClass } from 'scrivito_sdk/realm';
 import { Obj } from 'scrivito_sdk/realm/obj';
-
 import { extractTextFromBasicObj } from './extract_text_from_basic_obj';
 
 /** @public */
@@ -18,7 +17,7 @@ function checkExtractText(obj: Obj, options?: { length?: number }): void {
     throwInvalidArgumentsError(
       'extractText',
       "'obj' must be an instance of 'Obj'.",
-      { docPermalink: 'js-sdk/extractText' },
+      { docPermalink: 'js-sdk/extractText' }
     );
   }
   if (
@@ -28,7 +27,7 @@ function checkExtractText(obj: Obj, options?: { length?: number }): void {
     throwInvalidArgumentsError(
       'extractText',
       "'length' must be a positive integer.",
-      { docPermalink: 'js-sdk/extractText' },
+      { docPermalink: 'js-sdk/extractText' }
     );
   }
 }

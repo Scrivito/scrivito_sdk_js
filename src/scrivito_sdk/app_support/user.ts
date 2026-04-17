@@ -3,7 +3,6 @@ export interface UserData {
   name: string;
   email: string;
   picture: string | null;
-  teamsIds: string[];
 }
 
 /** @public */
@@ -11,7 +10,7 @@ export class User {
   /** @internal */
   constructor(
     /** @internal */
-    private readonly userData: UserData,
+    private readonly userData: UserData
   ) {}
 
   id(): string {
@@ -28,9 +27,5 @@ export class User {
 
   picture(): string | null {
     return this.userData.picture;
-  }
-
-  teamIds(): string[] {
-    return this.userData.teamsIds;
   }
 }

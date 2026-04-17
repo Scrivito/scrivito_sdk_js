@@ -1,6 +1,5 @@
 import { LinkJson } from 'scrivito_sdk/client';
 import { resolveUrl } from 'scrivito_sdk/link_resolution/resolve_url';
-
 import { resolveHtmlUrl } from './content_conversion/resolve_html_url';
 
 export function convertHtml(input: string): string {
@@ -30,7 +29,7 @@ function convertUrls(html: string, tagName: string, attribute: string): string {
   // regex was inspired by: https://regex101.com/r/rMAHrE/1
   const regex = new RegExp(
     `<${tagName}\\s+(?:[^>]*?\\s+)?${attribute}=(["'])(.*?)\\1`,
-    'gi',
+    'gi'
   );
 
   const convertedHtml = html.replace(
@@ -54,7 +53,7 @@ function convertUrls(html: string, tagName: string, attribute: string): string {
       if (!newUrl) return fullMatch;
 
       return fullMatch.replace(urlMatch, newUrl);
-    },
+    }
   );
 
   return convertedHtml;

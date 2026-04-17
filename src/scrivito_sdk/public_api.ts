@@ -93,7 +93,6 @@ export { finishLoading, connect } from 'scrivito_sdk/react_connect';
 export { canEdit } from 'scrivito_sdk/app_support/can_edit';
 export { canWrite } from 'scrivito_sdk/app_support/can_write';
 export { configure } from 'scrivito_sdk/app_support/configure';
-export type { ResponsiveBreakpoints } from 'scrivito_sdk/app_support/responsive_breakpoints';
 export { configureContentBrowser } from 'scrivito_sdk/app_support/configure_content_browser';
 export { configureCropAspectRatios } from 'scrivito_sdk/app_support/crop_aspect_ratios';
 export { configureObjClassForContentType } from 'scrivito_sdk/app_support/configure_obj_class_for_content_type';
@@ -136,7 +135,6 @@ export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links
 export {
   provideDataClass,
   provideDataItem,
-  provideDataService,
 } from 'scrivito_sdk/data_integration';
 export { getDataClass } from 'scrivito_sdk/data_integration';
 export {

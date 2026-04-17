@@ -1,9 +1,4 @@
-import {
-  type ComponentClass,
-  type ReactElement,
-  type ReactNode,
-  createElement,
-} from 'react';
+import * as React from 'react';
 
 import { getClassName } from 'scrivito_sdk/app_support/get_class_name';
 import { registerComponentForAppClass } from 'scrivito_sdk/react/component_registry';
@@ -24,12 +19,12 @@ import {
 } from 'scrivito_sdk/realm';
 
 export type SyncFunctionComponent<P = object> = {
-  (props: P): ReactNode;
+  (props: P): React.ReactNode;
   displayName?: string | undefined;
 };
 
 export type ComponentType<P = object> =
-  | ComponentClass<P>
+  | React.ComponentClass<P>
   | SyncFunctionComponent<P>;
 
 export interface ProvidedComponentOptions<Props> {
@@ -40,35 +35,35 @@ export interface ProvidedComponentOptions<Props> {
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   objClass: ObjClass<AttrDefs>,
   component: ComponentType<PageComponentProps<AttrDefs>>,
-  options?: ProvidedComponentOptions<PageComponentProps<AttrDefs>>,
+  options?: ProvidedComponentOptions<PageComponentProps<AttrDefs>>
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrObjClass: string | ObjClass,
   component: ComponentType<Partial<PageComponentProps>>,
-  options?: ProvidedComponentOptions<Partial<PageComponentProps>>,
+  options?: ProvidedComponentOptions<Partial<PageComponentProps>>
 ): void;
 
 /** @public */
 export function provideComponent<AttrDefs extends AttributeDefinitions>(
   widgetClass: WidgetClass<AttrDefs>,
   component: ComponentType<WidgetComponentProps<AttrDefs>>,
-  options?: ProvidedComponentOptions<WidgetComponentProps<AttrDefs>>,
+  options?: ProvidedComponentOptions<WidgetComponentProps<AttrDefs>>
 ): void;
 
 /** @public */
 export function provideComponent(
   classNameOrWidgetClass: string | WidgetClass,
   component: ComponentType<Partial<WidgetComponentProps>>,
-  options?: ProvidedComponentOptions<Partial<WidgetComponentProps>>,
+  options?: ProvidedComponentOptions<Partial<WidgetComponentProps>>
 ): void;
 
 /** @internal */
 export function provideComponent(
   classNameOrClass: string | ObjClass | WidgetClass,
   component: ComponentType,
-  options?: { loading?: typeof component },
+  options?: { loading?: typeof component }
 ): void {
   const className = getClassName(classNameOrClass);
 
@@ -93,7 +88,7 @@ function wrapComponent(component: ComponentType) {
 }
 
 function wrapFunctionComponent<Props extends object>(
-  functionComponent: SyncFunctionComponent<Props>,
+  functionComponent: SyncFunctionComponent<Props>
 ): SyncFunctionComponent<Props> {
   return memo((props: Props) => {
     return hasWidgetProp(props)
@@ -102,7 +97,7 @@ function wrapFunctionComponent<Props extends object>(
   });
 }
 
-function wrapClassComponent(component: ComponentClass) {
+function wrapClassComponent(component: React.ComponentClass) {
   return class extends component {
     render() {
       return hasWidgetProp(this.props)
@@ -116,12 +111,12 @@ function hasWidgetProp(props: object) {
   return !!(props as { widget?: unknown }).widget;
 }
 
-function wrapInWidgetTag<Rendered extends ReactNode>(
-  rendered: Rendered,
-): ReactElement | Rendered {
+function wrapInWidgetTag<Rendered extends React.ReactNode>(
+  rendered: Rendered
+): React.ReactElement | Rendered {
   return getElementType(rendered) === WidgetTag
     ? rendered
-    : createElement(WidgetTag, { children: rendered });
+    : React.createElement(WidgetTag, { children: rendered });
 }
 
 export function isComponentMissingName(component: ComponentType) {

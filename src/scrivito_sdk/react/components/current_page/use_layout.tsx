@@ -1,4 +1,4 @@
-import { type ReactElement, createContext, useContext } from 'react';
+import * as React from 'react';
 
 import { currentAppSpace } from 'scrivito_sdk/app_support/current_app_space';
 import { getCurrentPageId } from 'scrivito_sdk/app_support/get_current_page_id';
@@ -20,13 +20,13 @@ import { PageDataContext } from 'scrivito_sdk/react/components/current_page/page
 import { connect } from 'scrivito_sdk/react_connect';
 import { wrapInAppClass } from 'scrivito_sdk/realm';
 
-const LayoutIndexContext = createContext(0);
+const LayoutIndexContext = React.createContext(0);
 
 export function useLayout(
   page: BasicObj,
-  params: QueryParameters,
-): ReactElement | 'loading' | undefined {
-  const layoutIndex = useContext(LayoutIndexContext);
+  params: QueryParameters
+): React.ReactElement | 'loading' | undefined {
+  const layoutIndex = React.useContext(LayoutIndexContext);
   if (!hasLayoutComponents()) return;
 
   // preload ancestors, to avoid loading them one-by-one.
@@ -63,7 +63,7 @@ function getAncestorOf(page: BasicObj, ancestorPath: string) {
   if (!siteId) throw new InternalError();
 
   return loadWithDefault('loading', () =>
-    getObjByPath(currentAppSpace().and(restrictToSite(siteId)), ancestorPath),
+    getObjByPath(currentAppSpace().and(restrictToSite(siteId)), ancestorPath)
   );
 }
 

@@ -1,5 +1,4 @@
 import { RequestFailedError } from 'scrivito_sdk/client';
-
 import { parseOrThrowRequestFailedError } from './cms_rest_api/parse_or_throw_request_failed_error';
 import { ErrorResponse, isErrorResponse } from './is_error_response';
 

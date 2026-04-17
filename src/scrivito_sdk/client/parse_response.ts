@@ -5,7 +5,6 @@ import {
 } from 'scrivito_sdk/client/client_error';
 import { parseErrorResponse } from 'scrivito_sdk/client/parse_error_response';
 import { registerAsyncTask, uniqueErrorMessage } from 'scrivito_sdk/common';
-
 import { parseOrThrowRequestFailedError } from './cms_rest_api/parse_or_throw_request_failed_error';
 import { isErrorResponse } from './is_error_response';
 
@@ -27,7 +26,7 @@ export async function parseResponse(response: Response) {
 /** throw suitable error, if the response is not successful */
 export async function throwOnError(
   response: Response,
-  requestDetails?: ClientErrorRequestDetails,
+  requestDetails?: ClientErrorRequestDetails
 ): Promise<Response> {
   const httpStatus = response.status;
   if (httpStatus >= 200 && httpStatus < 300) return response;

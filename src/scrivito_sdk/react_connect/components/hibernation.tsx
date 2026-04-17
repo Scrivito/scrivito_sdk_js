@@ -1,4 +1,4 @@
-import { type ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import * as React from 'react';
 
 import { BehaviorSubject } from 'scrivito_sdk/common';
 import { ReactConnectContext } from 'scrivito_sdk/react_connect/connect';
@@ -8,20 +8,22 @@ export const Hibernation = ({
   children,
 }: {
   awake: boolean;
-  children: ReactNode;
+  children: React.ReactNode;
 }) => {
-  const [isParentAwake, setParentAwake] = useState(true);
+  const [isParentAwake, setParentAwake] = React.useState(true);
 
-  const context = useContext(ReactConnectContext);
+  const context = React.useContext(ReactConnectContext);
   const parentAwakeness = context.awakeness;
 
-  useEffect(() => {
+  React.useEffect(() => {
     const subscription = parentAwakeness?.subscribe(setParentAwake);
 
     return () => subscription?.unsubscribe();
   }, [parentAwakeness]);
 
-  const awakenessRef = useRef<BehaviorSubject<boolean> | undefined>(undefined);
+  const awakenessRef = React.useRef<BehaviorSubject<boolean> | undefined>(
+    undefined
+  );
 
   if (awakenessRef.current === undefined && !awake) return null;
 

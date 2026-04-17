@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import * as React from 'react';
 
 import { isCurrentHistoryState } from 'scrivito_sdk/app_support/browser_location';
 import { getNotFoundErrorPageState } from 'scrivito_sdk/app_support/current_page_data';
@@ -6,12 +6,12 @@ import { PageScroll } from 'scrivito_sdk/react/components/page_scroll';
 import { connect } from 'scrivito_sdk/react_connect';
 
 interface NotFoundErrorPageProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 /** @public */
-export const NotFoundErrorPage: ComponentType<NotFoundErrorPageProps> = connect(
-  function NotFoundErrorPage({ children }) {
+export const NotFoundErrorPage: React.ComponentType<NotFoundErrorPageProps> =
+  connect(function NotFoundErrorPage({ children }) {
     const navigationState = getNotFoundErrorPageState();
     if (!navigationState) return null;
     if (!isCurrentHistoryState(navigationState.historyState)) return null;
@@ -27,7 +27,6 @@ export const NotFoundErrorPage: ComponentType<NotFoundErrorPageProps> = connect(
         )}
       </>
     );
-  },
-);
+  });
 
 NotFoundErrorPage.displayName = 'Scrivito.NotFoundErrorPage';

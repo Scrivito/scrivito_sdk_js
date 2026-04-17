@@ -3,6 +3,7 @@ import {
   BackendMetadataResponse,
   retrieveBinaryMetadata,
 } from 'scrivito_sdk/client/binary_metadata_retrieval';
+
 import { BinaryRetrievalOptions } from 'scrivito_sdk/client/binary_retrieval_options';
 import {
   BackendBinaryData,
@@ -22,72 +23,74 @@ import {
   QueryResponse,
   retrieveObjQuery,
 } from 'scrivito_sdk/client/obj_query_retrieval';
+
 import {
   BackendSuggestParams,
   BackendSuggestResponse,
   retrieveSuggest,
 } from 'scrivito_sdk/client/suggest_retrieval';
+
 import { TransformationDefinition } from 'scrivito_sdk/models';
 
 export interface CmsRetrieval {
   retrieveObjQuery(
     workspaceId: string,
-    params: BackendQueryRetrievalParams,
+    params: BackendQueryRetrievalParams
   ): Promise<QueryResponse>;
 
   retrieveFacetQuery(
     workspaceId: string,
-    params: BackendFacetRequestParams,
+    params: BackendFacetRequestParams
   ): Promise<BackendFacetQueryResponse>;
 
   retrieveSuggest(
     workspaceId: string,
-    params: BackendSuggestParams,
+    params: BackendSuggestParams
   ): Promise<BackendSuggestResponse>;
 
   retrieveBinaryMetadata(
     binaryId: string,
-    options?: BinaryRetrievalOptions,
+    options?: BinaryRetrievalOptions
   ): Promise<BackendMetadataResponse>;
 
   retrieveBinaryUrls(
     binaryId: string,
     transformation?: TransformationDefinition,
-    options?: BinaryRetrievalOptions,
+    options?: BinaryRetrievalOptions
   ): Promise<BackendBinaryData>;
 
   retrieveObjFieldDiffs(
     from: ObjSpaceId,
     to: ObjSpaceId,
-    objId: string,
+    objId: string
   ): Promise<ObjFieldDiffs>;
 }
 
 export let cmsRetrieval: CmsRetrieval = {
   retrieveObjQuery(
     workspaceId: string,
-    params: BackendQueryRetrievalParams,
+    params: BackendQueryRetrievalParams
   ): Promise<QueryResponse> {
     return retrieveObjQuery(workspaceId, params);
   },
 
   retrieveFacetQuery(
     workspaceId: string,
-    params: BackendFacetRequestParams,
+    params: BackendFacetRequestParams
   ): Promise<BackendFacetQueryResponse> {
     return retrieveFacetQuery(workspaceId, params);
   },
 
   retrieveSuggest(
     workspaceId: string,
-    params: BackendSuggestParams,
+    params: BackendSuggestParams
   ): Promise<BackendSuggestResponse> {
     return retrieveSuggest(workspaceId, params);
   },
 
   retrieveBinaryMetadata(
     binaryId: string,
-    options?: BinaryRetrievalOptions,
+    options?: BinaryRetrievalOptions
   ): Promise<BackendMetadataResponse> {
     return retrieveBinaryMetadata(binaryId, options);
   },
@@ -95,7 +98,7 @@ export let cmsRetrieval: CmsRetrieval = {
   retrieveBinaryUrls(
     binaryId: string,
     transformation?: TransformationDefinition,
-    options?: BinaryRetrievalOptions,
+    options?: BinaryRetrievalOptions
   ): Promise<BackendBinaryData> {
     return retrieveBinaryUrls(binaryId, transformation, options);
   },
@@ -103,7 +106,7 @@ export let cmsRetrieval: CmsRetrieval = {
   retrieveObjFieldDiffs(
     from: ObjSpaceId,
     to: ObjSpaceId,
-    objId: string,
+    objId: string
   ): Promise<ObjFieldDiffs> {
     return retrieveObjFieldDiffs(from, to, objId);
   },

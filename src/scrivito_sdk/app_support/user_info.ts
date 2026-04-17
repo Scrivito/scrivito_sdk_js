@@ -7,7 +7,6 @@ export interface UserInfo {
   name: string;
   email: string;
   picture?: string;
-  team_ids: string[];
 }
 
 export function getUserInfo(): UserInfo | null | undefined {

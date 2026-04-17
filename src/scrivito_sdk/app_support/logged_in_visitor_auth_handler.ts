@@ -11,9 +11,9 @@ export const loggedInVisitorAuthHandler: AuthHandler = {
     const userInfo = getUserInfo();
     if (!userInfo) return;
 
-    const { sub: id, name, email, picture, team_ids: teamsIds } = userInfo;
+    const { sub: id, name, email, picture } = userInfo;
 
-    return { id, name, email, picture: picture || null, teamsIds };
+    return { id, name, email, picture: picture || null };
   },
 
   isUserLoggedIn() {

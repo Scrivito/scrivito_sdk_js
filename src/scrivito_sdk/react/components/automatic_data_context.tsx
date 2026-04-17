@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import * as React from 'react';
 
 import { BasicObj, BasicWidget } from 'scrivito_sdk/models';
 import { PushOntoDataStack } from 'scrivito_sdk/react/data_context_container';
@@ -10,7 +10,7 @@ export const AutomaticDataContext = connect(function AutomaticDataContext({
   children,
 }: {
   content: BasicObj | BasicWidget;
-  children: ReactElement;
+  children: React.ReactElement;
 }) {
   const data = content.get('data', 'datalocator');
   const dataScope = useDataLocator(data);

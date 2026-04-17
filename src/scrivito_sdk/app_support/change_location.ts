@@ -7,7 +7,6 @@ import {
   openWindow,
   replaceLocation,
 } from 'scrivito_sdk/common';
-
 import { isOriginLocal } from './routing';
 
 export function redirectToUrl(url: string): void {

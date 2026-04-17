@@ -1,5 +1,4 @@
 import { promiseAndFinally } from 'scrivito_sdk/common';
-
 import { decodeImage } from './decode_image';
 
 export class ImageDecoder {
@@ -47,7 +46,7 @@ export class ImageDecoder {
 
     this.loadingRegistry[imageUrl] = promiseAndFinally(
       promise,
-      () => delete this.loadingRegistry[imageUrl],
+      () => delete this.loadingRegistry[imageUrl]
     );
   }
 }

@@ -2,7 +2,6 @@
 import { pruneString } from 'scrivito_sdk/common';
 import { BasicObj, BasicWidget } from 'scrivito_sdk/models';
 import { Schema } from 'scrivito_sdk/realm';
-
 import { extractBlobText } from './extract_blob_text';
 import { ExtractCollector } from './extract_collector';
 import { extractTextFromBasicObjOrWidget } from './extract_text_from_basic_obj_or_widget';
@@ -13,7 +12,7 @@ export function extractAttribute(
   objOrWidget: BasicObj | BasicWidget,
   schema: Schema,
   attribute: string,
-  collector: ExtractCollector,
+  collector: ExtractCollector
 ): void {
   if (attribute === 'blob:text') {
     return collector.push(extractBlobText(objOrWidget));

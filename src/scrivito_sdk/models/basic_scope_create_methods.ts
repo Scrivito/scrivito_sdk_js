@@ -1,14 +1,15 @@
 import { BasicObj, BasicObjAttributes } from 'scrivito_sdk/models/basic_obj';
+
 import { Binary } from 'scrivito_sdk/models/binary';
 import { ObjScope } from 'scrivito_sdk/models/obj_scope';
 
 export function createObjIn(
   scope: ObjScope,
-  { _id: objId, _objClass: objClass, ...otherAttributes }: BasicObjAttributes,
+  { _id: objId, _objClass: objClass, ...otherAttributes }: BasicObjAttributes
 ): BasicObj {
   const obj = scope.create(
     denormalizeSystemAttributeValue(objId) || BasicObj.generateId(),
-    { _obj_class: denormalizeSystemAttributeValue(objClass) },
+    { _obj_class: denormalizeSystemAttributeValue(objClass) }
   );
 
   obj.update(otherAttributes);
@@ -19,7 +20,7 @@ export function createObjIn(
 export async function createObjFromFileIn(
   scope: ObjScope,
   file: File,
-  attributes: BasicObjAttributes,
+  attributes: BasicObjAttributes
 ): Promise<BasicObj> {
   const maybeId = denormalizeSystemAttributeValue(attributes._id);
   const objId = maybeId || BasicObj.generateId();

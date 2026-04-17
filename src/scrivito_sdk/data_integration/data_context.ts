@@ -2,7 +2,6 @@ import { ViaRef } from 'scrivito_sdk/client';
 import {
   ArgumentError,
   QueryParameters,
-  assumeString,
   buildQueryString,
   parameterizeDataClass,
   parseQueryToQueryParameters,
@@ -43,11 +42,11 @@ export type DataContext = Record<DataIdentifier, DataContextValue>;
 export type DataContextValue = string;
 
 export type DataContextCallback = (
-  identifier: DataIdentifier,
+  identifier: DataIdentifier
 ) => DataContextValue | undefined;
 
 function isValidDataContextValue(
-  maybeValue: unknown,
+  maybeValue: unknown
 ): maybeValue is DataContextValue | undefined {
   return typeof maybeValue === 'string' || maybeValue === undefined;
 }
@@ -55,7 +54,7 @@ function isValidDataContextValue(
 export function getDataContextQuery(
   objOrLink: BasicObj | BasicLink,
   dataStack: DataStack,
-  query?: string,
+  query?: string
 ): string | undefined {
   const parameters = getDataContextParameters(objOrLink, dataStack);
 
@@ -63,7 +62,7 @@ export function getDataContextQuery(
     return buildQueryString(
       query
         ? { ...parameters, ...parseQueryToQueryParameters(query) }
-        : parameters,
+        : parameters
     );
   }
 
@@ -76,7 +75,7 @@ interface DataContextParameters {
 
 export function getDataContextParameters(
   objOrLink: BasicObj | BasicLink,
-  dataStack: DataStack,
+  dataStack: DataStack
 ): DataContextParameters | undefined {
   if (dataStack.length === 0) return;
 
@@ -105,7 +104,7 @@ export function getDataContextParameters(
 
 function dataContextParamsForElement(
   stackElement: DataItemPojo | undefined,
-  dataClass: string,
+  dataClass: string
 ): DataContextParameters | undefined {
   if (stackElement && stackElement._class === dataClass) {
     return {
@@ -116,7 +115,7 @@ function dataContextParamsForElement(
 
 export function findItemElementInDataStackAndGlobalData(
   dataClassName: string,
-  dataStack: DataStack,
+  dataStack: DataStack
 ): DataItemPojo | undefined {
   return (
     findItemInDataStack(dataClassName, dataStack) ||
@@ -127,7 +126,7 @@ export function findItemElementInDataStackAndGlobalData(
 export function findScopeElementInDataStackAndGlobalData(
   dataClassName: string,
   dataStack: DataStack,
-  viaRef: ViaRef,
+  viaRef: ViaRef
 ): DataScopePojo | undefined {
   if (viaRef === 'multi') {
     const scopePojo = findScopeInDataStack(dataClassName, dataStack);
@@ -142,7 +141,7 @@ export function findScopeElementInDataStackAndGlobalData(
 
 export function dataContextFromQueryParams(
   obj: BasicObj,
-  params: QueryParameters,
+  params: QueryParameters
 ): DataContext | 'loading' | 'unavailable' | undefined {
   const dataParam = obj.dataParam();
   if (!dataParam) return;
@@ -180,7 +179,7 @@ function objDataItemToDataContext(dataItem: ObjDataItem) {
 
 function externalDataItemToDataContext(dataItem: ExternalDataItem) {
   return {
-    _class: assumeString(dataItem.dataClassName()),
+    _class: dataItem.dataClassName(),
     _id: dataItem.id(),
     ...dataItem.getCustomAttributes(),
   };
@@ -218,7 +217,7 @@ function getObj(objOrLink: BasicObj | BasicLink) {
 
 export function getDataContextValue(
   identifier: DataIdentifier,
-  context: DataContext,
+  context: DataContext
 ): DataContextValue | undefined {
   if (!isValidDataIdentifier(identifier)) return undefined;
 
@@ -227,7 +226,7 @@ export function getDataContextValue(
 
   throwNextTick(
     new ArgumentError(
-      `Expected a data context value to be a string or undefined, but got ${value}`,
-    ),
+      `Expected a data context value to be a string or undefined, but got ${value}`
+    )
   );
 }
