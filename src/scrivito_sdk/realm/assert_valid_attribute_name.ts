@@ -11,7 +11,7 @@ export function assertValidAttributeName(attributeName: string): void {
 
   if (isSystemAttribute(attributeName)) {
     throw new ArgumentError(
-      `Attribute name "${attributeName}" is not a valid custom attribute name.`
+      `Attribute name "${attributeName}" is not a valid custom attribute name.`,
     );
   }
 }

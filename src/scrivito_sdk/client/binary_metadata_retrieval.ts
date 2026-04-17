@@ -12,7 +12,7 @@ interface BinaryMetadataRequestParams {
 
 export function retrieveBinaryMetadata(
   binaryId: string,
-  options?: BinaryRetrievalOptions
+  options?: BinaryRetrievalOptions,
 ): Promise<BackendMetadataResponse> {
   const requestParams: BinaryMetadataRequestParams = {};
 
@@ -22,6 +22,6 @@ export function retrieveBinaryMetadata(
 
   return cmsRestApi.get(
     `blobs/${encodeURIComponent(binaryId || '')}/meta_data`,
-    requestParams
+    requestParams,
   ) as Promise<BackendMetadataResponse>;
 }

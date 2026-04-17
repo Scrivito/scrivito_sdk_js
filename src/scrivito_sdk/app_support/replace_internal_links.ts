@@ -20,16 +20,16 @@ interface Options {
 
 export function replaceInternalLinks(
   htmlString: string,
-  options?: Options
+  options?: Options,
 ): string {
   return formatInternalLinks(htmlString, (url) =>
-    calculateInternalLinkUrl(url, options)
+    calculateInternalLinkUrl(url, options),
   );
 }
 
 function calculateInternalLinkUrl(
   { obj_id: objId, query, hash }: InternalUrl,
-  options?: Options
+  options?: Options,
 ) {
   const obj = getObjFrom(currentAppSpace(), objId);
   if (!obj) return generateUrl({ objId, query, hash });
@@ -49,7 +49,7 @@ function checkResolveHtmlUrls(htmlString: string) {
     throwInvalidArgumentsError(
       'resolveHtmlUrls',
       "'htmlString' must be a 'String'.",
-      { docPermalink: 'js-sdk/resolveHtmlUrls' }
+      { docPermalink: 'js-sdk/resolveHtmlUrls' },
     );
   }
 }

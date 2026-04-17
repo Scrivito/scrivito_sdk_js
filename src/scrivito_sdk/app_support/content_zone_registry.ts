@@ -14,7 +14,7 @@ export type UnregisterContentZone = () => void;
 export function registerContentZone(
   elementId: number,
   content: ContentReference,
-  parentElementId?: number
+  parentElementId?: number,
 ): UnregisterContentZone {
   nextTick(() =>
     updateRegistry((registry) => {
@@ -22,14 +22,14 @@ export function registerContentZone(
         content,
         parentElementId,
       };
-    })
+    }),
   );
 
   return () =>
     nextTick(() =>
       updateRegistry((registry) => {
         delete registry[elementId];
-      })
+      }),
     );
 }
 

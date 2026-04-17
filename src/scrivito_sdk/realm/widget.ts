@@ -21,7 +21,7 @@ import { readAppAttribute, updateAppAttributes } from './app_model_accessor';
 
 /** @public */
 export interface WidgetClass<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   /** @internal */
   readonly _scrivitoPrivateSchema?: Schema;
@@ -33,7 +33,7 @@ export interface WidgetClass<
 
 /** @public */
 export class Widget<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   /** @internal */
   readonly _scrivitoPrivateContent: BasicWidget;
@@ -46,7 +46,7 @@ export class Widget<
 
     if (!appClassName) {
       throw new ArgumentError(
-        'Use a specific class (like TextWidget or ImageWidget) to create a Widget.'
+        'Use a specific class (like TextWidget or ImageWidget) to create a Widget.',
       );
     }
 
@@ -59,7 +59,7 @@ export class Widget<
     const basicAttributes = unwrapAppAttributes(
       { ...attributes, _objClass: appClassName },
       schema,
-      appClassName
+      appClassName,
     );
 
     const basicWidget = BasicWidget.createWithUnknownValues(basicAttributes);
@@ -69,7 +69,7 @@ export class Widget<
       const initialAttributes = initialAttributesFor(
         basicAttributes,
         schema,
-        appClassName
+        appClassName,
       );
 
       updateAppAttributes(appWidget, initialAttributes);
@@ -94,7 +94,7 @@ export class Widget<
   }
 
   get<AttributeName extends keyof AttrDefs & string>(
-    attributeName: AttributeName
+    attributeName: AttributeName,
   ): AttributeValueOf<AttrDefs, AttributeName> {
     assertValidAttributeName(attributeName);
 
@@ -150,7 +150,7 @@ function assertValidAttributes(attributes: { [name: string]: unknown }) {
   if (attributes.constructor !== Object) {
     throw new ArgumentError(
       'The provided attributes are invalid. They have ' +
-        'to be an Object with valid Scrivito attribute values.'
+        'to be an Object with valid Scrivito attribute values.',
     );
   }
 
@@ -158,8 +158,8 @@ function assertValidAttributes(attributes: { [name: string]: unknown }) {
     throw new ArgumentError(
       'Invalid attribute "_objClass". ' +
         `"new ${String(
-          attributes._objClass
-        )}" will automatically set the CMS object class correctly.`
+          attributes._objClass,
+        )}" will automatically set the CMS object class correctly.`,
     );
   }
 }

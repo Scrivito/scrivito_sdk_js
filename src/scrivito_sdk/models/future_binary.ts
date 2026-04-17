@@ -9,13 +9,13 @@ export interface BinaryHandler {
     copyId: string,
     objId: string,
     filename?: string,
-    contentType?: string
+    contentType?: string,
   ): Promise<{ id: string }>;
   uploadBinary(
     objId: string,
     blob: Blob,
     filename?: string,
-    contentType?: string
+    contentType?: string,
   ): Promise<{ id: string }>;
 }
 
@@ -92,7 +92,7 @@ export class FutureBinary {
         this.idToCopy,
         targetId,
         this.filename,
-        this.contentType
+        this.contentType,
       );
     } else {
       if (!this.source) throw new InternalError();
@@ -100,7 +100,7 @@ export class FutureBinary {
         targetId,
         this.source,
         this.filename,
-        this.contentType
+        this.contentType,
       );
     }
 
@@ -113,7 +113,7 @@ function checkInto(target: Obj) {
     throwInvalidArgumentsError(
       'FutureBinary#into',
       "'target' must be an instance of 'Obj'.",
-      { docPermalink: 'js-sdk/FutureBinary-into' }
+      { docPermalink: 'js-sdk/FutureBinary-into' },
     );
   }
 }

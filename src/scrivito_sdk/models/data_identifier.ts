@@ -11,7 +11,7 @@ export function isValidDataIdentifier(key: string): key is DataIdentifier {
 }
 
 export function assertValidDataIdentifier(
-  key: string
+  key: string,
 ): asserts key is DataIdentifier {
   if (!isValidDataIdentifier(key)) {
     throw new ArgumentError(`Invalid data identifier "${key}"`);

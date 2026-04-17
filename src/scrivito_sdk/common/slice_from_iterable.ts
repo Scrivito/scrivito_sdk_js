@@ -14,7 +14,7 @@ interface SliceAndContinuation<T, C> {
 export function sliceFromIterable<T, C>(
   iterable: ContinueIterable<T, C>,
   continueFrom: C | undefined,
-  size: number
+  size: number,
 ): SliceAndContinuation<T, C> {
   const iterator =
     continueFrom === undefined

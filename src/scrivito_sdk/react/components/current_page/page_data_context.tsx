@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { ReactElement } from 'react';
 
 import { basicObjToDataContext } from 'scrivito_sdk/data_integration';
 import { BasicObj } from 'scrivito_sdk/models';
@@ -10,7 +10,7 @@ export const PageDataContext = connect(function PageDataContext({
   children,
 }: {
   page: BasicObj | null;
-  children: React.ReactElement;
+  children: ReactElement;
 }) {
   if (!page) return children;
 

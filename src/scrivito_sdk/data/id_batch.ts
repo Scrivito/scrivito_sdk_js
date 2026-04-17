@@ -19,7 +19,7 @@ const FALLBACK_RESPONSE: QueryData = {
 type LoadBatch<Params> = (
   params: Params,
   continuation: string | undefined,
-  size: number
+  size: number,
 ) => Promise<QueryData>;
 
 type Invalidation<Params> = (params: Params) => string;
@@ -65,7 +65,7 @@ export class IdBatchCollection<Params> {
   getBatch(params: Params, batchSize: number, index: number): IdBatch {
     return new IdBatch(
       this.loadableCollection.get([params, index], batchSize),
-      this.fakeQuery && this.fakeQuery(params)
+      this.fakeQuery && this.fakeQuery(params),
     );
   }
 
@@ -92,13 +92,13 @@ export class IdBatchCollection<Params> {
   private async loader(
     params: Params,
     index: number,
-    batchSize: number
+    batchSize: number,
   ): Promise<QueryData> {
     if (index === 0) return this.loadBatch(params, undefined, batchSize);
 
     const previousBatch = this.getBatch(params, batchSize, index - 1);
     const continuation = await load(() =>
-      previousBatch.continuationForNextBatch()
+      previousBatch.continuationForNextBatch(),
     );
 
     if (!continuation) {
@@ -114,7 +114,7 @@ export class IdBatchCollection<Params> {
 class IdBatch {
   constructor(
     private readonly data: LoadableData<QueryData>,
-    private readonly fakeData?: QueryData
+    private readonly fakeData?: QueryData,
   ) {}
 
   ids() {

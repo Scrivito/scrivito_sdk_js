@@ -34,16 +34,16 @@ export function provideExternalDataItem(
   params: Promise<{
     connection: LazyAsyncExternalDataItemConnection;
     schema: LazyAsyncDataClassSchema;
-  }>
+  }>,
 ): void {
-  const name = dataClass.name();
+  const name = dataClass.internalName();
 
   registerExternalDataClass(
     name,
     mapLazyAsync(params, ({ connection, schema }) => ({
       connection: desugarConnection(connection, dataClass),
       schema,
-    }))()
+    }))(),
   );
 
   registerSingletonDataClass(name);
@@ -56,7 +56,7 @@ function isSingletonDataId(id: string) {
 
 function desugarConnection(
   connection: LazyAsyncExternalDataItemConnection,
-  dataClass: ExternalDataClass
+  dataClass: ExternalDataClass,
 ) {
   const getCallback = async () =>
     (await normalizeLazyAsync(connection)()).get();
@@ -65,7 +65,7 @@ function desugarConnection(
     const { update } = await normalizeLazyAsync(connection)();
 
     if (update) return update(data);
-    throwMissingCallbackError('update', dataClass.name())();
+    throwMissingCallbackError('update', dataClass.internalName())();
   };
 
   const dataConnection: Partial<UncheckedDataConnection> = {

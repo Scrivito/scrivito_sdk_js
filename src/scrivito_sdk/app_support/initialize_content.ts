@@ -14,7 +14,7 @@ import {
 
 export function initialContentFor(
   className: string,
-  attributeName: string
+  attributeName: string,
 ): AttributeValue | undefined {
   const initialContent = getEditingConfigFor(className)?.initialContent;
 
@@ -43,7 +43,7 @@ export function initialContentFor(
 }
 
 function isWidgetlist(
-  maybeWidgetlist: AttributeValue
+  maybeWidgetlist: AttributeValue,
 ): maybeWidgetlist is Widget[] {
   return (
     Array.isArray(maybeWidgetlist) &&
@@ -68,7 +68,7 @@ export async function initializeContentForObj(objId: string): Promise<void> {
 
 export async function initializeContentForWidget(
   objId: string,
-  widgetId: string
+  widgetId: string,
 ): Promise<void> {
   const basicObj = await load(() => BasicObj.get(objId));
   if (!basicObj) return;
@@ -105,7 +105,7 @@ function initializeContentFor(basicContent: BasicObj | BasicWidget): void {
   const attributesWithTypeInfo = unwrapAppAttributes(
     initialAttributes,
     schema,
-    objClassName
+    objClassName,
   );
   basicContent.update(attributesWithTypeInfo);
 }

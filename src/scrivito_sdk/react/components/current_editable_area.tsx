@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { type ReactNode, createContext, useContext } from 'react';
 
 import { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
 import { connect } from 'scrivito_sdk/react_connect';
@@ -9,14 +9,14 @@ type ContextValue =
   | 'currentPageLayout'
   | 'currentPage';
 
-const Context = React.createContext<ContextValue>('outermostLayout');
+const Context = createContext<ContextValue>('outermostLayout');
 
 export const CurrentEditableArea = connect(function CurrentEditableArea({
   value,
   children,
 }: {
   value: ContextValue | (() => ContextValue);
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   if (isInPlaceEditingActive()) {
     return (
@@ -30,5 +30,5 @@ export const CurrentEditableArea = connect(function CurrentEditableArea({
 });
 
 export function useCurrentEditableArea(): ContextValue {
-  return React.useContext(Context);
+  return useContext(Context);
 }

@@ -5,6 +5,6 @@ import { withoutLoading } from 'scrivito_sdk/loadable';
 /** get the version of Obj for the purpose of invalidation */
 export function getObjVersion(objSpaceId: ObjSpaceId, objId: string): string {
   return withoutLoading(
-    () => objDataFor(objSpaceId, objId).getAttribute('_version') || ''
+    () => objDataFor(objSpaceId, objId).getAttribute('_version') || '',
   );
 }

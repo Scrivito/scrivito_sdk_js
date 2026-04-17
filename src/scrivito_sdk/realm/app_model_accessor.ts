@@ -11,14 +11,14 @@ import { getRealmClass } from './registry';
 
 export function readAppAttribute<
   AttrDefs extends AttributeDefinitions,
-  AttrName extends keyof AttrDefs & string
+  AttrName extends keyof AttrDefs & string,
 >(
   model: Obj | Widget,
-  attributeName: AttrName
+  attributeName: AttrName,
 ): AttributeValueOf<AttrDefs, AttrName> | null {
   const basicField = Schema.basicFieldFor<AttributeTypeOf<AttrDefs[AttrName]>>(
     model,
-    attributeName
+    attributeName,
   );
 
   return basicField && wrapInAppClass(basicField.get());
@@ -26,7 +26,7 @@ export function readAppAttribute<
 
 export function updateAppAttributes(
   model: Obj | Widget,
-  attributes: { [name: string]: unknown }
+  attributes: { [name: string]: unknown },
 ): void {
   const objClass = model.objClass();
   const appClass = getRealmClass(objClass);
@@ -41,14 +41,14 @@ export function updateAppAttributes(
     }
 
     throw new ArgumentError(
-      `Updating is not supported on the base class "${baseClass}".`
+      `Updating is not supported on the base class "${baseClass}".`,
     );
   }
 
   if (attributes.constructor !== Object) {
     throw new ArgumentError(
       'The provided attributes are invalid. They have ' +
-        'to be an Object with valid Scrivito attribute values.'
+        'to be an Object with valid Scrivito attribute values.',
     );
   }
 
@@ -58,7 +58,7 @@ export function updateAppAttributes(
   const attributesWithTypeInfo = unwrapAppAttributes(
     attributes,
     schema,
-    objClass
+    objClass,
   );
 
   model._scrivitoPrivateContent.updateWithUnknownValues(attributesWithTypeInfo);

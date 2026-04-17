@@ -12,14 +12,14 @@ import { load } from 'scrivito_sdk/loadable';
 
 export async function filterExternalDataItem(
   dataItem: DataItem,
-  filters: DataConnectionFilters
+  filters: DataConnectionFilters,
 ) {
   const doesMatch = await load(() =>
     Object.entries(filters).every(([name, filter]) => {
       if (!filter) return false;
 
       return name === '_id' || valueMatchesFilter(dataItem.get(name), filter);
-    })
+    }),
   );
 
   return { results: doesMatch ? [SINGLETON_DATA_ID] : [] };
@@ -27,7 +27,7 @@ export async function filterExternalDataItem(
 
 function valueMatchesFilter(
   itemValue: unknown,
-  filter: FilterSpec | AndFilterSpec
+  filter: FilterSpec | AndFilterSpec,
 ): boolean {
   if (isAndFilterSpec(filter)) {
     return filter.value.every((spec) => valueMatchesFilter(itemValue, spec));

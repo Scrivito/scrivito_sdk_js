@@ -10,12 +10,12 @@ import {
 /** Convert LazyAsync to a DataConnection into a synchronous DataConnection. */
 export function anticipatedDataConnection(
   connectionPromise: LazyAsync<Partial<UncheckedDataConnection>>,
-  dataClass: string
+  dataClass: string,
 ): UncheckedDataConnection {
   const getCompleteConnection = memoize(async () => {
     return addMissingDataConnectionHandlers(
       await normalizeLazyAsync(connectionPromise)(),
-      dataClass
+      dataClass,
     );
   });
 

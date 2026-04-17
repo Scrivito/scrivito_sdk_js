@@ -29,10 +29,10 @@ const loadableModules = createLoadableCollection<
  */
 export function importFrom<
   ModuleName extends EditingModuleName,
-  Symbol extends keyof EditingModules[ModuleName]
+  Symbol extends keyof EditingModules[ModuleName],
 >(
   moduleName: ModuleName,
-  symbol: Symbol
+  symbol: Symbol,
 ): EditingModules[ModuleName][Symbol] | undefined {
   if (!uiAdapter) return;
 
@@ -50,14 +50,14 @@ export function importFrom<
 
 // for test purposes only
 export function provideLoadedEditingModule<
-  ModuleName extends EditingModuleName
+  ModuleName extends EditingModuleName,
 >(moduleName: ModuleName, editingModule: EditingModules[ModuleName]): void {
   loadableModules.get(moduleName).set(editingModule);
 }
 
 // for test purposes only
 export function isEditingModuleBeingLoaded<
-  ModuleName extends EditingModuleName
+  ModuleName extends EditingModuleName,
 >(moduleName: ModuleName): boolean {
   return loadableModules.get(moduleName).numSubscribers() > 0;
 }

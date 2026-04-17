@@ -23,7 +23,7 @@ interface ElementRegistry {
  * Streams `null` if element is unknown or has been removed.
  */
 export function getElementBoundaries(
-  elementId: number
+  elementId: number,
 ): ElementBoundaries | null | undefined {
   if (!registry[elementId]) {
     return null;
@@ -34,7 +34,7 @@ export function getElementBoundaries(
 
 // For test purpose only.
 export function getRegisteredElementId(
-  element: HTMLElement
+  element: HTMLElement,
 ): number | undefined {
   for (const key of Object.keys(registry)) {
     const elementId = parseInt(key, 10);
@@ -47,7 +47,7 @@ export function getRegisteredElementId(
 
 // For test purpose only.
 export function calculateElementBoundaries(
-  element: Element
+  element: Element,
 ): ElementBoundaries {
   const { left, top, width, height } = element.getBoundingClientRect();
 

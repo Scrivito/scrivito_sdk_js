@@ -4,6 +4,6 @@ import { Workspace, currentWorkspaceId } from 'scrivito_sdk/models';
 /** @public */
 export function currentWorkspace(): Workspace {
   return new Workspace(
-    uiAdapter?.currentWorkspace() ?? { id: currentWorkspaceId(), title: '' }
+    uiAdapter?.currentWorkspace() ?? { id: currentWorkspaceId(), title: '' },
   );
 }

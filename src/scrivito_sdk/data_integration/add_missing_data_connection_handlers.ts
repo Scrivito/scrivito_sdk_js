@@ -3,7 +3,7 @@ import { UncheckedDataConnection } from 'scrivito_sdk/data_integration';
 
 export function addMissingDataConnectionHandlers(
   connection: Partial<UncheckedDataConnection>,
-  dataClass: string
+  dataClass: string,
 ): UncheckedDataConnection {
   return {
     get: connection.get || throwMissingCallbackError('get', dataClass),
@@ -16,11 +16,11 @@ export function addMissingDataConnectionHandlers(
 
 export function throwMissingCallbackError(
   callbackName: keyof UncheckedDataConnection,
-  dataClass: string
+  dataClass: string,
 ) {
   return () => {
     throw new ScrivitoError(
-      `No "${callbackName}" callback function defined for data class "${dataClass}".`
+      `No "${callbackName}" callback function defined for data class "${dataClass}".`,
     );
   };
 }

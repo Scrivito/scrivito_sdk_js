@@ -22,7 +22,7 @@ interface ContentDump {
 /** dump the content of all provided LoadableData instances */
 export function generateContentDump(
   data: Array<LoadableData<unknown>>,
-  contentStateId: string
+  contentStateId: string,
 ): string {
   return stringify({
     version: getScrivitoVersion(),
@@ -42,7 +42,7 @@ export function loadContentDump(contentDump: string): void {
     logError(
       'could not preload: ' +
         `dump is from version ${String(parsed.version)}` +
-        `, this is version ${getScrivitoVersion()}`
+        `, this is version ${getScrivitoVersion()}`,
     );
     return;
   }
@@ -78,7 +78,7 @@ function isMaybeContentDump(parsed: object): parsed is MaybeContentDump {
 }
 
 function isContentDumpFromThisVersion(
-  dump: MaybeContentDump
+  dump: MaybeContentDump,
 ): dump is ContentDump {
   return dump.version === getScrivitoVersion();
 }

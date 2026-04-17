@@ -31,34 +31,34 @@ import { AttributeTypeOf } from './schema';
 type BasicValue<T> = T extends Obj
   ? BasicObj
   : T extends Widget
-  ? BasicWidget
-  : T extends Link
-  ? BasicLink
-  : T extends ObjSearch
-  ? BasicObjSearch
-  : T;
+    ? BasicWidget
+    : T extends Link
+      ? BasicLink
+      : T extends ObjSearch
+        ? BasicObjSearch
+        : T;
 
 type Value = Obj | Widget | Link | ObjSearch;
 
 type BasicValueToAttributeValue<T> = T extends BasicObj[]
   ? Obj[]
   : T extends BasicWidget[]
-  ? Widget[]
-  : T extends BasicLink[]
-  ? Link[]
-  : T extends Array<BasicObj | ObjUnavailable>
-  ? Obj[]
-  : T extends BasicObj
-  ? Obj
-  : T extends BasicWidget
-  ? Widget
-  : T extends BasicLink
-  ? Link | null
-  : T extends ObjUnavailable
-  ? null
-  : T extends Binary
-  ? Binary
-  : T;
+    ? Widget[]
+    : T extends BasicLink[]
+      ? Link[]
+      : T extends Array<BasicObj | ObjUnavailable>
+        ? Obj[]
+        : T extends BasicObj
+          ? Obj
+          : T extends BasicWidget
+            ? Widget
+            : T extends BasicLink
+              ? Link | null
+              : T extends ObjUnavailable
+                ? null
+                : T extends Binary
+                  ? Binary
+                  : T;
 
 interface AttributeMapping {
   binary: Binary | null;
@@ -83,45 +83,45 @@ interface AttributeMapping {
 
 export type AttributeValueOf<
   AttrDefs extends AttributeDefinitions,
-  AttrName extends keyof AttrDefs
+  AttrName extends keyof AttrDefs,
 > = AttributeMapping[AttributeTypeOf<AttrDefs[AttrName]>];
 
 export type AttributeValue = AttributeMapping[keyof AttributeMapping];
 
 export function wrapInAppClass<
-  T extends BasicObj | ObjUnavailable | BasicWidget | BasicLink | string | null
+  T extends BasicObj | ObjUnavailable | BasicWidget | BasicLink | string | null,
 >(internalValue: T): BasicValueToAttributeValue<T>;
 
 export function wrapInAppClass(
-  internalValue: Array<BasicObj | ObjUnavailable>
+  internalValue: Array<BasicObj | ObjUnavailable>,
 ): Obj[];
 
 export function wrapInAppClass<T extends BasicWidget | BasicLink | string>(
-  internalValue: T[]
+  internalValue: T[],
 ): BasicValueToAttributeValue<T>[];
 
 export function wrapInAppClass<
   AttrDefs extends AttributeDefinitions,
-  AttrName extends keyof AttrDefs & string
+  AttrName extends keyof AttrDefs & string,
 >(
-  internalValue: BasicAttributeValue<AttributeTypeOf<AttrDefs[AttrName]>>
+  internalValue: BasicAttributeValue<AttributeTypeOf<AttrDefs[AttrName]>>,
 ): AttributeValueOf<AttrDefs, AttrName>;
 
 export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
-  internalValue: BasicObj
+  internalValue: BasicObj,
 ): Obj<AttrDefs>;
 
 export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
-  internalValue: BasicObj | null
+  internalValue: BasicObj | null,
 ): Obj<AttrDefs> | null;
 
 export function wrapInAppClass<AttrDefs extends AttributeDefinitions>(
-  internalValue: BasicWidget
+  internalValue: BasicWidget,
 ): Widget<AttrDefs>;
 
 export function wrapInAppClass<
   A extends CmsAttributeType,
-  T extends BasicAttributeValue<A> | BasicObj[] | BasicObj | BasicWidget
+  T extends BasicAttributeValue<A> | BasicObj[] | BasicObj | BasicWidget,
 >(internalValue: T) {
   if (Array.isArray(internalValue)) {
     return (
@@ -136,14 +136,14 @@ export function wrapInAppClass<
   if (internalValue instanceof BasicObj) {
     return buildAppClassInstance(
       internalValue as unknown as BasicObj,
-      objClassFor(internalValue.objClass()) as ObjClass
+      objClassFor(internalValue.objClass()) as ObjClass,
     );
   }
 
   if (internalValue instanceof BasicWidget) {
     return buildAppClassInstance(
       internalValue as unknown as BasicWidget,
-      widgetClassFor(internalValue.objClass()) as WidgetClass
+      widgetClassFor(internalValue.objClass()) as WidgetClass,
     );
   }
 
@@ -173,7 +173,7 @@ export function unwrapAppAttributes(
     [key: string]: unknown;
   },
   schema: Schema,
-  appClassName: string
+  appClassName: string,
 ): NormalizedBasicAttributesWithUnknownValues {
   return mapValues(appAttributes, (value, name) => {
     if (isSystemAttribute(name)) return [value] as [unknown];
@@ -183,7 +183,7 @@ export function unwrapAppAttributes(
     if (!normalizedTypeInfo) {
       throw new ArgumentError(
         `Attribute "${name}" is not defined for CMS object ` +
-          `class "${appClassName}".`
+          `class "${appClassName}".`,
       );
     }
 
@@ -191,29 +191,29 @@ export function unwrapAppAttributes(
 
     return [unwrappedValue, normalizedTypeInfo] as [
       unknown,
-      BasicTypeInfo<CmsAttributeType>
+      BasicTypeInfo<CmsAttributeType>,
     ];
   });
 }
 
 function buildAppClassInstance(
   internalValue: BasicLink,
-  appClass: typeof Link
+  appClass: typeof Link,
 ): Link;
 
 function buildAppClassInstance(
   internalValue: BasicObj,
-  appClass: ObjClass
+  appClass: ObjClass,
 ): Obj;
 
 function buildAppClassInstance(
   internalValue: BasicWidget,
-  appClass: WidgetClass
+  appClass: WidgetClass,
 ): Widget;
 
 function buildAppClassInstance(
   internalValue: BasicLink | BasicObj | BasicWidget,
-  appClass: typeof Link | ObjClass | WidgetClass
+  appClass: typeof Link | ObjClass | WidgetClass,
 ) {
   const externalValue = Object.create(appClass.prototype);
   externalValue._scrivitoPrivateContent = internalValue;

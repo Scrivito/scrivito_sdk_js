@@ -24,7 +24,7 @@ export interface ContinueIterator<T, C> extends Iterator<T> {
  */
 export function transformContinueIterable<From, To, C>(
   iterable: ContinueIterable<From, C>,
-  transform: (iter: TransIterator<From>) => Iterator<To>
+  transform: (iter: TransIterator<From>) => Iterator<To>,
 ): ContinueIterable<To, C> {
   return new TransformedContinueIterable(iterable, transform);
 }
@@ -49,37 +49,39 @@ class EmptyContinueIterator<T, C> implements ContinueIterator<T, C> {
   }
 }
 
-class TransformedContinueIterable<From, To, C>
-  implements ContinueIterable<To, C>
-{
+class TransformedContinueIterable<From, To, C> implements ContinueIterable<
+  To,
+  C
+> {
   constructor(
     private readonly iterable: ContinueIterable<From, C>,
-    private readonly transform: (iter: TransIterator<From>) => Iterator<To>
+    private readonly transform: (iter: TransIterator<From>) => Iterator<To>,
   ) {}
 
   iterator() {
     return new TransformedContinueIterator(
       this.iterable.iterator(),
-      this.transform
+      this.transform,
     );
   }
 
   iteratorFromContinuation(continuation: C) {
     return new TransformedContinueIterator(
       this.iterable.iteratorFromContinuation(continuation),
-      this.transform
+      this.transform,
     );
   }
 }
 
-class TransformedContinueIterator<From, To, C>
-  implements ContinueIterator<To, C>
-{
+class TransformedContinueIterator<From, To, C> implements ContinueIterator<
+  To,
+  C
+> {
   private readonly transformedIterator: Iterator<To>;
 
   constructor(
     private readonly iterator: ContinueIterator<From, C>,
-    transform: (iter: TransIterator<From>) => Iterator<To>
+    transform: (iter: TransIterator<From>) => Iterator<To>,
   ) {
     this.transformedIterator = transform(new TransIterator(iterator));
   }

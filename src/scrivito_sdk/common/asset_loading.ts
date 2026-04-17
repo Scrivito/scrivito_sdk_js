@@ -1,7 +1,7 @@
 // @rewire
 export function loadCss(
   url: string,
-  targetDocument: Document = window.document
+  targetDocument: Document = window.document,
 ): void {
   const link = targetDocument.createElement('link');
 
@@ -13,7 +13,7 @@ export function loadCss(
 
 export function loadJs(
   url: string,
-  targetDocument: Document = window.document
+  targetDocument: Document = window.document,
 ): void {
   const script = targetDocument.createElement('script');
 

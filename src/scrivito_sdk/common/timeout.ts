@@ -5,7 +5,7 @@ export type TimeoutType = ReturnType<typeof setTimeout>;
 
 function setTimeoutAndTrackId(
   handler: () => void,
-  timeout?: number
+  timeout?: number,
 ): TimeoutType {
   // eslint-disable-next-line no-restricted-globals -- This module is allowed to use setTimeout
   const timeoutId = setTimeout(handler, timeout);
@@ -15,7 +15,7 @@ function setTimeoutAndTrackId(
 
 function setIntervalAndTrackId(
   handler: () => void,
-  timeout?: number
+  timeout?: number,
 ): TimeoutType {
   // eslint-disable-next-line no-restricted-globals -- This module is allowed to use setInterval
   const timeoutId = setInterval(handler, timeout);

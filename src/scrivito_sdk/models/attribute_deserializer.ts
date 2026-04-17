@@ -36,12 +36,12 @@ type BackendType = keyof CustomAttributeJsonMapping;
 export function deserialize<Type extends CmsAttributeType>(
   model: ContentValueProvider,
   value: BackendValue,
-  typeInfo: BasicTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>,
 ): BasicAttributeValue<Type>;
 export function deserialize(
   model: ContentValueProvider,
   value: BackendValue,
-  typeInfo: BasicTypeInfo<CmsAttributeType>
+  typeInfo: BasicTypeInfo<CmsAttributeType>,
 ): BasicAttributeValue<(typeof typeInfo)[0]> {
   switch (typeInfo[0]) {
     case 'binary':
@@ -73,7 +73,7 @@ export function deserialize(
     case 'referencelist':
       return deserializeReferencelistValue(
         autoConvertToReferencelist(value),
-        model
+        model,
       );
     case 'string':
       return deserializeHtmlOrStringValue(autoConvertToSingle(value));
@@ -90,7 +90,7 @@ export function deserialize(
 
 function deserializeBinaryValue(
   value: BackendValue,
-  model: ContentValueProvider
+  model: ContentValueProvider,
 ) {
   if (isBackendValueOfType('binary', value)) {
     return new Binary(value[1].id, model.objSpaceId());
@@ -136,7 +136,7 @@ function deserializeHtmlOrStringValue(value: BackendValue) {
 
 function deserializeEnumValue(
   value: BackendValue,
-  typeInfo: BasicTypeInfo<'enum'>
+  typeInfo: BasicTypeInfo<'enum'>,
 ) {
   if (isBackendValueOfType('string', value)) {
     const [, valueFromBackend] = value;
@@ -149,7 +149,7 @@ function deserializeEnumValue(
 
 function deserializeMultienumValue(
   value: BackendValue,
-  typeInfo: BasicTypeInfo<'multienum'>
+  typeInfo: BasicTypeInfo<'multienum'>,
 ) {
   if (isBackendValueOfType('stringlist', value)) {
     const [, { values }] = typeInfo;
@@ -215,17 +215,17 @@ function convertToLink(valueFromBackend: LinkJson) {
 
 function convertReference(
   valueFromBackend: string,
-  model: ContentValueProvider
+  model: ContentValueProvider,
 ) {
   return getObjIncludingUnavailableFrom(
     objSpaceScopeExcludingDeleted(model.objSpaceId()),
-    valueFromBackend
+    valueFromBackend,
   );
 }
 
 function deserializeReferenceValue(
   value: BackendValue,
-  model: ContentValueProvider
+  model: ContentValueProvider,
 ) {
   if (isBackendValueOfType('reference', value)) {
     return convertReference(value[1], model);
@@ -236,7 +236,7 @@ function deserializeReferenceValue(
 
 function deserializeReferencelistValue(
   value: BackendValue,
-  model: ContentValueProvider
+  model: ContentValueProvider,
 ) {
   if (isBackendValueOfType('referencelist', value)) {
     return value[1].map((obj) => convertReference(obj, model));
@@ -255,7 +255,7 @@ function deserializeStringlistValue(value: BackendValue) {
 
 function deserializeWidgetValue(
   value: BackendValue,
-  model: ContentValueProvider
+  model: ContentValueProvider,
 ) {
   let widgetId: string | undefined;
 
@@ -267,7 +267,7 @@ function deserializeWidgetValue(
 
 function deserializeWidgetlistValue(
   value: BackendValue,
-  model: ContentValueProvider
+  model: ContentValueProvider,
 ) {
   if (isBackendValueOfType('widgetlist', value)) {
     return value[1].map((widgetId) => model.widget(widgetId)!);
@@ -287,7 +287,7 @@ function deserializeWidgetlistValue(
 
 function isBackendValueOfType<Type extends BackendType>(
   type: Type,
-  value: BackendValue
+  value: BackendValue,
 ): value is CustomAttributeJsonMapping[typeof type] {
   return Array.isArray(value) && value[0] === type;
 }

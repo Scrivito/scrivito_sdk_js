@@ -1,6 +1,6 @@
-import * as React from 'react';
+import { type ReactElement, createContext, useContext } from 'react';
 
-import { ArgumentError } from 'scrivito_sdk/common';
+import { ArgumentError, assumeString } from 'scrivito_sdk/common';
 import {
   DataContext,
   DataItem,
@@ -22,28 +22,28 @@ export interface DataContextContainer {
   dataStack: DataStack;
 }
 
-const DataStackReactContext = React.createContext<
-  DataContextContainer | undefined
->(undefined);
+const DataStackReactContext = createContext<DataContextContainer | undefined>(
+  undefined,
+);
 
 export function useDataContextContainer(): DataContextContainer | undefined {
-  return React.useContext(DataStackReactContext);
+  return useContext(DataStackReactContext);
 }
 
 export function usePlaceholders(): DataContext | undefined {
-  return React.useContext(DataStackReactContext)?.placeholders;
+  return useContext(DataStackReactContext)?.placeholders;
 }
 
 export function useDataStack(): DataStack | undefined {
-  return React.useContext(DataStackReactContext)?.dataStack;
+  return useContext(DataStackReactContext)?.dataStack;
 }
 
 export function useDataStackOrThrow(): DataStack {
-  const dataStack = React.useContext(DataStackReactContext)?.dataStack;
+  const dataStack = useContext(DataStackReactContext)?.dataStack;
 
   if (!dataStack) {
     throw new ArgumentError(
-      'Missing data context: Please use this hook inside a Scrivito application.'
+      'Missing data context: Please use this hook inside a Scrivito application.',
     );
   }
 
@@ -51,34 +51,34 @@ export function useDataStackOrThrow(): DataStack {
 }
 
 export function useLastDataStackElement(): DataStackElement | undefined {
-  const dataStack = React.useContext(DataStackReactContext)?.dataStack;
+  const dataStack = useContext(DataStackReactContext)?.dataStack;
   return dataStack && dataStack.find((element) => !('isBackground' in element));
 }
 
 export function useClosestMultiItemElement(
-  dataClassName?: string
+  dataClassName?: string,
 ): PresentDataScopePojo | undefined {
-  return React.useContext(DataStackReactContext)?.dataStack?.find(
+  return useContext(DataStackReactContext)?.dataStack?.find(
     (element): element is PresentDataScopePojo => {
       return (
         isMultiItemDataScopePojo(element) &&
         (dataClassName === undefined || element._class === dataClassName)
       );
-    }
+    },
   );
 }
 
 export function useClosestSingleItemElement(
-  dataClassName?: string
+  dataClassName?: string,
 ): DataItemPojo | PresentDataScopePojo | undefined {
-  return React.useContext(DataStackReactContext)?.dataStack?.find(
+  return useContext(DataStackReactContext)?.dataStack?.find(
     (element): element is DataItemPojo | PresentDataScopePojo => {
       return (
         isSingleItemElement(element) &&
         ((dataClassName === undefined && !('isBackground' in element)) ||
           element._class === dataClassName)
       );
-    }
+    },
   );
 }
 
@@ -91,9 +91,9 @@ export function PushOntoDataStack({
     | DataScope
     // Shortcut for tests only
     | DataStackElement;
-  children: React.ReactElement;
+  children: ReactElement;
 }) {
-  const dataStack = React.useContext(DataStackReactContext)?.dataStack || [];
+  const dataStack = useContext(DataStackReactContext)?.dataStack || [];
   const stackElement = computeStackElement();
 
   return (
@@ -106,7 +106,7 @@ export function PushOntoDataStack({
   function computeStackElement() {
     if (data instanceof DataItem) {
       return {
-        _class: data.dataClassName(),
+        _class: assumeString(data.dataClassName()),
         _id: data.id(),
       };
     }
@@ -121,10 +121,10 @@ export function ProvidePlaceholders({
   children,
 }: {
   source: DataContext | DataItem | DataScope | Obj;
-  children: React.ReactElement;
+  children: ReactElement;
   isBackground?: true;
 }) {
-  const dataStack = React.useContext(DataStackReactContext)?.dataStack || [];
+  const dataStack = useContext(DataStackReactContext)?.dataStack || [];
 
   return (
     <DataStackReactContext.Provider
@@ -155,7 +155,7 @@ export function ProvidePlaceholders({
 }
 
 function computePlaceholders(
-  from: DataContext | DataItem | BasicObj
+  from: DataContext | DataItem | BasicObj,
 ): DataContext {
   if (from instanceof DataItem) {
     return dataItemToDataContext(from);

@@ -45,7 +45,7 @@ type AuthViaOptions =
     };
 
 function assertAuthViaOptions(
-  options: MaybeInvalidAuthViaFetchConfig | undefined
+  options: MaybeInvalidAuthViaFetchConfig | undefined,
 ): asserts options is AuthViaOptions {
   if (!options) return;
 
@@ -53,7 +53,7 @@ function assertAuthViaOptions(
 
   if (authViaAccount && authViaInstance) {
     throw new Error(
-      'authViaAccount and authViaInstance are mutually exclusive'
+      'authViaAccount and authViaInstance are mutually exclusive',
     );
   }
 }
@@ -85,14 +85,14 @@ export type ApiClientHeaders =
 export class ApiClient {
   constructor(
     private readonly fetchCallback: Fetch,
-    private readonly options?: ApiClientOptions
+    private readonly options?: ApiClientOptions,
   ) {}
 
   fetch(path: string, options?: FetchOptions) {
     const mergedOptions: MaybeInvalidAuthViaFetchConfig = merge(
       {},
       this.options,
-      options
+      options,
     );
 
     assertAuthViaOptions(mergedOptions);

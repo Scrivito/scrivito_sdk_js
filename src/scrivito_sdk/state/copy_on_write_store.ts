@@ -3,7 +3,10 @@ import { ContextContainer } from 'scrivito_sdk/common';
 export class CopyOnWriteStore<T> {
   private readonly valueForReading = new ContextContainer<T>();
 
-  constructor(private value: T, private readonly copy: (value: T) => T) {}
+  constructor(
+    private value: T,
+    private readonly copy: (value: T) => T,
+  ) {}
 
   /** run some code that needs to read the value.
    * the passed-in `value` is guaranteed not to change, i.e.

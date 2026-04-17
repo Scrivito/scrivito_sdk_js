@@ -6,7 +6,7 @@ import { extractTextFromBasicObjOrWidget } from './extract_text/extract_text_fro
 
 export function extractTextFromBasicObj(
   obj: BasicObj,
-  maxLength: number
+  maxLength: number,
 ): string {
   const collector = new ExtractCollector(maxLength);
   extractTextFromBasicObjOrWidget(obj, collector);

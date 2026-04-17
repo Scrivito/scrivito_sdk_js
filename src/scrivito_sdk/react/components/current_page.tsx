@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { ComponentType } from 'react';
 
 import { getCurrentPageData } from 'scrivito_sdk/app_support/current_page_data';
 import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
@@ -16,7 +16,7 @@ import { PageDataContext } from './current_page/page_data_context';
 import { useLayout } from './current_page/use_layout';
 
 /** @public */
-export const CurrentPage: React.ComponentType<unknown> = connect(
+export const CurrentPage: ComponentType<unknown> = connect(
   function CurrentPage() {
     const pageData = getCurrentPageData();
     if (!pageData) return null;
@@ -30,7 +30,7 @@ export const CurrentPage: React.ComponentType<unknown> = connect(
         navigationState={navigationState}
       />
     );
-  }
+  },
 );
 
 const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
@@ -41,7 +41,7 @@ const CurrentPageWithLayout = connect(function CurrentPageWithLayout({
   navigationState: NavigationState;
 }) {
   const params = parseQueryToQueryParameters(
-    navigationState?.locationRoute?.query ?? ''
+    navigationState?.locationRoute?.query ?? '',
   );
 
   const layout = useLayout(currentPage, params);

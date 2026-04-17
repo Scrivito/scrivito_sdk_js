@@ -29,7 +29,7 @@ import { DataLocator, isDataLocatorValueViaFilter } from 'scrivito_sdk/models';
 
 export function applyDataLocator(
   dataStack: DataStack,
-  dataLocator: DataLocator | null | undefined
+  dataLocator: DataLocator | null | undefined,
 ): DataScope {
   if (!dataLocator) return new EmptyDataScope();
 
@@ -56,7 +56,7 @@ export function applyDataLocator(
 function applyDataLocatorDefinition(
   sourceDataScope: DataScope,
   dataStack: DataStack,
-  dataLocator: DataLocator
+  dataLocator: DataLocator,
 ): DataScope {
   let dataScope = sourceDataScope;
   const attributeName = dataLocator.field();
@@ -70,7 +70,7 @@ function applyDataLocatorDefinition(
   if (query) {
     dataScope = query.reduce(
       (scope, filter) => applyFilter(scope, filter, dataStack),
-      dataScope
+      dataScope,
     );
   }
 
@@ -92,7 +92,7 @@ function applyDataLocatorDefinition(
 function applyFilter(
   scope: DataScope,
   filter: DataLocatorFilter,
-  dataStack: DataStack
+  dataStack: DataStack,
 ) {
   if (isDataLocatorOperatorFilter(filter)) {
     return applyOperatorFilter(scope, filter);
@@ -107,7 +107,7 @@ function applyFilter(
 
 function applyOperatorFilter(
   scope: DataScope,
-  { field, operator, value }: DataLocatorOperatorFilter
+  { field, operator, value }: DataLocatorOperatorFilter,
 ) {
   const [fullOperator] =
     Object.entries(operatorToOpCode).find(([_, val]) => val === operator) || [];
@@ -124,7 +124,7 @@ function applyOperatorFilter(
 
 function applyValueFilter(
   scope: DataScope,
-  { field, value }: DataLocatorValueFilter
+  { field, value }: DataLocatorValueFilter,
 ) {
   return scope.transform({ filters: { [field]: value } });
 }
@@ -135,7 +135,7 @@ function applyValueViaFilter(
     field,
     value_via: { class: viaClass, field: viaField },
   }: DataLocatorValueViaFilter,
-  dataStack: DataStack
+  dataStack: DataStack,
 ) {
   const viaDataItem = findMatchingDataItemOrThrow(viaClass, dataStack);
 
@@ -169,7 +169,7 @@ function applyValueViaFilter(
         dataClass,
         isDataItem: true,
         error: new ArgumentError(
-          `${JSON.stringify(value)} is not a valid data ID`
+          `${JSON.stringify(value)} is not a valid data ID`,
         ),
       });
     }
@@ -193,12 +193,12 @@ function findMatchingDataItemOrThrow(viaClass: string, dataStack: DataStack) {
 function findMatchingDataScopeOrThrow(
   className: string,
   dataStack: DataStack,
-  viaRef: ViaRef
+  viaRef: ViaRef,
 ): DataScope {
   const element = findScopeElementInDataStackAndGlobalData(
     className,
     dataStack,
-    viaRef
+    viaRef,
   );
 
   if (!element) throw new ArgumentError(`No ${className} scope found`);

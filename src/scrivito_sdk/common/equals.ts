@@ -46,7 +46,7 @@ export function equalsBestEffort(a: unknown, b: unknown): boolean {
 function equalsBestEffortWithDepthLimit(
   a: unknown,
   b: unknown,
-  currentDepth: number = 1
+  currentDepth: number = 1,
 ): boolean {
   if (a === b) return true;
 
@@ -61,7 +61,7 @@ function equalsBestEffortWithDepthLimit(
     return equalsBestEffortWithDepthLimit(
       a._scrivitoPrivateContent,
       b._scrivitoPrivateContent,
-      currentDepth
+      currentDepth,
     );
   }
 
@@ -74,7 +74,7 @@ function equalsBestEffortWithDepthLimit(
     a.length === b.length
   ) {
     return a.every((v, i) =>
-      equalsBestEffortWithDepthLimit(v, b[i], currentDepth + 1)
+      equalsBestEffortWithDepthLimit(v, b[i], currentDepth + 1),
     );
   }
 
@@ -90,7 +90,7 @@ interface ObjectSupportingEquals {
 }
 
 function isObjectSupportingEquals(
-  object: unknown
+  object: unknown,
 ): object is ObjectSupportingEquals {
   if (!object) return false;
   return typeof (object as ObjectSupportingEquals).equals === 'function';
@@ -101,7 +101,7 @@ interface ObjectSupportingValueOf {
 }
 
 function isObjectSupportingValueOf(
-  object: unknown
+  object: unknown,
 ): object is ObjectSupportingValueOf {
   if (!object) return false;
   return typeof (object as ObjectSupportingValueOf).valueOf === 'function';
@@ -112,11 +112,11 @@ interface ObjectWithScrivitoPrivateContent {
 }
 
 function isObjectWithScrivitoPrivateContent(
-  object: unknown
+  object: unknown,
 ): object is ObjectWithScrivitoPrivateContent {
   if (!object) return false;
 
   return (object as ObjectWithScrivitoPrivateContent).hasOwnProperty(
-    '_scrivitoPrivateContent'
+    '_scrivitoPrivateContent',
   );
 }

@@ -1,3 +1,4 @@
+import { assumeString } from 'scrivito_sdk/common';
 import { getDataClassOrThrow } from 'scrivito_sdk/data_integration';
 import {
   DataItemPojo,
@@ -10,7 +11,7 @@ import { createStateContainer } from 'scrivito_sdk/state';
 const globalContextState = createStateContainer<Record<string, string>>();
 
 export function provideGlobalData(dataItem: ExternalDataItem): void {
-  const dataClassName = dataItem.dataClassName();
+  const dataClassName = assumeString(dataItem.dataClassName());
   const dataItemId = dataItem.id();
 
   globalContextState.set({
@@ -25,22 +26,22 @@ export function getGlobalDataItems(): ExternalDataItem[] {
   return globalContext
     ? Object.entries(globalContext)
         .map(([dataClassName, dataId]) =>
-          getDataClassOrThrow(dataClassName).get(dataId)
+          getDataClassOrThrow(dataClassName).get(dataId),
         )
         .filter(
-          (maybeDataItem): maybeDataItem is ExternalDataItem => !!maybeDataItem
+          (maybeDataItem): maybeDataItem is ExternalDataItem => !!maybeDataItem,
         )
     : [];
 }
 
 export function getDefaultItemIdForDataClass(
-  dataClassName: string
+  dataClassName: string,
 ): string | null {
   return globalContextState.get()?.[dataClassName] || null;
 }
 
 export function findItemInGlobalData(
-  dataClassName: string
+  dataClassName: string,
 ): DataItemPojo | undefined {
   const defaultItemId = getDefaultItemIdForDataClass(dataClassName);
 
@@ -53,7 +54,7 @@ export function findItemInGlobalData(
 }
 
 export function findScopeInGlobalData(
-  dataClassName: string
+  dataClassName: string,
 ): DataScopePojo | undefined {
   const itemPojo = findItemInGlobalData(dataClassName);
   if (itemPojo) return itemPojoToScopePojo(itemPojo);

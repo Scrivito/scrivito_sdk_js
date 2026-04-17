@@ -16,7 +16,7 @@ export interface WidgetPlacement {
 
 export function findWidgetPlacement(
   objData: ExistentObjJson,
-  widgetId: string
+  widgetId: string,
 ): WidgetPlacement | undefined {
   let placement = findWidgetPlacementIn(objData, widgetId);
 
@@ -44,7 +44,7 @@ export function findWidgetPlacement(
 
 function findWidgetPlacementIn(
   objOrWidgetData: ExistentObjJson | WidgetJson,
-  widgetId: string
+  widgetId: string,
 ): WidgetPlacement | undefined {
   let placement;
 

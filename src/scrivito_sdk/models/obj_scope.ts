@@ -56,7 +56,7 @@ class ObjSpaceScope implements ObjScope {
 
   search(): BasicObjSearch {
     return new BasicObjSearch(
-      isRevisionObjSpaceId(this.objSpaceId) ? EMPTY_SPACE : this.objSpaceId
+      isRevisionObjSpaceId(this.objSpaceId) ? EMPTY_SPACE : this.objSpaceId,
     ).includeDeleted();
   }
 
@@ -68,7 +68,7 @@ class ObjSpaceScope implements ObjScope {
 
     if (isEmptySpaceId(this.objSpaceId)) {
       throw new ScrivitoError(
-        'Cannot create an obj, because the current site is not yet determined.'
+        'Cannot create an obj, because the current site is not yet determined.',
       );
     }
 
@@ -91,7 +91,7 @@ class ObjSpaceScope implements ObjScope {
 class TransformedScope implements ObjScope {
   constructor(
     private originalScope: ObjScope,
-    private transformation: ScopeTransformation
+    private transformation: ScopeTransformation,
   ) {}
 
   get(id: string): BasicObj | ObjUnavailable {
@@ -117,7 +117,7 @@ class TransformedScope implements ObjScope {
   create(id: string, attributes: ExistentObjJson): BasicObj {
     const obj = this.originalScope.create(
       id,
-      this.transformation.applyToCreate(attributes)
+      this.transformation.applyToCreate(attributes),
     );
 
     return obj;

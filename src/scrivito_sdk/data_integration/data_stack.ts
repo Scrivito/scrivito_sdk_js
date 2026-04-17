@@ -14,31 +14,31 @@ export type DataStack = Array<DataStackElement>;
 export type DataStackElement = DataItemPojo | DataScopePojo;
 
 export function isDataItemPojo(
-  element: DataStackElement
+  element: DataStackElement,
 ): element is DataItemPojo {
   return !!(element as DataItemPojo)._id;
 }
 
 export function isSingleItemElement(
-  element: DataStackElement
+  element: DataStackElement,
 ): element is DataItemPojo | PresentDataScopePojo {
   return isDataItemPojo(element) || isSingleItemDataScopePojo(element);
 }
 
 export function isMultiItemDataScopePojo(
-  element: DataStackElement
+  element: DataStackElement,
 ): element is PresentDataScopePojo {
   return isPresentDataScopePojo(element) && !element?.filters?._id;
 }
 
 function isSingleItemDataScopePojo(
-  element: DataStackElement
+  element: DataStackElement,
 ): element is PresentDataScopePojo {
   return isPresentDataScopePojo(element) && !!element?.filters?._id;
 }
 
 function isPresentDataScopePojo(
-  element: DataStackElement
+  element: DataStackElement,
 ): element is PresentDataScopePojo {
   return isDataScopePojo(element) && !isEmptyDataScopePojo(element);
 }
@@ -52,7 +52,7 @@ function isDataScopePojo(element: DataStackElement): element is DataScopePojo {
 }
 
 export function deserializeDataStackElement(
-  element: DataStackElement
+  element: DataStackElement,
 ): DataScope | DataItem | undefined {
   return isDataItemPojo(element)
     ? deserializeDataItem(element)
@@ -61,7 +61,7 @@ export function deserializeDataStackElement(
 
 export function findItemInDataStack(
   dataClassName: string,
-  dataStack: DataStack
+  dataStack: DataStack,
 ): DataItemPojo | undefined {
   const itemElements = dataStack.filter(isDataItemPojo);
   return itemElements.find((element) => element._class === dataClassName);
@@ -69,7 +69,7 @@ export function findItemInDataStack(
 
 export function findScopeInDataStack(
   dataClassName: string,
-  dataStack: DataStack
+  dataStack: DataStack,
 ): DataScopePojo | undefined {
   const element = dataStack.find((el) => el._class === dataClassName);
   if (element && isDataScopePojo(element)) return element;

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { MouseEvent, ReactNode, Ref } from 'react';
 
 import { basicUrlFor } from 'scrivito_sdk/app_support/basic_url_for';
 import { openInNewWindow } from 'scrivito_sdk/app_support/change_location';
@@ -35,9 +35,9 @@ export const LinkTag = connect(function LinkTag(props: {
   target?: string;
   rel?: string;
   params?: QueryParameters | false | null;
-  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-  children?: React.ReactNode;
-  ref?: React.Ref<HTMLAnchorElement | null>;
+  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
+  children?: ReactNode;
+  ref?: Ref<HTMLAnchorElement | null>;
 }) {
   const dataStack = useDataStack();
   const placeholders = usePlaceholders();
@@ -82,7 +82,7 @@ export const LinkTag = connect(function LinkTag(props: {
     }
   }
 
-  async function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
+  async function onClick(e: MouseEvent<HTMLAnchorElement>) {
     if (props.onClick) {
       props.onClick(e);
 
@@ -153,7 +153,7 @@ export const LinkTag = connect(function LinkTag(props: {
   function getDataItemDestination(dataItem: DataItem) {
     const url = getDetailsPageUrl(
       dataItem,
-      dataItem.obj()?.siteId() || currentSiteId()
+      dataItem.obj()?.siteId() || currentSiteId(),
     );
 
     if (!url) return null;
@@ -167,7 +167,7 @@ export const LinkTag = connect(function LinkTag(props: {
 
   function getBasicLinkOrBasicObjDestination(
     objOrLink: BasicObj | BasicLink,
-    to: LinkTagTo
+    to: LinkTagTo,
   ) {
     return {
       to,
@@ -195,7 +195,7 @@ export const LinkTag = connect(function LinkTag(props: {
     if (dataStack) {
       const dataContextParameters = getDataContextParameters(
         basicObjOrLink,
-        dataStack
+        dataStack,
       );
 
       if (dataContextParameters) {

@@ -3,7 +3,7 @@
 export function assignLocationCloudUi(
   cloudUiOrigin: string,
   tenant: string,
-  url: string
+  url: string,
 ) {
   window.parent.location.replace(`${cloudUiOrigin}/${tenant}~${url}`);
 }

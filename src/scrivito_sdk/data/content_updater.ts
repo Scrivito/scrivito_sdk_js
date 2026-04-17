@@ -39,17 +39,17 @@ export function getContentStateId(objSpaceId: ObjSpaceId): string {
 
 export function setContentStateId(
   objSpace: WorkspaceObjSpaceId,
-  contentStateId: string
+  contentStateId: string,
 ): void {
   if (!contentUpdateHandler) {
     workspaceContentUpdaterFor(objSpace).setContentStateIdOrThrowIfTracking(
-      contentStateId
+      contentStateId,
     );
   }
 }
 
 export async function trackContentStateId(
-  objSpace: WorkspaceObjSpaceId
+  objSpace: WorkspaceObjSpaceId,
 ): Promise<void> {
   if (!contentUpdateHandler) {
     return workspaceContentUpdaterFor(objSpace).trackContentStateId();
@@ -57,7 +57,7 @@ export async function trackContentStateId(
 }
 
 export async function updateContent(
-  objSpace: WorkspaceObjSpaceId
+  objSpace: WorkspaceObjSpaceId,
 ): Promise<void> {
   if (!contentUpdateHandler) {
     return workspaceContentUpdaterFor(objSpace).updateContent();
@@ -71,13 +71,13 @@ export function resetContentUpdater() {
 }
 
 function workspaceContentUpdaterFor(
-  objSpace: WorkspaceObjSpaceId
+  objSpace: WorkspaceObjSpaceId,
 ): WorkspaceContentUpdater {
   const workspaceKey = computeCacheKey(objSpace);
   if (!workspaceContentUpdaters[workspaceKey]) {
     workspaceContentUpdaters[workspaceKey] = new WorkspaceContentUpdater(
       objSpace,
-      getState(objSpace)
+      getState(objSpace),
     );
   }
   return workspaceContentUpdaters[workspaceKey]!;

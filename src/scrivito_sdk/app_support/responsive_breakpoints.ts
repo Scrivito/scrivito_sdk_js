@@ -10,7 +10,7 @@ export interface ResponsiveBreakpoints {
 const state = createStateContainer<ResponsiveBreakpoints>();
 
 export function configureResponsiveBreakpoints(
-  breakpoints: ResponsiveBreakpoints
+  breakpoints: ResponsiveBreakpoints,
 ): void {
   validateResponsiveBreakpoints(breakpoints);
   state.set(breakpoints);
@@ -26,19 +26,19 @@ function validateResponsiveBreakpoints({
 }: ResponsiveBreakpoints) {
   if (!isValidPositiveInteger(mobileMaxWidth)) {
     throw new ArgumentError(
-      "'responsiveBreakpoints.mobileMaxWidth' must be a positive integer."
+      "'responsiveBreakpoints.mobileMaxWidth' must be a positive integer.",
     );
   }
 
   if (!isValidPositiveInteger(tabletMaxWidth)) {
     throw new ArgumentError(
-      "'responsiveBreakpoints.tabletMaxWidth' must be a positive integer."
+      "'responsiveBreakpoints.tabletMaxWidth' must be a positive integer.",
     );
   }
 
   if (mobileMaxWidth >= tabletMaxWidth) {
     throw new ArgumentError(
-      "'responsiveBreakpoints.mobileMaxWidth' must be less than 'tabletMaxWidth'."
+      "'responsiveBreakpoints.mobileMaxWidth' must be less than 'tabletMaxWidth'.",
     );
   }
 }

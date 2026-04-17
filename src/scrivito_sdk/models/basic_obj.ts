@@ -121,7 +121,7 @@ export class BasicObj implements ContentValueProvider {
   // Accessible for test purposes only (otherwise better inlined)
   static createInObjSpace(
     objSpaceId: ObjSpaceId,
-    attributes: BasicObjAttributes
+    attributes: BasicObjAttributes,
   ): BasicObj {
     return createObjIn(objSpaceScope(objSpaceId), attributes);
   }
@@ -138,13 +138,13 @@ export class BasicObj implements ContentValueProvider {
     fields: SearchField,
     operator: SearchOperator,
     value: BasicSearchValue,
-    boost?: FieldBoost
+    boost?: FieldBoost,
   ): BasicObjSearch {
     return new BasicObjSearch(currentObjSpaceId()).and(
       fields,
       operator,
       value,
-      boost
+      boost,
     );
   }
 
@@ -156,7 +156,7 @@ export class BasicObj implements ContentValueProvider {
     return getAllObjsByValueFrom(
       currentObjSpaceWithoutDeleted(),
       '_permalink',
-      permalink
+      permalink,
     );
   }
 
@@ -280,14 +280,14 @@ export class BasicObj implements ContentValueProvider {
 
   get<Type extends CmsAttributeType>(
     attributeName: string,
-    typeInfo: TypeInfo<Type>
+    typeInfo: TypeInfo<Type>,
   ): BasicAttributeValue<Type> {
     return getContentValue(this, attributeName, typeInfo);
   }
 
   getValueOrConnection<Type extends CmsAttributeType>(
     attributeName: string,
-    typeInfo: TypeInfo<Type>
+    typeInfo: TypeInfo<Type>,
   ): ContentValueOrConnection<Type> {
     return getContentValueOrConnection(this, attributeName, typeInfo);
   }
@@ -380,7 +380,7 @@ export class BasicObj implements ContentValueProvider {
     if (parentPath === null || siteId === null) return [];
 
     return computeAncestorPaths(parentPath).map((ancestorPath) =>
-      getObjByPath(this.objSpaceId(), siteId, ancestorPath)
+      getObjByPath(this.objSpaceId(), siteId, ancestorPath),
     );
   }
 
@@ -410,7 +410,7 @@ export class BasicObj implements ContentValueProvider {
   }
 
   updateWithUnknownValues(
-    attributes: NormalizedBasicAttributesWithUnknownValues
+    attributes: NormalizedBasicAttributesWithUnknownValues,
   ): void {
     if (isCurrentWorkspacePublished() && !isUsingInMemoryTenant()) {
       throw new ScrivitoError('The published content cannot be modified.');
@@ -472,7 +472,7 @@ export class BasicObj implements ContentValueProvider {
 
   siblingWidget(
     widget: BasicWidget,
-    indexOffset: -1 | 1
+    indexOffset: -1 | 1,
   ): BasicWidget | undefined {
     const placement = this.widgetPlacementFor(widget.id());
 
@@ -512,7 +512,7 @@ export class BasicObj implements ContentValueProvider {
 
   getWidgetAttribute<Key extends keyof WidgetJson & string>(
     id: string,
-    attributeName: Key
+    attributeName: Key,
   ): WidgetJson[Key] {
     return this.objData.getWidgetAttribute(id, attributeName);
   }
@@ -540,14 +540,14 @@ export class BasicObj implements ContentValueProvider {
     const classNames = new Set(
       Object.values(widgetPool)
         .filter((value): value is WidgetJson => !!value)
-        .map((widgetJson) => widgetJson._obj_class)
+        .map((widgetJson) => widgetJson._obj_class),
     );
 
     return Array.from(classNames);
   }
 
   fieldContainingWidget(
-    widget: BasicWidget
+    widget: BasicWidget,
   ): BasicField<'widget'> | BasicField<'widgetlist'> | undefined {
     const widgetId = widget.id();
     const placement = this.widgetPlacementFor(widgetId);
@@ -611,7 +611,7 @@ export class BasicObj implements ContentValueProvider {
 
   getAttributeData<Key extends keyof ExistentObjJson & string>(
     attributeName: Key,
-    type?: CmsAttributeType
+    type?: CmsAttributeType,
   ): ExistentObjJson[Key] {
     return type === 'widget' || type === 'widgetlist'
       ? this.objData.getAttributeWithWidgetData(attributeName)
@@ -638,7 +638,7 @@ export class BasicObj implements ContentValueProvider {
     memo: BasicWidget[],
     objOrWidgetData: ExistentObjJson | WidgetJson,
     widgetPool: WidgetPoolJson,
-    visitedWidgetIds: { [key: string]: true | undefined }
+    visitedWidgetIds: { [key: string]: true | undefined },
   ): void {
     Object.keys(objOrWidgetData)
       .map((attributeName) => {
@@ -675,7 +675,7 @@ export class BasicObj implements ContentValueProvider {
   }
 
   private widgetPlacementFor(
-    widgetId: string
+    widgetId: string,
   ): WidgetPlacementWithContainer | undefined {
     const data = this.objData.getIfExistent();
     if (!data) return;
@@ -727,7 +727,7 @@ function widgetIdFromWidgetInsertionAnchor(anchor: WidgetInsertionAnchor) {
 }
 
 function isWidgetInsertionBefore(
-  anchor: WidgetInsertionAnchor
+  anchor: WidgetInsertionAnchor,
 ): anchor is WidgetInsertionBefore {
   return !!(anchor as WidgetInsertionBefore).before;
 }
@@ -740,6 +740,6 @@ function getObjByPath(objSpaceId: ObjSpaceId, siteId: string, path: string) {
   return getObjBy(
     objSpaceScopeExcludingDeleted(objSpaceId).and(restrictToSite(siteId)),
     '_path',
-    path
+    path,
   );
 }

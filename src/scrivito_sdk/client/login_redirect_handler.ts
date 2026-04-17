@@ -10,7 +10,7 @@ import {
 /** a LoginHander which redirects the browser to the login url */
 export async function loginRedirectHandler(
   visit: string,
-  idp?: string
+  idp?: string,
 ): Promise<never> {
   assignLocation(await authenticationUrl(visit, idp));
 

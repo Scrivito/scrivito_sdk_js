@@ -40,7 +40,7 @@ interface PlainLinkObject {
 }
 
 export function serialize(
-  attributes: NormalizedBasicAttributesWithUnknownValues
+  attributes: NormalizedBasicAttributesWithUnknownValues,
 ): ObjJsonPatch {
   const serializedAttributes: ObjJsonPatch = {};
 
@@ -57,7 +57,7 @@ export function serialize(
         serializedAttributes[serializedName] = serializeAttributeEntry(
           value,
           name,
-          typeInfo!
+          typeInfo!,
         );
       }
     }
@@ -69,7 +69,7 @@ export function serialize(
 function serializeAttributeEntry<Type extends CmsAttributeType>(
   value: unknown,
   name: string,
-  typeInfo: BasicTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>,
 ): ObjJsonPatch[keyof ObjJsonPatch] {
   if (value === null) return null;
 
@@ -83,7 +83,7 @@ function serializeAttributeEntry<Type extends CmsAttributeType>(
 function serializeEntry<Type extends CmsAttributeType>(
   value: unknown,
   name: string,
-  typeInfo: BasicTypeInfo<Type>
+  typeInfo: BasicTypeInfo<Type>,
 ): AttributeJson {
   switch (typeInfo[0]) {
     case 'binary':
@@ -130,7 +130,7 @@ function serializeEntry<Type extends CmsAttributeType>(
       return ['widgetlist', serializeWidgetlistAttributeValue(value, name)];
     default:
       throw new ArgumentError(
-        `Attribute "${name}" is of unsupported type "${typeInfo[0]}".`
+        `Attribute "${name}" is of unsupported type "${typeInfo[0]}".`,
       );
   }
 }
@@ -138,11 +138,11 @@ function serializeEntry<Type extends CmsAttributeType>(
 function throwInvalidAttributeValue(
   value: unknown,
   name: string,
-  expected: string
+  expected: string,
 ): never {
   throw new ArgumentError(
     `Unexpected value ${prettyPrint(value)} for` +
-      ` attribute "${name}". Expected: ${expected}`
+      ` attribute "${name}". Expected: ${expected}`,
   );
 }
 
@@ -175,7 +175,7 @@ function serializeDateAttributeValue(value: unknown, name: string) {
 function serializeEnumAttributeValue(
   value: unknown,
   name: string,
-  { values }: { values: readonly string[] }
+  { values }: { values: readonly string[] },
 ) {
   if (values.includes(value as string)) return value as string;
 
@@ -196,7 +196,7 @@ function serializeFloatAttributeValue(value: unknown, name: string) {
   throwInvalidAttributeValue(
     invalidValue,
     name,
-    'A Number, that is #isFinite().'
+    'A Number, that is #isFinite().',
   );
 }
 
@@ -212,7 +212,7 @@ function serializeIntegerAttributeValue(value: unknown, name: string) {
   throwInvalidAttributeValue(
     value,
     name,
-    'A Number, that is #isSafeInteger().'
+    'A Number, that is #isSafeInteger().',
   );
 }
 
@@ -222,7 +222,7 @@ function serializeLinkAttributeValue(value: unknown, name: string) {
   throwInvalidAttributeValue(
     value,
     name,
-    'A Link instance with a destination.'
+    'A Link instance with a destination.',
   );
 }
 
@@ -234,20 +234,20 @@ function serializeLinklistAttributeValue(value: unknown, name: string) {
   throwInvalidAttributeValue(
     value,
     name,
-    'An array of Link instances with destinations set.'
+    'An array of Link instances with destinations set.',
   );
 }
 
 function serializeMultienumAttributeValue(
   value: unknown,
   name: string,
-  { values }: { values: readonly string[] }
+  { values }: { values: readonly string[] },
 ) {
   if (!isStringArray(value)) {
     throwInvalidAttributeValue(
       value,
       name,
-      `An array with values from ${prettyPrint(values)}.`
+      `An array with values from ${prettyPrint(values)}.`,
     );
   }
 
@@ -258,8 +258,8 @@ function serializeMultienumAttributeValue(
       value,
       name,
       `An array with values from ${prettyPrint(
-        values
-      )}. Forbidden values: ${prettyPrint(forbiddenValues)}.`
+        values,
+      )}. Forbidden values: ${prettyPrint(forbiddenValues)}.`,
     );
   }
 
@@ -281,13 +281,13 @@ function serializeReferencelistAttributeValue(value: unknown, name: string) {
 }
 
 function serializeSingleReferenceValue(
-  value: string | BasicObj | ObjUnavailable
+  value: string | BasicObj | ObjUnavailable,
 ) {
   return typeof value === 'string' ? value : value.id();
 }
 
 function isValidReference(
-  value: unknown
+  value: unknown,
 ): value is string | BasicObj | ObjUnavailable {
   return (
     typeof value === 'string' ||
@@ -297,7 +297,7 @@ function isValidReference(
 }
 
 function isValidReferencelistValue(
-  value: unknown
+  value: unknown,
 ): value is (string | BasicObj | ObjUnavailable)[] {
   return Array.isArray(value) && value.every((v) => isValidReference(v));
 }
@@ -327,7 +327,7 @@ function serializeWidgetAttributeValue(value: unknown, name: string): string {
 
 function serializeWidgetlistAttributeValue(
   value: unknown,
-  name: string
+  name: string,
 ): string[] {
   if (value instanceof BasicWidget) {
     return serializeWidgetlistAttributeValue([value], name);
@@ -343,7 +343,7 @@ function isBasicWidgetArray(value: unknown): value is BasicWidget[] {
 }
 
 function isStringOrNumberArray(
-  value: unknown
+  value: unknown,
 ): value is Array<string | number> {
   return Array.isArray(value) && value.every((v) => isValidString(v));
 }

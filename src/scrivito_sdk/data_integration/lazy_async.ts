@@ -6,7 +6,7 @@ export type LazyAsync<T> = T | Promise<T> | (() => T | Promise<T>);
  */
 export function mapLazyAsync<T, S>(
   lazyValue: LazyAsync<T>,
-  fn: (eagerValue: T) => LazyAsync<S>
+  fn: (eagerValue: T) => LazyAsync<S>,
 ): () => Promise<S> {
   const normalized = normalizeLazyAsync(lazyValue);
 
@@ -18,7 +18,7 @@ export function normalizeLazyAsync<T>(value: LazyAsync<T>): () => Promise<T> {
 }
 
 function isFunctionLazyAsync<T>(
-  value: LazyAsync<T>
+  value: LazyAsync<T>,
 ): value is () => T | Promise<T> {
   return typeof value === 'function';
 }

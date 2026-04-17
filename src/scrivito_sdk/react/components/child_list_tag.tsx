@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { ComponentType, HTMLAttributes, Ref } from 'react';
 
 import { currentPage } from 'scrivito_sdk/app_support/current_page';
 import { importFrom } from 'scrivito_sdk/import_from';
@@ -10,15 +10,15 @@ import { withDisplayName } from 'scrivito_sdk/react/with_display_name';
 import { connect } from 'scrivito_sdk/react_connect';
 import { Obj } from 'scrivito_sdk/realm';
 
-type ChildListTagProps = React.HTMLAttributes<HTMLElement> & {
+type ChildListTagProps = HTMLAttributes<HTMLElement> & {
   parent?: Obj;
   tag?: string;
   renderChild?: RenderChild;
-  ref?: React.Ref<Element>;
+  ref?: Ref<Element>;
 };
 
 /** @public */
-export const ChildListTag: React.ComponentType<ChildListTagProps> = connect(
+export const ChildListTag: ComponentType<ChildListTagProps> = connect(
   withDisplayName('Scrivito.ChildListTag', (props: ChildListTagProps) => {
     const {
       parent = currentPage(),
@@ -38,7 +38,7 @@ export const ChildListTag: React.ComponentType<ChildListTagProps> = connect(
 
     const ChildListTagWithEditing = importFrom(
       'reactEditing',
-      'ChildListTagWithEditing'
+      'ChildListTagWithEditing',
     );
 
     if (!ChildListTagWithEditing) {
@@ -54,5 +54,5 @@ export const ChildListTag: React.ComponentType<ChildListTagProps> = connect(
         {childComponents}
       </ChildListTagWithEditing>
     );
-  })
+  }),
 );

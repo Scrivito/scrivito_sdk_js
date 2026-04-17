@@ -18,7 +18,7 @@ interface WidgetScrollTarget {
 export function registerScrollTarget(
   targetId: ScrollTarget,
   element: Element,
-  onReveal?: RevealCallback
+  onReveal?: RevealCallback,
 ): () => void {
   const targetKey = keyFor(targetId);
   const id = randomHex();

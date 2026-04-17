@@ -30,7 +30,7 @@ export interface StateReader<StateType> {
   id(): string;
   get(): StateType | undefined;
   subState<Key extends SubKey<StateType>>(
-    key: Key
+    key: Key,
   ): StateReader<SubType<StateType, Key>>;
 }
 
@@ -41,14 +41,14 @@ export interface StateContainer<StateType> extends StateReader<StateType> {
   reader(): StateReader<StateType>;
 
   subState<Key extends SubKey<StateType>>(
-    key: Key
+    key: Key,
   ): StateContainer<SubType<StateType, Key>>;
 }
 
 // abstract interface for managing state
-abstract class AbstractStateStore<StateType>
-  implements StateContainer<StateType>
-{
+abstract class AbstractStateStore<
+  StateType,
+> implements StateContainer<StateType> {
   // return current state
   get() {
     const valueWhenAccessed = this.untrackedGet();
@@ -85,7 +85,7 @@ abstract class AbstractStateStore<StateType>
   // this method may only be called when StateType is fully partial,
   // i.e. all properties defined by StateType are optional.
   subState<Key extends SubKey<StateType>>(
-    key: Key
+    key: Key,
   ): StateContainer<SubType<StateType, Key>> {
     return new StateTreeNode(this, key);
   }
@@ -99,7 +99,7 @@ abstract class AbstractStateStore<StateType>
   // i.e. all properties defined by StateType are optional (= may be undefined).
   setSubState<K extends SubKey<StateType>>(
     key: K,
-    newSubState: SubType<StateType, K> | undefined
+    newSubState: SubType<StateType, K> | undefined,
   ) {
     const priorState = this.untrackedGet();
 
@@ -140,7 +140,7 @@ abstract class AbstractStateStore<StateType>
   }
 
   getSubState<K extends SubKey<StateType>>(
-    key: K
+    key: K,
   ): SubType<StateType, K> | undefined {
     const state = this.untrackedGet();
 
@@ -193,7 +193,7 @@ function performAsStateChange(actualChange: () => void): void {
 // access scoped to a subtree of a StateTree.
 class StateTreeNode<
   ParentType,
-  Key extends SubKey<ParentType>
+  Key extends SubKey<ParentType>,
 > extends AbstractStateStore<SubType<ParentType, Key>> {
   private parentState: AbstractStateStore<ParentType>;
   private key: Key;

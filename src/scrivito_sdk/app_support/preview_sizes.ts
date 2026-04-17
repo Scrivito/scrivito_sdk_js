@@ -15,13 +15,13 @@ interface PreviewSizeInput {
 export function configurePreviewSizes(previewSizes: PreviewSizeInput[]): void {
   if (!previewSizes.length) {
     throw new ArgumentError(
-      'No sizes has been provided for "configurePreviewSizes"'
+      'No sizes has been provided for "configurePreviewSizes"',
     );
   }
 
   if (
     !previewSizes.every(
-      (size) => typeof size.title === 'string' && size.title.length > 0
+      (size) => typeof size.title === 'string' && size.title.length > 0,
     )
   ) {
     throw new ArgumentError('Each preview size must have a non-empty title');

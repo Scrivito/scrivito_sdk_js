@@ -35,13 +35,13 @@ const editingConfigStore = new EditingConfigStore();
 
 export function setEditingConfigFor(
   className: string,
-  editingConfig: EditingConfig
+  editingConfig: EditingConfig,
 ): void {
   editingConfigStore.set(className, editingConfig);
 }
 
 export function getEditingConfigFor(
-  className: string
+  className: string,
 ): EditingConfig | undefined {
   return editingConfigStore.get(className);
 }

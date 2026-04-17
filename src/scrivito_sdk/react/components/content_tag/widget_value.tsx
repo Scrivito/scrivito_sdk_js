@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { canEditObjWithId } from 'scrivito_sdk/app_support/can_edit';
 import {
   isComparisonActive,

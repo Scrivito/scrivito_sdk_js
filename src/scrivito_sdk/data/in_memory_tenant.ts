@@ -13,7 +13,7 @@ export function useInMemoryTenant(): void {
 }
 
 export function assertNotUsingInMemoryTenant(
-  operationDescription: string
+  operationDescription: string,
 ): void {
   if (inMemoryTenant) {
     throw new InMemoryTenantUnsupportedOperationError(operationDescription);

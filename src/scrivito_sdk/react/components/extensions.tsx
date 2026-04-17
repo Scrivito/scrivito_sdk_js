@@ -1,26 +1,25 @@
-import * as React from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { getDocument, onReset } from 'scrivito_sdk/common';
 
-type OnShowExtension = (reactElement: React.ReactElement | null) => void;
+type OnShowExtension = (reactElement: ReactElement | null) => void;
 
 let onShowExtension: OnShowExtension | undefined;
 
-export function showExtension(reactElement: React.ReactElement): void {
+export function showExtension(reactElement: ReactElement): void {
   if (onShowExtension) onShowExtension(reactElement);
 }
 
 /** @public */
 export function Extensions() {
-  const [htmlElement, setHtmlElement] = React.useState<HTMLElement | null>(
-    null
+  const [htmlElement, setHtmlElement] = useState<HTMLElement | null>(null);
+
+  const [reactElement, setReactElement] = useState<React.ReactElement | null>(
+    null,
   );
 
-  const [reactElement, setReactElement] =
-    React.useState<React.ReactElement | null>(null);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const doc = getDocument();
 
     const mount = doc.createElement('div');

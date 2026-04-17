@@ -37,13 +37,13 @@ type Options =
 /** @public */
 export function navigateTo(
   target: Target | TargetFunction,
-  options?: Options
+  options?: Options,
 ): void;
 
 /** @internal */
 export function navigateTo(
   target: Target | TargetFunction | DataItem,
-  options?: Options
+  options?: Options,
 ): void {
   navigateToAsync(target, options);
 }
@@ -51,7 +51,7 @@ export function navigateTo(
 // Extracted and exported for test purpose only
 export async function navigateToAsync(
   target: Target | TargetFunction | DataItem,
-  options?: Options
+  options?: Options,
 ) {
   const callId = getNextNavigateToCallId();
 
@@ -71,11 +71,11 @@ export async function navigateToAsync(
 async function navigateToTarget(
   target: Target | TargetFunction | DataItem,
   callId: number,
-  options: { queryParameters?: QueryParameters; hash: Hash }
+  options: { queryParameters?: QueryParameters; hash: Hash },
 ) {
   try {
     const evaluatedTarget = await load(() =>
-      typeof target === 'function' ? target() : target
+      typeof target === 'function' ? target() : target,
     );
 
     const basicTarget = unwrapAppClass(evaluatedTarget);
@@ -89,7 +89,7 @@ async function navigateToTarget(
 
     return basicNavigateTo(
       await loadRoutingTarget(basicTarget, options),
-      callId
+      callId,
     );
   } catch (e) {
     if (isLatestNavigateToCallId(callId)) throwNextTick(e);
@@ -102,10 +102,10 @@ async function navigateToDataItem(
     queryParameters: optionalParameters,
     hash,
   }: { queryParameters?: QueryParameters; hash: Hash },
-  callId: number
+  callId: number,
 ) {
   const pageAndQuery = await load(() =>
-    getDetailsPageAndQuery(dataItem, currentSiteId())
+    getDetailsPageAndQuery(dataItem, currentSiteId()),
   );
 
   if (pageAndQuery) {
@@ -121,19 +121,19 @@ async function navigateToDataItem(
         query: { ...requiredParameters, ...optionalParameters },
         hash,
       },
-      callId
+      callId,
     );
   }
 }
 
 function assertNoParametersConflict(
   requiredParameters: QueryParameters,
-  optionalParameters: QueryParameters
+  optionalParameters: QueryParameters,
 ) {
   Object.entries(optionalParameters).forEach(([key, value]) => {
     if (requiredParameters[key] === value) {
       throw new ArgumentError(
-        `Query parameter "${key}" is reserved for internal usage`
+        `Query parameter "${key}" is reserved for internal usage`,
       );
     }
   });
@@ -141,15 +141,15 @@ function assertNoParametersConflict(
 
 async function loadRoutingTarget(
   basicTarget: BasicObj | BasicLink,
-  options: { queryParameters?: QueryParameters; hash: Hash }
+  options: { queryParameters?: QueryParameters; hash: Hash },
 ) {
   const routingTarget = await load(() =>
-    getRoutingTarget(basicTarget, options.queryParameters, options.hash)
+    getRoutingTarget(basicTarget, options.queryParameters, options.hash),
   );
 
   if (!routingTarget) {
     throw new ArgumentError(
-      'The link provided to navigateTo has no destination.'
+      'The link provided to navigateTo has no destination.',
     );
   }
 
@@ -174,7 +174,7 @@ function getNavigateToOptions(options: Options | undefined) {
 function getRoutingTarget(
   target: BasicObj | BasicLink,
   query: QueryParameters | undefined,
-  hash: Hash
+  hash: Hash,
 ): RoutingTarget | undefined {
   if (target instanceof BasicLink) {
     return getRoutingTargetFromLink(target, query, hash);
@@ -186,7 +186,7 @@ function getRoutingTarget(
 function getRoutingTargetFromLink(
   link: BasicLink,
   query: QueryParameters | undefined,
-  hash: Hash
+  hash: Hash,
 ): RoutingTarget | undefined {
   if (link.isExternal()) return { url: link.url() };
 
@@ -205,7 +205,7 @@ function assertAbsoluteUrl(url: string) {
   if (!URL.canParse(url)) {
     throw new ArgumentError(
       `Scrivito.navigateTo was called with a relative URL "${url}".` +
-        ' When called with a string, Scrivito.navigateTo only accepts absolute URLs.'
+        ' When called with a string, Scrivito.navigateTo only accepts absolute URLs.',
     );
   }
 }

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 
 /**
  * Hook version of `component.forceUpdate()` or `this.forceUpdate()`.
@@ -13,7 +13,7 @@ import * as React from 'react';
  * See https://reactjs.org/docs/react-component.html#forceupdate for more details.
  * */
 export function useForceUpdate(): () => void {
-  const [, setCounter] = React.useState(0);
+  const [, setCounter] = useState(0);
 
   return () => setCounter((counter) => counter + 1);
 }

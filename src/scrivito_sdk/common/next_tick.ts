@@ -21,7 +21,7 @@ export function throwNextTick(error: unknown) {
 }
 
 export function setNextTickScheduler(
-  scheduler: (fn: DelayedFunction) => void
+  scheduler: (fn: DelayedFunction) => void,
 ): void {
   nextTickScheduler = scheduler;
 }

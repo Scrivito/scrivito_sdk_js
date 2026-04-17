@@ -13,7 +13,7 @@ export function observeAndLoad<T>(loadableExpression: () => T): StateStream<T> {
     const loadingSubscriber = new LoadingSubscriber();
 
     const subscription = observe(() =>
-      capture(() => runAndCatchException(loadableExpression))
+      capture(() => runAndCatchException(loadableExpression)),
     ).subscribe((captured) => {
       captured.subscribeLoading(loadingSubscriber);
 
@@ -34,7 +34,7 @@ export function observeAndLoad<T>(loadableExpression: () => T): StateStream<T> {
                 incomplete: captured.incomplete,
                 outdated: captured.outdated,
               },
-            }
+            },
       );
     });
 

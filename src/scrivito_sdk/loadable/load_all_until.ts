@@ -9,7 +9,7 @@ interface LoadAllUntilResult<T> {
 export function loadAllUntil<T>(
   iterator: Iterator<T>,
   size: number,
-  objs: T[] = []
+  objs: T[] = [],
 ): LoadAllUntilResult<T> {
   const run = runAndCatchErrorsWhileLoading(() => iterator.next());
 

@@ -51,7 +51,7 @@ export function isLatestNavigateToCallId(callId: number): boolean {
 
 export async function basicNavigateTo(
   target: RoutingTarget,
-  callId = getNextNavigateToCallId()
+  callId = getNextNavigateToCallId(),
 ): Promise<void> {
   failIfFrozen('basicNavigateTo');
 
@@ -69,7 +69,7 @@ export async function basicNavigateTo(
         break;
       case 'unavailable':
         logError(
-          `Could not navigate to Obj ${routingTarget.objId}, no URL found`
+          `Could not navigate to Obj ${routingTarget.objId}, no URL found`,
         );
     }
   }
@@ -109,7 +109,7 @@ function navigateToResource(resource: string): void {
 }
 
 function isUrlRoutingTarget(
-  routingTarget: RoutingTarget
+  routingTarget: RoutingTarget,
 ): routingTarget is UrlRoutingTarget {
   return !!(routingTarget as UrlRoutingTarget).url;
 }

@@ -17,7 +17,7 @@ export async function queryObjOfflineStore({
   if (orderBy && orderBy.length > 0) throwNotSupported('order');
 
   const hits = await findInObjOfflineStore(
-    (objJson) => isExistentObjJson(objJson) && isMatchForQuery(objJson, query)
+    (objJson) => isExistentObjJson(objJson) && isMatchForQuery(objJson, query),
   );
 
   return {
@@ -43,7 +43,7 @@ function isMatchForQuery(objJson: ExistentObjJson, query: Query[]) {
 
 function computeFieldValue(
   objJson: ExistentObjJson,
-  field: string
+  field: string,
 ): string | null {
   if (field === '_parent_path') {
     const path = objJson._path;
@@ -84,7 +84,7 @@ const SUPPORTED_ATTRIBUTES = {
 type SupportedAttribute = keyof typeof SUPPORTED_ATTRIBUTES;
 
 function isSupportedAttribute(
-  attribute: string
+  attribute: string,
 ): attribute is SupportedAttribute {
   return SUPPORTED_ATTRIBUTES[attribute as SupportedAttribute] === true;
 }

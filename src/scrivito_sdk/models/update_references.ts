@@ -19,7 +19,7 @@ type Mapping = (currentId: string) => string;
 
 export function updateReferences(
   obj: BasicObj,
-  unsafeMapping: UnsafeMapping
+  unsafeMapping: UnsafeMapping,
 ): Promise<void> {
   return updateReferencesWithSafeMapping(obj, (currentId: string) => {
     let newId;
@@ -35,15 +35,15 @@ export function updateReferences(
         throwNextTick(
           new ScrivitoError(
             `Unexpected result from mapping function passed to updateReferences (must be string or undefined): ${String(
-              newId
-            )}`
-          )
+              newId,
+            )}`,
+          ),
         );
       } else if (!newId.match(/^[a-f0-9]{16}$/)) {
         throwNextTick(
           new ScrivitoError(
-            `Unexpected result from mapping function passed to updateReferences (not a valid obj id): ${newId}`
-          )
+            `Unexpected result from mapping function passed to updateReferences (not a valid obj id): ${newId}`,
+          ),
         );
       } else {
         return newId;
@@ -56,7 +56,7 @@ export function updateReferences(
 
 async function updateReferencesWithSafeMapping(
   obj: BasicObj,
-  mapping: Mapping
+  mapping: Mapping,
 ) {
   const objJson = await load(() => obj.getData());
   if (!objJson) return;
@@ -70,7 +70,7 @@ async function updateReferencesWithSafeMapping(
 function getWorkers(
   objJson: ObjJson,
   obj: BasicObj,
-  fn: Mapping
+  fn: Mapping,
 ): Array<Promise<void>> {
   const workers: Array<Promise<void>> = [];
 
@@ -107,7 +107,7 @@ function getWorkers(
 type Conversion<T> = (json: T, m: Mapping) => T;
 
 function getConversion(
-  json: AttributeJson
+  json: AttributeJson,
 ): Conversion<AttributeJson> | undefined {
   return CONVERSIONS[json[0]];
 }
@@ -126,20 +126,20 @@ const CONVERSIONS: Partial<{
 
 function convertHtml(
   attributeJson: HtmlAttributeJson,
-  mapping: Mapping
+  mapping: Mapping,
 ): HtmlAttributeJson {
   return [
     'html',
     attributeJson[1].replace(
       OBJ_ID_PATTERN,
-      (internalLinkUrl) => `objid:${mapping(internalLinkUrl.slice(6, 22))}`
+      (internalLinkUrl) => `objid:${mapping(internalLinkUrl.slice(6, 22))}`,
     ),
   ];
 }
 
 function convertLink(
   attributeJson: LinkAttributeJson,
-  mapping: Mapping
+  mapping: Mapping,
 ): LinkAttributeJson {
   const linkJson = attributeJson[1];
   const { obj_id } = linkJson;
@@ -150,7 +150,7 @@ function convertLink(
 
 function convertLinklist(
   attributeJson: LinklistAttributeJson,
-  mapping: Mapping
+  mapping: Mapping,
 ): LinklistAttributeJson {
   return [
     'linklist',
@@ -165,14 +165,14 @@ function convertLinklist(
 
 function convertReference(
   attributeJson: ReferenceAttributeJson,
-  mapping: Mapping
+  mapping: Mapping,
 ): ReferenceAttributeJson {
   return ['reference', mapping(attributeJson[1])];
 }
 
 function convertReferencelist(
   attributeJson: ReferencelistAttributeJson,
-  mapping: Mapping
+  mapping: Mapping,
 ): ReferencelistAttributeJson {
   return ['referencelist', attributeJson[1].map(mapping)];
 }

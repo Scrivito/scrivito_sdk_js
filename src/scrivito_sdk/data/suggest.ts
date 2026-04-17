@@ -38,7 +38,7 @@ export function suggest(
   objSpaceId: ObjSpaceId,
   prefix: string,
   options: SuggestOptions,
-  fromSearch?: Partial<QueryParams>
+  fromSearch?: Partial<QueryParams>,
 ): string[] {
   assertNotUsingInMemoryTenant('Search API');
 
@@ -55,7 +55,7 @@ export function storeSuggest(
   prefix: string,
   options: SuggestOptions,
   fromSearch: Partial<QueryParams> | undefined,
-  response: BackendSuggestResponse
+  response: BackendSuggestResponse,
 ): void {
   getLoadable(objSpaceId, prefix, options, fromSearch).set(response);
 }
@@ -64,7 +64,7 @@ function getLoadable(
   objSpaceId: ObjSpaceId,
   prefix: string,
   { attributes, limit }: SuggestOptions,
-  fromSearch?: Partial<QueryParams>
+  fromSearch?: Partial<QueryParams>,
 ): LoadableData<BackendSuggestResponse> {
   const backendParams: BackendSuggestParams = {
     prefix,

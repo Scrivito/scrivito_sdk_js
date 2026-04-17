@@ -67,7 +67,7 @@ export const storeObjIdQueryBatch =
 
 export function getObjQueryCount(
   objSpaceId: ObjSpaceId,
-  params: QueryParams
+  params: QueryParams,
 ): number {
   if (isEmptySpaceId(objSpaceId)) return 0;
 
@@ -77,28 +77,28 @@ export function getObjQueryCount(
 export function getObjQuery(
   objSpaceId: ObjSpaceId,
   params: QueryParams,
-  batchSize: number
+  batchSize: number,
 ): DataQuery<ObjData> {
   assertNotUsingInMemoryTenant('Search API');
 
   if (isEmptySpaceId(objSpaceId)) return new EmptyContinueIterable();
 
   const idQuery = new IdBatchQuery((batchNumber) =>
-    batchCollection.getBatch([objSpaceId, params], batchSize, batchNumber)
+    batchCollection.getBatch([objSpaceId, params], batchSize, batchNumber),
   );
 
   return transformContinueIterable(idQuery, (iterator) =>
     iterator
       .map((id) => getObjData(objSpaceId, id))
       .takeWhile(isPresent)
-      .filter((objData) => !objData.isUnavailable())
+      .filter((objData) => !objData.isUnavailable()),
   );
 }
 
 async function loadBatch(
   [objSpaceId, params]: [ObjSpaceId, QueryParams],
   continuation: string | undefined,
-  size: number
+  size: number,
 ) {
   const {
     query,
@@ -126,7 +126,7 @@ async function loadBatch(
   const workspaceId = getWorkspaceId(objSpaceId);
   const response = await cmsRetrieval.retrieveObjQuery(
     workspaceId,
-    requestParams
+    requestParams,
   );
 
   // including Objs only makes sense for the first request(s), since

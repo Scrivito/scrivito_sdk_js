@@ -25,7 +25,7 @@ class ObjReplicationPool {
 
   setReplicationStrategy(Strategy: ObjReplicationStrategy) {
     this.replicationCache = new ReplicationCache(
-      (objSpaceId, objId) => new Strategy(objSpaceId, objId)
+      (objSpaceId, objId) => new Strategy(objSpaceId, objId),
     );
   }
 
@@ -70,7 +70,7 @@ export const objReplicationPool = new ObjReplicationPool();
  */
 type ObjReplicationStrategy = new (
   objSpaceId: ObjSpaceId,
-  objId: string
+  objId: string,
 ) => ObjReplication;
 
 export function useReplicationStrategy(Strategy: ObjReplicationStrategy) {

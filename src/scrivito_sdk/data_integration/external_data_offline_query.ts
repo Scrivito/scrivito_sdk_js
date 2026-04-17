@@ -23,7 +23,7 @@ export async function queryExternalDataOfflineStore([
   NormalizedDataScopeFilters | undefined,
   string | undefined,
   OrderSpec | undefined,
-  boolean | undefined
+  boolean | undefined,
 ]): Promise<{ results: string[]; count: number }> {
   const collection = await findInExternalDataOfflineStore(
     (data, [dataClass, id]) => {
@@ -31,11 +31,11 @@ export async function queryExternalDataOfflineStore([
       if (dataClass !== wantedDataClass) return false;
 
       return isMatchForFilters(id, data, filters);
-    }
+    },
   );
 
   const results = withOrder(withSearch(collection, search), order).map(
-    ([_data, [_class, id]]) => id
+    ([_data, [_class, id]]) => id,
   );
 
   return { results, count: results.length };
@@ -43,18 +43,18 @@ export async function queryExternalDataOfflineStore([
 
 function withOrder(
   collection: Array<[CollectionData, CollectionKey]>,
-  order: OrderSpec | undefined
+  order: OrderSpec | undefined,
 ) {
   if (order === undefined || order.length === 0) return collection;
 
   return collection.sort((resultA, resultB) =>
-    compareDataForSorting(order, resultA, resultB)
+    compareDataForSorting(order, resultA, resultB),
   );
 }
 
 function withSearch(
   collection: Array<[CollectionData, CollectionKey]>,
-  searchTerm: string | undefined
+  searchTerm: string | undefined,
 ) {
   if (!searchTerm) return collection;
 
@@ -66,8 +66,8 @@ function withSearch(
         Object.values(data.customData).some(
           (value) =>
             typeof value === 'string' &&
-            value.toLowerCase().includes(term.toLowerCase())
-        )
+            value.toLowerCase().includes(term.toLowerCase()),
+        ),
       );
     }
   });
@@ -76,7 +76,7 @@ function withSearch(
 function isMatchForFilters(
   id: string,
   data: NormalExternalData,
-  filters: NormalizedDataScopeFilters | undefined
+  filters: NormalizedDataScopeFilters | undefined,
 ): boolean {
   if (!filters) return true;
 
@@ -85,7 +85,7 @@ function isMatchForFilters(
 
     if (filter.operator === 'and') {
       return filter.value.every((operatorSpec) =>
-        isMatchForFilters(id, data, { [attribute]: operatorSpec })
+        isMatchForFilters(id, data, { [attribute]: operatorSpec }),
       );
     }
 
@@ -152,18 +152,18 @@ function isGreaterIfComparable(dataValue: unknown, filterValue: FilterValue) {
 function compareDataForSorting(
   [[attribute, direction], ...remainingOrder]: OrderSpec,
   [dataA, [classA, idA]]: [NormalExternalData | null, [string, string]],
-  [dataB, [classB, idB]]: [NormalExternalData | null, [string, string]]
+  [dataB, [classB, idB]]: [NormalExternalData | null, [string, string]],
 ) {
   const result = compareValuesForSorting(
     attributeValue(idA, dataA, attribute),
-    attributeValue(idB, dataB, attribute)
+    attributeValue(idB, dataB, attribute),
   );
 
   if (result === 0 && remainingOrder.length > 0) {
     return compareDataForSorting(
       remainingOrder,
       [dataA, [classA, idA]],
-      [dataB, [classB, idB]]
+      [dataB, [classB, idB]],
     );
   }
 
@@ -206,7 +206,7 @@ function compareValuesForSorting(valueA: unknown, valueB: unknown): number {
 function attributeValue(
   id: string,
   data: NormalExternalData | null,
-  attribute: string
+  attribute: string,
 ) {
   if (!data) return null;
 

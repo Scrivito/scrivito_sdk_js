@@ -23,7 +23,7 @@ function checkIsOnCurrentPath(page: Obj) {
     throwInvalidArgumentsError(
       'isOnCurrentPath',
       "'obj' must be an instance of 'Obj'.",
-      { docPermalink: 'js-sdk/isOnCurrentPath' }
+      { docPermalink: 'js-sdk/isOnCurrentPath' },
     );
   }
 }

@@ -15,7 +15,7 @@ export class ApiKeyAuthorizationProvider implements AuthorizationProvider {
   }
 
   authorize: (
-    request: (auth: string | undefined) => Promise<Response>
+    request: (auth: string | undefined) => Promise<Response>,
   ) => Promise<Response>;
 }
 
@@ -23,7 +23,7 @@ class LegacyApiKeyAuthorizationProvider implements AuthorizationProvider {
   constructor(readonly apiKey: string) {}
 
   async authorize(
-    request: (auth: string | undefined) => Promise<Response>
+    request: (auth: string | undefined) => Promise<Response>,
   ): Promise<Response> {
     return request(`Basic ${btoa(`api_token:${this.apiKey}`)}`);
   }

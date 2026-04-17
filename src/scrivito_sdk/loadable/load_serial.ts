@@ -7,7 +7,7 @@ import { capture } from 'scrivito_sdk/loadable';
  */
 export function loadSerial<S, T>(
   firstFn: () => S,
-  secondFn: (input: S) => T
+  secondFn: (input: S) => T,
 ): T {
   const firstCaptured = capture(firstFn);
   firstCaptured.forwardToCurrent();

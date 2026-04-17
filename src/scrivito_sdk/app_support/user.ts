@@ -11,7 +11,7 @@ export class User {
   /** @internal */
   constructor(
     /** @internal */
-    private readonly userData: UserData
+    private readonly userData: UserData,
   ) {}
 
   id(): string {

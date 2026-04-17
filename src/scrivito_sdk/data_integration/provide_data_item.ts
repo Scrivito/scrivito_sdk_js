@@ -9,6 +9,7 @@ import {
   provideExternalDataItem,
 } from 'scrivito_sdk/data_integration';
 import { createRestApiSchema } from 'scrivito_sdk/data_integration/create_rest_api_schema';
+import { addDataClassPrefix } from 'scrivito_sdk/data_integration/data_class_name_prefix';
 import { mapLazyAsync } from 'scrivito_sdk/data_integration/lazy_async';
 import { RestApi } from 'scrivito_sdk/data_integration/provide_data_class';
 import { assertValidDataIdentifier } from 'scrivito_sdk/models';
@@ -31,19 +32,19 @@ type ProvideDataItemParams =
 /** @public */
 export function provideDataItem(
   name: string,
-  get: ExternalDataItemConnection['get']
+  get: ExternalDataItemConnection['get'],
 ): DataItem;
 
 /** @public */
 export function provideDataItem(
   name: string,
-  params: AsyncOrSync<ProvideDataItemParams>
+  params: AsyncOrSync<ProvideDataItemParams>,
 ): DataItem;
 
 /** @public */
 export function provideDataItem(
   name: string,
-  connection: AsyncOrSync<ExternalDataItemConnection>
+  connection: AsyncOrSync<ExternalDataItemConnection>,
 ): DataItem;
 
 /** @internal */
@@ -51,15 +52,15 @@ export function provideDataItem(
   name: string,
   params:
     | AsyncOrSync<ProvideDataItemParams | ExternalDataItemConnection>
-    | ExternalDataItemConnection['get']
+    | ExternalDataItemConnection['get'],
 ): DataItem {
   assertValidDataIdentifier(name);
 
-  const dataClass = new ExternalDataClass(name);
+  const dataClass = new ExternalDataClass(addDataClassPrefix(name));
 
   provideExternalDataItem(
     dataClass,
-    mapLazyAsync(Promise.resolve(params), desugar)()
+    mapLazyAsync(Promise.resolve(params), desugar)(),
   );
 
   return dataClass.getUnchecked(SINGLETON_DATA_ID);
@@ -69,7 +70,7 @@ async function desugar(
   params:
     | ProvideDataItemParams
     | ExternalDataItemConnection
-    | ExternalDataItemConnection['get']
+    | ExternalDataItemConnection['get'],
 ) {
   if (typeof params === 'function') {
     return { connection: { get: params }, schema: { attributes: {} } };
@@ -82,7 +83,7 @@ async function desugar(
       connection: createRestApiConnectionForItem(apiClient),
       schema: createRestApiSchema(
         { attributes: params.attributes, title: params.title },
-        apiClient
+        apiClient,
       ),
     };
   }
@@ -109,7 +110,7 @@ async function createApiClient(restApiPromise: Promise<RestApi>) {
 }
 
 function createRestApiConnectionForItem(
-  apiClient: ApiClient
+  apiClient: ApiClient,
 ): ExternalDataItemConnection {
   return {
     get: async () => apiClient.fetch(''),

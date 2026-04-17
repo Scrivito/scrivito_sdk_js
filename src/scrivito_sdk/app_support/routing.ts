@@ -68,13 +68,13 @@ interface GenerateUrlOptions {
 }
 
 export function isDestinationUnavailableRecognized(
-  route: Route | DestinationUnavailableRecognized
+  route: Route | DestinationUnavailableRecognized,
 ): route is DestinationUnavailableRecognized {
   return !!route.objId && !route.siteData;
 }
 
 export function isNotResponsibleRoute(
-  route: Route
+  route: Route,
 ): route is NotResponsibleRoute {
   return !route.sitePath;
 }
@@ -96,12 +96,12 @@ interface GenerateObjIdUrlOptions extends GenerateUrlOptions {
 }
 
 export function generateUrl(
-  options: GenerateObjUrlOptions | GenerateObjIdUrlOptions
+  options: GenerateObjUrlOptions | GenerateObjIdUrlOptions,
 ): string {
   return destinationToUrl(
     options.obj
       ? generateDestination(options)
-      : generateDestinationForId(options)
+      : generateDestinationForId(options),
   );
 }
 
@@ -132,7 +132,7 @@ type RoutingDestination =
   | DestinationUnavailable;
 
 export function generateDestination(
-  options: GenerateObjUrlOptions
+  options: GenerateObjUrlOptions,
 ): RoutingDestination {
   const obj = options.obj;
   const currentRoute = getCurrentRoute();
@@ -151,7 +151,7 @@ export function generateDestination(
   if (!baseUrl) return unavailableFor(options);
 
   const url = new URL(
-    joinUri(baseUrl, generateRoutingPath(obj, siteId), options)
+    joinUri(baseUrl, generateRoutingPath(obj, siteId), options),
   );
 
   return currentRoute?.sitePath || url.origin === currentOrigin()
@@ -164,7 +164,7 @@ export function generateDestination(
  * the canonical origin is the origin that the baseUrlForSite callback defines.
  */
 export function generateUrlWithCanonicalOrigin(
-  options: GenerateObjUrlOptions
+  options: GenerateObjUrlOptions,
 ): string {
   const siteId = options.obj.siteId() ?? getCurrentRoute()?.siteData?.siteId;
   if (!siteId) return unavailableFor(options).fallbackUrl;
@@ -192,7 +192,7 @@ function unavailableFor(options: GenerateObjUrlOptions) {
 }
 
 export function generateDestinationForId(
-  options: GenerateObjIdUrlOptions
+  options: GenerateObjIdUrlOptions,
 ): RoutingDestination {
   const { objId, query, hash } = options;
   const currentRoute = getCurrentRoute();
@@ -201,7 +201,7 @@ export function generateDestinationForId(
   }
 
   const url = new URL(
-    joinUri(currentRoute.siteData.baseUrl, `/${objId}`, { query, hash })
+    joinUri(currentRoute.siteData.baseUrl, `/${objId}`, { query, hash }),
   );
   return currentRoute.sitePath || url.origin === currentOrigin()
     ? { type: 'local', resource: urlResource(url) }
@@ -216,7 +216,7 @@ export function generateDestinationForId(
 function joinUri(
   baseUrl: string,
   path: string,
-  { query, hash }: GenerateUrlOptions
+  { query, hash }: GenerateUrlOptions,
 ) {
   const urlString = path === '/' ? baseUrl : `${baseUrl}${path}`;
 
@@ -232,7 +232,7 @@ function joinUri(
 }
 
 export function recognize(
-  url: string
+  url: string,
 ): Route | DestinationUnavailableRecognized {
   const destinationUnavailable = recognizeDestinationUnavailable(url);
   if (destinationUnavailable) {
@@ -282,7 +282,7 @@ export function ensureRoutingDataAvailable(basicPage: BasicObj) {
     if (route.objId !== basicPage.id()) {
       throw new ScrivitoError(
         `baseUrlForSite produced ${url} for ${basicPage.id()}, ` +
-          'but siteForUrl did not recognize that URL correctly.'
+          'but siteForUrl did not recognize that URL correctly.',
       );
     }
   });

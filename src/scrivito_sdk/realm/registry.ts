@@ -37,16 +37,16 @@ function appClassFor(name: string, baseClass: AppClass): AppClass {
 export function allObjClasses(): ObjClassesByName {
   return Object.fromEntries(
     Object.entries(mapping).filter(([, modelClass]) =>
-      Obj.isPrototypeOf(modelClass)
-    )
+      Obj.isPrototypeOf(modelClass),
+    ),
   ) as ObjClassesByName;
 }
 
 export function allWidgetClasses(): WidgetClassesByName {
   return Object.fromEntries(
     Object.entries(mapping).filter(([, modelClass]) =>
-      Widget.isPrototypeOf(modelClass)
-    )
+      Widget.isPrototypeOf(modelClass),
+    ),
   ) as WidgetClassesByName;
 }
 

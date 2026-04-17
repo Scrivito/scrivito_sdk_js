@@ -15,7 +15,7 @@ export function loadableMapReduce<InputElement, Continuation, ReductionType>(
   mapper: (value: InputElement) => ReductionType,
   reducer: (acc: ReductionType, value: ReductionType) => ReductionType,
   empty: ReductionType,
-  batchSize = 20
+  batchSize = 20,
 ): () => ReductionType {
   /** perform the reduction from the given batch to the last one */
   function computeReductionFrom(batchNumber: number): ReductionType {
@@ -24,7 +24,7 @@ export function loadableMapReduce<InputElement, Continuation, ReductionType>(
       ({ value, continuation }) =>
         !continuation
           ? value
-          : reducer(value, computeReductionFrom(batchNumber + 1))
+          : reducer(value, computeReductionFrom(batchNumber + 1)),
     );
   }
 
@@ -51,7 +51,7 @@ export function loadableMapReduce<InputElement, Continuation, ReductionType>(
         value: slice.values.map(mapper).reduce(reducer, empty),
         continuation: slice.continuation,
       };
-    }
+    },
   );
 
   return () => computeReductionFrom(0);

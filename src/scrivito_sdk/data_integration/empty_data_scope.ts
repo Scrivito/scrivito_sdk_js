@@ -15,7 +15,7 @@ export class EmptyDataScope extends DataScope {
       dataClass?: DataClass;
       error?: DataScopeError;
       isDataItem?: boolean;
-    } = {}
+    } = {},
   ) {
     super();
   }
@@ -24,8 +24,8 @@ export class EmptyDataScope extends DataScope {
     return this.params.dataClass || null;
   }
 
-  dataClassName(): string | null {
-    return this.dataClass()?.name() || null;
+  internalDataClassName(): string | null {
+    return this.dataClass()?.internalName() || null;
   }
 
   async create(_attributes: DataItemAttributes): Promise<DataItem> {

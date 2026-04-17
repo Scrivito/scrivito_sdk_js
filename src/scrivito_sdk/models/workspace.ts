@@ -8,7 +8,7 @@ export class Workspace {
   /** @internal */
   constructor(
     /** @internal */
-    private readonly workspaceData: WorkspaceData
+    private readonly workspaceData: WorkspaceData,
   ) {}
 
   id(): string {

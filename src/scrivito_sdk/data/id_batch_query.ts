@@ -37,7 +37,7 @@ class IdBatchQueryIterator implements DataQueryIterator<string> {
 
   constructor(
     private readonly getBatch: GetBatch,
-    continuation?: DataQueryContinuation
+    continuation?: DataQueryContinuation,
   ) {
     if (continuation) {
       [this.batchNumber, this.currentIndex] = continuation;

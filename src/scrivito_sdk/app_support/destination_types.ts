@@ -28,7 +28,7 @@ export interface GenerateDestinationUnavailableParams {
 }
 
 export function generateDestinationUnavailable(
-  params: GenerateDestinationUnavailableParams
+  params: GenerateDestinationUnavailableParams,
 ): DestinationUnavailable {
   return {
     type: 'unavailable',
@@ -44,7 +44,7 @@ export interface RecognizedDestinationUnavailable {
 }
 
 export function recognizeDestinationUnavailable(
-  fallbackUri: string
+  fallbackUri: string,
 ): RecognizedDestinationUnavailable | null {
   const fallbackUrl = new URL(fallbackUri, 'http://example.com');
   if (fallbackUrl.pathname !== '/') return null;

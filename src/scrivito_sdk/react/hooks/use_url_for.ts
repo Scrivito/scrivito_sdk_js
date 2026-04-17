@@ -7,14 +7,14 @@ import { Link, Obj, unwrapAppClass } from 'scrivito_sdk/realm';
 /** @beta */
 export function useUrlFor(
   target: Binary | Link | Obj,
-  options?: UrlForOptions
+  options?: UrlForOptions,
 ): string {
   const dataStack = useDataStack();
 
   const query = addDataContextQueryTo(
     options?.query,
     dataStack,
-    unwrapAppClass(target)
+    unwrapAppClass(target),
   );
 
   return urlFor(target, { ...options, query });
@@ -23,7 +23,7 @@ export function useUrlFor(
 function addDataContextQueryTo(
   givenQuery: string | undefined,
   dataStack: DataStack | undefined,
-  target: Binary | BasicLink | BasicObj
+  target: Binary | BasicLink | BasicObj,
 ) {
   if (target instanceof Binary || !dataStack) return givenQuery;
   return getDataContextQuery(unwrapAppClass(target), dataStack, givenQuery);

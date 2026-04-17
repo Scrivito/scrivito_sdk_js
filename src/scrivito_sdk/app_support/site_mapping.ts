@@ -91,7 +91,7 @@ export interface SiteDataAndPath {
 }
 
 export function recognizeSiteAndPath(
-  uriToRecognize: string
+  uriToRecognize: string,
 ): SiteDataAndPath | { siteData?: SiteData; sitePath: null } {
   if (!siteForUrlCallback) throwNotInitialized();
 
@@ -129,7 +129,7 @@ function removeNonPathComponents(resource: string) {
 function normalizeUri(url: string) {
   const baseUrl = URL.canParse(url)
     ? undefined
-    : currentOrigin() ?? throwNoOrigin();
+    : (currentOrigin() ?? throwNoOrigin());
 
   const location = new URL(url, baseUrl);
   location.pathname = location.pathname.replace(/\/+/g, '/');
@@ -139,14 +139,14 @@ function normalizeUri(url: string) {
 function siteForUrl(url: string): SiteForUrlResult {
   const result = withForbiddenSiteContext(
     'Access to current site inside siteForUrl. Forgot to use onAllSites?',
-    () => siteForUrlCallback?.call(null, removeQueryAndHash(url))
+    () => siteForUrlCallback?.call(null, removeQueryAndHash(url)),
   );
 
   if (!isSiteForUrlResult(result)) {
     reportUnexpectedReturnValue(
       'siteForUrl',
       result,
-      '{siteId: String, baseUrl: String} | Void'
+      '{siteId: String, baseUrl: String} | Void',
     );
 
     return undefined;
@@ -174,10 +174,10 @@ function removeTrailingSlashes(input: string) {
 function reportUnexpectedReturnValue(
   callbackName: string,
   actual: unknown,
-  expectedType: string
+  expectedType: string,
 ) {
   const errorMessage = `Unexpected return value from ${callbackName}: got ${prettyPrint(
-    actual
+    actual,
   )}, expected type ${expectedType}. ${SEE_CONFIGURE}`;
   throwNextTick(new ArgumentError(errorMessage));
 }
@@ -195,18 +195,18 @@ export function reset() {
 
 function throwNotInitialized(): never {
   throw new ScrivitoError(
-    'Cannot use routing before Scrivito.configure was called.'
+    'Cannot use routing before Scrivito.configure was called.',
   );
 }
 
 function throwNoOrigin(): never {
   throw new ScrivitoError(
-    `Cannot compute an absolute URL without a configured origin or base URL. ${SEE_CONFIGURE}`
+    `Cannot compute an absolute URL without a configured origin or base URL. ${SEE_CONFIGURE}`,
   );
 }
 
 function isSiteForUrlResult(
-  maybeSiteForUrlResult: unknown
+  maybeSiteForUrlResult: unknown,
 ): maybeSiteForUrlResult is SiteForUrlResult {
   const siteForUrlResult = maybeSiteForUrlResult as SiteForUrlResult;
   if (siteForUrlResult === undefined) return true;
@@ -217,7 +217,7 @@ function isSiteForUrlResult(
 }
 
 const SEE_CONFIGURE = `Visit ${docUrl(
-  'js-sdk/configure'
+  'js-sdk/configure',
 )} for more information.`;
 
 onReset(reset);

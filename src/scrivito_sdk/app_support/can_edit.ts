@@ -26,7 +26,7 @@ function checkCanEditArguments(obj: Obj) {
     throwInvalidArgumentsError(
       'canEdit',
       "'obj' must be an instance of 'Obj'.",
-      { docPermalink: 'js-sdk/canEdit' }
+      { docPermalink: 'js-sdk/canEdit' },
     );
   }
 }

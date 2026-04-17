@@ -17,7 +17,7 @@ export class OfflineStore<KeyType, ValueType> {
 
   /** find values in the cache that satisfy the given selector */
   async findValues(
-    selector: (data: ValueType, key: KeyType) => boolean
+    selector: (data: ValueType, key: KeyType) => boolean,
   ): Promise<Array<[ValueType, KeyType]>> {
     const cache = await cacheFor(this.storeName);
     const cacheKeys = await cache.keys();
@@ -34,7 +34,7 @@ export class OfflineStore<KeyType, ValueType> {
         const [data, key] = wrappedData;
 
         if (selector(data, key)) return wrappedData;
-      })
+      }),
     );
 
     return results.filter(isNotUndefined);
@@ -46,7 +46,10 @@ function isNotUndefined<T>(data: T | undefined): data is T {
 }
 
 export class StoreEntry<ValueType> {
-  constructor(private storeName: string, private key: unknown) {}
+  constructor(
+    private storeName: string,
+    private key: unknown,
+  ) {}
 
   async read(): Promise<ValueType | undefined> {
     // makes 'reading still in progress' visible to flushPromises
@@ -73,7 +76,7 @@ export class StoreEntry<ValueType> {
           this.offlineCacheKey(),
           new Response(JSON.stringify([data, this.key]), {
             headers: { 'Content-Type': 'application/json' },
-          })
+          }),
         );
       });
     });
@@ -114,7 +117,7 @@ export async function deleteOfflineStoreCaches() {
   const scrivitoCacheNames = await getAllScrivitoCacheNames();
 
   await Promise.all(
-    scrivitoCacheNames.map((cacheName) => caches.delete(cacheName))
+    scrivitoCacheNames.map((cacheName) => caches.delete(cacheName)),
   );
 }
 
@@ -127,7 +130,7 @@ export async function countOfflineStoreEntries(): Promise<number> {
   const scrivitoCaches = await openAllScrivitoCaches();
 
   const cacheSizes = await Promise.all(
-    scrivitoCaches.map(async (cache) => (await cache.keys()).length)
+    scrivitoCaches.map(async (cache) => (await cache.keys()).length),
   );
 
   return cacheSizes.reduce((sum, size) => sum + size, 0);
@@ -137,7 +140,7 @@ async function openAllScrivitoCaches() {
   const scrivitoCacheNames = await getAllScrivitoCacheNames();
 
   return Promise.all(
-    scrivitoCacheNames.map((cacheName) => caches.open(cacheName))
+    scrivitoCacheNames.map((cacheName) => caches.open(cacheName)),
   );
 }
 

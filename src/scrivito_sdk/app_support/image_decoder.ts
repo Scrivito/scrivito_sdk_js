@@ -47,7 +47,7 @@ export class ImageDecoder {
 
     this.loadingRegistry[imageUrl] = promiseAndFinally(
       promise,
-      () => delete this.loadingRegistry[imageUrl]
+      () => delete this.loadingRegistry[imageUrl],
     );
   }
 }

@@ -5,7 +5,7 @@ export type LoginHandler<T = unknown> = (visit: string) => Promise<T>;
 /** execute the function fn and use loginHandler in case of "auth missing" */
 export async function withLoginHandler<T, S>(
   loginHandler: LoginHandler<T> | undefined,
-  fn: () => Promise<S>
+  fn: () => Promise<S>,
 ): Promise<T | S> {
   if (!loginHandler) return fn();
 

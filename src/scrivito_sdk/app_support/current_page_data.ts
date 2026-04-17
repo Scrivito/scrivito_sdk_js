@@ -74,7 +74,7 @@ interface CurrentPageContext {
 
 export function withCurrentPageContext<T>(
   context: CurrentPageContext,
-  fn: () => T
+  fn: () => T,
 ): T {
   return navigationContext.runWith(
     {
@@ -92,7 +92,7 @@ export function withCurrentPageContext<T>(
         isRevisit: false,
       },
     },
-    fn
+    fn,
   );
 }
 

@@ -36,18 +36,18 @@ interface FunctionState<T> {
 export function loadableFunction<Args extends unknown[], Return>(
   defaultValue: Return,
   argsToString: (...args: Args) => string,
-  fn: (...args: Args) => Return
+  fn: (...args: Args) => Return,
 ): (...args: Args) => Return;
 export function loadableFunction<Return>(
   defaultValue: Return,
-  zeroArgsFn?: () => Return
+  zeroArgsFn?: () => Return,
 ): () => Return;
 export function loadableFunction<Args extends unknown[], Return>(
   defaultValue: Return,
   argsToStringOrZeroArgsFn:
     | ((...args: Args) => string)
     | ((...args: Args) => Return),
-  fn?: (...args: Args) => Return
+  fn?: (...args: Args) => Return,
 ): (...args: Args) => Return {
   if (!fn) {
     const zeroArgsFn = argsToStringOrZeroArgsFn as (...args: Args) => Return;
@@ -63,7 +63,7 @@ export function loadableFunction<Args extends unknown[], Return>(
 function createLoadableFunction<Args extends unknown[], Return>(
   defaultValue: Return,
   argsToString: (...args: Args) => string,
-  fn: (...args: Args) => Return
+  fn: (...args: Args) => Return,
 ): (...args: Args) => Return {
   const functionState = createStateContainer<FunctionState<Return>>();
 

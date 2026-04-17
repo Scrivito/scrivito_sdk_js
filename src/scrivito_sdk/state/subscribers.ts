@@ -24,7 +24,7 @@ export function createAsyncSubscriber(listener: () => void): StateSubscriber {
  */
 export function createSyncSubscriber(
   listener: () => void,
-  rank = 0
+  rank = 0,
 ): StateSubscriber {
   return syncSubscribers.create(listener, rank);
 }
@@ -90,5 +90,5 @@ function notifySyncSubscribers() {
 const notifyAsyncSubscribers = collectAndSchedule(nextTick, () =>
   asyncSubscribers.forEach((subscriber) => {
     if (subscriber.hasChanges()) subscriber.scheduleNotify();
-  })
+  }),
 );

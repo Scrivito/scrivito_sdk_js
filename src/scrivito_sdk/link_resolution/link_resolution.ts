@@ -13,7 +13,7 @@ type WriteMonitorNotification = (p: Promise<void>) => void;
 let notifyWriteMonitor: WriteMonitorNotification | undefined;
 
 export function setupWriteMonitorNotification(
-  notification: WriteMonitorNotification
+  notification: WriteMonitorNotification,
 ): void {
   if (notifyWriteMonitor) {
     // Write monitoring notification is already injected
@@ -26,14 +26,14 @@ let linkResolutions: { [objSpaceKey: string]: LinkResolution | undefined } = {};
 
 export function startLinkResolutionFor(
   objSpace: ObjSpaceId,
-  objId: string
+  objId: string,
 ): void {
   linkResolutionFor(objSpace).start(objId);
 }
 
 export function finishLinkResolutionFor(
   objSpace: ObjSpaceId,
-  objId: string
+  objId: string,
 ): Promise<void> {
   return linkResolutionFor(objSpace).finish(objId);
 }
@@ -78,7 +78,7 @@ class LinkResolution {
 
   private async getDataAndPerformResolution(objId: string) {
     await performResolution(
-      await load(() => getObjData(this.objSpaceId, objId))
+      await load(() => getObjData(this.objSpaceId, objId)),
     );
   }
 }

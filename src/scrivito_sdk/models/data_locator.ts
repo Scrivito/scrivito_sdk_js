@@ -97,7 +97,7 @@ export class DataLocator {
 }
 
 export function isDataLocatorValueViaFilter(
-  filter: unknown
+  filter: unknown,
 ): filter is DataLocatorValueViaFilter {
   return (
     isObject(filter) &&
@@ -107,7 +107,7 @@ export function isDataLocatorValueViaFilter(
 }
 
 export function isDataLocatorValueVia(
-  valueVia: unknown
+  valueVia: unknown,
 ): valueVia is DataLocatorValueVia {
   return (
     isObject(valueVia) &&
@@ -117,7 +117,7 @@ export function isDataLocatorValueVia(
 }
 
 export function isDataLocatorValueOrOperatorFilter(
-  filter: unknown
+  filter: unknown,
 ): filter is DataLocatorValueFilter | DataLocatorOperatorFilter {
   return (
     isDataLocatorValueFilter(filter) || isDataLocatorOperatorFilter(filter)

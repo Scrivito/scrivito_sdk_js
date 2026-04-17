@@ -8,9 +8,9 @@ import { loadWithDefault, withOptionalLoading } from 'scrivito_sdk/loadable';
  */
 export function loadableWithDefault<T, S>(
   theDefault: T,
-  loadableFunction: () => S
+  loadableFunction: () => S,
 ): T | S {
   return withOptionalLoading(() =>
-    loadWithDefault(theDefault, loadableFunction)
+    loadWithDefault(theDefault, loadableFunction),
   );
 }

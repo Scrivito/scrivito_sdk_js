@@ -17,7 +17,7 @@ export interface UrlForOptions {
 /** @public */
 export function urlFor(
   target: Binary | Link | Obj,
-  options?: UrlForOptions
+  options?: UrlForOptions,
 ): string {
   assertNotUsingInMemoryTenant('Scrivito.urlFor');
   checkUrlFor(target);
@@ -45,7 +45,7 @@ function checkUrlFor(target: Binary | Link | Obj) {
       "'target' must be an instance of 'Obj', 'Link' or 'Binary'.",
       {
         docPermalink: 'js-sdk/urlFor',
-      }
+      },
     );
   }
 }

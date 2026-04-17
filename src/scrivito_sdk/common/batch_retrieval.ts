@@ -17,7 +17,7 @@ export class BatchRetrieval<KEY_TYPE, RETURN_TYPE> {
 
   constructor(
     mget: Mget<KEY_TYPE, RETURN_TYPE>,
-    { batchSize }: { batchSize?: number } = {}
+    { batchSize }: { batchSize?: number } = {},
   ) {
     this.mget = mget;
     this.batchSize = batchSize || 100;
@@ -57,6 +57,6 @@ export class BatchRetrieval<KEY_TYPE, RETURN_TYPE> {
       })();
 
       return items;
-    }
+    },
   );
 }

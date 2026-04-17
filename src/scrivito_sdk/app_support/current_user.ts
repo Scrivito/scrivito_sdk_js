@@ -23,7 +23,7 @@ export function isUserLoggedIn(): boolean {
 
 /** @public */
 export function ensureUserIsLoggedIn(
-  params: EnsureUserIsLoggedInParams = {}
+  params: EnsureUserIsLoggedInParams = {},
 ): void {
   return authHandler().ensureUserIsLoggedIn(params);
 }
@@ -44,7 +44,7 @@ export function logout(returnTo?: string): void {
 async function logoutAsync(returnTo?: string) {
   const url = await getIamAuthUrl('logout');
   assignLocation(
-    returnTo ? `${url}?return_to=${encodeURIComponent(returnTo)}` : url
+    returnTo ? `${url}?return_to=${encodeURIComponent(returnTo)}` : url,
   );
 }
 

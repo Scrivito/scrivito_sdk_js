@@ -9,7 +9,7 @@ import { load } from 'scrivito_sdk/loadable';
  * @public
  */
 export async function preload(
-  preloadDump: string
+  preloadDump: string,
 ): Promise<{ dumpLoaded: boolean }> {
   if (isVisitorAuthenticationEnabled()) return { dumpLoaded: false };
 

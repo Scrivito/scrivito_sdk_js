@@ -15,38 +15,38 @@ import {
 } from 'scrivito_sdk/realm';
 
 interface LayoutComponentProps<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > {
   page: Obj<AttrDefs>;
 }
 
 /** @public */
 export function provideLayoutComponent<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 >(
   objClass: ObjClass<AttrDefs>,
   component: ComponentType<LayoutComponentProps<AttrDefs>>,
-  options?: ProvidedComponentOptions<LayoutComponentProps<AttrDefs>>
+  options?: ProvidedComponentOptions<LayoutComponentProps<AttrDefs>>,
 ): void;
 
 /** @public */
 export function provideLayoutComponent(
   objClass: ObjClass,
   component: ComponentType,
-  options?: ProvidedComponentOptions<LayoutComponentProps>
+  options?: ProvidedComponentOptions<LayoutComponentProps>,
 ): void;
 
 /** @internal */
 export function provideLayoutComponent(
   objClass: ObjClass,
   component: ComponentType,
-  options?: { loading?: typeof component }
+  options?: { loading?: typeof component },
 ): void {
   if (!isObjClass(objClass)) {
     throwInvalidArgumentsError(
       'provideLayoutComponent',
       'A layout component must be provided only for Objs',
-      { docPermalink: 'js-sdk/provideLayoutComponent' }
+      { docPermalink: 'js-sdk/provideLayoutComponent' },
     );
   }
 
@@ -55,6 +55,6 @@ export function provideLayoutComponent(
 
   registerLayoutComponentForAppClass(
     className,
-    connectAndMemoize(component, options)
+    connectAndMemoize(component, options),
   );
 }

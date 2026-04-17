@@ -41,7 +41,7 @@ export async function copyObjViaHandler(fromObj: BasicObj): Promise<BasicObj> {
   });
 
   const newObj = await load(() =>
-    getObjFrom(objSpaceScope(toObjSpaceId), newObjId)
+    getObjFrom(objSpaceScope(toObjSpaceId), newObjId),
   );
   if (!newObj) throw new InternalError();
 

@@ -9,7 +9,7 @@ const componentsChangesCounterState = createStateContainer<{
 
 export function registerComponentForId(
   componentId: string,
-  componentClass: React.ComponentType
+  componentClass: React.ComponentType,
 ): void {
   registry.set(componentId, componentClass);
 
@@ -19,7 +19,7 @@ export function registerComponentForId(
 }
 
 export function getComponentForId(
-  componentId: string
+  componentId: string,
 ): React.ComponentType | null {
   getComponentChangesCounterState(componentId).get();
 
@@ -28,19 +28,19 @@ export function getComponentForId(
 
 export function registerComponentForAppClass(
   className: string,
-  componentClass: React.ComponentType
+  componentClass: React.ComponentType,
 ): void {
   registerComponentForId(componentAppClassId(className), componentClass);
 }
 
 export function registerDataErrorComponent(
-  componentClass: React.ComponentType
+  componentClass: React.ComponentType,
 ): void {
   registerComponentForId('dataErrorComponent', componentClass);
 }
 
 export function getComponentForAppClass(
-  className: string
+  className: string,
 ): React.ComponentType | null {
   return getComponentForId(componentAppClassId(className));
 }
@@ -63,7 +63,7 @@ const layoutsChangesCounterState = createStateContainer<{
 }>();
 
 export function getLayoutComponentForAppClass(
-  className: string
+  className: string,
 ): React.ComponentType | React.ComponentType<{ page: Obj }> | null {
   getLayoutChangesCounterState(className).get();
 
@@ -72,7 +72,7 @@ export function getLayoutComponentForAppClass(
 
 export function registerLayoutComponentForAppClass(
   className: string,
-  componentClass: React.ComponentType
+  componentClass: React.ComponentType,
 ): void {
   layoutRegistry.set(className, componentClass);
 

@@ -36,7 +36,7 @@ export class Subject<T = void> extends Streamable<T> implements Subscriber<T> {
 
   complete(): void {
     Object.keys(this.subscribers).forEach((id) =>
-      this.subscribers[id].complete()
+      this.subscribers[id].complete(),
     );
 
     this.subscribers = {};

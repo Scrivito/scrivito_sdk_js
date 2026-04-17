@@ -23,25 +23,25 @@ import {
 import { registerRealmClass } from './registry';
 
 export type AppClass<
-  AttrDefs extends AttributeDefinitions = AttributeDefinitions
+  AttrDefs extends AttributeDefinitions = AttributeDefinitions,
 > = ObjClass<AttrDefs> | WidgetClass<AttrDefs>;
 
 /** @public */
 export function createObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(definition: SimpleObjClassDefinition<Attrs>): ObjClass<Attrs>;
 
 /** @public */
 export function createObjClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(definition: ExtendObjClassDefinition<Attrs>): ObjClass<Attrs>;
 
 /** @public */
 export function createObjClass<
   Attrs extends AttributeDefinitions = AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions,
 >(
-  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>
+  definition: MixedObjClassDefinition<Attrs, ExtendAttrs>,
 ): ObjClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
@@ -55,25 +55,25 @@ export function createObjClass(definition: ObjClassDefinition): ObjClass {
 
 /** @public */
 export function createWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(definition: SimpleWidgetClassDefinition<Attrs>): WidgetClass<Attrs>;
 
 /** @public */
 export function createWidgetClass<
-  Attrs extends AttributeDefinitions = AttributeDefinitions
+  Attrs extends AttributeDefinitions = AttributeDefinitions,
 >(definition: ExtendWidgetClassDefinition<Attrs>): WidgetClass<Attrs>;
 
 /** @public */
 export function createWidgetClass<
   Attrs extends AttributeDefinitions = AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions = AttributeDefinitions,
 >(
-  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>
+  definition: MixedWidgetClassDefinition<Attrs, ExtendAttrs>,
 ): WidgetClass<Omit<ExtendAttrs, keyof Attrs> & Attrs>;
 
 /** @internal */
 export function createWidgetClass(
-  definition: WidgetClassDefinition
+  definition: WidgetClassDefinition,
 ): WidgetClass {
   if (definition.attributes) {
     validateAttributeDefinitions(definition.attributes, 'createWidgetClass');
@@ -85,37 +85,37 @@ export function createWidgetClass(
 function createAppObjClass(definition: ObjClassDefinition): ObjClass {
   if (definition.extend && !isOrExtends(definition.extend, Obj)) {
     throw new ArgumentError(
-      'Invalid value for "extend": not a Scrivito Obj class'
+      'Invalid value for "extend": not a Scrivito Obj class',
     );
   }
 
   if (definition.onlyInside && isBinary(definition)) {
     throw new ArgumentError(
-      'onlyInside must not be specified for binary object classes.'
+      'onlyInside must not be specified for binary object classes.',
     );
   }
 
   if (definition.onlyChildren && isBinary(definition)) {
     throw new ArgumentError(
-      'onlyChildren must not be specified for binary object classes.'
+      'onlyChildren must not be specified for binary object classes.',
     );
   }
 
   if (definition.onlyAsRoot === true && definition.validAsRoot === false) {
     throw new ArgumentError(
-      'validAsRoot must not be set to false for an object class permitted onlyAsRoot.'
+      'validAsRoot must not be set to false for an object class permitted onlyAsRoot.',
     );
   }
 
   if (definition.onlyAsRoot && isBinary(definition)) {
     throw new ArgumentError(
-      'onlyAsRoot must not be specified for binary object classes.'
+      'onlyAsRoot must not be specified for binary object classes.',
     );
   }
 
   if (definition.validAsRoot && isBinary(definition)) {
     throw new ArgumentError(
-      'validAsRoot must not be specified for binary object classes.'
+      'validAsRoot must not be specified for binary object classes.',
     );
   }
 
@@ -137,7 +137,7 @@ function createAppObjClass(definition: ObjClassDefinition): ObjClass {
 function createAppWidgetClass(definition: WidgetClassDefinition): WidgetClass {
   if (definition.extend && !isOrExtends(definition.extend, Widget)) {
     throw new ArgumentError(
-      'Invalid value for "extend": not a Scrivito Widget class'
+      'Invalid value for "extend": not a Scrivito Widget class',
     );
   }
   const baseClass: WidgetClass = definition.extend || Widget;
@@ -168,7 +168,7 @@ function isBinary(definition: ObjClassDefinition) {
 
 export function registerObjClass(
   name: string,
-  objClassOrDefinition: ObjClassDefinition | ObjClass
+  objClassOrDefinition: ObjClassDefinition | ObjClass,
 ) {
   validateAttrs(objClassOrDefinition);
 
@@ -183,7 +183,7 @@ export function registerObjClass(
 
 export function registerWidgetClass(
   name: string,
-  widgetClassOrDefinition: WidgetClassDefinition | WidgetClass
+  widgetClassOrDefinition: WidgetClassDefinition | WidgetClass,
 ) {
   validateAttrs(widgetClassOrDefinition);
 
@@ -201,12 +201,12 @@ function validateAttrs(
     | WidgetClassDefinition
     | ObjClassDefinition
     | WidgetClass
-    | ObjClass
+    | ObjClass,
 ) {
   if ('extend' in definition && definition.extend) {
     if (!isAppClass(definition.extend)) {
       throw new ArgumentError(
-        "Unexpected value for key 'extend'. It must be a valid ObjClass."
+        "Unexpected value for key 'extend'. It must be a valid ObjClass.",
       );
     }
   }

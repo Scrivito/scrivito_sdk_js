@@ -83,7 +83,7 @@ const baseCollection = createLoadableCollection({
 });
 
 export function findInObjOfflineStore(
-  selector: (data: ObjJson, key: CollectionKey) => boolean
+  selector: (data: ObjJson, key: CollectionKey) => boolean,
 ) {
   return baseCollection.findValuesInOfflineStore(selector);
 }
@@ -100,7 +100,7 @@ export class ObjData {
 
   constructor(
     private readonly _objSpaceId: ObjSpaceId,
-    private readonly _id: string
+    private readonly _id: string,
   ) {
     this.baseData = baseCollection.get([_objSpaceId, _id]);
     this.widgetData = widgetCollection.get([_objSpaceId, _id]);
@@ -118,7 +118,7 @@ export class ObjData {
 
   get(): ObjJson | undefined {
     failIfPerformanceConstraint(
-      'for performance reasons, avoid this method when rendering'
+      'for performance reasons, avoid this method when rendering',
     );
 
     const widgetObjJson = this.widgetData.get();
@@ -140,14 +140,14 @@ export class ObjData {
     return (
       getSubReader(
         '_widget_pool',
-        this.widgetData
+        this.widgetData,
       ) as StateReader<WidgetPoolJson>
     ).get();
   }
 
   getWidget(id: string): WidgetJson | undefined {
     failIfPerformanceConstraint(
-      'for performance reasons, avoid this method when rendering'
+      'for performance reasons, avoid this method when rendering',
     );
 
     return getWidgetState(id, this.widgetData).get();
@@ -176,7 +176,7 @@ export class ObjData {
 
   /** Get a top-level attribute from the Obj, which is not a widget or a widgetlist */
   getAttributeWithoutWidgetData<Key extends keyof ObjJson & string>(
-    key: Key
+    key: Key,
   ): ObjJson[Key] {
     if (key === '_widget_pool') {
       // _widget_pool is not an attribute, use getWidget or getWidgetAttribute
@@ -187,14 +187,14 @@ export class ObjData {
   }
 
   getAttributeWithWidgetData<Key extends keyof ObjJson & string>(
-    key: Key
+    key: Key,
   ): ObjJson[Key] {
     return getSubReader(key, this.widgetData).get();
   }
 
   getWidgetAttribute<Key extends keyof WidgetJson & string>(
     id: string,
-    key: Key
+    key: Key,
   ): WidgetJson[Key] {
     return getWidgetState(id, this.widgetData).subState(key).get();
   }
@@ -288,7 +288,7 @@ export class ObjData {
    */
   private joinDataWithCaching(
     baseObjJson: ExistentObjJson,
-    widgetObjJson: WidgetObjJson
+    widgetObjJson: WidgetObjJson,
   ) {
     const lastJoin = this.lastJoin;
     if (
@@ -312,11 +312,11 @@ export class ObjData {
 
 function getWidgetState(
   id: string,
-  loadableData: LoadableData<WidgetObjJson>
+  loadableData: LoadableData<WidgetObjJson>,
 ): StateReader<WidgetJson> {
   const widgetPoolState = getSubReader(
     '_widget_pool',
-    loadableData
+    loadableData,
   ) as StateReader<WidgetPoolJson>;
 
   return widgetPoolState.subState(id);
@@ -324,7 +324,7 @@ function getWidgetState(
 
 function getSubReader<Key extends keyof ObjJson & string>(
   key: Key,
-  loadableData: LoadableData<Partial<ObjJson>>
+  loadableData: LoadableData<Partial<ObjJson>>,
 ): StateReader<Exclude<ObjJson[Key], undefined>> {
   return loadableData.reader().subState(key);
 }
@@ -353,7 +353,7 @@ export function invalidateAllLoadedObjsIn(objSpaceId: ObjSpaceId) {
 }
 
 function idsFromCollection(
-  collection: LoadableCollection<Partial<ObjJson>, unknown>
+  collection: LoadableCollection<Partial<ObjJson>, unknown>,
 ) {
   return collection
     .dangerouslyGetRawValues()
@@ -381,7 +381,7 @@ function divideData(data: ObjJson): [ObjJson, WidgetObjJson] {
 
 function isWidgetKey<Key extends keyof ObjJson & string>(
   key: Key,
-  value: ObjJson[Key]
+  value: ObjJson[Key],
 ): boolean {
   return (
     key === '_widget_pool' ||

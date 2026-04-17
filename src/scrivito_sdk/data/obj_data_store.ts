@@ -12,7 +12,7 @@ export function preloadObjData(objSpaceId: ObjSpaceId, objId: string): void {
 export function createObjData(
   objSpaceId: ObjSpaceId,
   objId: string,
-  attributes: ExistentObjJson
+  attributes: ExistentObjJson,
 ): ObjData {
   const objData = objDataFor(objSpaceId, objId);
   objData.set(attributes);
@@ -23,14 +23,14 @@ export function createObjData(
 export function setObjData(
   objSpaceId: ObjSpaceId,
   objId: string,
-  primitiveObj: ObjJson
+  primitiveObj: ObjJson,
 ): void {
   objDataFor(objSpaceId, objId).set(primitiveObj);
 }
 
 export function getObjData(
   objSpaceId: ObjSpaceId,
-  objId: string
+  objId: string,
 ): ObjData | undefined {
   const objData = objDataFor(objSpaceId, objId);
 

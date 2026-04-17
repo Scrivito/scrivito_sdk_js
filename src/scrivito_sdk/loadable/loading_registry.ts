@@ -32,7 +32,7 @@ export function processIndexSize(): number {
 
 export function subscribeLoading(
   dataId: string,
-  processFactory: () => LoaderProcess
+  processFactory: () => LoaderProcess,
 ): () => void {
   let subscriptionActive = true;
   changeSubscriptionsFor(dataId, 1);
@@ -56,7 +56,7 @@ export function subscribeLoading(
 
 function getOrCreateProcessFor(
   dataId: string,
-  processFactory: () => LoaderProcess
+  processFactory: () => LoaderProcess,
 ) {
   const existingProcess = processIndex[dataId];
   if (existingProcess) return existingProcess;
@@ -83,7 +83,7 @@ function changeSubscriptionsFor(dataId: string, amount: number) {
 
 export function notifyDataWasSet(
   dataId: string,
-  processFactory: () => LoaderProcess
+  processFactory: () => LoaderProcess,
 ) {
   const processToUse = getOrCreateProcessFor(dataId, processFactory);
   processToUse.notifyDataWasSet();

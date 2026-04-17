@@ -18,7 +18,7 @@ export class MissingWorkspaceError extends ScrivitoError {}
 export interface AuthorizationProvider {
   currentState?: () => string | null;
   authorize: (
-    request: (auth: string | undefined) => Promise<Response>
+    request: (auth: string | undefined) => Promise<Response>,
   ) => Promise<Response>;
 }
 
@@ -130,21 +130,21 @@ class CmsRestApi {
 
   async get(
     path: string,
-    requestParams?: ParamsType
+    requestParams?: ParamsType,
   ): Promise<BackendResponse> {
     return this.requestWithTaskHandling({ method: 'GET', path, requestParams });
   }
 
   async put(
     path: string,
-    requestParams?: ParamsType
+    requestParams?: ParamsType,
   ): Promise<BackendResponse> {
     return this.requestWithTaskHandling({ method: 'PUT', path, requestParams });
   }
 
   async post(
     path: string,
-    requestParams?: ParamsType
+    requestParams?: ParamsType,
   ): Promise<BackendResponse> {
     return this.requestWithTaskHandling({
       method: 'POST',
@@ -155,7 +155,7 @@ class CmsRestApi {
 
   async delete(
     path: string,
-    requestParams?: ParamsType
+    requestParams?: ParamsType,
   ): Promise<BackendResponse> {
     return this.requestWithTaskHandling({
       method: 'DELETE',
@@ -166,7 +166,7 @@ class CmsRestApi {
 
   async requestVisitorSession(
     sessionId: string,
-    token: string
+    token: string,
   ): Promise<VisitorSession> {
     return this.request({
       method: 'PUT',
@@ -242,10 +242,10 @@ class CmsRestApi {
             },
             authProvider: getAuthorizationProviderForRequest(
               authorizationProvider,
-              config
+              config,
             ),
             credentials: 'omit',
-          }) as Promise<Response>
+          }) as Promise<Response>,
       );
     } catch (error) {
       throw error instanceof ClientError &&
@@ -300,7 +300,7 @@ function getHeaders(config: CmsRestApiConfig) {
 
 function getAuthorizationProviderForRequest(
   authorizationProvider: AuthorizationProvider | null | undefined,
-  config: CmsRestApiConfig
+  config: CmsRestApiConfig,
 ) {
   if (authorizationProvider === undefined) {
     return config.authorizationProvider;

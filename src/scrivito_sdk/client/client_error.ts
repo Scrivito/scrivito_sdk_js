@@ -12,7 +12,7 @@ export class ClientError extends ScrivitoError {
     readonly code: string | undefined,
     readonly details: object,
     readonly httpStatus?: number,
-    readonly requestDetails: ClientErrorRequestDetails = {}
+    readonly requestDetails: ClientErrorRequestDetails = {},
   ) {
     super(message);
   }

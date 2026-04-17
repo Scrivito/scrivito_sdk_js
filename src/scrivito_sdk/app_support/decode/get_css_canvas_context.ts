@@ -4,7 +4,7 @@ export function getCSSCanvasContext(
   contextType: '2d',
   identifier: string,
   width: number,
-  height: number
+  height: number,
 ): CanvasRenderingContext2D {
   if (!documentGetCSSCanvasContext()) {
     throw new Error('Browser does not support getCSSCanvasContext!');
@@ -26,7 +26,7 @@ export function documentGetCSSCanvasContext() {
   return (
     (document as DocumentWithGetCSSCanvasContext).getCSSCanvasContext &&
     (document as DocumentWithGetCSSCanvasContext).getCSSCanvasContext.bind(
-      document
+      document,
     )
   );
 }
@@ -36,6 +36,6 @@ interface DocumentWithGetCSSCanvasContext extends Document {
     contextType: '2d',
     identifier: string,
     width: number,
-    height: number
+    height: number,
   ): CanvasRenderingContext2D;
 }

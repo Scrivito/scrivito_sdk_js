@@ -41,7 +41,7 @@ import {
 /** @public */
 export function useContent<A extends keyof AttributeDefinitions & string>(
   content: Obj | Widget,
-  attributeName: string
+  attributeName: string,
 ): AttributeValueOf<AttributeDefinitions, A> {
   return resolveContent(content, attributeName, useDataStackOrThrow());
 }
@@ -50,7 +50,7 @@ export function useContent<A extends keyof AttributeDefinitions & string>(
 export function resolveContent(
   content: Obj | Widget,
   attributeName: string,
-  dataStack: DataStack
+  dataStack: DataStack,
 ): ReturnType<typeof useContent> {
   const typeInfo = getTypeInfo(content, attributeName);
   if (!typeInfo) return null;
@@ -60,8 +60,8 @@ export function resolveContent(
       unwrapAppClass(content),
       attributeName,
       typeInfo,
-      dataStack
-    )
+      dataStack,
+    ),
   );
 }
 
@@ -69,18 +69,18 @@ function resolveBasicContent<T extends CmsAttributeType>(
   basicContent: BasicObj | BasicWidget,
   attributeName: string,
   typeInfo: BasicTypeInfo<T>,
-  dataStack: DataStack
+  dataStack: DataStack,
 ) {
   const valueOrConnection = getContentValueOrConnection(
     basicContent,
     attributeName,
-    typeInfo
+    typeInfo,
   );
 
   if (isContentConnection(valueOrConnection)) {
     return toBasicValue(
       applyDataLocator(dataStack, valueOrConnection[1]),
-      typeInfo
+      typeInfo,
     );
   }
 
@@ -89,14 +89,14 @@ function resolveBasicContent<T extends CmsAttributeType>(
 
 function toBasicValue<T extends CmsAttributeType>(
   dataScope: DataScope,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const itemAttribute = dataScope.dataItemAttribute();
   if (itemAttribute) {
     return itemAttributeToBasicValue(
       itemAttribute.dataItem(),
       itemAttribute.attributeName(),
-      typeInfo
+      typeInfo,
     );
   }
 
@@ -108,7 +108,7 @@ function toBasicValue<T extends CmsAttributeType>(
 
 function scopeToBasicValue<T extends CmsAttributeType>(
   dataScope: DataScope,
-  [attributeType]: BasicTypeInfo<T>
+  [attributeType]: BasicTypeInfo<T>,
 ) {
   const items = dataScope.take();
 
@@ -126,7 +126,7 @@ function scopeToBasicValue<T extends CmsAttributeType>(
 function itemAttributeToBasicValue<T extends CmsAttributeType>(
   dataItem: DataItem,
   attributeName: string,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const obj = dataItem.obj();
 
@@ -139,7 +139,7 @@ function itemAttributeToBasicValue<T extends CmsAttributeType>(
 
 function itemToBasicValue<T extends CmsAttributeType>(
   dataItem: DataItem,
-  attributeType: T
+  attributeType: T,
 ) {
   switch (attributeType) {
     case 'reference':
@@ -184,7 +184,7 @@ function toList<T>(value: T | null): [T] | [] {
 function objAttributeToBasicValue<T extends CmsAttributeType>(
   obj: Obj,
   attributeName: string,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const basicObj = unwrapAppClass(obj);
 
@@ -199,7 +199,7 @@ function objAttributeToBasicValue<T extends CmsAttributeType>(
 function externalAttributeToBasicValue<T extends CmsAttributeType>(
   dataItem: DataItem,
   attributeName: string,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const externalAttributeType = dataItem.dataClass().attributeDefinitions()[
     attributeName
@@ -236,7 +236,7 @@ function externalAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalStringAttributeToBasicValue<T extends CmsAttributeType>(
   unknownValue: unknown,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const value = assumeString(unknownValue);
   const [targetAttributeType, targetTypeInfoConfig] = typeInfo;
@@ -250,7 +250,7 @@ function externalStringAttributeToBasicValue<T extends CmsAttributeType>(
       return externalStringAttributeToEnumValue(value, targetTypeInfoConfig);
     case 'multienum':
       return toList(
-        externalStringAttributeToEnumValue(value, targetTypeInfoConfig)
+        externalStringAttributeToEnumValue(value, targetTypeInfoConfig),
       );
     case 'stringlist':
       return toList(value);
@@ -261,7 +261,7 @@ function externalStringAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalEnumAttributeToBasicValue<T extends CmsAttributeType>(
   unknownValue: unknown,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const value = assumeStringOrNull(unknownValue);
   const [targetAttributeType] = typeInfo;
@@ -282,7 +282,7 @@ function externalEnumAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalNumberAttributeToBasicValue<T extends CmsAttributeType>(
   unknownValue: unknown,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const value = assumeNumber(unknownValue);
   const [targetAttributeType] = typeInfo;
@@ -299,7 +299,7 @@ function externalNumberAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalBooleanAttributeToBasicValue<T extends CmsAttributeType>(
   unknownValue: unknown,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const value = assumeBoolean(unknownValue);
   const [targetAttributeType] = typeInfo;
@@ -309,7 +309,7 @@ function externalBooleanAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalDateAttributeToBasicValue<T extends CmsAttributeType>(
   unknownValue: unknown,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   const value = assumeDateOrNull(unknownValue);
   const [targetAttributeType] = typeInfo;
@@ -321,7 +321,7 @@ function externalDateAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalReferenceAttributeToBasicValue<T extends CmsAttributeType>(
   unknownValue: unknown,
-  typeInfo: BasicTypeInfo<T>
+  typeInfo: BasicTypeInfo<T>,
 ) {
   if (unknownValue instanceof DataItem) {
     switch (typeInfo[0]) {
@@ -339,7 +339,7 @@ function externalReferenceAttributeToBasicValue<T extends CmsAttributeType>(
 
 function externalStringAttributeToEnumValue(
   value: string,
-  typeInfoConfig: BasicTypeInfo<'enum'>[1]
+  typeInfoConfig: BasicTypeInfo<'enum'>[1],
 ) {
   return typeInfoConfig.values.includes(value) ? value : null;
 }

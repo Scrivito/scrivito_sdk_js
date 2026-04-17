@@ -33,7 +33,7 @@ export interface AttributeValidationReportEntry {
 }
 
 export function isAttributeValidationReportEntry(
-  validationReportEntry: ValidationReportEntry
+  validationReportEntry: ValidationReportEntry,
 ): validationReportEntry is AttributeValidationReportEntry {
   return !!(validationReportEntry as AttributeValidationReportEntry)
     .attributeName;

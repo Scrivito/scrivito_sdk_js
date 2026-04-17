@@ -11,7 +11,7 @@ export async function registerAsyncTask<T>(task: () => Promise<T>): Promise<T> {
 
 // for test purposes only
 export function setRegisterAsyncTaskHandler(
-  handler: typeof registerAsyncTask
+  handler: typeof registerAsyncTask,
 ): void {
   registerHandler = handler;
 }

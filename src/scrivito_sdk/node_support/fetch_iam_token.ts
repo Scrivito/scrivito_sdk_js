@@ -11,8 +11,8 @@ export async function fetchIamToken(apiKey: IamApiKey): Promise<string> {
     headers: {
       Authorization: `Basic ${btoa(
         `${encodeURIComponent(apiKey.clientId)}:${encodeURIComponent(
-          apiKey.clientSecret
-        )}`
+          apiKey.clientSecret,
+        )}`,
       )}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },

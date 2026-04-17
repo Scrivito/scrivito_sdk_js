@@ -33,20 +33,21 @@ interface BaseObjClassDefinition {
   validAsRoot?: boolean;
 }
 
-export interface SimpleObjClassDefinition<Attrs extends AttributeDefinitions>
-  extends BaseObjClassDefinition {
+export interface SimpleObjClassDefinition<
+  Attrs extends AttributeDefinitions,
+> extends BaseObjClassDefinition {
   attributes?: Attrs;
 }
 
 export interface ExtendObjClassDefinition<
-  ExtendAttrs extends AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions,
 > extends BaseObjClassDefinition {
   extend?: ObjClass<ExtendAttrs>;
 }
 
 export interface MixedObjClassDefinition<
   Attrs extends AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions,
 > extends BaseObjClassDefinition {
   attributes?: Attrs;
   extend?: ObjClass<ExtendAttrs>;
@@ -68,20 +69,21 @@ interface BaseWidgetClassDefinition {
   onlyInside?: readonly string[] | string;
 }
 
-export interface SimpleWidgetClassDefinition<Attrs extends AttributeDefinitions>
-  extends BaseWidgetClassDefinition {
+export interface SimpleWidgetClassDefinition<
+  Attrs extends AttributeDefinitions,
+> extends BaseWidgetClassDefinition {
   attributes?: Attrs;
 }
 
 export interface ExtendWidgetClassDefinition<
-  ExtendAttrs extends AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions,
 > extends BaseWidgetClassDefinition {
   extend?: WidgetClass<ExtendAttrs>;
 }
 
 export interface MixedWidgetClassDefinition<
   Attrs extends AttributeDefinitions,
-  ExtendAttrs extends AttributeDefinitions
+  ExtendAttrs extends AttributeDefinitions,
 > extends BaseWidgetClassDefinition {
   attributes?: Attrs;
   extend?: WidgetClass<ExtendAttrs>;
@@ -102,7 +104,7 @@ type AttributeDefinitionWithoutConfig =
 type AttributeDefinitionWithConfig = {
   [Type in keyof AttributeTypeToConfigMapping]: readonly [
     Type,
-    AttributeTypeToConfigMapping[Type]
+    AttributeTypeToConfigMapping[Type],
   ];
 }[keyof AttributeTypeToConfigMapping];
 
@@ -177,7 +179,7 @@ export class Schema {
 
   static basicFieldFor<T extends CmsAttributeType>(
     model: Obj | Widget,
-    attributeName: string
+    attributeName: string,
   ): BasicField<T> | null {
     const schema = Schema.forInstance(model);
 
@@ -190,7 +192,7 @@ export class Schema {
     return new BasicField<T>(
       model._scrivitoPrivateContent,
       attributeName,
-      typeInfo as BasicTypeInfo<T>
+      typeInfo as BasicTypeInfo<T>,
     );
   }
 
@@ -204,7 +206,7 @@ export class Schema {
 
   constructor(
     classDefinition: ObjClassDefinition | WidgetClassDefinition,
-    readonly parentClass: ObjClass | WidgetClass
+    readonly parentClass: ObjClass | WidgetClass,
   ) {
     const parentSchema = this.parentClass._scrivitoPrivateSchema;
     const basicAttributeDefinitions: BasicAttributeDefinitions = parentSchema
@@ -221,7 +223,7 @@ export class Schema {
     if (rawAttributeDefinitions) {
       Object.keys(rawAttributeDefinitions).forEach((name) => {
         basicAttributeDefinitions[name] = toBasicAttributeDefinition(
-          rawAttributeDefinitions[name]
+          rawAttributeDefinitions[name],
         );
       });
     }
@@ -255,7 +257,7 @@ export class Schema {
 
     Object.keys(attributes).forEach((name) => {
       normalizedAttributes[name] = toNormalizedAttributeDefinition(
-        attributes[name]
+        attributes[name],
       );
     });
 
@@ -307,7 +309,7 @@ export function isAppClass(object: object): object is AppClass {
 }
 
 function toBasicAttributeDefinition(
-  attrDefinition: AttributeDefinition
+  attrDefinition: AttributeDefinition,
 ): BasicTypeInfo<CmsAttributeType> {
   if (typeof attrDefinition === 'string') return [attrDefinition];
 
@@ -326,7 +328,7 @@ function toBasicAttributeDefinition(
 }
 
 function toNormalizedAttributeDefinition(
-  definition: BasicTypeInfo<CmsAttributeType>
+  definition: BasicTypeInfo<CmsAttributeType>,
 ): NormalizedTypeInfo<CmsAttributeType> {
   if (definition.length === 1) return [definition[0], {}];
 

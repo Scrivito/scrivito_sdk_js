@@ -18,7 +18,7 @@ function checkExtractText(obj: Obj, options?: { length?: number }): void {
     throwInvalidArgumentsError(
       'extractText',
       "'obj' must be an instance of 'Obj'.",
-      { docPermalink: 'js-sdk/extractText' }
+      { docPermalink: 'js-sdk/extractText' },
     );
   }
   if (
@@ -28,7 +28,7 @@ function checkExtractText(obj: Obj, options?: { length?: number }): void {
     throwInvalidArgumentsError(
       'extractText',
       "'length' must be a positive integer.",
-      { docPermalink: 'js-sdk/extractText' }
+      { docPermalink: 'js-sdk/extractText' },
     );
   }
 }

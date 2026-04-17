@@ -14,7 +14,7 @@ export function createRestApiSchema(
     attributes?: LazyAsyncDataAttributeDefinitions;
     title?: LazyAsyncDataClassTitle;
   },
-  apiClient: ApiClient
+  apiClient: ApiClient,
 ): DataClassSchema {
   const fetchAttributes = async () => (await fetchSchema(apiClient)).attributes;
   const fetchTitle = async () => (await fetchSchema(apiClient)).title;

@@ -136,6 +136,7 @@ export { resolveHtmlUrls } from 'scrivito_sdk/app_support/replace_internal_links
 export {
   provideDataClass,
   provideDataItem,
+  provideDataService,
 } from 'scrivito_sdk/data_integration';
 export { getDataClass } from 'scrivito_sdk/data_integration';
 export {

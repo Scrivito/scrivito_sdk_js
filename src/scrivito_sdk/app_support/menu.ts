@@ -31,7 +31,7 @@ export function updateMenuExtensions(): void {
 
 function evaluateCallbacks(builder: MenuBuilder) {
   getMenuCallbacks().forEach((menuCallback) =>
-    menuCallback.call(null, builder)
+    menuCallback.call(null, builder),
   );
 }
 

@@ -28,10 +28,10 @@ interface ConnectedCallbackProps<T> {
 }
 
 function connectContextConsumer<T>(
-  Consumer: React.Consumer<T>
+  Consumer: React.Consumer<T>,
 ): React.FunctionComponent<ConsumerProps<T>> {
   const ConnectedCallback = connect(
-    ({ callback, value }: ConnectedCallbackProps<T>) => callback(value)
+    ({ callback, value }: ConnectedCallbackProps<T>) => callback(value),
   );
 
   return ({ children }: ConsumerProps<T>) => (

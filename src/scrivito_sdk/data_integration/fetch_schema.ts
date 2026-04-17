@@ -8,7 +8,7 @@ import { DataClassSchemaResponse } from 'scrivito_sdk/data_integration/data_clas
 import { load } from 'scrivito_sdk/loadable';
 
 export const fetchSchema = memoize(async function (
-  apiClient: ApiClient
+  apiClient: ApiClient,
 ): Promise<DataClassSchemaResponse> {
   const siteLanguage = await load(currentLanguage);
   let response: unknown;
@@ -22,7 +22,7 @@ export const fetchSchema = memoize(async function (
       logError(
         'Error while fetching schema (using empty schema)',
         error.message,
-        JSON.stringify(error.details)
+        JSON.stringify(error.details),
       );
 
       return { attributes: {} };

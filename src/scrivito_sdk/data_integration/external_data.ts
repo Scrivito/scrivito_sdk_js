@@ -9,20 +9,20 @@ import { DataIdentifier } from 'scrivito_sdk/models';
 export type ExternalData = Record<DataIdentifier, unknown>;
 
 export function setExternalData(
-  dataClass: string,
+  classIdentifier: string,
   dataId: string,
-  data: NormalExternalData | null
+  data: NormalExternalData | null,
 ): void {
-  loadableCollection.get([dataClass, dataId]).set(data);
+  loadableCollection.get([classIdentifier, dataId]).set(data);
 }
 
 export function getExternalData(
-  dataClass: string,
-  dataId: string
+  classIdentifier: string,
+  dataId: string,
 ): NormalExternalData | null | undefined {
   if (isExternalDataLoadingDisabled()) return undefined;
 
-  return loadableCollection.get([dataClass, dataId]).get();
+  return loadableCollection.get([classIdentifier, dataId]).get();
 }
 
 export type CollectionData = NormalExternalData | null;
@@ -33,13 +33,13 @@ const loadableCollection = createLoadableCollection<
   CollectionKey
 >({
   name: 'externaldata',
-  loadElement: ([dataClass, dataId]) => ({
-    loader: () => getViaDataConnection(dataClass, dataId),
+  loadElement: ([classIdentifier, dataId]) => ({
+    loader: () => getViaDataConnection(classIdentifier, dataId),
   }),
 });
 
 export function findInExternalDataOfflineStore(
-  selector: (data: CollectionData, key: CollectionKey) => boolean
+  selector: (data: CollectionData, key: CollectionKey) => boolean,
 ) {
   return loadableCollection.findValuesInOfflineStore(selector);
 }

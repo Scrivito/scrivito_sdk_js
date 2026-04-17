@@ -74,7 +74,7 @@ function checkIsCurrentPage(obj: Obj) {
       "'obj' must be an instance of 'Obj'.",
       {
         docPermalink: 'js-sdk/isCurrentPage',
-      }
+      },
     );
   }
 }

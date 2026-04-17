@@ -1,6 +1,6 @@
 export function promiseAndFinally<T>(
   promise: Promise<T>,
-  handler: () => void
+  handler: () => void,
 ): Promise<T> {
   return promise.then(
     (value) => {
@@ -12,6 +12,6 @@ export function promiseAndFinally<T>(
       handler();
 
       throw error;
-    }
+    },
   );
 }

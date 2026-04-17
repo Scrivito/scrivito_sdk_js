@@ -45,12 +45,12 @@ export class MetadataCollection {
     private readonly _binaryId?: string,
 
     /** @internal */
-    private readonly objSpaceId: ObjSpaceId = publishedSpace()
+    private readonly objSpaceId: ObjSpaceId = publishedSpace(),
   ) {
     if (this._binaryId) {
       this.loadableData = loadableCollection.get(
         this._binaryId,
-        this.objSpaceId
+        this.objSpaceId,
       );
     }
   }
@@ -120,7 +120,7 @@ export class MetadataCollection {
 // For test purpose only
 export function storeMetadataCollection(
   binaryId: string,
-  response: BackendMetadataResponse
+  response: BackendMetadataResponse,
 ): void {
   // deserialize once, as a sanity check
   deserializeMetadata(response);
@@ -137,7 +137,7 @@ const loadableCollection = createLoadableCollection({
 });
 
 function deserializeMetadata(
-  response: BackendMetadataResponse
+  response: BackendMetadataResponse,
 ): BinaryMetadata {
   const backendMetadata = response.meta_data;
 

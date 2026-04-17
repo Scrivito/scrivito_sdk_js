@@ -11,7 +11,7 @@ let config: {
 
 export async function configureExternalDataInvalidation(
   dataClassName: string,
-  refetchOnWindowFocus: LazyAsync<false | undefined>
+  refetchOnWindowFocus: LazyAsync<false | undefined>,
 ): Promise<void> {
   config[dataClassName] = normalizeLazyAsync(refetchOnWindowFocus);
 }

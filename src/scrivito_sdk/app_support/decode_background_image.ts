@@ -17,7 +17,7 @@ export interface DecodedBackgroundImage {
 }
 
 export async function decodeBackgroundImage(
-  imageUrl: string
+  imageUrl: string,
 ): Promise<DecodedBackgroundImage> {
   try {
     const img = await decodeOrLoadImg(imageUrl);
@@ -35,7 +35,7 @@ function webkitCanvas(img: HTMLImageElement): DecodedBackgroundImage {
     '2d',
     webkitCanvasIdentifier,
     img.width,
-    img.height
+    img.height,
   );
   drawOnCanvasContext(img, ctx);
   return {

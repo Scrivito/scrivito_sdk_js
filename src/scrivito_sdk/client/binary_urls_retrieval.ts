@@ -49,13 +49,13 @@ const batchRetrieval = new BatchRetrieval<BinaryRequest, BackendBinaryData>(
     };
 
     return results.map((result) => result as unknown as BackendBinaryData);
-  }
+  },
 );
 
 export function retrieveBinaryUrls(
   binaryId: string,
   transformation?: TransformationDefinition,
-  options?: BinaryRetrievalOptions
+  options?: BinaryRetrievalOptions,
 ): Promise<BackendBinaryData> {
   const blob: BinaryRequest = { id: binaryId };
 
