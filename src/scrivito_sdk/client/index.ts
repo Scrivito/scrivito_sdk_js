@@ -21,7 +21,7 @@ export {
   replaceCmsRetrieval,
 } from 'scrivito_sdk/client/cms_retrieval';
 export type { CmsRetrieval } from 'scrivito_sdk/client/cms_retrieval';
-export { getIamAuthUrl, JrRestApi } from 'scrivito_sdk/client/jr_rest_api';
+export { JrRestApi } from 'scrivito_sdk/client/jr_rest_api';
 export { ClientError } from 'scrivito_sdk/client/client_error';
 export type { ClientErrorRequestDetails } from 'scrivito_sdk/client/client_error';
 export type { BackendMetadataResponse } from 'scrivito_sdk/client/binary_metadata_retrieval';
@@ -34,7 +34,7 @@ export type {
   BackendSuggestParams,
   BackendSuggestResponse,
 } from 'scrivito_sdk/client/suggest_retrieval';
-export { clientConfig } from 'scrivito_sdk/client/config';
+export { clientConfig, getIamAuthUrl } from 'scrivito_sdk/client/config';
 export type { TokenFetcher } from 'scrivito_sdk/client/config';
 export {
   EMPTY_SPACE,
@@ -79,6 +79,7 @@ export {
 export { fetchBrowserToken } from 'scrivito_sdk/client/browser_token';
 export type { BrowserTokenParams } from 'scrivito_sdk/client/browser_token';
 export type {
+  BinaryJson,
   ObjJson,
   OpCode,
   EqOpCode,
@@ -142,3 +143,4 @@ export { TokenAuthorizationProvider } from 'scrivito_sdk/client/token_authorizat
 export { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
 export { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
 export { withLoginHandler } from 'scrivito_sdk/client/login_handler';
+export { uploadFile } from 'scrivito_sdk/client/ingest_upload';

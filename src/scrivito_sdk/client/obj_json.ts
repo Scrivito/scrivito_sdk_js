@@ -17,6 +17,7 @@ export interface UnavailableObjJson extends ObjReplicationJson {
   _forbidden?: true;
 
   _id?: undefined;
+  _widget_pool?: undefined;
 }
 
 /* This type describes the raw, json-level data format,

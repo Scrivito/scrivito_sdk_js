@@ -1,6 +1,5 @@
-import { clientConfig } from 'scrivito_sdk/client';
+import { getIamAuthUrl } from 'scrivito_sdk/client';
 import {
-  InternalError,
   assignLocation,
   currentHref,
   never,
@@ -11,8 +10,9 @@ import {
 export async function loginRedirectHandler(
   visit: string,
   idp?: string,
+  prompt?: 'create',
 ): Promise<never> {
-  assignLocation(await authenticationUrl(visit, idp));
+  assignLocation(await authenticationUrl(visit, idp, prompt));
 
   return never();
 }
@@ -34,21 +34,29 @@ export function setLoggedInIndicatorParam(paramName: string): void {
   loggedInParamName = paramName;
 }
 
-async function authenticationUrl(visit: string, idp?: string): Promise<string> {
-  let authUrl = visit.replace('$RETURN_TO', encodeURIComponent(returnToUrl()));
-
-  const iamAuthLocation = (await clientConfig.fetch()).iamAuthLocation;
-  if (!iamAuthLocation) throw new InternalError();
-
-  authUrl = authUrl.replace('$JR_API_LOCATION/iam/auth', iamAuthLocation);
+async function authenticationUrl(
+  visit: string,
+  idp?: string,
+  prompt?: 'create',
+): Promise<string> {
+  const authUrl = visit
+    .replace('$RETURN_TO', encodeURIComponent(returnToUrl()))
+    .replace('$JR_API_LOCATION/iam/auth', await getIamAuthUrl());
 
   const identityProvider = globalIdp || idp;
-  if (!identityProvider) return authUrl;
+  if (!identityProvider && !prompt) return authUrl;
 
-  const authUrlWithIdp = new URL(authUrl);
-  authUrlWithIdp.searchParams.set('idp', identityProvider);
+  const authUrlWithParams = new URL(authUrl);
 
-  return authUrlWithIdp.toString();
+  if (identityProvider) {
+    authUrlWithParams.searchParams.set('idp', identityProvider);
+  }
+
+  if (prompt) {
+    authUrlWithParams.searchParams.set('prompt', prompt);
+  }
+
+  return authUrlWithParams.toString();
 }
 
 function returnToUrl() {

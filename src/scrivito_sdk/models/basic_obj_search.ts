@@ -25,6 +25,7 @@ import {
   FacetQueryOptions,
   QueryParams,
   SuggestOptions,
+  failIfPerformanceConstraint,
   getObjQuery,
   getObjQueryCount,
   suggest,
@@ -32,6 +33,7 @@ import {
 import { objSpaceFor } from 'scrivito_sdk/models';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicObjFacetValue } from 'scrivito_sdk/models/basic_obj_facet_value';
+import { areBoundedQueriesEnforced } from 'scrivito_sdk/models/enforce_bounded_queries';
 
 export type { FieldBoost } from 'scrivito_sdk/client';
 
@@ -257,6 +259,11 @@ export class BasicObjSearch implements DataQuery<BasicObj> {
   }
 
   dangerouslyUnboundedTake(): BasicObj[] {
+    if (areBoundedQueriesEnforced()) {
+      failIfPerformanceConstraint(
+        'for performance reasons, avoid dangerouslyUnboundedTake during render. Use take(limit) instead.',
+      );
+    }
     return this.internalTake(undefined);
   }
 

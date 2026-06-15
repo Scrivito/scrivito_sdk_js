@@ -123,6 +123,7 @@ export type AttributeTypeToConfigMapping = {
   multienum: { values: readonly string[] };
   reference: { only: string | readonly string[] };
   referencelist: { only: string | readonly string[] };
+  /** @internal */
   widget: { only: string | readonly string[] };
   widgetlist:
     | { only: string | readonly string[]; maximum?: number }

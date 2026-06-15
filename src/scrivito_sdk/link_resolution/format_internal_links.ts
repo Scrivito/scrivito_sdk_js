@@ -22,7 +22,13 @@ export function formatInternalLinks(
   );
 }
 
-function parseInternalUrl(internalLinkUrl: string): InternalUrl {
+export function formatInternalUrl(internalUrl: InternalUrl): string {
+  const search = internalUrl.query ? `?${internalUrl.query}` : '';
+  const hash = internalUrl.hash ? `#${internalUrl.hash}` : '';
+  return `objid:${internalUrl.obj_id}${search}${hash}`;
+}
+
+export function parseInternalUrl(internalLinkUrl: string): InternalUrl {
   const url = new URL(internalLinkUrl);
 
   return {

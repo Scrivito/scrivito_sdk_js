@@ -5,16 +5,19 @@ import {
   WidgetJson,
   WidgetPoolJson,
   isExistentObjJson,
+  isWorkspaceObjSpaceId,
   retrieveObj,
 } from 'scrivito_sdk/client';
 import {
   InternalError,
+  ScrivitoError,
   equals,
   isPresent,
   isSystemAttribute,
   never,
   onReset,
 } from 'scrivito_sdk/common';
+import { isUsingInMemoryTenant } from 'scrivito_sdk/data/in_memory_tenant';
 import { ObjJsonPatch, patchObjJson } from 'scrivito_sdk/data/obj_patch';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
 import { failIfPerformanceConstraint } from 'scrivito_sdk/data/performance_constraint';
@@ -244,6 +247,15 @@ export class ObjData {
   }
 
   update(objPatch: ObjJsonPatch): void {
+    if (
+      !allowPublishedUpdates &&
+      !isUsingInMemoryTenant() &&
+      isWorkspaceObjSpaceId(this._objSpaceId) &&
+      this._objSpaceId[1] === 'published'
+    ) {
+      throw new ScrivitoError('The published content cannot be modified.');
+    }
+
     // Should never throw b/c if called, the objData to update belongs to an instantiated obj, therefore has been loaded
     const newState = patchObjJson(this.getOrThrow(), objPatch);
 
@@ -391,4 +403,14 @@ function isWidgetKey<Key extends keyof ObjJson & string>(
   );
 }
 
-onReset(() => (configuredForLazyWidgets = false));
+onReset(() => {
+  configuredForLazyWidgets = false;
+  allowPublishedUpdates = false;
+});
+
+let allowPublishedUpdates = false;
+
+// For test purposes only. Allows creating fixture data in the published workspace.
+export function dangerouslyAllowPublishedUpdates(allow: boolean): void {
+  allowPublishedUpdates = allow;
+}

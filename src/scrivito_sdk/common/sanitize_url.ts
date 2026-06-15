@@ -12,10 +12,8 @@ export function sanitizeUrl(rawUrl: string): string {
 
   if (url.includes('.')) {
     const httpsUrl = `https://${url}`;
-    if (URL.canParse(httpsUrl)) {
-      const { hostname } = new URL(httpsUrl);
-      if (hostname && !hostname.includes('_')) return httpsUrl;
-    }
+    const hostname = URL.parse(httpsUrl)?.hostname;
+    if (hostname && !hostname.includes('_')) return httpsUrl;
   }
 
   return url;

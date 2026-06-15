@@ -5,6 +5,7 @@ import {
 } from 'scrivito_sdk/client';
 import {
   InternalError,
+  assumePresence,
   deserializeAsDate,
   deserializeAsFloat,
   deserializeAsInteger,
@@ -26,7 +27,10 @@ import {
   autoConvertToSingle,
 } from 'scrivito_sdk/models/auto_convert';
 import { ContentValueProvider } from 'scrivito_sdk/models/basic_attribute_content';
-import { BasicAttributeValue } from 'scrivito_sdk/models/basic_attribute_types';
+import {
+  BasicAttributeValue,
+  PlainAttributeValue,
+} from 'scrivito_sdk/models/basic_attribute_types';
 import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_scope_excluding_deleted';
 import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
@@ -44,8 +48,44 @@ export function deserialize(
   typeInfo: BasicTypeInfo<CmsAttributeType>,
 ): BasicAttributeValue<(typeof typeInfo)[0]> {
   switch (typeInfo[0]) {
+    case 'binary': {
+      const binaryJson = deserializeValue(value, typeInfo);
+      return binaryJson ? new Binary(binaryJson.id, model.objSpaceId()) : null;
+    }
+    case 'reference': {
+      const refId = deserializeValue(value, typeInfo);
+      return refId ? convertReference(refId, model) : null;
+    }
+    case 'referencelist':
+      return deserializeValue(value, typeInfo).map((id) =>
+        convertReference(id, model),
+      );
+    case 'widget': {
+      const widgetId = deserializeValue(value, typeInfo);
+      return widgetId ? model.widget(widgetId) : null;
+    }
+    case 'widgetlist':
+      return deserializeValue(value, typeInfo).map((id) =>
+        // the backend keeps widgetlists and widget pool consistent
+        // there should never be a 'missing' widget here.
+        assumePresence(model.widget(id)),
+      );
+    default:
+      return deserializeValue(value, typeInfo);
+  }
+}
+
+export function deserializeValue<Type extends CmsAttributeType>(
+  value: BackendValue,
+  typeInfo: BasicTypeInfo<Type>,
+): PlainAttributeValue<Type>;
+export function deserializeValue(
+  value: BackendValue,
+  typeInfo: BasicTypeInfo<CmsAttributeType>,
+) {
+  switch (typeInfo[0]) {
     case 'binary':
-      return deserializeBinaryValue(value, model);
+      return deserializeBinaryValue(value);
     case 'boolean':
       return deserializeBooleanValue(value);
     case 'datalocator':
@@ -69,31 +109,25 @@ export function deserialize(
     case 'multienum':
       return deserializeMultienumValue(autoConvertToList(value), typeInfo);
     case 'reference':
-      return deserializeReferenceValue(autoConvertToReference(value), model);
+      return deserializeReferenceValue(autoConvertToReference(value));
     case 'referencelist':
-      return deserializeReferencelistValue(
-        autoConvertToReferencelist(value),
-        model,
-      );
+      return deserializeReferencelistValue(autoConvertToReferencelist(value));
     case 'string':
       return deserializeHtmlOrStringValue(autoConvertToSingle(value));
     case 'stringlist':
       return deserializeStringlistValue(autoConvertToList(value));
     case 'widget':
-      return deserializeWidgetValue(value, model);
+      return deserializeWidgetValue(value);
     case 'widgetlist':
-      return deserializeWidgetlistValue(value, model);
+      return deserializeWidgetlistValue(value);
     default:
       throw new InternalError();
   }
 }
 
-function deserializeBinaryValue(
-  value: BackendValue,
-  model: ContentValueProvider,
-) {
+function deserializeBinaryValue(value: BackendValue) {
   if (isBackendValueOfType('binary', value)) {
-    return new Binary(value[1].id, model.objSpaceId());
+    return value[1];
   }
 
   return null;
@@ -223,23 +257,17 @@ function convertReference(
   );
 }
 
-function deserializeReferenceValue(
-  value: BackendValue,
-  model: ContentValueProvider,
-) {
+function deserializeReferenceValue(value: BackendValue) {
   if (isBackendValueOfType('reference', value)) {
-    return convertReference(value[1], model);
+    return value[1];
   }
 
   return null;
 }
 
-function deserializeReferencelistValue(
-  value: BackendValue,
-  model: ContentValueProvider,
-) {
+function deserializeReferencelistValue(value: BackendValue) {
   if (isBackendValueOfType('referencelist', value)) {
-    return value[1].map((obj) => convertReference(obj, model));
+    return value[1];
   }
 
   return [];
@@ -253,33 +281,19 @@ function deserializeStringlistValue(value: BackendValue) {
   return [];
 }
 
-function deserializeWidgetValue(
-  value: BackendValue,
-  model: ContentValueProvider,
-) {
-  let widgetId: string | undefined;
-
-  if (isBackendValueOfType('widget', value)) [, widgetId] = value;
-  if (isBackendValueOfType('widgetlist', value)) [, [widgetId]] = value;
-
-  return widgetId ? model.widget(widgetId) : null;
-}
-
-function deserializeWidgetlistValue(
-  value: BackendValue,
-  model: ContentValueProvider,
-) {
-  if (isBackendValueOfType('widgetlist', value)) {
-    return value[1].map((widgetId) => model.widget(widgetId)!);
+function deserializeWidgetValue(value: BackendValue) {
+  if (isBackendValueOfType('widget', value)) return value[1];
+  if (isBackendValueOfType('widgetlist', value) && value[1].length > 0) {
+    return value[1][0];
   }
 
-  if (isBackendValueOfType('widget', value)) {
-    const [, widgetId] = value;
+  return null;
+}
 
-    if (widgetId) {
-      const widget = model.widget(widgetId);
-      if (widget) return [widget];
-    }
+function deserializeWidgetlistValue(value: BackendValue) {
+  if (isBackendValueOfType('widgetlist', value)) return value[1];
+  if (isBackendValueOfType('widget', value) && value[1]) {
+    return [value[1]];
   }
 
   return [];

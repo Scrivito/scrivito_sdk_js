@@ -1,8 +1,4 @@
-export type ObjUnavailableReason =
-  | 'forbidden'
-  | 'nonexistent'
-  | 'notLoaded'
-  | 'unavailable';
+export type ObjUnavailableReason = 'forbidden' | 'nonexistent' | 'notLoaded';
 
 export class ObjUnavailable {
   constructor(

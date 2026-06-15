@@ -67,6 +67,7 @@ import {
 import { activateDataIntegration } from 'scrivito_sdk/data_integration';
 import { load } from 'scrivito_sdk/loadable';
 import {
+  enforceBoundedQueries,
   getRootObjFrom,
   restrictToSite,
   setWantsAutoAttributeConversion,
@@ -130,6 +131,7 @@ interface BaseConfiguration {
   /** @internal */
   unstable?: {
     assetUrlBase?: string;
+    enforceBoundedQueries?: boolean;
     getSiteIdForObj?: SiteIdForObjCallback;
     trustedUiOrigins?: string[];
     initialContentDumpUrl?: string;
@@ -205,6 +207,10 @@ export function configure(configuration: Readonly<Configuration>): void {
   setWantsAutoAttributeConversion(!!configuration.autoConvertAttributes);
   setForcedEditorLanguage(configuration.editorLanguage || null);
   setExtensionsUrl(configuration.extensionsUrl || undefined);
+
+  if (unofficialConfiguration?.enforceBoundedQueries) {
+    enforceBoundedQueries();
+  }
 
   if (unofficialConfiguration?.initialContentDumpUrl) {
     setInitialContentDumpUrl(unofficialConfiguration.initialContentDumpUrl);

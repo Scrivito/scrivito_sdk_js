@@ -13,6 +13,7 @@ import { ScrivitoError, equals, throwNextTick } from 'scrivito_sdk/common';
 import { OBJ_ID_PATTERN } from 'scrivito_sdk/link_resolution';
 import { load, loadableWithDefault } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
+import { isObjId } from 'scrivito_sdk/models/is_obj_id';
 
 type UnsafeMapping = (currentId: string) => string | undefined | unknown;
 type Mapping = (currentId: string) => string;
@@ -31,23 +32,13 @@ export function updateReferences(
     }
 
     if (newId !== undefined) {
-      if (typeof newId !== 'string') {
-        throwNextTick(
-          new ScrivitoError(
-            `Unexpected result from mapping function passed to updateReferences (must be string or undefined): ${String(
-              newId,
-            )}`,
-          ),
-        );
-      } else if (!newId.match(/^[a-f0-9]{16}$/)) {
-        throwNextTick(
-          new ScrivitoError(
-            `Unexpected result from mapping function passed to updateReferences (not a valid obj id): ${newId}`,
-          ),
-        );
-      } else {
-        return newId;
-      }
+      if (isObjId(newId)) return newId;
+
+      throwNextTick(
+        new ScrivitoError(
+          `Unexpected result from mapping function passed to updateReferences (not a valid obj id): ${String(newId)}`,
+        ),
+      );
     }
 
     return currentId;

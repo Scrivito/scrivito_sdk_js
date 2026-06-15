@@ -22,7 +22,15 @@ export {
   assertNotUsingInMemoryTenant,
   isUsingInMemoryTenant,
 } from 'scrivito_sdk/data/in_memory_tenant';
-export { ObjBackendReplication } from 'scrivito_sdk/data/obj_backend_replication';
+export {
+  observeWritingPromise,
+  isWriting,
+  getWriteStatus,
+} from 'scrivito_sdk/data/active_writes';
+export {
+  ObjBackendReplication,
+  setReplicationErrorHandler,
+} from 'scrivito_sdk/data/obj_backend_replication';
 export { disableObjReplication } from 'scrivito_sdk/data/disable_obj_replication';
 export { createObjReplicationProcess } from 'scrivito_sdk/data/obj_replication_process';
 export type { ObjReplicationMessage } from 'scrivito_sdk/data/obj_replication_process';
@@ -36,6 +44,8 @@ export {
   diffObjJson,
   diffWidgetJson,
   hasObjContentDiff,
+  patchObjJson,
+  threeWayMergeObjs,
 } from 'scrivito_sdk/data/obj_patch';
 export type { ObjJsonPatch } from 'scrivito_sdk/data/obj_patch';
 export { REMOVE_THIS_KEY } from 'scrivito_sdk/data/remove_this_key';

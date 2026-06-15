@@ -11,32 +11,22 @@ import { isErrorResponse } from './is_error_response';
 
 export class AccessDeniedError extends ClientError {}
 
-/** return the parsed JSON of the response body */
-export async function parseResponse(response: Response) {
+export async function parseResponseOrThrow(
+  response: Response,
+  requestDetails?: ClientErrorRequestDetails,
+): Promise<unknown> {
   // response.text is a macrotask in firefox.
   // it needs to be registered explicitly, to work with flushPromises.
   const responseText = await registerAsyncTask(() => response.text());
-  const httpStatus = response.status;
 
-  if (httpStatus >= 200 && httpStatus < 300) {
+  if (response.ok) {
     if (!responseText.length) return null;
     return parseOrThrowRequestFailedError(responseText);
   }
-}
 
-/** throw suitable error, if the response is not successful */
-export async function throwOnError(
-  response: Response,
-  requestDetails?: ClientErrorRequestDetails,
-): Promise<Response> {
   const httpStatus = response.status;
-  if (httpStatus >= 200 && httpStatus < 300) return response;
 
-  // response.text is a macrotask in firefox.
-  // it needs to be registered explicitly, to work with flushPromises.
-  const responseText = await registerAsyncTask(() => response.text());
-
-  if (httpStatus >= 400 && httpStatus < 500) {
+  if (httpStatus < 500) {
     const {
       message: originalMessage,
       code,
@@ -50,15 +40,13 @@ export async function throwOnError(
     throw new ClientError(message, code, details, httpStatus, requestDetails);
   }
 
-  // The backend server responds with a proper error text on a server error.
-  // If however not the backend server, but the surrounding infrastructure fails, then there is
-  // no proper error text. In that case include the response text as a hint for debugging.
   const parsedResponse = parseOrThrowRequestFailedError(responseText);
 
   const message =
     httpStatus === 500 && isErrorResponse(parsedResponse)
       ? parsedResponse.error
-      : responseText;
+      : // If surrounding infrastructure fails instead of the backend, there's no proper error text — include raw text as a debugging hint.
+        responseText;
 
   throw new RequestFailedError(uniqueErrorMessage(message));
 }

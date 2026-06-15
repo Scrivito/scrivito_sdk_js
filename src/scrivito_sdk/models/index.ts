@@ -1,9 +1,11 @@
 export type { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
+export { generateWidgetId } from 'scrivito_sdk/models/generate_widget_id';
 export type {
   CmsAttributeType,
   BasicAttributeDict,
   BasicAttributeValue,
   BasicAttributeValueForUpdate,
+  PlainAttributeValue,
   SystemAttributeValue,
   SingleReferenceValue,
 } from 'scrivito_sdk/models/basic_attribute_types';
@@ -20,6 +22,12 @@ export type {
   ExternalLink,
   BasicLinkAttributes,
 } from 'scrivito_sdk/models/basic_link';
+export { deserializeValue } from 'scrivito_sdk/models/attribute_deserializer';
+export { serializeAttribute } from 'scrivito_sdk/models/attribute_serializer';
+export {
+  disableStrictObjIdValidation,
+  enableStrictObjIdValidation,
+} from 'scrivito_sdk/models/is_obj_id';
 export { BasicObjFacetValue } from 'scrivito_sdk/models/basic_obj_facet_value';
 export {
   BasicObjSearch,
@@ -127,3 +135,4 @@ export {
 } from 'scrivito_sdk/models/is_wrapping_basic_content';
 export { comparisonFromPublished } from 'scrivito_sdk/models/comparison_from_published';
 export { publishedSpace } from 'scrivito_sdk/models/published_space';
+export { enforceBoundedQueries } from 'scrivito_sdk/models/enforce_bounded_queries';

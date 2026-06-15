@@ -13,6 +13,7 @@ import {
   nextTick,
   throttle,
 } from 'scrivito_sdk/common';
+import { observeWritingPromise } from 'scrivito_sdk/data/active_writes';
 import { isObjReplicationDisabled } from 'scrivito_sdk/data/disable_obj_replication';
 import { setObjData } from 'scrivito_sdk/data/obj_data_store';
 import {
@@ -21,8 +22,14 @@ import {
   threeWayMergeObjs,
 } from 'scrivito_sdk/data/obj_patch';
 import { ObjReplication } from 'scrivito_sdk/data/obj_replication';
-import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
 import { addBatchUpdate } from 'scrivito_sdk/state';
+
+type ErrorHandler = (error: Error) => void;
+let replicationErrorHandler: ErrorHandler | undefined;
+
+export function setReplicationErrorHandler(handler: ErrorHandler): void {
+  replicationErrorHandler = handler;
+}
 
 export class ObjBackendReplication implements ObjReplication {
   private replicationActive: boolean;
@@ -141,7 +148,7 @@ export class ObjBackendReplication implements ObjReplication {
           this.scheduledReplication = true;
           this.initDeferredForRequest();
 
-          objReplicationPool.writeStarted(this.currentRequestDeferred!.promise);
+          observeWritingPromise(this.currentRequestDeferred!.promise);
           nextTick(() => this.performThrottledReplication());
         }
       } else if (!this.nextRequestDeferred) {
@@ -170,6 +177,7 @@ export class ObjBackendReplication implements ObjReplication {
     } catch (error) {
       if (!(error instanceof Error)) throw error;
 
+      replicationErrorHandler?.(error);
       this.currentRequestDeferred!.reject(error);
       this.currentRequestDeferred = undefined;
       this.replicationActive = false;

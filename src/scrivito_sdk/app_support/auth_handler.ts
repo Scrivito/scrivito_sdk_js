@@ -3,6 +3,7 @@ import { TokenFetcher } from 'scrivito_sdk/client';
 
 export interface EnsureUserIsLoggedInParams {
   idp?: string;
+  prompt?: 'create';
 }
 
 export interface AuthHandler {

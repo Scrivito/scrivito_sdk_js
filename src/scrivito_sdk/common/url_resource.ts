@@ -1,4 +1,4 @@
-export function urlResource(url: {
+export function toUrlResource(url: {
   pathname: string;
   search: string;
   hash: string;

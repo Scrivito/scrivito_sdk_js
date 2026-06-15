@@ -1,17 +1,25 @@
 // @rewire
-import type { History as HistoryV5 } from 'history';
 import {
+  /*
+   * HistoryPublic must be imported from 'history',
+   * not 'history-4' or 'history-5',
+   * so API Extractor emits the correct source in scrivito.d.ts
+   */
+  type History as HistoryPublic,
+  createBrowserHistory as createBrowserHistoryPublic,
+} from 'history';
+import type {
   Action,
   History as HistoryV4,
   UnregisterCallback,
-  createBrowserHistory,
 } from 'history-4';
+import type { History as HistoryV5 } from 'history-5';
 
 import {
   ArgumentError,
   docUrl,
   onReset,
-  urlResource,
+  toUrlResource,
 } from 'scrivito_sdk/common';
 import { createStateContainer } from 'scrivito_sdk/state';
 
@@ -26,7 +34,7 @@ let unlistenToHistory: UnregisterCallback | undefined;
 let lastAction: undefined | Action;
 
 /** @public */
-export function useHistory(historyToUse: HistoryV4): void;
+export function useHistory(historyToUse: HistoryPublic): void;
 
 /** @internal */
 export function useHistory(historyToUse: HistoryV4 | HistoryV5): void;
@@ -61,7 +69,7 @@ export function getHistoryState(): HistoryState {
 }
 
 export function get(): string {
-  return urlResource(getHistory().location);
+  return toUrlResource(getHistory().location);
 }
 
 export function getHistoryChangesCount(): number {
@@ -96,7 +104,7 @@ export function reset(): void {
 
 // export for test purpose only
 export function createInitialHistory(): HistoryV4 | HistoryV5 {
-  return createBrowserHistory();
+  return createBrowserHistoryPublic();
 }
 
 function ensureHistory(): void {

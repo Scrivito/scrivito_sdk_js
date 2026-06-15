@@ -2,11 +2,12 @@ import { WorkspaceObjSpaceId } from 'scrivito_sdk/client';
 import { onReset } from 'scrivito_sdk/common';
 import { publishedSpace } from 'scrivito_sdk/models';
 import { objSpaceFor } from 'scrivito_sdk/models/obj_space_for';
+import { createStateContainer } from 'scrivito_sdk/state';
 
-let objSpaceId: WorkspaceObjSpaceId | undefined;
+const objSpaceIdState = createStateContainer<WorkspaceObjSpaceId>();
 
 export function currentObjSpaceId(): WorkspaceObjSpaceId {
-  return objSpaceId ?? publishedSpace();
+  return objSpaceIdState.get() ?? publishedSpace();
 }
 
 export function isCurrentWorkspacePublished(): boolean {
@@ -21,12 +22,12 @@ export function currentWorkspaceId(): string {
 }
 
 export function setCurrentWorkspaceId(id: string): void {
-  objSpaceId = objSpaceFor(id);
+  objSpaceIdState.set(objSpaceFor(id));
 }
 
 // For test purpose only
 export function resetCurrentWorkspaceId() {
-  objSpaceId = publishedSpace();
+  objSpaceIdState.set(publishedSpace());
 }
 
 onReset(resetCurrentWorkspaceId);

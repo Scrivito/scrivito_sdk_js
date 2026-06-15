@@ -2,7 +2,7 @@
 import { MouseEvent } from 'react';
 
 import { isOriginLocal } from 'scrivito_sdk/app_support/routing';
-import { isModifierClick, urlResource } from 'scrivito_sdk/common';
+import { isModifierClick, toUrlResource } from 'scrivito_sdk/common';
 
 export type LinkTarget = OpenInCurrentWindow | OpenInNewWindow | null;
 
@@ -52,7 +52,7 @@ function findLinkTarget(
       return { openInNewWindow: url };
     }
 
-    return { openInCurrentWindow: urlResource(new URL(url)) };
+    return { openInCurrentWindow: toUrlResource(new URL(url)) };
   }
 
   if (!currentNode.parentNode) {

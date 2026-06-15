@@ -1,4 +1,8 @@
-import { QueryParameters, buildQueryString } from 'scrivito_sdk/common';
+import {
+  DESTINATION_UNAVAILABLE_PREFIX,
+  QueryParameters,
+  buildQueryString,
+} from 'scrivito_sdk/common';
 
 export interface RemoteDestination {
   type: 'remote';
@@ -51,8 +55,10 @@ export function recognizeDestinationUnavailable(
 
   const fallbackHash = fallbackUrl.hash;
 
-  if (fallbackHash.indexOf('#SCRIVITO_UNAVAILABLE_') === 0) {
-    const encodedParams = fallbackHash.substr('#SCRIVITO_UNAVAILABLE_'.length);
+  if (fallbackHash.indexOf(DESTINATION_UNAVAILABLE_PREFIX) === 0) {
+    const encodedParams = fallbackHash.substr(
+      DESTINATION_UNAVAILABLE_PREFIX.length,
+    );
     const paramsUrl = new URL(encodedParams, 'http://example.com');
 
     const objId = paramsUrl.pathname.substring(1);
@@ -76,5 +82,5 @@ function getDestinationUnavailableFallbackUrl({
     ? `?${typeof query === 'string' ? query : buildQueryString(query)}`
     : '';
 
-  return `#SCRIVITO_UNAVAILABLE_${objId}${search}${hash || ''}`;
+  return `${DESTINATION_UNAVAILABLE_PREFIX}${objId}${search}${hash || ''}`;
 }

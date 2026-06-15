@@ -2,6 +2,7 @@
 import escape from 'lodash-es/escape';
 import unescape from 'lodash-es/unescape';
 
+import { formatInternalUrl } from 'scrivito_sdk/link_resolution/format_internal_links';
 import { resolveUrl } from 'scrivito_sdk/link_resolution/resolve_url';
 
 export function resolveHtmlUrl(encodedUrl: string): string | null {
@@ -12,8 +13,5 @@ export function resolveHtmlUrl(encodedUrl: string): string | null {
 
   const { fragment, obj_id, query } = internalUrl;
 
-  const search = query ? `?${query}` : '';
-  const hash = fragment ? `#${fragment}` : '';
-
-  return escape(`objid:${obj_id}${search}${hash}`);
+  return escape(formatInternalUrl({ obj_id, query, hash: fragment }));
 }

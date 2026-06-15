@@ -18,7 +18,7 @@ import {
   QueryParameters,
   assignLocation,
   logError,
-  urlResource,
+  toUrlResource,
 } from 'scrivito_sdk/common';
 import { load } from 'scrivito_sdk/loadable';
 import { BasicObj } from 'scrivito_sdk/models';
@@ -121,7 +121,7 @@ function destinationForUrl(url: string) {
     if (!isSiteLocal(url)) return { type: 'crossSite' as const, url };
     return {
       type: 'local' as const,
-      resource: urlResource(new URL(url)),
+      resource: toUrlResource(new URL(url)),
     };
   }
 

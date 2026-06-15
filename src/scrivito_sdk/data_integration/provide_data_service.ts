@@ -77,6 +77,7 @@ async function fetchAndValidateManifest(baseUrl: string) {
   const manifestUrl = `${baseUrl}/_manifest`;
 
   const response = await fetchJson(manifestUrl, {
+    method: 'GET',
     authProvider: getTokenProvider({ audience }),
   });
 

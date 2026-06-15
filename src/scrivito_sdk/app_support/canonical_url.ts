@@ -5,7 +5,7 @@ import {
 } from 'scrivito_sdk/app_support/current_page_data';
 import { NavigationState } from 'scrivito_sdk/app_support/navigation_state';
 import { generateLocalPath } from 'scrivito_sdk/app_support/routing';
-import { isPresent, urlResource } from 'scrivito_sdk/common';
+import { isPresent, toUrlResource } from 'scrivito_sdk/common';
 import { capture, load } from 'scrivito_sdk/loadable';
 import { observe } from 'scrivito_sdk/state';
 
@@ -48,5 +48,5 @@ async function switchToCanonicalUrl(pageData: PageDataWithPage): Promise<void> {
 
   locationUrl.pathname = canonicalPath;
 
-  BrowserLocation.replace(urlResource(locationUrl));
+  BrowserLocation.replace(toUrlResource(locationUrl));
 }

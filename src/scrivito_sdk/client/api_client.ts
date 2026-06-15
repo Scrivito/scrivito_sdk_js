@@ -10,7 +10,7 @@ export interface FetchData {
   [name: string]: unknown;
 }
 
-type Method =
+export type Method =
   | 'delete'
   | 'get'
   | 'patch'
@@ -30,6 +30,8 @@ interface FetchBaseOptions extends ApiClientBaseOptions {
   method?: Method;
   // @internal
   idp?: string;
+  // @internal
+  prompt?: 'create';
   // note: only for internal use, will be removed in the future
   loginHandler?: LoginHandler;
 }
@@ -98,6 +100,10 @@ export class ApiClient {
     assertAuthViaOptions(mergedOptions);
 
     return this.fetchCallback(path, mergedOptions);
+  }
+
+  fetchWithDefaults(path: string, defaults: FetchOptions) {
+    return this.fetch(path, merge({}, defaults, this.options));
   }
 
   get(path: string, options?: FetchOptions): Promise<unknown> {

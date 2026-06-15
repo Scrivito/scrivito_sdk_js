@@ -1,10 +1,7 @@
 import { AuthorizationProvider } from 'scrivito_sdk/client';
 import { FetchData, FetchParams } from 'scrivito_sdk/client/api_client';
 import { fetchWithTimeout } from 'scrivito_sdk/client/fetch_with_timeout';
-import {
-  parseResponse,
-  throwOnError,
-} from 'scrivito_sdk/client/parse_response';
+import { parseResponseOrThrow } from 'scrivito_sdk/client/parse_response';
 import {
   requestWithRateLimitRetry,
   retryOnRequestFailed,
@@ -47,17 +44,14 @@ export async function fetchJson(
 
   const authorizedRequest = calculateAuthorizedRequest(url, options);
   const isIdempotent = options?.isIdempotent ?? options?.method !== 'POST';
-  const nonIdempotentRequest = async () =>
-    parseResponse(
-      await throwOnError(await requestWithRateLimitRetry(authorizedRequest), {
-        url,
-        method: options?.method,
-      }),
-    );
 
-  return isIdempotent
-    ? retryOnRequestFailed(nonIdempotentRequest)
-    : nonIdempotentRequest();
+  const performRequest = async () =>
+    parseResponseOrThrow(await requestWithRateLimitRetry(authorizedRequest), {
+      url,
+      method: options?.method,
+    });
+
+  return isIdempotent ? retryOnRequestFailed(performRequest) : performRequest();
 }
 
 function calculateDataFetchOptions(

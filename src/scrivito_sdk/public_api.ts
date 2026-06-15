@@ -19,7 +19,11 @@ export {
   deleteOfflineStore as unstable_deleteOfflineStore,
 } from 'scrivito_sdk/app_support/offline_mode';
 export { Binary, FutureBinary, DataLocator } from 'scrivito_sdk/models';
-export { ClientError, createRestApiClient } from 'scrivito_sdk/client';
+export {
+  ClientError,
+  createRestApiClient,
+  uploadFile,
+} from 'scrivito_sdk/client';
 export type { ApiClientOptions } from 'scrivito_sdk/client';
 
 export { selectImageFromContentBrowser as unstable_selectImageFromContentBrowser } from 'scrivito_sdk/app_support/select_image_from_content_browser';

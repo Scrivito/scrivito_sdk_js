@@ -12,12 +12,12 @@ import {
 import {
   InternalError,
   ScrivitoError,
+  assumePresence,
   camelCase,
   computeAncestorPaths,
   equals,
   isSystemAttribute,
   parseStringToDate,
-  randomHex,
   randomId,
 } from 'scrivito_sdk/common';
 import {
@@ -67,6 +67,7 @@ import {
   currentObjSpaceId,
   isCurrentWorkspacePublished,
 } from 'scrivito_sdk/models/current_workspace_id';
+import { generateWidgetId } from 'scrivito_sdk/models/generate_widget_id';
 import { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 import { objSpaceScope } from 'scrivito_sdk/models/obj_scope';
 import { objSpaceScopeExcludingDeleted } from 'scrivito_sdk/models/obj_space_scope_excluding_deleted';
@@ -158,11 +159,6 @@ export class BasicObj implements ContentValueProvider {
       '_permalink',
       permalink,
     );
-  }
-
-  // For test purpose only.
-  static generateWidgetId(): string {
-    return randomHex();
   }
 
   readonly objData: ObjData;
@@ -368,10 +364,13 @@ export class BasicObj implements ContentValueProvider {
   }
 
   backlinks(): BasicObj[] {
+    return this.backlinksSearch().dangerouslyUnboundedTake();
+  }
+
+  backlinksSearch(): BasicObjSearch {
     return objSpaceScopeExcludingDeleted(this.objSpaceId())
       .search()
-      .and('*', 'linksTo', this)
-      .dangerouslyUnboundedTake();
+      .and('*', 'linksTo', this);
   }
 
   ancestors(): Array<BasicObj | null> {
@@ -422,9 +421,9 @@ export class BasicObj implements ContentValueProvider {
       const patch = AttributeSerializer.serialize(attributes);
 
       this.objData.update(patch);
-    });
 
-    this.startLinkResolution();
+      this.startLinkResolution();
+    });
   }
 
   delete(): void {
@@ -562,15 +561,7 @@ export class BasicObj implements ContentValueProvider {
   }
 
   generateWidgetId(): string {
-    for (let i = 0; i < 10; i++) {
-      const id = BasicObj.generateWidgetId();
-
-      if (!this.widget(id)) return id;
-    }
-
-    // Could not generate a new unused widget id.
-    // (winning the lottery 5 times in a row is more likely)
-    throw new InternalError();
+    return generateWidgetId(this.getData()._widget_pool);
   }
 
   serializeAttributes(): SerializedObjAttributes {
@@ -618,7 +609,12 @@ export class BasicObj implements ContentValueProvider {
       : this.objData.getAttributeWithoutWidgetData(attributeName);
   }
 
-  getData(): ObjJson | undefined {
+  getData(): ObjJson {
+    // BasicObj is never instantiated with not-yet-loaded data
+    return assumePresence(this.objData.get());
+  }
+
+  getRawData(): ObjJson | undefined {
     return this.objData.get();
   }
 

@@ -77,6 +77,7 @@ interface AttributeMapping {
   referencelist: Obj[];
   string: string;
   stringlist: string[];
+  /** @internal */
   widget: Widget | null;
   widgetlist: Widget[];
 }

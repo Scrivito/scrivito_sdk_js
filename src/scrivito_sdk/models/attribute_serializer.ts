@@ -24,6 +24,7 @@ import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
 import { DataLocator } from 'scrivito_sdk/models/data_locator';
+import { isObjId } from 'scrivito_sdk/models/is_obj_id';
 import { ObjUnavailable } from 'scrivito_sdk/models/obj_unavailable';
 import { BasicTypeInfo } from 'scrivito_sdk/models/type_info';
 
@@ -54,7 +55,7 @@ export function serialize(
       const [value, typeInfo] = attributes[name];
 
       if (value !== undefined) {
-        serializedAttributes[serializedName] = serializeAttributeEntry(
+        serializedAttributes[serializedName] = serializeAttribute(
           value,
           name,
           typeInfo!,
@@ -66,11 +67,11 @@ export function serialize(
   return serializedAttributes;
 }
 
-function serializeAttributeEntry<Type extends CmsAttributeType>(
+export function serializeAttribute<Type extends CmsAttributeType>(
   value: unknown,
   name: string,
   typeInfo: BasicTypeInfo<Type>,
-): ObjJsonPatch[keyof ObjJsonPatch] {
+): AttributeJson | null {
   if (value === null) return null;
 
   const serializedEntry = serializeEntry(value, name, typeInfo);
@@ -290,7 +291,8 @@ function isValidReference(
   value: unknown,
 ): value is string | BasicObj | ObjUnavailable {
   return (
-    typeof value === 'string' ||
+    value === '' ||
+    isObjId(value) ||
     value instanceof BasicObj ||
     value instanceof ObjUnavailable
   );
@@ -310,7 +312,13 @@ function serializeStringAttributeValue(value: unknown, name: string) {
 
 function serializeStringlistAttributeValue(value: unknown, name: string) {
   if (isStringOrNumberArray(value)) {
-    return value.map((v) => v.toString());
+    const strings = value.map((v) => v.toString());
+
+    if (strings.some((v) => v.trim().length === 0)) {
+      throwInvalidAttributeValue(value, name, 'An array of non-blank strings.');
+    }
+
+    return strings;
   }
 
   throwInvalidAttributeValue(value, name, 'An array of strings.');

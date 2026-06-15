@@ -42,6 +42,6 @@ export { useContent } from 'scrivito_sdk/react/hooks/use_content';
 export type {
   CustomPageComponentProps,
   CustomWidgetComponentProps,
-} from 'scrivito_sdk/react/register_component';
+} from 'scrivito_sdk/app_support/custom_component_props';
 export { showExtension } from 'scrivito_sdk/react/components/extensions';
 export { hasComponent } from 'scrivito_sdk/react/has_component';

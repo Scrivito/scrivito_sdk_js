@@ -33,6 +33,7 @@ async function fetch(
     headers,
     loginHandler,
     idp,
+    prompt,
     method: verb,
     params,
     authViaAccount,
@@ -67,7 +68,7 @@ async function fetch(
 
   if (method === 'GET') {
     return withLoginHandler(
-      await calculateLoginHandler({ loginHandler, idp }),
+      await calculateLoginHandler({ loginHandler, idp, prompt }),
       fetchFn,
     );
   }
@@ -78,15 +79,17 @@ async function fetch(
 async function calculateLoginHandler({
   loginHandler,
   idp,
+  prompt,
 }: {
   loginHandler?: LoginHandler;
   idp?: string;
+  prompt?: 'create';
 }) {
   if (loginHandler) return loginHandler;
 
   if ((await clientConfig.fetch()).loginHandler !== 'redirect') return;
 
-  return (visit: string) => loginRedirectHandler(visit, idp);
+  return (visit: string) => loginRedirectHandler(visit, idp, prompt);
 }
 
 function calculateAuthProvider({

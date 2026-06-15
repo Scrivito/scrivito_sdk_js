@@ -18,6 +18,7 @@ interface NormalizedTypeConfigMapping {
   multienum: { values: readonly string[] };
   reference: { only?: readonly string[] };
   referencelist: { only?: readonly string[] };
+  /** @internal */
   widget: { only?: readonly string[] };
   widgetlist: { only?: readonly string[]; maximum?: number };
 }

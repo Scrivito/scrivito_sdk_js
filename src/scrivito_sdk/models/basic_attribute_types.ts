@@ -1,3 +1,4 @@
+import { BinaryJson } from 'scrivito_sdk/client';
 import { BasicLink } from 'scrivito_sdk/models/basic_link';
 import { BasicObj } from 'scrivito_sdk/models/basic_obj';
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
@@ -27,6 +28,24 @@ export interface BasicAttributeMapping {
   widgetlist: BasicWidget[];
 }
 
+type NonPlainType =
+  | 'binary'
+  | 'reference'
+  | 'referencelist'
+  | 'widget'
+  | 'widgetlist';
+
+export type PlainAttributeMapping = Omit<
+  BasicAttributeMapping,
+  NonPlainType
+> & {
+  binary: BinaryJson | null;
+  reference: string | null;
+  referencelist: string[];
+  widget: string | null;
+  widgetlist: string[];
+};
+
 // Note: This type definition is still too strict for some attribute types.
 // If you miss an allowed value type (e.g. because your newly typescripted code
 // requires it), check whether the `AttributeSerializer` supports it (and add it).
@@ -53,6 +72,12 @@ interface BasicAttributeMappingForUpdate {
 
 export type SingleReferenceValue = BasicObj | ObjUnavailable;
 
+/** Helper type for marking string union items as internal */
+type InternalCmsAttributeType = {
+  /** @internal */
+  widget: never;
+};
+
 export type CmsAttributeType =
   | 'binary'
   | 'boolean'
@@ -70,8 +95,8 @@ export type CmsAttributeType =
   | 'referencelist'
   | 'string'
   | 'stringlist'
-  | 'widget'
-  | 'widgetlist';
+  | 'widgetlist'
+  | keyof InternalCmsAttributeType;
 
 export const CMS_ATTRIBUTE_TYPES: CmsAttributeType[] = [
   'binary',
@@ -97,6 +122,9 @@ export const CMS_ATTRIBUTE_TYPES: CmsAttributeType[] = [
 // Content update related types section starts here
 export type BasicAttributeValue<Type extends CmsAttributeType> =
   BasicAttributeMapping[Type];
+
+export type PlainAttributeValue<Type extends CmsAttributeType> =
+  PlainAttributeMapping[Type];
 
 export type BasicAttributeValueForUpdate<Type extends CmsAttributeType> =
   BasicAttributeMappingForUpdate[Type];

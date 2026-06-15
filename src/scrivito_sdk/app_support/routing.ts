@@ -26,7 +26,7 @@ import {
   ScrivitoError,
   buildQueryString,
   currentOrigin,
-  urlResource,
+  toUrlResource,
 } from 'scrivito_sdk/common';
 import { BasicObj } from 'scrivito_sdk/models';
 
@@ -155,7 +155,7 @@ export function generateDestination(
   );
 
   return currentRoute?.sitePath || url.origin === currentOrigin()
-    ? { type: 'local', resource: urlResource(url) }
+    ? { type: 'local', resource: toUrlResource(url) }
     : { type: 'crossSite', url: url.href };
 }
 
@@ -204,7 +204,7 @@ export function generateDestinationForId(
     joinUri(currentRoute.siteData.baseUrl, `/${objId}`, { query, hash }),
   );
   return currentRoute.sitePath || url.origin === currentOrigin()
-    ? { type: 'local', resource: urlResource(url) }
+    ? { type: 'local', resource: toUrlResource(url) }
     : { type: 'crossSite', url: url.href };
 }
 
@@ -220,9 +220,8 @@ function joinUri(
 ) {
   const urlString = path === '/' ? baseUrl : `${baseUrl}${path}`;
 
-  if (!URL.canParse(urlString)) return urlString;
-
-  const url = new URL(urlString);
+  const url = URL.parse(urlString);
+  if (!url) return urlString;
 
   if (typeof query === 'string' && query !== '?') url.search = query;
   if (typeof query === 'object') url.search = buildQueryString(query);
@@ -289,7 +288,8 @@ export function ensureRoutingDataAvailable(basicPage: BasicObj) {
 }
 
 export function isOriginLocal(url: string): boolean {
-  return !URL.canParse(url) || new URL(url).origin === currentOrigin();
+  const parsedUrl = URL.parse(url);
+  return !parsedUrl || parsedUrl.origin === currentOrigin();
 }
 
 export function isSiteLocal(url: string): boolean {

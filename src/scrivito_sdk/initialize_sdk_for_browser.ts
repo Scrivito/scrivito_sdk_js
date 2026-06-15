@@ -30,10 +30,7 @@ import {
   useReplicationStrategy,
 } from 'scrivito_sdk/data';
 import { setCurrentLanguageHandler } from 'scrivito_sdk/data_integration';
-import {
-  setUrlResolutionHandler,
-  setupWriteMonitorNotification,
-} from 'scrivito_sdk/link_resolution';
+import { setUrlResolutionHandler } from 'scrivito_sdk/link_resolution';
 import { setBinaryHandler, setCopyObjHandler } from 'scrivito_sdk/models';
 import { hasComponent } from 'scrivito_sdk/react/has_component';
 import { setCurrentSiteIdHandler } from 'scrivito_sdk/realm';
@@ -69,7 +66,6 @@ export async function initializeSdk() {
     setUrlResolutionHandler(
       (url) => uiAdapterClient.getResolvedUrl(url) || null,
     );
-    setupWriteMonitorNotification(() => undefined);
     setContentUpdateHandler(uiAdapterClient);
     setObjStreamReplicationEndpoint(uiAdapterClient);
     useReplicationStrategy(ObjStreamReplication);

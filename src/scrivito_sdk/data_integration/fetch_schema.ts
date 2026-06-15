@@ -14,7 +14,7 @@ export const fetchSchema = memoize(async function (
   let response: unknown;
 
   try {
-    response = await apiClient.fetch('schema', {
+    response = await apiClient.fetchWithDefaults('schema', {
       headers: siteLanguage ? { 'Accept-Language': siteLanguage } : {},
     });
   } catch (error) {
