@@ -23,7 +23,7 @@ export function establishUiConnection(uiWindow: Window): UiAdapterClient {
     const trusted = await checkIfTrustedOrigin(origin);
     if (!trusted) {
       throw new ScrivitoError(
-        `Refusing to connect to Scrivito UI at unknown origin ${origin}.`,
+        `Refusing to connect to Web Builder UI at unknown origin ${origin}.`,
       );
     }
 

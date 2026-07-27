@@ -89,7 +89,6 @@ export { Streamable, EndOfStreamError } from 'scrivito_sdk/common/streamable';
 export type { Subscription, Subscriber } from 'scrivito_sdk/common/streamable';
 export { anticipatedStream } from 'scrivito_sdk/common/anticipated_stream';
 export { Subject, BehaviorSubject } from 'scrivito_sdk/common/subject';
-export { Channel } from 'scrivito_sdk/common/channel';
 export { extractTitleAndDescription } from 'scrivito_sdk/common/extract_title_and_description';
 export { ConfigStore } from 'scrivito_sdk/common/config_store';
 export { never } from 'scrivito_sdk/common/never';

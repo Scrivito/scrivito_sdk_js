@@ -38,6 +38,9 @@ export abstract class DataClass {
     return getNormalizedDataAttributeDefinitions(this.internalName());
   }
 
+  /** @public */
+  abstract forceReloadAllQueries(): void;
+
   /** @internal */
   title(): string | undefined {
     return getDataClassTitle(this.internalName());
@@ -307,6 +310,8 @@ export abstract class DataItem {
   abstract update(attributes: DataItemAttributes): Promise<void>;
   /** @public */
   abstract delete(): Promise<void>;
+  /** @public */
+  abstract forceReload(): Promise<void>;
 
   /** @public */
   attributeDefinitions(): NormalizedDataAttributeDefinitions {

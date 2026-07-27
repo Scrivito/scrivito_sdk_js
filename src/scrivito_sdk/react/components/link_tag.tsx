@@ -58,9 +58,14 @@ export const LinkTag = connect(function LinkTag(props: {
       onClick={onClick}
       ref={props.ref}
     >
-      {children}
+      {getChildren()}
     </a>
   );
+
+  function getChildren() {
+    if (children !== undefined) return children;
+    if (props.to instanceof Link) return props.to.title();
+  }
 
   function getHref(): string {
     return getDestination()?.href || '#';

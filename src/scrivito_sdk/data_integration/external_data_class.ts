@@ -41,6 +41,7 @@ import {
   createViaDataConnection,
   deleteViaDataConnection,
   getExternalDataConnectionNames,
+  getViaDataConnection,
   hasExternalDataConnection,
   updateViaDataConnection,
 } from 'scrivito_sdk/data_integration/external_data_connection';
@@ -77,6 +78,10 @@ export class ExternalDataClass extends DataClass {
 
   getUnchecked(id: string): ExternalDataItem {
     return ExternalDataItem.buildUnchecked(this, id);
+  }
+
+  forceReloadAllQueries(): void {
+    notifyExternalDataWrite(this._internalName);
   }
 }
 
@@ -136,7 +141,7 @@ export class ExternalDataScope extends DataScope {
     const id = data.systemData._id;
     setExternalData(dataClassName, id, data);
 
-    notifyExternalDataWrite(dataClassName);
+    this._dataClass.forceReloadAllQueries();
 
     return ExternalDataItem.buildWithLoadedAttributes(
       this._dataClass,
@@ -387,6 +392,8 @@ export class ExternalDataItem extends DataItem {
   async update(attributes: DataItemAttributes): Promise<void> {
     assertValidDataItemAttributes(attributes);
 
+    if (Object.keys(attributes).length === 0) return;
+
     const externalData = await load(() => this.getExternalData());
     if (!externalData) {
       throw new ArgumentError(`Missing data with ID ${this._dataId}`);
@@ -415,7 +422,7 @@ export class ExternalDataItem extends DataItem {
       },
     });
 
-    this.notifyWrite();
+    this._dataClass.forceReloadAllQueries();
   }
 
   async delete(): Promise<void> {
@@ -423,7 +430,17 @@ export class ExternalDataItem extends DataItem {
 
     setExternalData(this.internalDataClassName(), this._dataId, null);
 
-    this.notifyWrite();
+    this._dataClass.forceReloadAllQueries();
+  }
+
+  async forceReload(): Promise<void> {
+    const dataClassName = this.internalDataClassName();
+
+    setExternalData(
+      dataClassName,
+      this._dataId,
+      await getViaDataConnection(dataClassName, this._dataId),
+    );
   }
 
   /** @internal */
@@ -438,10 +455,6 @@ export class ExternalDataItem extends DataItem {
   private getSystemOrCustom(attributeName: string) {
     if (attributeName === '_id') return this.id();
     return this.get(attributeName);
-  }
-
-  private notifyWrite() {
-    notifyExternalDataWrite(this.internalDataClassName());
   }
 }
 

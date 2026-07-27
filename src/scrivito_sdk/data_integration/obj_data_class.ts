@@ -93,6 +93,12 @@ export class ObjDataClass extends DataClass {
   attributeDefinitions(): NormalizedDataAttributeDefinitions {
     return attributeDefinitions(this._internalName);
   }
+
+  forceReloadAllQueries(): never {
+    throw new ArgumentError(
+      'Cannot force-reload queries on a built-in data class',
+    );
+  }
 }
 
 function getDataObj(dataClass: DataClass, dataId: string): BasicObj | null {
@@ -428,6 +434,10 @@ export class ObjDataItem extends DataItem {
       obj.delete();
       return obj.finishSaving();
     }
+  }
+
+  forceReload(): never {
+    throw new ArgumentError('Cannot force-reload a built-in data item');
   }
 
   private getOrThrow() {
