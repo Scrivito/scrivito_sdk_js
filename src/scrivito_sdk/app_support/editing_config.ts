@@ -181,9 +181,17 @@ export type GroupPropertyWithComponent = readonly [
   { component: ExtensionComponent | null; enabled?: never },
 ];
 
+export interface PreviewComponentDescription {
+  key: string;
+  component: ExtensionComponent | string | null;
+  title?: string;
+  description?: string;
+}
+
 export type GroupProperty =
   | GroupPropertyWithConfig
   | GroupPropertyWithComponent
+  | PreviewComponentDescription
   | string;
 
 export interface RegisteredComponentGroupDescription {

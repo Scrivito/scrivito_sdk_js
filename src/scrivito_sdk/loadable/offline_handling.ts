@@ -39,11 +39,17 @@ export function applyOfflineHandling<T>(
 } {
   const loader = params.loader;
   const offlineLoader = params.offlineLoader;
+  const skipOfflineHandling = params.skipOfflineHandling ?? false;
+
+  const resolveMode = async (): Promise<'online' | 'offline' | 'skip'> => {
+    if (await skipOfflineHandling) return 'skip';
+    return (await isInOfflineMode) ? 'offline' : 'online';
+  };
 
   if (offlineLoader) {
     return {
       loader: async () =>
-        (await isInOfflineMode) ? offlineLoader() : loader(),
+        (await resolveMode()) === 'offline' ? offlineLoader() : loader(),
     };
   }
 
@@ -52,9 +58,11 @@ export function applyOfflineHandling<T>(
 
   return {
     loader: async () =>
-      (await isInOfflineMode) ? loadFromEntry(offlineEntry) : loader(),
+      (await resolveMode()) === 'offline'
+        ? loadFromEntry(offlineEntry)
+        : loader(),
     onChange: collectAndSchedule(nextTick, async () => {
-      if (isEnabled && !(await isInOfflineMode)) {
+      if (isEnabled && (await resolveMode()) === 'online') {
         storeIntoEntry(loadable, offlineEntry);
       }
     }),

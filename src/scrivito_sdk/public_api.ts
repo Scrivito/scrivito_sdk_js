@@ -122,6 +122,7 @@ export { extractText } from 'scrivito_sdk/app_support/extract_text';
 export { isComparisonActive } from 'scrivito_sdk/app_support/editing_context';
 export { isEditorLoggedIn } from 'scrivito_sdk/app_support/is_editor_logged_in';
 export { isInPlaceEditingActive } from 'scrivito_sdk/app_support/editing_context';
+export { useIsInPlaceEditingActive } from 'scrivito_sdk/react/hooks/use_is_in_place_editing_active';
 export { navigateTo } from 'scrivito_sdk/app_support/navigate_to';
 export { openDialog } from 'scrivito_sdk/app_support/open_dialog';
 export { preload } from 'scrivito_sdk/app_support/preload';

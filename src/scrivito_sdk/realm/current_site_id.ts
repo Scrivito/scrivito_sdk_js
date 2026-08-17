@@ -1,4 +1,3 @@
-// @rewire
 type SiteIdHandler = () => string | null;
 
 let siteIdHandler: SiteIdHandler;

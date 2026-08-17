@@ -1,13 +1,14 @@
 import { getTreatLocalhostLike } from 'scrivito_sdk/app_support/treat_localhost_like';
 import { uiAdapter } from 'scrivito_sdk/app_support/ui_adapter';
 import { BrowserTokenParams } from 'scrivito_sdk/client';
+import { FetchedToken } from 'scrivito_sdk/client/config';
 import { ScrivitoError } from 'scrivito_sdk/common';
 
 export function getEditorAuthToken({
   audience,
   authViaAccount,
   authViaInstance,
-}: BrowserTokenParams): string | undefined {
+}: BrowserTokenParams): FetchedToken | undefined {
   const data = uiAdapter?.getEditorAuthToken({
     audience,
     authViaAccount,
@@ -18,5 +19,5 @@ export function getEditorAuthToken({
   if (!data) return;
   if ('error' in data) throw new ScrivitoError(data.error);
 
-  return data.token;
+  return data;
 }

@@ -34,8 +34,12 @@ export type {
   BackendSuggestParams,
   BackendSuggestResponse,
 } from 'scrivito_sdk/client/suggest_retrieval';
-export { clientConfig, getIamAuthUrl } from 'scrivito_sdk/client/config';
-export type { TokenFetcher } from 'scrivito_sdk/client/config';
+export {
+  clientConfig,
+  getIamAuthUrl,
+  toFetchedToken,
+} from 'scrivito_sdk/client/config';
+export type { FetchedToken, TokenFetcher } from 'scrivito_sdk/client/config';
 export {
   EMPTY_SPACE,
   getWorkspaceId,

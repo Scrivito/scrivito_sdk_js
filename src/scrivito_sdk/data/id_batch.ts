@@ -39,11 +39,13 @@ export class IdBatchCollection<Params> {
     name,
     loadBatch,
     loadOffline,
+    skipOfflineHandling,
     invalidation,
   }: {
     name: string;
     loadBatch: LoadBatch<Params>;
     loadOffline?: (params: Params) => Promise<QueryData>;
+    skipOfflineHandling?: (params: Params) => Promise<boolean>;
     invalidation: Invalidation<Params>;
   }) {
     this.loadBatch = loadBatch;
@@ -53,6 +55,7 @@ export class IdBatchCollection<Params> {
       loadElement: ([params, index]: [Params, number], batchSize: number) => ({
         loader: () => this.loader(params, index, batchSize),
         offlineLoader: loadOffline ? () => loadOffline(params) : undefined,
+        skipOfflineHandling: skipOfflineHandling?.(params),
         invalidation: () => invalidation(params),
       }),
     });

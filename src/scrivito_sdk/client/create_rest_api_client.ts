@@ -13,6 +13,7 @@ import { fetchJson } from 'scrivito_sdk/client/fetch_json';
 import { joinPaths } from 'scrivito_sdk/client/join_paths';
 import { withLoginHandler } from 'scrivito_sdk/client/login_handler';
 import { loginRedirectHandler } from 'scrivito_sdk/client/login_redirect_handler';
+import { parseUrl } from 'scrivito_sdk/client/parse_url';
 
 /** @public */
 export function createRestApiClient(
@@ -108,7 +109,7 @@ function calculateAuthProvider({
   if (authorization !== undefined) return;
 
   return getTokenProvider({
-    audience: audience || new URL(url).origin,
+    audience: audience || parseUrl(url).origin,
     ...(authViaAccount && { authViaAccount }),
     ...(authViaInstance && { authViaInstance }),
   });

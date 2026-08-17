@@ -150,6 +150,8 @@ export { isAttributeValidationReportEntry } from 'scrivito_sdk/common/validation
 export { propsAreEqual } from 'scrivito_sdk/common/props_are_equal';
 export { parameterizeDataClass } from 'scrivito_sdk/common/parameterize_data_class';
 export { isObject } from 'scrivito_sdk/common/is_object';
+export type { PreviewComponentDescription } from 'scrivito_sdk/common/is_preview_component_description';
+export { isPreviewComponentDescription } from 'scrivito_sdk/common/is_preview_component_description';
 export { AsyncTaskTracker } from 'scrivito_sdk/common/async_task_tracker';
 export { isISO8601 } from 'scrivito_sdk/common/is_ISO8601';
 export { isWrapping } from 'scrivito_sdk/common/is_wrapping';

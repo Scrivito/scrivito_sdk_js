@@ -46,11 +46,12 @@ const TYPES_WITH_SCHEMA_SUPPORT = [
   'enum',
   'float',
   'integer',
+  'multienum',
   'string',
   'reference',
 ];
 
-const TYPES_WITH_GARBAGE_IN_GARBAGE_OUT_SUPPORT = ['multienum', 'stringlist'];
+const TYPES_WITH_GARBAGE_IN_GARBAGE_OUT_SUPPORT = ['stringlist'];
 
 const SUPPORTED_ATTRIBUTE_TYPES = [
   ...TYPES_WITH_SCHEMA_SUPPORT,
@@ -592,9 +593,9 @@ function toDataAttributeDefinition([
     return ['number', {}];
   }
 
-  if (cmsType === 'enum') {
+  if (cmsType === 'enum' || cmsType === 'multienum') {
     return [
-      'enum',
+      cmsType,
       {
         values: [
           ...cmsTypeInfo.values.map((value) => ({ value, title: value })),

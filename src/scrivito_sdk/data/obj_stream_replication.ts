@@ -73,6 +73,22 @@ export class ObjStreamReplication implements ObjReplication {
     this.ensureRunning();
   }
 
+  replicateNow(): never {
+    throw new InternalError();
+  }
+
+  discardPendingChanges(): never {
+    throw new InternalError();
+  }
+
+  hasPendingChanges(): never {
+    throw new InternalError();
+  }
+
+  isReplicating(): never {
+    throw new InternalError();
+  }
+
   private ensureRunning() {
     if (this.runningEnsured) return;
 

@@ -21,6 +21,7 @@ import { isUsingInMemoryTenant } from 'scrivito_sdk/data/in_memory_tenant';
 import { ObjJsonPatch, patchObjJson } from 'scrivito_sdk/data/obj_patch';
 import { objReplicationPool } from 'scrivito_sdk/data/obj_replication_pool';
 import { failIfPerformanceConstraint } from 'scrivito_sdk/data/performance_constraint';
+import { getPublishedWriteHandler } from 'scrivito_sdk/data/published_write_handler';
 import {
   LoadableCollection,
   LoadableData,
@@ -248,7 +249,7 @@ export class ObjData {
 
   update(objPatch: ObjJsonPatch): void {
     if (
-      !allowPublishedUpdates &&
+      !getPublishedWriteHandler() &&
       !isUsingInMemoryTenant() &&
       isWorkspaceObjSpaceId(this._objSpaceId) &&
       this._objSpaceId[1] === 'published'
@@ -405,12 +406,4 @@ function isWidgetKey<Key extends keyof ObjJson & string>(
 
 onReset(() => {
   configuredForLazyWidgets = false;
-  allowPublishedUpdates = false;
 });
-
-let allowPublishedUpdates = false;
-
-// For test purposes only. Allows creating fixture data in the published workspace.
-export function dangerouslyAllowPublishedUpdates(allow: boolean): void {
-  allowPublishedUpdates = allow;
-}

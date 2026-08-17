@@ -4,6 +4,7 @@ import { GET, SEND, STREAM } from 'scrivito_sdk/bridge';
 import type {
   CmsRetrieval,
   ComparisonRange,
+  FetchedToken,
   ObjSpaceId,
 } from 'scrivito_sdk/client';
 import type { Position, Streamable } from 'scrivito_sdk/common';
@@ -96,7 +97,7 @@ export interface UiAdapterInterface
     treatLocalhostLike?: string;
     authViaAccount?: string;
     authViaInstance?: string;
-  }): { token: string } | { error: string } | undefined;
+  }): FetchedToken | { error: string } | undefined;
   comparisonBase(): ObjSpaceId;
   comparisonRange(): ComparisonRange;
   setAppAdapter(adapterPort: MessagePort): void;

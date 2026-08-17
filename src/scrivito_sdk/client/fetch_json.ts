@@ -2,6 +2,7 @@ import { AuthorizationProvider } from 'scrivito_sdk/client';
 import { FetchData, FetchParams } from 'scrivito_sdk/client/api_client';
 import { fetchWithTimeout } from 'scrivito_sdk/client/fetch_with_timeout';
 import { parseResponseOrThrow } from 'scrivito_sdk/client/parse_response';
+import { parseUrl } from 'scrivito_sdk/client/parse_url';
 import {
   requestWithRateLimitRetry,
   retryOnRequestFailed,
@@ -117,7 +118,7 @@ function calculateRequestCredentials(
 }
 
 function encodeParameters(url: string, params: FetchParams) {
-  const apiUrl = new URL(url);
+  const apiUrl = parseUrl(url);
 
   for (const [name, value] of Object.entries(params)) {
     if (typeof value === 'string') apiUrl.searchParams.append(name, value);

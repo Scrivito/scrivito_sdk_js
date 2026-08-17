@@ -28,6 +28,7 @@ interface CommonProvideDataClassParams {
   attributes?: LazyAsyncDataAttributeDefinitions;
   title?: LazyAsyncDataClassTitle;
   refetchOnWindowFocus?: false;
+  unstable_skipOfflineHandling?: boolean;
 }
 
 type ProvideDataClassParamsWithRestApi = {
@@ -111,6 +112,7 @@ async function desugar(params: ProvideDataClassParams) {
         apiClient,
       ),
       refetchOnWindowFocus: params.refetchOnWindowFocus,
+      skipOfflineHandling: params.unstable_skipOfflineHandling,
     };
   }
 
@@ -118,6 +120,7 @@ async function desugar(params: ProvideDataClassParams) {
     connection: Promise.resolve(params.connection),
     schema: { attributes: params.attributes ?? {}, title: params.title },
     refetchOnWindowFocus: params.refetchOnWindowFocus,
+    skipOfflineHandling: params.unstable_skipOfflineHandling,
   };
 }
 

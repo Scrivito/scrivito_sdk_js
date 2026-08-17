@@ -152,7 +152,11 @@ export class BasicWidget implements ContentValueProvider {
 
   objClass(): string {
     if (this.isPersisted()) {
-      return this.getAttributeData('_obj_class')!;
+      const objClass = this.getAttributeData('_obj_class');
+
+      if (objClass) return objClass;
+
+      throw new ScrivitoError('Widget was deleted, possibly by another user.');
     }
 
     const [objClass] = this.attributesToBeSaved!._objClass;

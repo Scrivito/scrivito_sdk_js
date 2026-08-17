@@ -21,6 +21,7 @@ export interface ParamsWithLoader<T> {
   offlineLoader?: LoaderCallback<T>;
   offlineEntry?: StoreEntry<T>;
   invalidation?: InvalidationCallback;
+  skipOfflineHandling?: Promise<boolean>;
 
   loadableStream?: undefined;
   stream?: undefined;

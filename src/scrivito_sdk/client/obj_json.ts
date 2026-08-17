@@ -38,7 +38,7 @@ export interface ObjSystemAttributeJson extends ObjReplicationJson {
   _deleted?: undefined;
 
   _id: string;
-  _obj_class: string;
+  _obj_class?: string;
   _content_id?: string;
 
   _path?: string;
@@ -80,7 +80,7 @@ export interface WidgetJson extends WidgetSystemAttributeJson {
     | undefined;
 }
 interface WidgetSystemAttributeJson {
-  _obj_class: string;
+  _obj_class?: string;
 }
 
 export type AttributeJson =

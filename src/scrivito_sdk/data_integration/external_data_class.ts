@@ -28,6 +28,7 @@ import {
 } from 'scrivito_sdk/data_integration/data_class';
 import {
   DataAttributeDefinitions,
+  LocalizedEnumAttributeConfig,
   getDataAttributeDefinitions,
 } from 'scrivito_sdk/data_integration/data_class_schema';
 import { DataConnectionError } from 'scrivito_sdk/data_integration/data_connection_error';
@@ -368,22 +369,22 @@ export class ExternalDataItem extends DataItem {
   /** In contrast to `#get` supports both system and custom attributes */
   getLocalized(attributeName: string): unknown {
     const attributeValue = this.getSystemOrCustom(attributeName);
-    if (typeof attributeValue !== 'string') return attributeValue;
 
     const attributeDefinition = this.attributeDefinitions()[attributeName];
     if (!attributeDefinition) return attributeValue;
 
     const [attributeType, attributeConfig] = attributeDefinition;
-    if (attributeType === 'enum') {
-      const valueConfig = attributeConfig.values.find(
-        (config) => config.value === attributeValue,
+
+    if (attributeType === 'enum' && typeof attributeValue === 'string') {
+      return localizeEnumValue(attributeValue, attributeConfig);
+    }
+
+    if (attributeType === 'multienum' && Array.isArray(attributeValue)) {
+      return attributeValue.map((value) =>
+        typeof value === 'string'
+          ? localizeEnumValue(value, attributeConfig)
+          : value,
       );
-
-      if (!valueConfig) throw new InternalError();
-
-      const { title } = valueConfig;
-
-      return typeof title === 'string' ? title : attributeValue;
     }
 
     return attributeValue;
@@ -496,4 +497,19 @@ async function loadAttributesOrThrow(dataClassName: string) {
   // A schema must be stored first
   if (!attributes) throw new InternalError();
   return attributes;
+}
+
+function localizeEnumValue(
+  value: string,
+  attributeConfig: LocalizedEnumAttributeConfig,
+) {
+  const valueConfig = attributeConfig.values.find(
+    (config) => config.value === value,
+  );
+
+  if (!valueConfig) throw new InternalError();
+
+  const { title } = valueConfig;
+
+  return typeof title === 'string' ? title : value;
 }

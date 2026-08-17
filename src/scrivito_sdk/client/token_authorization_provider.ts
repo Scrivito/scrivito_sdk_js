@@ -3,6 +3,7 @@ import {
   ClientError,
   ClientErrorRequestDetails,
 } from 'scrivito_sdk/client';
+import { FetchedToken } from 'scrivito_sdk/client/config';
 import { ExponentialBackoff } from 'scrivito_sdk/client/exponential_backoff';
 import { isErrorResponse } from 'scrivito_sdk/client/is_error_response';
 import { ERROR_CODE_AUTH_CHECK_REQUIRED } from 'scrivito_sdk/client/login_handler';
@@ -32,9 +33,9 @@ export class TokenAuthorizationError extends ScrivitoError {
 }
 
 export class TokenAuthorizationProvider implements AuthorizationProvider {
-  private fetchTokenPromise?: Promise<string | null>;
+  private fetchTokenPromise?: Promise<FetchedToken | null>;
 
-  constructor(private fetchToken: () => Promise<string | null>) {}
+  constructor(private fetchToken: () => Promise<FetchedToken | null>) {}
 
   async authorize(
     request: (auth?: string) => Promise<Response>,
@@ -92,6 +93,8 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
     // note: using a loop instead of recursion avoids stack overflow
 
     while (true) {
+      await this.resetTokenIfExpired();
+
       if (!this.fetchTokenPromise) {
         this.fetchTokenPromise = (async () => {
           if (fetchedTokenBefore) await backoff.nextDelay();
@@ -116,9 +119,9 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
 
       const tokenPromise = this.fetchTokenPromise;
 
-      const token = await tokenPromise;
+      const cached = await tokenPromise;
 
-      const outcome = token === null ? await callback() : await callback(token);
+      const outcome = await callback(cached?.token);
       if ('result' in outcome) return outcome.result;
 
       const {
@@ -139,9 +142,32 @@ export class TokenAuthorizationProvider implements AuthorizationProvider {
     }
   }
 
+  private async resetTokenIfExpired() {
+    if (!this.fetchTokenPromise) return;
+
+    let cached: FetchedToken | null;
+    try {
+      cached = await this.fetchTokenPromise;
+    } catch {
+      // A rejected fetch is not an expired token, so there is nothing to reset
+      // here. `authorizeAbstract` awaits the same promise and surfaces the error.
+      return;
+    }
+
+    if (!cached) return;
+
+    if (cached.expiresAt.getTime() <= Date.now()) {
+      this.fetchTokenPromise = undefined;
+    }
+  }
+
   /** for test purposes */
   injectToken(token: string): void {
-    this.fetchTokenPromise = Promise.resolve(token);
+    // Far-future expiry so the injected token never triggers a refresh.
+    this.fetchTokenPromise = Promise.resolve({
+      token,
+      expiresAt: new Date(8640000000000000),
+    });
   }
 }
 

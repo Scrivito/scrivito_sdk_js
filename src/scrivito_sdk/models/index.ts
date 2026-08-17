@@ -102,6 +102,7 @@ export { restrictToObjClass } from 'scrivito_sdk/models/restrict_to_obj_class';
 export { getPlacementModificationInfos } from 'scrivito_sdk/models/get_placement_modification_infos';
 export type { PlacementModification } from 'scrivito_sdk/models/get_placement_modification_infos';
 export {
+  countVersionsOnAllSites,
   versionsOnAllSites,
   versionOnSite,
 } from 'scrivito_sdk/models/content_versions';

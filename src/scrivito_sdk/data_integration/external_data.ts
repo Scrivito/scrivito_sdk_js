@@ -1,4 +1,5 @@
 import { isExternalDataLoadingDisabled } from 'scrivito_sdk/data_integration/disable_external_data_loading';
+import { shouldSkipOfflineHandlingFor } from 'scrivito_sdk/data_integration/external_data_class_config';
 import {
   NormalExternalData,
   getViaDataConnection,
@@ -35,6 +36,7 @@ const loadableCollection = createLoadableCollection<
   name: 'externaldata',
   loadElement: ([classIdentifier, dataId]) => ({
     loader: () => getViaDataConnection(classIdentifier, dataId),
+    skipOfflineHandling: shouldSkipOfflineHandlingFor(classIdentifier),
   }),
 });
 

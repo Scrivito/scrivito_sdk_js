@@ -8,5 +8,9 @@ export interface ObjReplication {
   notifyBackendState(newBackendState: ObjJson): void;
   finishSaving(): Promise<void>;
   finishReplicating(): Promise<void>;
+  replicateNow(): Promise<void>;
+  discardPendingChanges(): void;
+  hasPendingChanges(): boolean;
+  isReplicating(): boolean;
   replicationMessageStream(): Streamable<ObjReplicationMessage>;
 }

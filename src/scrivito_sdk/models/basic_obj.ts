@@ -63,10 +63,7 @@ import {
 import { BasicWidget } from 'scrivito_sdk/models/basic_widget';
 import { Binary } from 'scrivito_sdk/models/binary';
 import { computeParentPath } from 'scrivito_sdk/models/compute_parent_path';
-import {
-  currentObjSpaceId,
-  isCurrentWorkspacePublished,
-} from 'scrivito_sdk/models/current_workspace_id';
+import { currentObjSpaceId } from 'scrivito_sdk/models/current_workspace_id';
 import { generateWidgetId } from 'scrivito_sdk/models/generate_widget_id';
 import { MetadataCollection } from 'scrivito_sdk/models/metadata_collection';
 import { objSpaceScope } from 'scrivito_sdk/models/obj_scope';
@@ -172,7 +169,11 @@ export class BasicObj implements ContentValueProvider {
   }
 
   objClass(): string {
-    return this.getAttributeData('_obj_class');
+    const objClass = this.getAttributeData('_obj_class');
+
+    if (objClass) return objClass;
+
+    throw new ScrivitoError('Object was deleted, possibly by another user.');
   }
 
   obj(): this {
@@ -341,6 +342,11 @@ export class BasicObj implements ContentValueProvider {
     return search ? search.batchSize(0).count() > 0 : false;
   }
 
+  countChildren(): number {
+    const search = this.getChildrenSearch();
+    return search ? search.batchSize(0).count() : 0;
+  }
+
   orderedChildren(): BasicObj[] {
     return this.sortByChildOrder(this.children());
   }
@@ -411,10 +417,6 @@ export class BasicObj implements ContentValueProvider {
   updateWithUnknownValues(
     attributes: NormalizedBasicAttributesWithUnknownValues,
   ): void {
-    if (isCurrentWorkspacePublished() && !isUsingInMemoryTenant()) {
-      throw new ScrivitoError('The published content cannot be modified.');
-    }
-
     withBatchedUpdates(() => {
       persistWidgets(this, attributes);
 
@@ -539,7 +541,8 @@ export class BasicObj implements ContentValueProvider {
     const classNames = new Set(
       Object.values(widgetPool)
         .filter((value): value is WidgetJson => !!value)
-        .map((widgetJson) => widgetJson._obj_class),
+        .map((widgetJson) => widgetJson._obj_class)
+        .filter((objClass): objClass is string => !!objClass),
     );
 
     return Array.from(classNames);

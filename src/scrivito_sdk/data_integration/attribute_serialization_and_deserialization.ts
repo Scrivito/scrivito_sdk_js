@@ -21,6 +21,7 @@ const serializers = {
   boolean: serializeBooleanAttribute,
   date: serializeDateAttribute,
   enum: serializeEnumAttribute,
+  multienum: serializeMultienumAttribute,
   number: serializeNumberAttribute,
   reference: serializeReferenceAttribute,
   string: serializeStringAttribute,
@@ -142,6 +143,31 @@ function serializeEnumAttribute(
   );
 }
 
+function serializeMultienumAttribute(
+  value: unknown,
+  dataClassName: string,
+  attributeName: string,
+  attributeDefinition: DataAttributeDefinition,
+) {
+  if (value === null) return null;
+
+  const enumValues = getEnumValues(getAttributeConfig(attributeDefinition));
+
+  if (
+    Array.isArray(value) &&
+    value.every((v) => typeof v === 'string' && enumValues.includes(v))
+  ) {
+    return value;
+  }
+
+  throwTypeMismatch(
+    dataClassName,
+    attributeName,
+    `an array of values from ${JSON.stringify(enumValues)}`,
+    value,
+  );
+}
+
 function serializeNumberAttribute(
   value: unknown,
   dataClassName: string,
@@ -190,6 +216,7 @@ const deserializers = {
   boolean: deserializeBooleanAttribute,
   date: deserializeDateAttribute,
   enum: deserializeEnumAttribute,
+  multienum: deserializeMultienumAttribute,
   number: deserializeNumberAttribute,
   reference: deserializeReferenceAttribute,
   string: deserializeStringAttribute,
@@ -253,6 +280,31 @@ function deserializeEnumAttribute(
   );
 
   return null;
+}
+
+function deserializeMultienumAttribute(
+  value: unknown,
+  dataClassName: string,
+  attributeName: string,
+  attributeDefinition: DataAttributeDefinition,
+) {
+  if (!Array.isArray(value)) {
+    logTypeMismatch(dataClassName, attributeName, 'an array', value);
+    return [];
+  }
+
+  const enumValues = getEnumValues(getAttributeConfig(attributeDefinition));
+
+  return value.filter((v) => {
+    if (typeof v === 'string' && enumValues.includes(v)) return true;
+    logTypeMismatch(
+      dataClassName,
+      attributeName,
+      `one of ${JSON.stringify(enumValues)}`,
+      v,
+    );
+    return false;
+  });
 }
 
 function deserializeReferenceAttribute(

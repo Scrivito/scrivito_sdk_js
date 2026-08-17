@@ -1,7 +1,8 @@
 import { ClientError, getIamAuthUrl } from 'scrivito_sdk/client';
+import { FetchedToken, toFetchedToken } from 'scrivito_sdk/client/config';
 import { fetchJson } from 'scrivito_sdk/client/fetch_json';
 import { isAuthError } from 'scrivito_sdk/client/login_handler';
-import { InternalError, fetchConfiguredTenant } from 'scrivito_sdk/common';
+import { fetchConfiguredTenant } from 'scrivito_sdk/common';
 
 export interface BrowserTokenParams {
   audience: string | undefined;
@@ -15,7 +16,7 @@ export async function fetchBrowserToken({
   origin,
   authViaAccount,
   authViaInstance,
-}: BrowserTokenParams): Promise<string> {
+}: BrowserTokenParams): Promise<FetchedToken> {
   const authLocation = await getIamAuthUrl();
 
   const authPath = authViaAccount
@@ -27,9 +28,7 @@ export async function fetchBrowserToken({
       params: { audience, origin },
     });
 
-    assertTokenResponse(response);
-
-    return response.access_token;
+    return toFetchedToken(response);
   } catch (error: unknown) {
     throw resolveLocationInAuthError(error, authLocation);
   }
@@ -44,19 +43,4 @@ function resolveLocationInAuthError(
   return new ClientError(error.message, error.code, {
     visit: error.details.visit.replace('$JR_AUTH_LOCATION', authLocation),
   });
-}
-
-function assertTokenResponse(
-  response: unknown,
-): asserts response is { access_token: string } {
-  if (
-    response &&
-    typeof response === 'object' &&
-    'access_token' in response &&
-    typeof response.access_token === 'string'
-  ) {
-    return;
-  }
-
-  throw new InternalError(JSON.stringify(response));
 }

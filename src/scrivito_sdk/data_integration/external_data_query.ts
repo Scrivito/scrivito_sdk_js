@@ -20,6 +20,7 @@ import {
   getExternalData,
   setExternalData,
 } from 'scrivito_sdk/data_integration/external_data';
+import { shouldSkipOfflineHandlingFor } from 'scrivito_sdk/data_integration/external_data_class_config';
 import {
   NormalExternalData,
   indexViaDataConnection,
@@ -37,6 +38,7 @@ export const batchCollection = new IdBatchCollection({
   name: 'externaldataquery',
   loadBatch,
   loadOffline: queryExternalDataOfflineStore,
+  skipOfflineHandling: (params) => shouldSkipOfflineHandlingFor(params[0]),
   invalidation: ([dataClass]) =>
     loadableWithDefault(undefined, () =>
       getWriteCounter(dataClass).toString(),

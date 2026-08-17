@@ -29,11 +29,15 @@ export {
 } from 'scrivito_sdk/data/active_writes';
 export {
   ObjBackendReplication,
+  hasAnyPendingChanges,
   setReplicationErrorHandler,
 } from 'scrivito_sdk/data/obj_backend_replication';
 export { disableObjReplication } from 'scrivito_sdk/data/disable_obj_replication';
+export { setPublishedWriteHandler } from 'scrivito_sdk/data/published_write_handler';
+export type { PublishedWriteHandler } from 'scrivito_sdk/data/published_write_handler';
 export { createObjReplicationProcess } from 'scrivito_sdk/data/obj_replication_process';
 export type { ObjReplicationMessage } from 'scrivito_sdk/data/obj_replication_process';
+export type { ObjReplication } from 'scrivito_sdk/data/obj_replication';
 export {
   getObjData,
   createObjData,

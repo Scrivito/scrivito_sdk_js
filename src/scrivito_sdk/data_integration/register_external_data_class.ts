@@ -3,8 +3,8 @@ import {
   LazyAsyncDataClassSchema,
   registerDataClassSchema,
 } from 'scrivito_sdk/data_integration/data_class_schema';
+import { configureExternalDataClass } from 'scrivito_sdk/data_integration/external_data_class_config';
 import { setExternalDataConnection } from 'scrivito_sdk/data_integration/external_data_connection';
-import { configureExternalDataInvalidation } from 'scrivito_sdk/data_integration/external_data_invalidation';
 import {
   LazyAsync,
   mapLazyAsync,
@@ -14,6 +14,7 @@ interface DataClassParams {
   connection: LazyAsync<Partial<UncheckedDataConnection>>;
   schema: LazyAsyncDataClassSchema;
   refetchOnWindowFocus?: false;
+  skipOfflineHandling?: boolean;
 }
 
 export function registerExternalDataClass(
@@ -25,10 +26,16 @@ export function registerExternalDataClass(
     mapLazyAsync(params, (eagerParams) => eagerParams.connection),
   );
 
-  configureExternalDataInvalidation(
-    name,
-    mapLazyAsync(params, (eagerParams) => eagerParams.refetchOnWindowFocus),
-  );
+  configureExternalDataClass(name, {
+    refetchOnWindowFocus: mapLazyAsync(
+      params,
+      (eagerParams) => eagerParams.refetchOnWindowFocus,
+    ),
+    skipOfflineHandling: mapLazyAsync(
+      params,
+      (eagerParams) => eagerParams.skipOfflineHandling,
+    ),
+  });
 
   registerDataClassSchema(
     name,

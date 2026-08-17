@@ -13,6 +13,13 @@ export function versionsOnAllSites(obj: BasicObj): BasicObj[] {
   return versionScope(obj).search().dangerouslyUnboundedTake();
 }
 
+export function countVersionsOnAllSites(obj: BasicObj): number {
+  const contentId = obj.contentId();
+  if (!contentId) return 0;
+
+  return versionScope(obj).search().count();
+}
+
 export function versionOnSite(obj: BasicObj, siteId: string): BasicObj | null {
   const contentId = obj.contentId();
   if (!contentId) return null;

@@ -55,6 +55,7 @@ export type NormalizedDataAttributeDefinitionWithConfig = {
 
 export interface NormalizedDataAttributeConfigs extends DataAttributeConfigs {
   enum: LocalizedEnumAttributeConfig;
+  multienum: LocalizedEnumAttributeConfig;
 }
 
 export interface LocalizedEnumAttributeConfig extends EnumAttributeConfig {
@@ -65,6 +66,7 @@ export type DataAttributeConfigs = {
   boolean: LocalizedAttributeConfig;
   date: LocalizedAttributeConfig;
   enum: EnumAttributeConfig;
+  multienum: EnumAttributeConfig;
   number: LocalizedAttributeConfig;
   reference: ReferenceAttributeConfig;
   string: LocalizedAttributeConfig;
@@ -88,7 +90,7 @@ export interface UnknownAttributeConfig extends LocalizedAttributeConfig {
 
 type DataAttributeDefinitionWithOptionalConfig = Exclude<
   DataAttributeType,
-  'enum' | 'reference'
+  'enum' | 'multienum' | 'reference'
 >;
 
 export type DataAttributeDefinitionWithConfig = {
@@ -101,6 +103,7 @@ export type DataAttributeType =
   | 'boolean'
   | 'date'
   | 'enum'
+  | 'multienum'
   | 'number'
   | 'reference'
   | 'string'
@@ -119,6 +122,7 @@ function isDataAttributeType(
       'boolean',
       'date',
       'enum',
+      'multienum',
       'number',
       'reference',
       'string',
@@ -212,7 +216,9 @@ function normalizeDataAttributeDefinition(
   if (typeof definition === 'string') return [definition, {}];
 
   const [type, config] = definition;
-  if (type === 'enum') return [type, normalizeEnumValueConfig(config)];
+  if (type === 'enum' || type === 'multienum') {
+    return [type, normalizeEnumValueConfig(config)];
+  }
 
   return [...definition];
 }
@@ -349,7 +355,12 @@ function extractDefinitionWithConfig(
 
   switch (attributeType) {
     case 'enum':
-      return extractEnumDefinitionWithConfig(attributeName, maybeConfig);
+    case 'multienum':
+      return extractEnumDefinitionWithConfig(
+        attributeName,
+        attributeType,
+        maybeConfig,
+      );
     case 'reference':
       return extractReferenceDefinitionWithConfig(attributeName, maybeConfig);
     default:
@@ -363,7 +374,7 @@ function extractDefinitionWithConfig(
 
 function extractLocalizedAttributeConfig(
   attributeName: string,
-  attributeType: Exclude<DataAttributeType, 'enum' | 'reference'>,
+  attributeType: Exclude<DataAttributeType, 'enum' | 'multienum' | 'reference'>,
   maybeConfig: unknown,
 ): DataAttributeDefinitionWithConfig | undefined {
   const config = isLocalizedAttributeConfig(maybeConfig)
@@ -393,16 +404,17 @@ export function isEnumAttributeConfig(
 
 function extractEnumDefinitionWithConfig(
   attributeName: string,
+  attributeType: 'enum' | 'multienum',
   maybeConfig: unknown,
 ): DataAttributeDefinitionWithConfig | undefined {
   if (isEnumAttributeConfig(maybeConfig)) {
-    return ['enum', maybeConfig];
+    return [attributeType, maybeConfig];
   }
 
   logSchemaError(
     attributeName,
     maybeConfig,
-    'Invalid "enum" attribute config.',
+    `Invalid "${attributeType}" attribute config.`,
   );
 }
 
